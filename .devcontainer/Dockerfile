@@ -20,7 +20,12 @@ RUN apk update \
     subversion \
     make \
     openssh-client-default \
-    openssh
+    openssh\
+    zip \
+    libreoffice-sdk
+
+# https://pkgs.alpinelinux.org/package/edge/community/x86_64/libreoffice-sdk
+
 # https://pkgs.alpinelinux.org/package/edge/main/x86/subversion
 # subversion can be used to download github repos subfolders. Great for downloading just a single folder from a repo.
 # Can be run as examples.
@@ -105,12 +110,32 @@ RUN poetry config virtualenvs.in-project true \
 #   This is by design so that LibreOfffice will use the virtual environment python by default.
 #   This is done by adding the virtual environment path to the beginning of the PATH environment variable.
 #   When Poetry installls the virtual environment it will be modified to include the system site packages.
-ENV PATH="/workspace/libreoffice_py_addon/.venv/bin:/usr/lib/libreoffice/program:$PATH" \
+ENV PATH="/workspace/libreoffice_py_addon/.venv/bin:/usr/lib/libreoffice/program:/usr/lib/libreoffice/sdk/bin:$PATH" \
     URE_BOOTSTRAP="file:///usr/lib/libreoffice/program/fundamentalrc" \
     # PYTHONPATH="/usr/lib/libreoffice/program/../program:$PYTHONPATH" \
     PYTHONPATH="/usr/lib/libreoffice/program:$PYTHONPATH" \
     UNO_PATH="/usr/lib/libreoffice/program" \
-    LD_LIBRARY_PATH="/usr/lib/jvm/java-1.8-openjdk/jre/lib/amd64/client:/usr/lib/jvm/java-1.8-openjdk/jre/lib/amd64/server:/usr/lib/jvm/java-1.8-openjdk/jre/lib/amd64/native_threads:/usr/lib/jvm/java-1.8-openjdk/jre/lib/amd64"
+    LD_LIBRARY_PATH="/usr/lib/libreoffice/sdk/lib:/usr/lib/libreoffice/program:/usr/lib/jvm/java-1.8-openjdk/jre/lib/amd64/client:/usr/lib/jvm/java-1.8-openjdk/jre/lib/amd64/server:/usr/lib/jvm/java-1.8-openjdk/jre/lib/amd64/native_threads:/usr/lib/jvm/java-1.8-openjdk/jre/lib/amd64" \
+    OFFICE_HOME="/usr/lib/libreoffice" \
+    OFFICE_PROGRAM_PATH="/usr/lib/libreoffice/program" \
+    UNO_PATH="/usr/lib/libreoffice/program" \
+    OO_SDK_NAME="libreoffice_sdk" \
+    OO_SDK_HOME="/usr/lib/libreoffice/sdk" \
+    OO_SDK_MAKE_HOME="/usr/bin" \
+    OO_SDK_CAT_HOME="/bin" \
+    OO_SDK_SED_HOME="/bin" \
+    OO_SDK_ZIP_HOME="usr/bin" \
+    OO_SDK_URE_BIN_DIR="/usr/lib/libreoffice/program" \
+    OO_SDK_URE_LIB_DIR="/usr/lib/libreoffice/program" \
+    OO_SDK_URE_JAVA_DIR="/usr/lib/libreoffice/program/classes" \
+    OO_SDK_JAVA_HOME="/usr/lib/jvm/java-1.8-openjdk" \
+    OO_SDK_OUTPUT_DIR="/config" \
+    OO_SDK_OUT="/config/libreoffice_sdk" \
+    OO_TYPES_UNO="/usr/lib/libreoffice/program/types.rdb" \
+    OO_TYPES_OFFICE="/usr/lib/libreoffice/program/types/offapi.rdb"
+
+# OO_TYPES_UNO and OO_TYPES_OFFICE are not part of the default configuration but can be used to for idl purporses.
+# $ unoidl-write $OO_TYPES_UNO $OO_TYPES_OFFICE "${PWD}"/idl/MyFile.idl "${PWD}"/build/MyFile.rdb
 
 # Cannot persist python version into build here so, get the python version and run all the commands the use it.
 RUN MY_PY_VER=$(python -c "import sys; major, minor = sys.version_info[:2]; print(f'{major}.{minor}');" ) \
