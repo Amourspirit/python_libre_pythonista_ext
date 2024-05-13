@@ -1,0 +1,50 @@
+version: "3.9"
+
+services:
+  lo_pip_app:
+    env_file: .env
+    network_mode: "bridge"
+    # env_file: user.env
+    build:
+      context: ../
+      dockerfile: .devcontainer/Dockerfile
+      args:
+        LO_VERSION: "7.6.3"
+        POETRY_VERSION: "1.7.1"
+        CONFIG_DIR: /config
+    # user: root
+    container_name: lo_pip_app
+    security_opt:
+      - seccomp:unconfined #optional
+    environment:
+      - TZ=Etc/UTC
+      - PUID=0
+      - PGID=0
+      - CONFIG_DIR=/config
+      - DEV_CONTAINER=1
+      - WORK_DIR=/workspace/libreoffice_pip_ext
+    volumes:
+      - type: bind
+        source: ../
+        target: /workspace/libreoffice_pip_ext
+      - type: bind
+        source: ../Documents
+        target: /config/Documents
+      - type: bind
+        source: ../macro
+        target: /config/.config/libreoffice/4/user/Scripts/python
+      - type: volume
+        source: app_lo_config
+        target: /config
+      - type: volume
+        source: app_virtual_env
+        target: /workspace/libreoffice_pip_ext/.venv
+    
+    ports:
+      - 3020:3000
+      - 3021:3001
+    restart: unless-stopped
+
+volumes:
+  app_virtual_env:
+  app_lo_config:

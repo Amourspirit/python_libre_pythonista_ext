@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dlg:window PUBLIC "-//OpenOffice.org//DTD OfficeDocument 1.0//EN" "dialog.dtd">
+<dlg:window xmlns:dlg="http://openoffice.org/2000/dialog"
+    xmlns:script="http://openoffice.org/2000/script" dlg:style-id="0" dlg:id="logging" dlg:left="56"
+    dlg:top="24" dlg:width="195" dlg:height="220" dlg:closeable="true" dlg:moveable="true"
+    dlg:withtitlebar="false">
+    <dlg:styles>
+        <dlg:style dlg:style-id="0" dlg:font-name="DejaVu Sans Mono" dlg:font-height="9"
+            dlg:font-stylename="Book" dlg:font-family="modern" />
+    </dlg:styles>
+    <dlg:bulletinboard>
+        <dlg:titledbox dlg:id="gbLogLevel" dlg:tab-index="0" dlg:left="10" dlg:top="3"
+            dlg:width="111" dlg:height="79">
+            <dlg:title dlg:value="log01" />
+        </dlg:titledbox>
+        <dlg:radiogroup>
+            <dlg:radio dlg:id="optLogNone" dlg:tab-index="1" dlg:left="18" dlg:top="15"
+                dlg:width="93" dlg:height="10" dlg:value="log02" dlg:group-name="LogLevel" />
+            <dlg:radio dlg:id="optLogDebug" dlg:tab-index="2" dlg:left="18" dlg:top="25"
+                dlg:width="93" dlg:height="10" dlg:value="log03" dlg:group-name="LogLevel" />
+            <dlg:radio dlg:id="optLogNormal" dlg:tab-index="3" dlg:left="18" dlg:top="35"
+                dlg:width="93" dlg:height="10" dlg:value="log04" dlg:group-name="LogLevel" />
+            <dlg:radio dlg:id="optLogWarning" dlg:tab-index="4" dlg:left="18" dlg:top="45"
+                dlg:width="93" dlg:height="10" dlg:value="log08" dlg:group-name="LogLevel" />
+            <dlg:radio dlg:id="optLogError" dlg:tab-index="5" dlg:left="18" dlg:top="55"
+                dlg:width="93" dlg:height="10" dlg:value="log09" dlg:group-name="LogLevel" />
+            <dlg:radio dlg:id="optLogCritical" dlg:tab-index="6" dlg:left="18" dlg:top="65"
+                dlg:width="93" dlg:height="10" dlg:value="log10" dlg:group-name="LogLevel" />
+        </dlg:radiogroup>
+        <dlg:text dlg:id="lblformat" dlg:tab-index="9" dlg:left="10" dlg:top="89" dlg:width="138"
+            dlg:height="12" dlg:value="log05" />
+        <dlg:textfield dlg:id="txtLogFormat" dlg:tab-index="7" dlg:left="12" dlg:top="102"
+            dlg:width="174" dlg:height="12" />
+        <dlg:text dlg:id="lblLogFile" dlg:tab-index="10" dlg:left="12" dlg:top="119" dlg:width="74"
+            dlg:height="10" dlg:value="log06" />
+        <dlg:text dlg:id="lblLogLocation" dlg:tab-index="11" dlg:left="12" dlg:top="132"
+            dlg:width="176" dlg:height="27" dlg:value="empty" dlg:multiline="true" />
+        <dlg:button dlg:id="btnCopy" dlg:tab-index="8" dlg:left="87" dlg:top="119" dlg:width="99"
+            dlg:height="12" dlg:value="log07" />
+    </dlg:bulletinboard>
+</dlg:window>

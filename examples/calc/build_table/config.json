@@ -1,0 +1,18 @@
+{
+  "id": "oooscript",
+  "name": "message_box",
+  "app": "WRITER",
+  "version": "1.0.0",
+  "args": {
+    "src_file": "tbl_builder.py",
+    "output_name": "builder",
+    "single_script": false,
+    "clean": true,
+    "exclude_modules": ["sphinx\\.*", "lxml\\.*"]
+  },
+  "methods": [
+    "build_table",
+    "build_table_style",
+    "build_table_style_chart"
+  ]
+}

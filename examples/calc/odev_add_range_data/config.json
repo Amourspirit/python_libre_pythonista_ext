@@ -1,0 +1,16 @@
+{
+  "id": "oooscript",
+  "app": "CALC",
+  "name": "odev_add_range",
+  "version": "0.1.0",
+  "args": {
+    "src_file": "script.py",
+    "output_name": "odev_add_range",
+    "include_modules": [],
+    "include_paths": [],
+    "single_script": false,
+    "clean": true,
+    "exclude_modules": ["sphinx\\.*", "lxml\\.*", "PIL\\.*"]
+  },
+  "methods": ["fill", "clear"]
+}

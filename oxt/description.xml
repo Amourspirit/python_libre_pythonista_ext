@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<description xmlns="http://openoffice.org/extensions/description/2006"
+    xmlns:l="http://libreoffice.org/extensions/description/2011"
+    xmlns:dep="http://openoffice.org/extensions/description/2006"
+    xmlns:xlink="http://www.w3.org/1999/xlink">
+    <identifier value="___lo_identifier___" />
+    <version value="___version___" />
+    <platform value="___platform___" />
+    <dependencies>
+        <l:LibreOffice-minimal-version value="7.0" />
+    </dependencies>
+
+    <update-information>
+        <src xlink:href="___update_url_xml___" />
+    </update-information>
+
+    <extension-description>
+    </extension-description>
+
+    <icon>
+        <default xlink:href="icons/icon.png" />
+    </icon>
+
+
+    <display-name></display-name>
+
+    <registration>
+        <simple-license accept-by="user" suppress-on-update="true">
+            <license-text xlink:href="LICENSE-en.txt" lang="en" />
+        </simple-license>
+    </registration>
+    <publisher></publisher>
+
+</description>

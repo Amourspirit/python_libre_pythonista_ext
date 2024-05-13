@@ -1,0 +1,29 @@
+{
+  "id": "oooscript",
+  "name": "calc-sudoku",
+  "app": "CALC",
+  "version": "1.0.0",
+  "args": {
+    "src_file": "script.py",
+    "output_name": "calc-sudoku",
+    "single_script": false,
+    "clean": true
+  },
+  "methods": [
+    "generate_single_solve",
+    "num1",
+    "num2",
+    "num3",
+    "num4",
+    "num5",
+    "num6",
+    "num7",
+    "num8",
+    "num9",
+    "clear_sel",
+    "reset_board",
+    "hint",
+    "hide_toolbars",
+    "display_fullscreen"
+  ]
+}

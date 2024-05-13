@@ -1,0 +1,65 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/ubuntu
+{
+	"name": "LibreOffice Python App",
+	"hostRequirements": {
+		"cpus": 4
+	},
+	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
+	"dockerComposeFile": "docker-compose.yml",
+	"service": "lo_pip_app",
+	"workspaceFolder": "/workspace/libreoffice_pip_ext",
+	// Features to add to the dev container. More info: https://containers.dev/features.
+	// "features": {},
+
+	// Use 'forwardPorts' to make a list of ports inside the container available locally.
+	"forwardPorts": [3020, 3021],
+	"portsAttributes": {
+		"2002": {
+			"onAutoForward": "silent",
+			"visibility": "private"
+		}
+	},
+	
+
+	// Configure tool-specific properties.
+	// "customizations": {},
+
+	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+	"remoteUser": "root",
+	"mounts": [
+		"source=vscode-extensions,target=/root/.vscode-server/extensions,type=volume"
+	],
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"ms-python.python",
+				"ms-python.vscode-pylance",
+				"njpwerner.autodocstring",
+				"ms-python.black-formatter",
+				"ms-vscode.test-adapter-converter",
+				"Phu1237.vs-browser",
+				"streetsidesoftware.code-spell-checker",
+				"bungcip.better-toml"
+			],
+			// Adds VS Code settings.json values into the environment.
+			"settings": {
+				"terminal.integrated.profiles.linux": {
+					"bash": {
+						"path": "/bin/bash",
+						"args": [
+							"-l"
+						]
+					}
+				},
+				"vs-browser.url": "http://localhost:3020"
+			}
+		}
+	},
+	// Did not work when placed in brackets. Only as string. Brackets need to call /usr/bin/sh -c
+	"initializeCommand": "echo $PWD && if which git >/dev/null && [ x\"${HOME}\" != \"x\" ] && [ -n \"$(git config --global user.name)\" ] && [ -n \"$(git config --global user.email)\" ]; then echo \"LOCAL_GIT_AUTHOR_NAME=$(git config --global user.name)\nLOCAL_GIT_AUTHOR_EMAIL=$(git config --global user.email)\" > .devcontainer/.env || true; else echo \"LOCAL_GIT_AUTHOR_NAME=\"\"\nLOCAL_GIT_AUTHOR_EMAIL=\"\"\" > .devcontainer/.env || true; fi && echo \"PUID=$(id -u $USER)\nPGID=$(id -g $USER)\" > .devcontainer/user.env",
+	"postAttachCommand": "nohup bash /defaults/autostart >> /var/log/autostart.log 2>&1",
+	// Use 'postCreateCommand' to run commands after the container is created.
+	"postCreateCommand": "bash /usr/local/bin/startup.sh && nohup bash /defaults/autostart > /var/log/autostart.log 2>&1"
+
+}

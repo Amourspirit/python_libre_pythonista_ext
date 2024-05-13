@@ -1,0 +1,17 @@
+#!/bin/bash
+echo "Auto starting"
+if pgrep tint2 > /dev/null; then
+    echo "tint2 already running"
+    exit 0
+fi
+# default file copies first run
+if [[ ! -f $HOME/.config/tint2/tint2rc ]]; then
+    echo "Copying file tint2rc"
+    mkdir -p $HOME/.config/tint2
+    cp /defaults/tint2rc $HOME/.config/tint2/tint2rc
+fi
+
+# Start UI
+echo "starting tint2"
+tint2 &
+# libreoffice

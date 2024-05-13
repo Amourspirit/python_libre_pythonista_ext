@@ -1,0 +1,71 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<oor:component-data xmlns:oor="http://openoffice.org/2001/registry"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  oor:name="Settings" oor:package="___lo_implementation_name___">
+  <node oor:name="PipInfo">
+    <prop oor:name="InstalledLocalPips" oor:type="oor:string-list">
+      <value></value>
+    </prop>
+  </node>
+  <node oor:name="Logging">
+    <prop oor:name="LogFile" oor:type="xs:string">
+      <value>___log_file___</value>
+    </prop>
+    <prop oor:name="LogName" oor:type="xs:string">
+      <value>___log_name___</value>
+    </prop>
+    <prop oor:name="LogLevel" oor:type="xs:string">
+      <value>___log_level___</value>
+    </prop>
+    <prop oor:name="LogFormat" oor:type="xs:string">
+      <value>___log_format___</value>
+    </prop>
+    <prop oor:name="LogAddConsole" oor:type="xs:boolean">
+      <value>___log_add_console___</value>
+    </prop>
+    <prop oor:name="TestText" oor:type="xs:string">
+      <value>TestText</value>
+    </prop>
+  </node>
+  <node oor:name="GeneralSettings">
+    <prop oor:name="LogPipInstalls" oor:type="xs:boolean">
+      <value>___log_pip_installs___</value>
+    </prop>
+    <prop oor:name="ShowProgress" oor:type="xs:boolean">
+      <value>___show_progress___</value>
+    </prop>
+    <prop oor:name="LoImplementationName" oor:type="xs:string">
+      <value>___lo_implementation_name___</value>
+    </prop>
+    <prop oor:name="LoIdentifier" oor:type="xs:string">
+      <value>___lo_identifier___</value>
+    </prop>
+    <prop oor:name="Platform" oor:type="xs:string">
+      <value>___platform___</value>
+    </prop>
+    <prop oor:name="PublisherUrl" oor:type="xs:string">
+      <value>___publisher_url___</value>
+    </prop>
+    <prop oor:name="UpdateUrlXml" oor:type="xs:string">
+      <value>___update_url_xml___</value>
+    </prop>
+    <prop oor:name="UpdateUrlOxt" oor:type="xs:string">
+      <value>___update_url_oxt___</value>
+    </prop>
+    <prop oor:name="UrlPip" oor:type="xs:string">
+      <value>___url_pip___</value>
+    </prop>
+    <prop oor:name="UrlPipWheel" oor:type="xs:string">
+      <value>___pip_wheel_url___</value>
+    </prop>
+    <prop oor:name="UrlTestInternet" oor:type="xs:string">
+      <value>___test_internet_url___</value>
+    </prop>
+    <prop oor:name="StartupEvent" oor:type="xs:string">
+      <value>___startup_event___</value>
+    </prop>
+    <prop oor:name="DelayStartup" oor:type="xs:boolean">
+      <value>___delay_startup___</value>
+    </prop>
+  </node>
+</oor:component-data>

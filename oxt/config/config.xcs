@@ -1,0 +1,128 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<oor:component-schema oor:name="Settings" oor:package="___lo_implementation_name___" xml:ang="en-US"
+    xmlns:oor="http://openoffice.org/2001/registry"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <templates />
+    <component>
+        <group oor:name="PipInfo">
+            <prop oor:name="InstalledLocalPips" oor:type="oor:string-list">
+                <info>
+                    <desc>Local Installed Pip Packages</desc>
+                </info>
+            </prop>
+        </group>
+        <group oor:name="Logging">
+            <prop oor:name="LogFile" oor:type="xs:string">
+                <info>
+                    <desc>Log File Name</desc>
+                </info>
+            </prop>
+            <prop oor:name="LogName" oor:type="xs:string">
+                <info>
+                    <desc>Log Name</desc>
+                </info>
+            </prop>
+            <prop oor:name="LogLevel" oor:type="xs:string">
+                <info>
+                    <desc>Loggging Level, NONE, DEBUG, INFO, WARNING, ERROR, CRITICAL</desc>
+                </info>
+            </prop>
+            <prop oor:name="LogFormat" oor:type="xs:string">
+                <info>
+                    <desc>Log Format. Eg: %(asctime)s - %(name)s - %(levelname)s - %(message)s</desc>
+                </info>
+            </prop>
+            <prop oor:name="LogAddConsole" oor:type="xs:boolean">
+                <info>
+                    <desc>
+                        Determins if a logging console is to be added.
+                        This can be useful log to the APSO terminal and any other console that LibreOffice is started from.
+                        For production this value should be false as it may have some unintended side effects.
+                    </desc>
+                </info>
+            </prop>
+            <prop oor:name="TestText" oor:type="xs:string">
+                <info>
+                    <desc>Test</desc>
+                </info>
+            </prop>
+        </group>
+        <group oor:name="GeneralSettings">
+            <prop oor:name="LogPipInstalls" oor:type="xs:boolean">
+                <info>
+                    <desc>Log Pip Installs</desc>
+                </info>
+            </prop>
+            <prop oor:name="ShowProgress" oor:type="xs:boolean">
+                <info>
+                    <desc>Determines if terminal window is displayed during pip installs to show
+                        progress</desc>
+                </info>
+            </prop>
+            <prop oor:name="LoImplementationName" oor:type="xs:string">
+                <info>
+                    <desc>Extension Implementation Name</desc>
+                </info>
+            </prop>
+            <prop oor:name="LoIdentifier" oor:type="xs:string">
+                <info>
+                    <desc>Extension Identifier</desc>
+                </info>
+            </prop>
+            <prop oor:name="Platform" oor:type="xs:string">
+                <info>
+                    <desc>The platform that this extension is targeted for</desc>
+                </info>
+            </prop>
+            <prop oor:name="PublisherUrl" oor:type="xs:string">
+                <info>
+                    <desc>Publisher URL</desc>
+                </info>
+            </prop>
+            <prop oor:name="UpdateUrlXml" oor:type="xs:string">
+                <info>
+                    <desc>Update URL XML</desc>
+                </info>
+            </prop>
+            <prop oor:name="UpdateUrlOxt" oor:type="xs:string">
+                <info>
+                    <desc>Update URL OXT</desc>
+                </info>
+            </prop>
+            <prop oor:name="UrlPip" oor:type="xs:string">
+                <info>
+                    <desc>Url to get-pip.py that installs pip</desc>
+                </info>
+            </prop>
+            <prop oor:name="UrlPipWheel" oor:type="xs:string">
+                <info>
+                    <desc>Url to Pip Wheel file that installs pip in Flatpak</desc>
+                </info>
+            </prop>
+            <prop oor:name="UrlTestInternet" oor:type="xs:string">
+                <info>
+                    <desc>Url to used for testing internet connection</desc>
+                </info>
+            </prop>
+            <prop oor:name="StartupEvent" oor:type="xs:string">
+                <info>
+                    <desc>
+                        The Startup event used to start extension.
+                        Set in tool.oxt.token.startup_event.
+                        OnStartApp or onFirstVisibleTask.
+                    </desc>
+                </info>
+            </prop>
+            <prop oor:name="DelayStartup" oor:type="xs:boolean">
+                <info>
+                    <desc>
+                        Determins if Delayed startup is used before installing any pip packages.
+                        If set to true, then the extension will wait until a window is available before starting instalation.
+                        This has the advantage of allowing the user to see the progress of the installation via progress dialogs.
+                    </desc>
+                </info>
+            </prop>
+        </group>
+    </component>
+</oor:component-schema>

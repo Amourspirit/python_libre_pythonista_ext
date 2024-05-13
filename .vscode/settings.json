@@ -1,0 +1,105 @@
+{
+    "terminal.integrated.shellIntegration.enabled": true,
+    "testExplorer.useNativeTesting": false,
+    "[python]": {
+        "editor.formatOnPaste": false,
+        "editor.formatOnSaveMode": "file",
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "ms-python.black-formatter"
+    },
+    "python.defaultInterpreterPath": "${workspaceRoot}/.venv/bin/python3",
+    "autoDocstring.docstringFormat": "google",
+    "workbench.colorCustomizations": {
+        "[Monokai]": {
+            "titleBar.activeBackground": "#054602",
+            "titleBar.activeForeground": "#e49df4"
+        },
+        "[Default Dark+]": {
+            "titleBar.activeBackground": "#054602",
+            "titleBar.activeForeground": "#e49df4"
+        },
+        "[Visual Studio Dark]": {
+            "titleBar.activeBackground": "#054602",
+            "titleBar.activeForeground": "#e49df4"
+        }
+    },
+    "workbench.colorTheme": "Monokai",
+    "python.testing.pytestArgs": [
+        "tests"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true,
+    "spellchecker.ignoreWordsList": [
+        "LibreOffice"
+    ],
+    "black-formatter.args": [
+        "--line-length",
+        "119"
+    ],
+    "files.watcherExclude": {
+        "**/.git/objects/**": true,
+        "**/.git/subtree-cache/**": true,
+        "**/node_modules/*/**": true,
+        "**/.hg/store/**": true,
+        "**/build/**": true,
+        "**/dist/**": true,
+        "**/env/**": true,
+        "**/venv/**": true,
+        "**/.venv/**": true,
+        "**/tmp/**": true,
+        "**/.pytest_cache/**": true,
+        "**/.idea/**": true,
+        "**/__pycache__/**": true,
+        "**/.hypothesis/**": true
+    },
+    "vsicons.associations.folders":[
+        {
+            "icon": "src",
+            "extensions": [
+                "src", "ooodev"
+            ],
+            "format": "svg",
+            "overrides": "src"
+        },
+        {
+            "icon": "python",
+            "extensions": [
+                ".venv",
+                ".virtualenv",
+                "env"
+            ],
+            "format": "svg",
+            "overrides": "python"
+        },
+        {
+            "icon": "config",
+            "extensions": [
+                "conf",
+                ".conf",
+                "config",
+                ".config",
+                "configs",
+                ".configs",
+                "configuration",
+                ".configuration",
+                "configurations",
+                ".configurations",
+                "setting",
+                ".setting",
+                "settings",
+                ".settings",
+                "ini",
+                ".ini",
+                "initializers",
+                ".initializers",
+                "cfg"
+            ],
+            "format": "svg",
+            "overrides": "config"
+        }
+    ],
+    "cSpell.words": [
+        "Addin"
+    ],
+    "python.analysis.typeCheckingMode": "basic"
+}

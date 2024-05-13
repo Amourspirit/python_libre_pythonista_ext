@@ -1,0 +1,140 @@
+# See: https://github.com/Amourspirit/python-libreoffice-pip/wiki/pyproject.toml
+[tool.oxt.config]
+auto_install_in_site_packages = true # https://tinyurl.com/ymeh4c9j#auto_install_in_site_packages
+build_dir = "build" # https://tinyurl.com/ymeh4c9j#build_dir
+dist_dir = "tmp_dist" # https://tinyurl.com/ymeh4c9j#dist_dir should be changed to someting like dist, tmp_dist is not included in git
+install_wheel = true # https://tinyurl.com/ymeh4c9j#install_wheel
+oxt_name = "OooPip" # https://tinyurl.com/ymeh4c9j#oxt_name
+py_pkg_dir = "py_pkgs" # https://tinyurl.com/ymeh4c9j#py_pkg_dir
+py_pkg_files = [] # https://tinyurl.com/ymeh4c9j#py_pkg_files
+py_pkg_names = [] # ["ooodev", "ooo"] https://tinyurl.com/ymeh4c9j#py_pkg_names
+token_file_ext = ["txt", "xml", "xcu", "xcs"] # https://tinyurl.com/ymeh4c9j#token_file_ext
+update_file = "update.xml" # https://tinyurl.com/ymeh4c9j#update_file
+zip_preinstall_pure = true # https://tinyurl.com/ymeh4c9j#zip_preinstall_pure
+window_timeout = 5 # https://tinyurl.com/ymeh4c9j#window_timeout number of seconds to wait for window to appear
+dialog_desktop_owned = false # https://tinyurl.com/ymeh4c9j#dialog_desktop_owned determines if the dialog is owned by the desktop window
+resource_dir_name = "resources" # https://tinyurl.com/ymeh4c9j#resource_dir_name
+resource_properties_prefix = "pipstrings" # https://tinyurl.com/ymeh4c9j#resource_properties_prefix
+default_locale = ["en", "US"] # https://tinyurl.com/ymeh4c9j#default_locale
+sym_link_cpython = false # https://tinyurl.com/ymeh4c9j#sym_link_cpython
+uninstall_on_update = true # https://tinyurl.com/ymeh4c9j#uninstall_on_update uninstall previous python packages on update
+install_on_no_uninstall_permission = true # https://tinyurl.com/ymeh4c9j#install_on_no_uninstall_permission
+
+[tool.oxt.token]
+# in the form of "token_name": "token_value"
+# in the files the token will have a prefix and suffix of ___
+pip_wheel_url = "https://files.pythonhosted.org/packages/50/c2/e06851e8cc28dcad7c155f4753da8833ac06a5c704c109313b8d5a62968a/pip-23.2.1-py3-none-any.whl" # https://tinyurl.com/ymeh4c9j#pip_wheel_url
+test_internet_url = "https://duckduckgo.com" # https://tinyurl.com/ymeh4c9j#test_internet_url
+log_pip_installs = false # https://tinyurl.com/ymeh4c9j#log_pip_installs
+lo_identifier = "org.openoffice.extensions.ooopip" # https://tinyurl.com/ymeh4c9j#lo_identifier
+lo_implementation_name = "OooPipRunner" # https://tinyurl.com/ymeh4c9j#lo_implementation_name
+display_name = "LibreOffice Python Pip Template" # https://tinyurl.com/ymeh4c9j#display_name
+description = "Template for creating pip based extensions for for LibreOffice" # https://tinyurl.com/ymeh4c9j#description
+publisher = "AmourSpirit" # https://tinyurl.com/ymeh4c9j#publisher
+publisher_url = "https://github.com/Amourspirit/python-libreoffice-pip" # https://tinyurl.com/ymeh4c9j#publisher_url
+update_url_xml = "https://raw.githubusercontent.com/Amourspirit/python-libreoffice-pip/main/___dist_dir___/___update_file___" # https://tinyurl.com/ymeh4c9j#update_url_xml
+update_url_oxt = "https://raw.githubusercontent.com/Amourspirit/python-libreoffice-pip/main/___dist_dir___/___oxt_name___.oxt" # https://tinyurl.com/ymeh4c9j#update_url_oxt
+url_pip = 'https://bootstrap.pypa.io/get-pip.py' # https://tinyurl.com/ymeh4c9j#url_pip
+# set log_file to "" to disable logging
+log_file = "pip_install.log" # https://tinyurl.com/ymeh4c9j#log_file
+log_name = "OOO PIP Installer" # https://tinyurl.com/ymeh4c9j#log_name
+log_level = "DEBUG" # NONE, DEBUG, INFO, WARNING, ERROR, CRITICAL https://tinyurl.com/ymeh4c9j#log_level
+log_format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s" # https://tinyurl.com/ymeh4c9j#log_format
+log_add_console = false # should be false for production # https://tinyurl.com/ymeh4c9j#log_add_console
+lo_pip = "lo_pip" # https://tinyurl.com/ymeh4c9j#lo_pip
+platform = "all" # https://tinyurl.com/ymeh4c9j#platform
+startup_event = "OnStartApp" # OnStartApp or onFirstVisibleTask https://tinyurl.com/ymeh4c9j#startup_event
+show_progress = true # https://tinyurl.com/ymeh4c9j#show_progress
+delay_startup = true # determines if installing waits fo the window to load before installing https://tinyurl.com/ymeh4c9j#delay_startup
+
+[tool.oxt.requirements]
+# https://tinyurl.com/ymeh4c9j#tooloxtrequirements
+# https://python-poetry.org/docs/dependency-specification/
+typing-extensions = ">=4.8.0"
+verr = ">=1.1.2"
+
+[tool.oxt.isolate]
+# https://tinyurl.com/ymeh4c9j#tooloxtisolate
+windows = [] # ["odfpy"]
+
+[tool.oxt.preinstall.pure]
+# https://tinyurl.com/ymeh4c9j#tooloxtpreinstallpure
+# verr = ">=1.1.2"
+
+[tool.oxt.locale.publisher]
+# https://tinyurl.com/ymeh4c9j#tooloxtlocalepublisher
+en = { name = "___publisher___", url="___publisher_url___" }
+fr = { name = "AmourEsprit", url="___publisher_url___/fr" }
+
+[tool.oxt.locale.name]
+# https://tinyurl.com/ymeh4c9j#tooloxtlocalename
+en = "___display_name___"
+fr = "Modèle LibreOffice Python Pip"
+de = "LibreOffice Python Pip Vorlage"
+pt = "Modelo LibreOffice Python Pip"
+es = "Plantilla LibreOffice Python Pip"
+
+[tool.oxt.locale.desc]
+# https://tinyurl.com/ymeh4c9j#tooloxtlocaledesc
+en = "___description___"
+fr = "Modèle pour créer des extensions basées sur pip pour LibreOffice"
+de = "Vorlage zum Erstellen von pip-basierten Erweiterungen für LibreOffice"
+pt = "Modelo para criar extensões baseadas em pip para o LibreOffice"
+es = "Plantilla para crear extensiones basadas en pip para LibreOffice"
+
+
+[tool.poetry]
+name = "libreoffice pip template"
+version = "0.2.2"
+description = "Template for creating pip based extensions for for LibreOffice"
+authors = [":Barry-Thomas-Paul: Moss <bigbytetech@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+packages = [{ include = "src" }]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+ooouno = "^2.1.2"
+toml = "^0.10.2"
+typing-extensions = ">=4.9.0"
+
+
+[tool.poetry.group.dev.dependencies]
+types-scriptforge = ">=2.0.1"
+pytest = "^7.4.0"
+pytest-dotenv = "^0.5.2"
+black = "^23.7.0"
+oooscript = "^1.1.3"
+oooenv = "^0.2.2"
+lxml = "^4.9.3"
+ooo-dev-tools = ">=0.34.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+
+[tool.pylint.'MESSAGES CONTROL']
+max-line-length = 120
+disable = """
+    no-name-in-module,
+    no-self-argument
+"""
+
+[tool.pyright]
+include = ["src"]
+reportMissingModuleSource = false
+
+[tool.ruff]
+extended-select = ["ANN", "C4", "N", "SIM", "TCH"]
+ignore = ["E501"]
+show-fixes = true
+target = "py38"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+markers = [
+    "skip_headless: skips a test in headless mode",
+    "skip_not_headless_os: skips a test in GUI mode for give os",
+]
