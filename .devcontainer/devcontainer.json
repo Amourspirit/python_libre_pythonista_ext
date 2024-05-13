@@ -7,13 +7,13 @@
 	},
 	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
 	"dockerComposeFile": "docker-compose.yml",
-	"service": "lo_pip_app",
-	"workspaceFolder": "/workspace/libreoffice_pip_ext",
+	"service": "libreoffice_py_addon",
+	"workspaceFolder": "/workspace/libreoffice_py_addon",
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	// "features": {},
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	"forwardPorts": [3020, 3021],
+	"forwardPorts": [3100, 3101],
 	"portsAttributes": {
 		"2002": {
 			"onAutoForward": "silent",
@@ -52,7 +52,7 @@
 						]
 					}
 				},
-				"vs-browser.url": "http://localhost:3020"
+				"vs-browser.url": "http://localhost:3100"
 			}
 		}
 	},

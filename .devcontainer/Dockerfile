@@ -88,11 +88,11 @@ RUN  /usr/bin/pip install "poetry==$POETRY_VERSION" \
     && if [ -f "$CONFIG_DIR/.tmp/res/req/requirements.txt" ]; then \
     /usr/bin/pip install --no-cache-dir -r "$CONFIG_DIR/.tmp/res/req/requirements.txt"; fi
 
-WORKDIR /workspace/libreoffice_pip_ext
+WORKDIR /workspace/libreoffice_py_addon
 COPY ./*.toml ./*.lock ./
 RUN poetry config virtualenvs.in-project true \
     && poetry install $(test "$RUN_ENV" == production && echo "--no-dev") --no-interaction --no-ansi --no-root --no-cache \
-    && sed -i "s/include-system-site-packages = false/include-system-site-packages = false/g" /workspace/libreoffice_pip_ext/.venv/pyvenv.cfg
+    && sed -i "s/include-system-site-packages = false/include-system-site-packages = false/g" /workspace/libreoffice_py_addon/.venv/pyvenv.cfg
 
 # Many of these environment variable are required for python and LibreOffice imports to work correctly.
 # For instance without proper environment vars: from com.sun.star.frame import XComponentLoader # results in error
@@ -105,7 +105,7 @@ RUN poetry config virtualenvs.in-project true \
 #   This is by design so that LibreOfffice will use the virtual environment python by default.
 #   This is done by adding the virtual environment path to the beginning of the PATH environment variable.
 #   When Poetry installls the virtual environment it will be modified to include the system site packages.
-ENV PATH="/workspace/libreoffice_pip_ext/.venv/bin:/usr/lib/libreoffice/program:$PATH" \
+ENV PATH="/workspace/libreoffice_py_addon/.venv/bin:/usr/lib/libreoffice/program:$PATH" \
     URE_BOOTSTRAP="file:///usr/lib/libreoffice/program/fundamentalrc" \
     # PYTHONPATH="/usr/lib/libreoffice/program/../program:$PYTHONPATH" \
     PYTHONPATH="/usr/lib/libreoffice/program:$PYTHONPATH" \
@@ -115,10 +115,10 @@ ENV PATH="/workspace/libreoffice_pip_ext/.venv/bin:/usr/lib/libreoffice/program:
 # Cannot persist python version into build here so, get the python version and run all the commands the use it.
 RUN MY_PY_VER=$(python -c "import sys; major, minor = sys.version_info[:2]; print(f'{major}.{minor}');" ) \
     && echo "Python version: $MY_PY_VER" \
-    && echo "/workspace/libreoffice_pip_ext" >> "/workspace/libreoffice_pip_ext/.venv/lib/python$MY_PY_VER/site-packages/ooo_dev_tools.pth" \
-    && echo "/usr/lib/libreoffice/program" >> "/workspace/libreoffice_pip_ext/.venv/lib/python$MY_PY_VER/site-packages/libreoffice_program.pth"
+    && echo "/workspace/libreoffice_py_addon" >> "/workspace/libreoffice_py_addon/.venv/lib/python$MY_PY_VER/site-packages/ooo_dev_tools.pth" \
+    && echo "/usr/lib/libreoffice/program" >> "/workspace/libreoffice_py_addon/.venv/lib/python$MY_PY_VER/site-packages/libreoffice_program.pth"
 
-WORKDIR /workspace/libreoffice_pip_ext
+WORKDIR /workspace/libreoffice_py_addon
 
 # EXPOSE $CODE_PORT
 COPY ./.devcontainer/root/defaults /defaults

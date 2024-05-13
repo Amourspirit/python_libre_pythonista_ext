@@ -4,6 +4,7 @@
         "github.copilot-chat",
         "mhutchie.git-graph",
         "oderwat.indent-rainbow",
-        "redhat.vscode-xml"
+        "redhat.vscode-xml",
+        "yuenm18.ooxml-viewer"
     ]
 }
