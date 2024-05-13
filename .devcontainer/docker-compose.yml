@@ -28,9 +28,6 @@ services:
         source: ../
         target: /workspace/libreoffice_py_addon
       - type: bind
-        source: ../sdk_out
-        target: /workspace/sdk_out
-      - type: bind
         source: ../Documents
         target: /config/Documents
       - type: bind

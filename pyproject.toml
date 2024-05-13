@@ -19,6 +19,8 @@ default_locale = ["en", "US"] # https://tinyurl.com/ymeh4c9j#default_locale
 sym_link_cpython = false # https://tinyurl.com/ymeh4c9j#sym_link_cpython
 uninstall_on_update = true # https://tinyurl.com/ymeh4c9j#uninstall_on_update uninstall previous python packages on update
 install_on_no_uninstall_permission = true # https://tinyurl.com/ymeh4c9j#install_on_no_uninstall_permission
+oo_types_uno = ""
+oo_types_office = ""
 
 [tool.oxt.token]
 # in the form of "token_name": "token_value"

@@ -15,6 +15,8 @@ from .processing.locale.publisher import Publisher
 from .processing.locale.publisher_update import PublisherUpdate
 from .processing.locale.name import Name
 from .install.pre_install_pure import PreInstallPure
+from .processing.idl.idl_rdb import IdlRdb
+from .processing.idl.idl_manifest import IdlManifest
 
 
 class Build:
@@ -61,6 +63,7 @@ class Build:
         if self._args.pre_install_pure_packages:
             self._pre_install_pure_packages()
 
+        self._build_idl()
         self._write_xml()
         self._ensure_default_resource()
 
@@ -83,6 +86,9 @@ class Build:
 
         publisher = Publisher()
         publisher.write()
+
+        idl_manifest = IdlManifest()
+        idl_manifest.write()
 
     def clean(self) -> None:
         """Cleans the project."""
@@ -197,6 +203,12 @@ class Build:
         file_util.zip_folder(folder=self._build_path, dest_dir=self._dist_path)
 
         os.rename(old_file, new_file)
+
+    def _build_idl(self) -> None:
+        """Builds the idl files."""
+        idl = IdlRdb()
+        if idl.has_files:
+            idl.compile()
 
     def _process_update(self) -> None:
         """Processes the update file."""
