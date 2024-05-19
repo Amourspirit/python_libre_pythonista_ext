@@ -1,9 +1,8 @@
-# -*- coding: utf-8 -*-
 from __future__ import annotations
 from typing import TYPE_CHECKING
 import uno
 import unohelper
-from org.openoffice.sheet.addin import XPy
+from com.github.amourspirit.extensions import XPy
 
 from ooodev.calc import CalcDoc
 
@@ -34,6 +33,6 @@ def createInstance(ctx):
 g_ImplementationHelper = unohelper.ImplementationHelper()
 g_ImplementationHelper.addImplementation(
     createInstance,
-    "org.openoffice.Py",
+    "com.github.amourspirit.extension.Py",
     ("com.sun.star.sheet.AddIn",),
 )

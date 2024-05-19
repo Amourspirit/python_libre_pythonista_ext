@@ -1,6 +1,6 @@
 #include <com/sun/star/uno/XInterface.idl>
  
-module org { module openoffice { module sheet { module addin {
+module com { module github { module amourspirit { module extensions {
  
     interface XPy
     {
