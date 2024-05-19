@@ -1,25 +1,24 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<oor:component-data xmlns:oor="http://openoffice.org/2001/registry"
-	xmlns:xs="http://www.w3.org/2001/XMLSchema" oor:name="CalcAddIns"
+<oor:component-data
+	xmlns:oor="http://openoffice.org/2001/registry"
+	xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	oor:name="Addons"
 	oor:package="org.openoffice.Office">
-	<node oor:name="AddInInfo">
-		<node oor:name="com.github.amourspirit.extension.Py" oor:op="replace">
-			<node oor:name="AddInFunctions">
-				<node oor:name="py" oor:op="replace">
-					<prop oor:name="DisplayName">
-						<value xml:lang="en">py</value>
-						<value xml:lang="fr">py</value>
-					</prop>
-					<prop oor:name="Description">
-						<value xml:lang="en">Python in Calc</value>
-						<value xml:lang="fr">Python in Calc</value>
-					</prop>
-					<prop oor:name="Category">
-						<value>Add-in</value>
-					</prop>
-					<node oor:name="Parameters">
-					</node>
-				</node>
+	<node oor:name="AddonUI">
+		<node oor:name="AddonMenu">
+			<node oor:name="com.github.amourspirit.extension.AddonMenu.m1" oor:op="replace">
+				<prop oor:name="Context" oor:type="xs:string">
+					<value>com.sun.star.sheet.SpreadsheetDocument</value>
+				</prop>
+				<prop oor:name="URL" oor:type="xs:string">
+					<value>service:com.github.amourspirit.extension.impl?someservice</value>
+				</prop>
+				<prop oor:name="Title" oor:type="xs:string">
+					<value>Insert Python</value>
+				</prop>
+				<prop oor:name="Target" oor:type="xs:string">
+					<value>_self</value>
+				</prop>
 			</node>
 		</node>
 	</node>

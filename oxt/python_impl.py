@@ -3,7 +3,7 @@ import uno
 import unohelper
 from com.sun.star.task import XJobExecutor
 
-implementation_name = "org.openoffice.py.pythonpython.impl"
+implementation_name = "com.github.amourspirit.extension.impl"
 
 
 class PythonImpl(unohelper.Base, XJobExecutor):
