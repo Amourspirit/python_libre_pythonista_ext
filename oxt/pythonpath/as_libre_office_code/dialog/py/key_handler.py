@@ -6,7 +6,6 @@ from ..listener.listener_base import ListenerBase
 
 if TYPE_CHECKING:
     from com.sun.star.awt import KeyEvent
-    from window_type import WindowType
     from dialog_python import DialogPython
 
 

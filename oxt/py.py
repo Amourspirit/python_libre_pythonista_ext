@@ -7,9 +7,9 @@ from com.github.amourspirit.extensions import XPy  # type: ignore
 from ooodev.calc import CalcDoc
 
 if TYPE_CHECKING:
-    from .pythonpath.dialog.py.dialog_python import DialogPython
+    from .pythonpath.as_libre_office_code.dialog.py.dialog_python import DialogPython
 else:
-    from dialog.py.dialog_python import DialogPython
+    from as_libre_office_code.dialog.py.dialog_python import DialogPython
 
 implementation_name = "com.github.amourspirit.extension.Py"
 implementation_services = ("com.sun.star.sheet.AddIn",)
