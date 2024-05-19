@@ -9,6 +9,7 @@ py_pkg_dir = "py_pkgs" # https://tinyurl.com/ymeh4c9j#py_pkg_dir
 py_pkg_files = [] # https://tinyurl.com/ymeh4c9j#py_pkg_files
 py_pkg_names = [] # ["ooodev", "ooo"] https://tinyurl.com/ymeh4c9j#py_pkg_names
 token_file_ext = ["txt", "xml", "xcu", "xcs"] # https://tinyurl.com/ymeh4c9j#token_file_ext
+tokes_files = ["python_impl.py"]
 update_file = "update.xml" # https://tinyurl.com/ymeh4c9j#update_file
 zip_preinstall_pure = true # https://tinyurl.com/ymeh4c9j#zip_preinstall_pure
 window_timeout = 5 # https://tinyurl.com/ymeh4c9j#window_timeout number of seconds to wait for window to appear

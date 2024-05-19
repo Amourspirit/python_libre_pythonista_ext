@@ -11,7 +11,7 @@
 					<value>com.sun.star.sheet.SpreadsheetDocument</value>
 				</prop>
 				<prop oor:name="URL" oor:type="xs:string">
-					<value>service:com.github.amourspirit.extension.impl?someservice</value>
+					<value>service:___lo_identifier___.impl?someservice</value>
 				</prop>
 				<prop oor:name="Title" oor:type="xs:string">
 					<value>Insert Python</value>

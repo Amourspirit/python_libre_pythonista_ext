@@ -120,7 +120,9 @@ class Build:
 
     def _process_tokens(self) -> None:
         """Processes the tokens in the dest files."""
-        files = file_util.find_files_matching_patterns(self._build_path, self._config.token_file_ext)
+        files = file_util.find_files_matching_patterns(
+            self._build_path, self._config.token_file_ext, *self._config.token_files
+        )
         for file in files:
             text = file_util.read_file(file)
             text = self.process_tokens(text)

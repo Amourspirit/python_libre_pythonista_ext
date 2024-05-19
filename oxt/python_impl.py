@@ -3,7 +3,7 @@ import uno
 import unohelper
 from com.sun.star.task import XJobExecutor
 
-implementation_name = "com.github.amourspirit.extension.impl"
+implementation_name = "___lo_identifier___.impl"
 
 
 class PythonImpl(unohelper.Base, XJobExecutor):
