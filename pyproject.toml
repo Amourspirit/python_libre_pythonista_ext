@@ -56,7 +56,7 @@ typing-extensions = ">=4.11.0"
 verr = ">=1.1.2"
 pandas = ">=2"
 odfpy = ">=1.4"
-ooo-dev-tools = ">=0.42.1"
+ooo-dev-tools = ">=0.43.1"
 matplotlib = ">=3.7.5"
 
 [tool.oxt.isolate]
@@ -111,9 +111,10 @@ pytest = "^7.4.0"
 pytest-dotenv = "^0.5.2"
 black = "^23.7.0"
 oooscript = "^1.1.3"
-oooenv = "^0.2.2"
 lxml = "^4.9.3"
-ooo-dev-tools = ">=0.42.1"
+ooo-dev-tools = ">=0.43.2"
+oooenv = ">=0.2.4"
+
 
 [build-system]
 requires = ["poetry-core"]

@@ -10,6 +10,8 @@ import os
 import time
 import threading
 
+# os.environ["OOODEV_SKIP_AUTOLOAD"] = "1"
+
 from com.sun.star.task import XJob
 
 if TYPE_CHECKING:

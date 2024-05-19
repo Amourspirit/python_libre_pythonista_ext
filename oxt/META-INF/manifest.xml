@@ -22,4 +22,7 @@
         manifest:full-path="config/options.xcu" />
     <manifest:file-entry manifest:media-type="application/vnd.sun.star.uno-component;type=Python"
         manifest:full-path="py.py" />
+    <manifest:file-entry
+        manifest:media-type="application/vnd.sun.star.uno-component;type=Python"
+        manifest:full-path="python_impl.py" />
 </manifest:manifest>

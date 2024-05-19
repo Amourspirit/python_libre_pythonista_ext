@@ -22,5 +22,37 @@
 				</node>
 			</node>
 		</node>
+		<node oor:name="OfficeMenuBarMerging">
+			<node oor:name="org.openoffice.py.pythonpython" oor:op="replace">
+				<node oor:name="N001" oor:op="replace">
+					<prop oor:name="MergeContext" oor:type="xs:string" />
+					<prop oor:name="MergePoint" oor:type="xs:string">
+						<value>.uno:ToolsMenu\.uno:AutoComplete</value>
+					</prop>
+					<prop oor:name="MergeCommand" oor:type="xs:string">
+						<value>AddAfter</value>
+					</prop>
+					<prop oor:name="MergeFallback" oor:type="xs:string">
+						<value>Ignore</value>
+					</prop>
+					<node oor:name="MenuItems">
+						<node oor:name="N002" oor:op="replace">
+							<prop oor:name="Context" oor:type="xs:string">
+								<value />
+							</prop>
+							<prop oor:name="Title" oor:type="xs:string">
+								<value xml:lang="en">Python Python</value>
+							</prop>
+							<prop oor:name="URL" oor:type="xs:string">
+								<value>service:org.openoffice.py.pythonpython.impl</value>
+							</prop>
+							<prop oor:name="Target" oor:type="xs:string">
+								<value>_self</value>
+							</prop>
+						</node>
+					</node>
+				</node>
+			</node>
+		</node>
 	</node>
 </oor:component-data>

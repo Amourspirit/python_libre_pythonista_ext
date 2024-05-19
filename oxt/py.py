@@ -1,9 +1,16 @@
 # -*- coding: utf-8 -*-
 from __future__ import annotations
+from typing import TYPE_CHECKING
 import uno
 import unohelper
 from org.openoffice.sheet.addin import XPy
+
 from ooodev.calc import CalcDoc
+
+if TYPE_CHECKING:
+    from .pythonpath.dialog.py.dialog_python import DialogPython
+else:
+    from dialog.py.dialog_python import DialogPython
 
 
 class Py(unohelper.Base, XPy):
@@ -12,7 +19,10 @@ class Py(unohelper.Base, XPy):
 
     def py(self) -> tuple:
         doc = CalcDoc.from_current_doc()
-        doc.msgbox("Hello from Py!", "Py", boxtype=1)
+
+        dlg = DialogPython()
+        dlg.show()
+        # doc.msgbox("Hello from Py!", "Py", boxtype=1)
         # return (("A", "B", "C"),)
         return ((777,),)
 
