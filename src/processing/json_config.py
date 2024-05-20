@@ -40,7 +40,7 @@ class JsonConfig(metaclass=Singleton):
             self._dialog_desktop_owned = False
 
         try:
-            self._default_locale = cast(bool, cfg["tool"]["oxt"]["config"]["default_locale"])
+            self._default_locale = cast(list, cfg["tool"]["oxt"]["config"]["default_locale"])
         except Exception:
             self._default_locale = ["en", "US"]
         # resource_dir_name
@@ -73,6 +73,11 @@ class JsonConfig(metaclass=Singleton):
         except Exception:
             self._install_on_no_uninstall_permission = True
 
+        try:
+            self._unload_after_install = cast(bool, cfg["tool"]["oxt"]["config"]["unload_after_install"])
+        except Exception:
+            self._unload_after_install = True
+
         self._validate()
 
     def update_json_config(self, json_config_path: Path) -> None:
@@ -96,6 +101,7 @@ class JsonConfig(metaclass=Singleton):
         json_config["sym_link_cpython"] = self._sym_link_cpython
         json_config["uninstall_on_update"] = self._uninstall_on_update
         json_config["install_on_no_uninstall_permission"] = self._install_on_no_uninstall_permission
+        json_config["unload_after_install"] = self._unload_after_install
         # json_config["log_pip_installs"] = self._log_pip_installs
         # update the requirements
         json_config["requirements"] = self._requirements
@@ -122,6 +128,7 @@ class JsonConfig(metaclass=Singleton):
         assert len(self._resource_properties_prefix) > 0, "resource_properties_prefix must not be an empty string"
         assert isinstance(self._sym_link_cpython, bool), "sym_link_cpython must be a bool"
         assert isinstance(self._uninstall_on_update, bool), "uninstall_on_update must be a bool"
+        assert isinstance(self._unload_after_install, bool), "unload_after_install must be a bool"
         assert isinstance(
             self._install_on_no_uninstall_permission, bool
         ), "_install_on_no_uninstall_permission must be a bool"

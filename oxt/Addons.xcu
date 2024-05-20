@@ -7,6 +7,11 @@
 	<node oor:name="AddonUI">
 		<node oor:name="AddonMenu">
 			<node oor:name="com.github.amourspirit.extension.AddonMenu.m1" oor:op="replace">
+				<prop oor:name="URL" oor:type="xs:string">
+					<value>private:separator</value>
+				</prop>
+			</node>
+			<node oor:name="com.github.amourspirit.extension.AddonMenu.m2" oor:op="replace">
 				<prop oor:name="Context" oor:type="xs:string">
 					<value>com.sun.star.sheet.SpreadsheetDocument</value>
 				</prop>

@@ -273,7 +273,7 @@ class ___lo_implementation_name___(unohelper.Base, XJob):
     def __del__(self):
         if self._added_packaging and "packaging" in sys.modules:
             del sys.modules["packaging"]
-        if "___lo_pip___" in sys.modules:
+        if self._config.unload_after_install and "___lo_pip___" in sys.modules:
             # clean up by removing the ___lo_pip___ module from sys.modules
             # module still can be imported if needed.
             del sys.modules["___lo_pip___"]

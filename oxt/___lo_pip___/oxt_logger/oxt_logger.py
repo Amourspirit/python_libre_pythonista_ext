@@ -9,6 +9,7 @@ from .logger_config import LoggerConfig
 
 # https://stackoverflow.com/questions/13521981/implementing-an-optional-logger-in-code
 
+
 class OxtLogger(Logger):
     """Custom Logger Class"""
 
@@ -40,6 +41,11 @@ class OxtLogger(Logger):
             log_name = self._config.log_name
         self.log_name = log_name
 
+        logging.addLevelName(logging.ERROR, "ERROR")
+        logging.addLevelName(logging.DEBUG, "DEBUG")
+        logging.addLevelName(logging.INFO, "INFO")
+        logging.addLevelName(logging.WARNING, "WARNING")
+
         # Logger.__init__(self, name=log_name, level=cfg.log_level)
         super().__init__(name=log_name, level=self._config.log_level)
 
@@ -68,7 +74,7 @@ class OxtLogger(Logger):
         console_handler.setFormatter(self.formatter)
         console_handler.setLevel(self._config.log_level)
         return console_handler
-    
+
     def _get_null_handler(self):
         return logging.NullHandler()
 

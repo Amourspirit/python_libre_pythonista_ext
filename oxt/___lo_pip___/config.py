@@ -566,6 +566,13 @@ class Config(metaclass=Singleton):
         return self.basic_config.uninstall_on_update
 
     @property
+    def unload_after_install(self) -> bool:
+        """
+        Gets the flag indicating if the extension installer should unload after installation.
+        """
+        return self.basic_config.unload_after_install
+
+    @property
     def window_timeout(self) -> int:
         """
         Gets the window timeout value.

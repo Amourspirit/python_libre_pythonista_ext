@@ -13,10 +13,12 @@ from ooo.dyn.style.vertical_alignment import VerticalAlignment
 from ooodev.dialog import BorderKind
 from ooodev.dialog.msgbox import MessageBoxResultsEnum, MessageBoxType
 from ooodev.loader import Lo
-from ooodev.dialog.dl_control import CtlButton, CtlTextEdit
+from ooodev.dialog.dl_control import CtlButton, CtlTextEdit, CtlFixedText
 from ooodev.events.args.event_args import EventArgs
 from .window_listener import WindowListener
 from .key_handler import KeyHandler
+from ...res.res_resolver import ResResolver
+from .dialog_menu import DialogMenu
 
 
 # from .focus_listener import FocusListener
@@ -25,7 +27,9 @@ from .key_handler import KeyHandler
 from ooodev.dialog.dialogs import Dialogs
 
 if TYPE_CHECKING:
+    from com.sun.star.awt import MenuEvent
     from ooodev.dialog.dl_control.ctl_base import DialogControlBase
+    from ooodev.gui.menu.popup_menu import PopupMenu
     from ..window_type import WindowType
 
 # endregion Imports
@@ -38,7 +42,7 @@ class DialogPython:
     BUTTON_HEIGHT = 26
     WIDTH = 600
     NB_TAB = 4
-    HEADER = 5  # can create space for menus at the top
+    HEADER = 30  # can create space for menus at the top
     FOOTER = 40
     HEIGHT = 310
     MIN_HEIGHT = HEADER + FOOTER + 30
@@ -46,7 +50,8 @@ class DialogPython:
 
     # pylint: disable=unused-argument
     # region Init
-    def __init__(self) -> None:
+    def __init__(self, ctx: Any) -> None:
+        self._rr = ResResolver(ctx)  # singleton
         self._doc = Lo.current_doc
         self._border_kind = BorderKind.BORDER_3D
         self._width = DialogPython.WIDTH
@@ -55,7 +60,7 @@ class DialogPython:
         self._btn_height = DialogPython.BUTTON_HEIGHT
         self._margin = DialogPython.MARGIN
         self._box_height = 30
-        self._title = "Python Code"
+        self._title = self._rr.resolve_string("title10")
         if self._border_kind != BorderKind.BORDER_3D:
             self._padding = 10
         else:
@@ -67,11 +72,13 @@ class DialogPython:
         self._fd = font
         self._main_menu = None
         self.end = 0
+        self._main_menu = None
 
         self.parent = self.get_parent()
         self.tk = self.parent.Toolkit  # type: ignore
         self.keyhandler = KeyHandler(self)
         self.code_focused = False
+        self._mnu = DialogMenu(self)
         self._init_dialog()
 
     def _init_dialog(self) -> None:
@@ -105,6 +112,7 @@ class DialogPython:
         self._dialog.setTitle(self._title)
         self._init_code()
         self._init_buttons()
+        self._init_menu_label()
         self._dialog.addWindowListener(WindowListener(self))
 
     def _init_handlers(self) -> None:
@@ -128,8 +136,24 @@ class DialogPython:
         self._fn_on_code_focus_lost = self.on_code_focus_lost
         self._fn_on_btn_ok_click = self.on_btn_ok_click
         self._fn_on_btn_cancel_click = self.on_btn_cancel_click
+        self._fn_on_menu_select = self._on_menu_select
+        self._fn_on_menu_lbl_mouse_entered = self._on_menu_lbl_mouse_entered
 
         # self._fn_on_menu_lbl_mouse_entered = self.on_menu_lbl_mouse_entered
+
+    def _init_menu_label(self) -> None:
+        """Add a fixed text label to the dialog control"""
+        self._mnu_lbl_item = CtlFixedText.create(
+            self._dialog,
+            Label="☰",
+            x=0,
+            y=0,
+            width=14,
+            height=14,
+        )
+        # lbl_item.font_descriptor = self._mnu_lbl_fd
+        self._mnu_lbl_item.add_event_mouse_entered(self._fn_on_menu_lbl_mouse_entered)
+        # self._mnu_lbl_item.add_event_mouse_pressed(self._fn_on_menu_lbl_mouse_click)
 
     def _init_buttons(self) -> None:
         """Add OK, Cancel and Info buttons to dialog control"""
@@ -144,7 +168,7 @@ class DialogPython:
             y=btn_y,
             width=DialogPython.BUTTON_WIDTH,
             height=DialogPython.BUTTON_HEIGHT,
-            Label="Cancel",
+            Label=self._rr.resolve_string("dlg02"),
         )
         self._set_tab_index(self._ctl_btn_cancel)
         sz = self._ctl_btn_cancel.view.getPosSize()
@@ -154,7 +178,7 @@ class DialogPython:
             y=sz.Y,
             width=self._btn_width,
             height=self._btn_height,
-            Label="OK",
+            Label=self._rr.resolve_string("dlg01"),
             DefaultButton=True,
         )
         self._set_tab_index(self._ctl_btn_ok)
@@ -322,7 +346,7 @@ class DialogPython:
     # region Show Dialog
     def end_dialog(self, result: int = 0) -> None:
         """Terminate dialog"""
-        self._dialog.endDialog(0)
+        self._dialog.endDialog(result)
 
     def show(self) -> int:
 
@@ -337,3 +361,71 @@ class DialogPython:
     def _set_tab_index(self, ctl: DialogControlBase) -> None:
         ctl.tab_index = self._current_tab_index
         self._current_tab_index += 1
+
+    # region Menu
+    def _get_main_menu(self) -> PopupMenu:
+        if self._main_menu is None:
+            self._main_menu = self._mnu.get_popup_menu()
+            self._main_menu.subscribe_all_item_selected(self._fn_on_menu_select)
+        return self._main_menu
+
+    def _display_popup(self, control_src: CtlFixedText) -> None:
+        sz = control_src.view.getPosSize()
+        rect = Rectangle(
+            X=sz.X,
+            Y=sz.Y,
+            Width=10,
+            Height=10,
+        )
+        pm = self._get_main_menu()
+        pm.execute(self._dialog, rect, 0)
+
+    def _on_menu_select(self, src: Any, event: EventArgs, menu: PopupMenu) -> None:
+        print("Menu Selected")
+        me = cast("MenuEvent", event.event_data)
+        command = menu.get_command(me.MenuId)
+        # self._write_line(f"Menu Selected: {command}, Menu ID: {me.MenuId}")
+
+        if command == ".uno:py_validate":
+            try:
+                self._doc.python_script.test_compile_python(self._code.text)
+                title = self._rr.resolve_string("mbtitle001")
+                msg = self._rr.resolve_string("mbmsg001")
+                box_type = MessageBoxType.INFOBOX
+            except Exception as e:
+                title = self._rr.resolve_string("log09")  # error
+                msg = str(e)
+                box_type = MessageBoxType.ERRORBOX
+
+            self._doc.msgbox(msg, title, box_type)
+            return
+        return
+        if command == ".uno:exitok":
+            self._dialog.end_dialog(MessageBoxResultsEnum.OK.value)
+            return
+        if command in self._execute_cmds and menu.is_dispatch_cmd(command):
+            menu.execute_cmd(command)
+
+    def _on_menu_lbl_mouse_entered(
+        self,
+        src: Any,
+        event: EventArgs,
+        control_src: CtlFixedText,
+        *args,
+        **kwargs,
+    ) -> None:
+        self._display_popup(control_src)
+
+    # endregion Menu
+
+    # region properties
+
+    @property
+    def res_resolver(self) -> ResResolver:
+        return self._rr
+
+    @property
+    def text(self) -> str:
+        return self._code.text
+
+    # endregion properties
