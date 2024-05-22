@@ -22,11 +22,11 @@ add_local_path_to_sys_path()
 from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
 
 if TYPE_CHECKING:
-    from .pythonpath.as_libre_office_code.dialog.py.dialog_python import DialogPython
-    from .pythonpath.as_libre_office_code.code.py_code import PythonCode
+    from .pythonpath.libre_pythonista_lib.dialog.py.dialog_python import DialogPython
+    from .pythonpath.libre_pythonista_lib.code.py_code import PythonCode
 else:
-    from as_libre_office_code.dialog.py.dialog_python import DialogPython
-    from as_libre_office_code.code.py_code import PythonCode
+    from libre_pythonista_lib.dialog.py.dialog_python import DialogPython
+    from libre_pythonista_lib.code.py_code import PythonCode
 
 implementation_name = "com.github.amourspirit.extension.Py"
 implementation_services = ("com.sun.star.sheet.AddIn",)
@@ -38,6 +38,10 @@ class Py(unohelper.Base, XPy):
         self._logger = OxtLogger(log_name=self.__class__.__name__)
 
     def py(self) -> tuple:
+        # get access to the Link List that manages the module for all cells.
+        # add/edit or remove this cells python from the Link List.
+        # Link list needs to update all down stream python cells.
+
         doc = CalcDoc.from_current_doc()
 
         dlg = DialogPython(self.ctx)

@@ -4,7 +4,7 @@ auto_install_in_site_packages = true # https://tinyurl.com/ymeh4c9j#auto_install
 build_dir = "build" # https://tinyurl.com/ymeh4c9j#build_dir
 dist_dir = "dist" # https://tinyurl.com/ymeh4c9j#dist_dir should be changed to someting like dist, tmp_dist is not included in git
 install_wheel = true # https://tinyurl.com/ymeh4c9j#install_wheel
-oxt_name = "LibreOfficePY" # https://tinyurl.com/ymeh4c9j#oxt_name
+oxt_name = "LibrePythonista" # https://tinyurl.com/ymeh4c9j#oxt_name
 py_pkg_dir = "py_pkgs" # https://tinyurl.com/ymeh4c9j#py_pkg_dir
 py_pkg_files = [] # https://tinyurl.com/ymeh4c9j#py_pkg_files
 py_pkg_names = [] # ["ooodev", "ooo"] https://tinyurl.com/ymeh4c9j#py_pkg_names
@@ -32,20 +32,20 @@ test_internet_url = "https://duckduckgo.com" # https://tinyurl.com/ymeh4c9j#test
 log_pip_installs = false # https://tinyurl.com/ymeh4c9j#log_pip_installs
 lo_identifier = "com.github.amourspirit.extensions.code" # https://tinyurl.com/ymeh4c9j#lo_identifier
 lo_implementation_name = "CodeWriterImpl" # https://tinyurl.com/ymeh4c9j#lo_implementation_name
-display_name = "LibreOffice Python Calc Addon" # https://tinyurl.com/ymeh4c9j#display_name
-description = "Extension for adding Python input into LibreOffice Calc Cell" # https://tinyurl.com/ymeh4c9j#description
+display_name = "LibrePythonista" # https://tinyurl.com/ymeh4c9j#display_name
+description = "Extension for adding Python inside of LibreOffice Calc" # https://tinyurl.com/ymeh4c9j#description
 publisher = "AmourSpirit" # https://tinyurl.com/ymeh4c9j#publisher
 publisher_url = "https://github.com/Amourspirit/python_libreoffice_ext" # https://tinyurl.com/ymeh4c9j#publisher_url
 update_url_xml = "https://raw.githubusercontent.com/Amourspirit/python_libreoffice_ext/main/___dist_dir___/___update_file___" # https://tinyurl.com/ymeh4c9j#update_url_xml
 update_url_oxt = "https://raw.githubusercontent.com/Amourspirit/python_libreoffice_ext/main/___dist_dir___/___oxt_name___.oxt" # https://tinyurl.com/ymeh4c9j#update_url_oxt
 url_pip = 'https://bootstrap.pypa.io/get-pip.py' # https://tinyurl.com/ymeh4c9j#url_pip
 # set log_file to "" to disable logging
-log_file = "libreoffice_py_install.log" # https://tinyurl.com/ymeh4c9j#log_file
-log_name = "LibreOffice Py Installer" # https://tinyurl.com/ymeh4c9j#log_name
+log_file = "libre_pythonista_install.log" # https://tinyurl.com/ymeh4c9j#log_file
+log_name = "LibrePythonista Installer" # https://tinyurl.com/ymeh4c9j#log_name
 log_level = "DEBUG" # NONE, DEBUG, INFO, WARNING, ERROR, CRITICAL https://tinyurl.com/ymeh4c9j#log_level
 log_format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s" # https://tinyurl.com/ymeh4c9j#log_format
 log_add_console = false # should be false for production # https://tinyurl.com/ymeh4c9j#log_add_console
-lo_pip = "libreoffice_py" # https://tinyurl.com/ymeh4c9j#lo_pip
+lo_pip = "libre_pythonista" # https://tinyurl.com/ymeh4c9j#lo_pip
 platform = "all" # https://tinyurl.com/ymeh4c9j#platform
 startup_event = "OnStartApp" # OnStartApp or onFirstVisibleTask https://tinyurl.com/ymeh4c9j#startup_event
 show_progress = true # https://tinyurl.com/ymeh4c9j#show_progress
@@ -58,12 +58,13 @@ typing-extensions = ">=4.11.0"
 verr = ">=1.1.2"
 pandas = ">=2"
 odfpy = ">=1.4"
-ooo-dev-tools = ">=0.43.1"
+ooo-dev-tools = ">=0.44.0"
 matplotlib = ">=3.7.5"
+seaborn = ">=0.13"
 
 [tool.oxt.isolate]
 # https://tinyurl.com/ymeh4c9j#tooloxtisolate
-windows = ["pandas", "matplotlib"]
+windows = ["pandas", "matplotlib", "seaborn"]
 
 [tool.oxt.preinstall.pure]
 # https://tinyurl.com/ymeh4c9j#tooloxtpreinstallpure
@@ -105,6 +106,7 @@ python = "^3.8"
 ooouno = "^2.1.2"
 toml = "^0.10.2"
 typing-extensions = ">=4.11.0"
+ooo-dev-tools = ">=0.44.0"
 
 
 [tool.poetry.group.dev.dependencies]

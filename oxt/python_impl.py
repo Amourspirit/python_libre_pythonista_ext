@@ -17,9 +17,9 @@ def add_local_path_to_sys_path() -> None:
 add_local_path_to_sys_path()
 
 if TYPE_CHECKING:
-    from pythonpath.as_libre_office_code.res.res_resolver import ResResolver
+    from pythonpath.libre_pythonista_lib.res.res_resolver import ResResolver
 else:
-    from as_libre_office_code.res.res_resolver import ResResolver
+    from libre_pythonista_lib.res.res_resolver import ResResolver
 
 implementation_name = "___lo_identifier___.impl"
 
