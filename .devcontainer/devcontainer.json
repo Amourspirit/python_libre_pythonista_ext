@@ -7,8 +7,8 @@
 	},
 	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
 	"dockerComposeFile": "docker-compose.yml",
-	"service": "libreoffice_py_addon",
-	"workspaceFolder": "/workspace/libreoffice_py_addon",
+	"service": "python_libre_pythonista_ext",
+	"workspaceFolder": "/workspace/python_libre_pythonista_ext",
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	// "features": {},
 

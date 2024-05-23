@@ -1,7 +1,7 @@
 version: "3.9"
 
 services:
-  libreoffice_py_addon:
+  python_libre_pythonista_ext:
     env_file: .env
     network_mode: "bridge"
     # env_file: user.env
@@ -22,11 +22,11 @@ services:
       - PGID=0
       - CONFIG_DIR=/config
       - DEV_CONTAINER=1
-      - WORK_DIR=/workspace/libreoffice_py_addon
+      - WORK_DIR=/workspace/python_libre_pythonista_ext
     volumes:
       - type: bind
         source: ../
-        target: /workspace/libreoffice_py_addon
+        target: /workspace/python_libre_pythonista_ext
       - type: bind
         source: ../Documents
         target: /config/Documents
@@ -38,7 +38,7 @@ services:
         target: /config
       - type: volume
         source: app_virtual_env
-        target: /workspace/libreoffice_py_addon/.venv
+        target: /workspace/python_libre_pythonista_ext/.venv
     
     ports:
       - 3100:3000
