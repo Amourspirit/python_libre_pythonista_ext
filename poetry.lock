@@ -217,13 +217,13 @@ files = [
 
 [[package]]
 name = "ooo-dev-tools"
-version = "0.44.0"
+version = "0.44.2"
 description = "LibreOffice Developer Tools"
 optional = false
 python-versions = "<4.0,>=3.8"
 files = [
-    {file = "ooo_dev_tools-0.44.0-py3-none-any.whl", hash = "sha256:31b59b654f81c1da4046b8c88ca55e944eabfaf518b846b2a50b3594e1eacb4d"},
-    {file = "ooo_dev_tools-0.44.0.tar.gz", hash = "sha256:64a9d3e1621b28fa567c86cfce0dd8a0474239419542ccdd30c8d4e9ae5eebad"},
+    {file = "ooo_dev_tools-0.44.2-py3-none-any.whl", hash = "sha256:6b07777100674ac20d0451fb85eb7e654dbe70e90d084ef6ac0dd207b8514e0b"},
+    {file = "ooo_dev_tools-0.44.2.tar.gz", hash = "sha256:916dd1f38aa2c905f5c558dd8063d3701fd84bcdecf4f420a7c177b216b650d4"},
 ]
 
 [package.dependencies]
@@ -440,6 +440,32 @@ files = [
 ]
 
 [[package]]
+name = "sortedcontainers"
+version = "2.4.0"
+description = "Sorted Containers -- Sorted List, Sorted Dict, Sorted Set"
+optional = false
+python-versions = "*"
+files = [
+    {file = "sortedcontainers-2.4.0-py2.py3-none-any.whl", hash = "sha256:a163dcaede0f1c021485e957a39245190e74249897e2ae4b2aa38595db237ee0"},
+    {file = "sortedcontainers-2.4.0.tar.gz", hash = "sha256:25caa5a06cc30b6b83d11423433f65d1f9d76c4c6a0c90e3379eaa43b9bfdb88"},
+]
+
+[[package]]
+name = "sortedcontainers-stubs"
+version = "2.4.2"
+description = "Type stubs for sortedcontainers"
+optional = false
+python-versions = ">=3.8,<4.0"
+files = [
+    {file = "sortedcontainers_stubs-2.4.2-py3-none-any.whl", hash = "sha256:6cdbcf9c71198729dd6c0a8a7dc9742768f25b49384b91965d716a9d16ca7b2a"},
+    {file = "sortedcontainers_stubs-2.4.2.tar.gz", hash = "sha256:c24e33877effa5a3eb85357112496ba33a0b681c05e0d5d3745664fd3be75d82"},
+]
+
+[package.dependencies]
+sortedcontainers = ">=2,<3"
+typing-extensions = ">=4.1.0,<5.0.0"
+
+[[package]]
 name = "toml"
 version = "0.10.2"
 description = "Python Library for Tom's Obvious, Minimal Language"
@@ -515,4 +541,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "10bafc194e701feac1ecd493bafe77a7adeb87c7e58342f4c9bd346a245e8f54"
+content-hash = "83f9bfd1e0a5c24ce0db5c7919d7e1129006e64f02e4fbecbb50a9f8a3dc7f02"
