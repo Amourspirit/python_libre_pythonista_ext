@@ -8,9 +8,10 @@ from ooodev.io.sfa import Sfa
 from ooodev.events.partial.events_partial import EventsPartial
 from ooodev.events.args.cancel_event_args import CancelEventArgs
 from ooodev.events.args.event_args import EventArgs
+from ooodev.io.log.named_logger import NamedLogger
+from ooodev.utils.helper.dot_dict import DotDict
 
-
-from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+# from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
 from .py_module import PyModule
 
 if TYPE_CHECKING:
@@ -75,7 +76,10 @@ class PySource(EventsPartial):
     @source_code.setter
     def source_code(self, code: str) -> None:
         cargs = CancelEventArgs(self)
-        cargs.event_data = {"address": self.address, "code": code}
+        dd = DotDict()
+        dd.code = code
+        dd.address = self.address
+        cargs.event_data = dd
         self.trigger_event("BeforeSourceChange", cargs)
         if cargs.cancel:
             return
@@ -99,7 +103,8 @@ class PySourceManager(EventsPartial):
     def __init__(self, sheet: CalcSheet) -> None:
         EventsPartial.__init__(self)
         self._sheet = sheet
-        self._logger = OxtLogger(log_name=self.__class__.__name__)
+        # self._logger = OxtLogger(log_name=self.__class__.__name__)
+        self._logger = NamedLogger(self.__class__.__name__)
         self._sfa = Sfa()
 
         self._root_uri = f"vnd.sun.star.tdoc:/{sheet.calc_doc.runtime_uid}/{_MOD_DIR}"
@@ -131,34 +136,230 @@ class PySourceManager(EventsPartial):
     # region Event Subscriptions
 
     def subscribe_before_source_update(self, cb: EventCallback) -> None:
+        """
+        Subscribe to before source update event.
+        This event is triggered multiple time when a series of cells are being updated.
+        This event is triggered after `subscribe_before_cell_source_update``
+
+        Event Args are ``CancelEventArgs``.
+
+        ``event_data`` is a ``DotDict`` with the following keys:
+
+        - ``address``: Tuple[int, int]: Cell address colum and row.
+        - ``code``: str: Source code.
+        - ``sheet``: CalcSheet: CalcSheet object.
+
+        Args:
+            cb (EventCallback): Callback.
+
+        Return:
+            None:
+        """
+        # triggered from self._update_item()
         self.subscribe_event("BeforeSourceUpdate", cb)
 
     def subscribe_after_cell_source_update(self, cell: Tuple[int, int], cb: EventCallback) -> None:
+        """
+        Subscribe to after cell source update event.
+        This event is similar to ``subscribe_after_source_update`` except is only is triggered
+        when the specified cell is updated. This event is triggered before ``subscribe_after_source_update``.
+
+        Event Args are ``EventArgs``.
+
+        ``event_data`` is a ``DotDict`` with the following keys:
+
+        - ``address``: Tuple[int, int]: Cell address colum and row.
+        - ``code``: str: Source code.
+        - ``sheet``: CalcSheet: CalcSheet object.
+        - ``result``: Any: Result of the source code execution.
+
+        Args:
+            cell (Tuple[int, int]): Cell address colum and row.
+            cb (EventCallback): Callback.
+
+        Return:
+            None:
+        """
+        # triggered from self._update_item()
         self.subscribe_event(f"AfterSourceUpdate_{cell[0]}_{cell[1]}", cb)
 
     def subscribe_before_cell_source_update(self, cell: Tuple[int, int], cb: EventCallback) -> None:
+        """
+        Subscribe to before cell source update event.
+        This event is similar to ``subscribe_before_source_update`` except is only is triggered
+        when the specified cell is updated. This event is triggered before ``subscribe_before_source_update``.
+
+        Event Args are ``CancelEventArgs``.
+
+        ``event_data`` is a ``DotDict`` with the following keys:
+
+        - ``address``: Tuple[int, int]: Cell address colum and row.
+        - ``code``: str: Source code.
+        - ``sheet``: CalcSheet: CalcSheet object.
+
+        Args:
+            cell (Tuple[int, int]): Cell address colum and row.
+            cb (EventCallback): Callback.
+
+        Return:
+            None:
+        """
+        # triggered from self._update_item()
         self.subscribe_event(f"BeforeSourceUpdate_{cell[0]}_{cell[1]}", cb)
 
     def subscribe_after_source_update(self, cb: EventCallback) -> None:
+        """
+        Subscribe to after source update event.
+        This event is triggered multiple time when a series of cells are being updated.
+        This event is triggered after ``subscribe_after_cell_source_update``
+
+        Event Args are ``EventArgs``.
+
+        ``event_data`` is a ``DotDict`` with the following keys:
+
+        - ``address``: Tuple[int, int]: Cell address colum and row.
+        - ``code``: str: Source code.
+        - ``sheet``: CalcSheet: CalcSheet object.
+        - ``result``: Any: Result of the source code execution.
+
+        Args:
+            cb (EventCallback): Callback.
+
+        Return:
+            None:
+        """
+        # triggered from self._update_item()
         self.subscribe_event("AfterSourceUpdate", cb)
 
-    def subscribe_before_source_add(self, cb: EventCallback) -> None:
-        self.subscribe_event("BeforeSourceAdd", cb)
+    def subscribe_before_add_source(self, cb: EventCallback) -> None:
+        """
+        Subscribe to before add source event.
+        This event is triggered when the ``add_source()`` method is called.
 
-    def subscribe_after_source_add(self, cb: EventCallback) -> None:
-        self.subscribe_event("AfterSourceAdd", cb)
+        Event Args are ``CancelEventArgs``.
 
-    def subscribe_before_source_remove(self, cb: EventCallback) -> None:
-        self.subscribe_event("BeforeSourceRemove", cb)
+        ``event_data`` is a ``DotDict`` with the following keys:
 
-    def subscribe_after_source_remove(self, cb: EventCallback) -> None:
-        self.subscribe_event("AfterSourceRemove", cb)
+        - ``address``: Tuple[int, int]: Cell address colum and row.
+        - ``code``: str: Source code.
+        - ``sheet``: CalcSheet: CalcSheet object.
 
-    def subscribe_before_cell_source_remove(self, cell: Tuple[int, int], cb: EventCallback) -> None:
-        self.subscribe_event(f"BeforeSourceRemove_{cell[0]}_{cell[1]}", cb)
+        Args:
+            cb (EventCallback): Callback.
 
-    def subscribe_after_cell_source_remove(self, cell: Tuple[int, int], cb: EventCallback) -> None:
-        self.subscribe_event(f"AfterSourceRemove_{cell[0]}_{cell[1]}", cb)
+        Return:
+            None:
+        """
+        # triggered from self.add_source()
+        self.subscribe_event("BeforeAddSource", cb)
+
+    def subscribe_after_add_source(self, cb: EventCallback) -> None:
+        """
+        Subscribe to after add source event.
+        This event is triggered when the ``add_source()`` method is called.
+
+        Event Args are ``EventArgs``.
+
+        ``event_data`` is a ``DotDict`` with the following keys:
+
+        - ``address``: Tuple[int, int]: Cell address colum and row.
+        - ``code``: str: Source code.
+        - ``sheet``: CalcSheet: CalcSheet object.
+
+        Args:
+            cb (EventCallback): Callback.
+
+        Return:
+            None:
+        """
+        # triggered from self.add_source()
+        self.subscribe_event("AfterAddSource", cb)
+
+    def subscribe_before_update_source(self, cb: EventCallback) -> None:
+        """
+        Subscribe to before update source event.
+        This event is triggered when the ``update_source()`` method is called.
+
+        Event Args are ``CancelEventArgs``.
+
+        ``event_data`` is a ``DotDict`` with the following keys:
+
+        - ``address``: Tuple[int, int]: Cell address colum and row.
+        - ``code``: str: Source code.
+        - ``sheet``: CalcSheet: CalcSheet object.
+
+        Args:
+            cb (EventCallback): Callback.
+
+        Return:
+            None:
+        """
+        # triggered from self.update_source()
+        self.subscribe_event("BeforeUpdateSource", cb)
+
+    def subscribe_after_update_source(self, cb: EventCallback) -> None:
+        """
+        Subscribe to after update source event.
+        This event is triggered when the ``update_source()`` method is called.
+
+        Event Args are ``EventArgs``.
+
+        ``event_data`` is a ``DotDict`` with the following keys:
+
+        - ``address``: Tuple[int, int]: Cell address colum and row.
+        - ``code``: str: Source code.
+        - ``sheet``: CalcSheet: CalcSheet object.
+
+        Args:
+            cb (EventCallback): Callback.
+
+        Return:
+            None:
+        """
+        # triggered from self.update_source()
+        self.subscribe_event("AfterUpdateSource", cb)
+
+    def subscribe_before_remove_source(self, cb: EventCallback) -> None:
+        """
+        Subscribe to before remove source event.
+        This event is triggered when the ``remove_source()`` method is called.
+
+        Event Args are ``CancelEventArgs``.
+
+        ``event_data`` is a ``DotDict`` with the following keys:
+
+        - ``address``: Tuple[int, int]: Cell address colum and row.
+        - ``sheet``: CalcSheet: CalcSheet object.
+
+        Args:
+            cb (EventCallback): Callback.
+
+        Return:
+            None:
+        """
+        # triggered from self.remove_source()
+        self.subscribe_event("BeforeRemoveSource", cb)
+
+    def subscribe_after_remove_source(self, cb: EventCallback) -> None:
+        """
+        Subscribe to after remove source event.
+        This event is triggered when the ``remove_source()`` method is called.
+
+        Event Args are ``EventArgs``.
+
+        ``event_data`` is a ``DotDict`` with the following keys:
+
+        - ``address``: Tuple[int, int]: Cell address colum and row.
+        - ``sheet``: CalcSheet: CalcSheet object.
+
+        Args:
+            cb (EventCallback): Callback.
+
+        Return:
+            None:
+        """
+        # triggered from self.remove_source()
+        self.subscribe_event("AfterRemoveSource", cb)
 
     # endregion Event Subscriptions
 
@@ -186,10 +387,14 @@ class PySourceManager(EventsPartial):
 
     # region Source Management
 
-    def add_source(self, code: str, cell: Tuple[int, int]) -> Any:
+    def add_source(self, code: str, cell: Tuple[int, int]) -> None:
         if cell in self._data:
             raise Exception(f"Cell {cell} already exists.")
         cargs = CancelEventArgs(self)
+        cargs.event_data = DotDict(address=cell, code=code, sheet=self._sheet)
+        self.trigger_event("BeforeAddSource", cargs)
+        if cargs.cancel:
+            return
         code = cargs.event_data.get("code", code)
         name = f"cell_{cell[0]}_{cell[1]}.py"
         uri = f"{self._root_uri}/{self._sheet.unique_id}/{name}"
@@ -198,22 +403,25 @@ class PySourceManager(EventsPartial):
         self._data[cell] = py_src
         index = self.get_index(cell)
         self._update_from_index(index)
+        eargs = EventArgs.from_args(cargs)
+        self.trigger_event("AfterAddSource", eargs)
+        return None
 
     def update_source(self, code: str, cell: Tuple[int, int]) -> None:
         if cell not in self._data:
             raise Exception(f"Cell {cell} does not exists.")
         cargs = CancelEventArgs(self)
-        cargs.event_data = {"address": cell, "code": code}
-        self.trigger_event("BeforeSourceUpdate", cargs)
+        cargs.event_data = DotDict(address=cell, code=code, sheet=self._sheet)
+        self.trigger_event("BeforeUpdateSource", cargs)
         if cargs.cancel:
             return
         code = cargs.event_data.get("code", code)
         src = self[cell]
         index = self.get_index(cell)
-        self._update_from_index(index)
         src.source_code = code
+        self._update_from_index(index)
         eargs = EventArgs.from_args(cargs)
-        self.trigger_event("AfterSourceUpdate", eargs)
+        self.trigger_event("AfterUpdateSource", eargs)
         return None
 
     def remove_source(self, cell: Tuple[int, int]) -> None:
@@ -222,11 +430,11 @@ class PySourceManager(EventsPartial):
         if cell in self._data:
             raise Exception(f"Cell {cell} already exists.")
         cargs = CancelEventArgs(self)
-        cargs.event_data = {"address": cell}
-        self.trigger_event("BeforeSourceRemove", cargs)
+        cargs.event_data = DotDict(address=cell, sheet=self._sheet)
+        self.trigger_event("BeforeRemoveSource", cargs)
         if cargs.cancel:
             return
-        self.trigger_event(f"BeforeSourceRemove_{cell[0]}_{cell[1]}", cargs)
+        self.trigger_event(f"BeforeRemoveSource_{cell[0]}_{cell[1]}", cargs)
         if cargs.cancel:
             return
         index = self.get_index(cell)
@@ -239,8 +447,8 @@ class PySourceManager(EventsPartial):
             self._update_from_index(index - 1)
 
         eargs = EventArgs.from_args(cargs)
-        self.trigger_event("AfterSourceRemove", eargs)
-        self.trigger_event(f"AfterSourceRemove_{cell[0]}_{cell[1]}", eargs)
+        self.trigger_event("AfterRemoveSource", eargs)
+        self.trigger_event(f"AfterRemoveSource_{cell[0]}_{cell[1]}", eargs)
 
     def get_index(self, cell: Tuple[int, int]) -> int:
         return list(self._data.keys()).index(cell)
@@ -249,12 +457,12 @@ class PySourceManager(EventsPartial):
 
     def _update_item(self, py_src: PySource) -> bool:
         cargs = CancelEventArgs(self)
-        cargs.event_data = {"address": py_src.address, "code": py_src.source_code}
+        cargs.event_data = DotDict(address=py_src.address, code=py_src.source_code, sheet=self._sheet)
         cell = py_src.address
-        self.trigger_event("BeforeSourceUpdate", cargs)
+        self.trigger_event(f"BeforeSourceUpdate_{cell[0]}_{cell[1]}", cargs)
         if cargs.cancel:
             return False
-        self.trigger_event(f"BeforeSourceUpdate_{cell[0]}_{cell[1]}", cargs)
+        self.trigger_event("BeforeSourceUpdate", cargs)
         if cargs.cancel:
             return False
         code = cargs.event_data.get("code", py_src.source_code)
@@ -266,8 +474,8 @@ class PySourceManager(EventsPartial):
 
         eargs = EventArgs.from_args(cargs)
         eargs.event_data["result"] = result
-        self.trigger_event("AfterSourceUpdate", eargs)
         self.trigger_event(f"AfterSourceUpdate_{cell[0]}_{cell[1]}", eargs)
+        self.trigger_event("AfterSourceUpdate", eargs)
         return True
 
     def _update_all(self) -> None:
