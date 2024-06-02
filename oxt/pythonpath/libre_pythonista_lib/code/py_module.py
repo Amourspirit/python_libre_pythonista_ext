@@ -1,6 +1,8 @@
 from __future__ import annotations
 from typing import Any
 import types
+from ..utils import str_util
+from .rules.code_rules import CodeRules
 
 
 class PyModule:
@@ -8,6 +10,7 @@ class PyModule:
     def __init__(self):
 
         self.mod = types.ModuleType("PyMod")
+        self._cr = CodeRules()
         self._init_mod()
 
     def _init_mod(self) -> None:
@@ -39,16 +42,12 @@ from ooodev.utils.data_type.range_obj import RangeObj
         Returns:
             Any: The last variable in the module if any; Otherwise, None.
         """
+        code = str_util.remove_comments(code)
+        code = str_util.clean_string(code)
         if code:
             exec(code, self.mod.__dict__)
-        # last_key = list(module.__dict__.keys())[-1]
-        last_key = next(reversed(self.mod.__dict__), None)
-        if last_key is None:
-            return None
-        result = getattr(self.mod, last_key)
-        if callable(result):
-            return None
-        return result
+        rule = self._cr.get_matched_rule(self.mod, code)
+        return rule.get_value()
 
     def reset_to_dict(self, mod_dict: dict, code: str = "") -> Any:
         """

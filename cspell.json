@@ -30,6 +30,7 @@
         "POSSIZE",
         "preexec",
         "preinstall",
+        "pythonista",
         "setpgrp",
         "soffice",
         "sortedcontainers",

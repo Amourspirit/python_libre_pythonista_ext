@@ -29,8 +29,11 @@ class PySource(EventsPartial):
         self._mod_dict = mgr.py_mod.mod.__dict__.copy()
         pth = Path(uri)
         self._name = pth.stem
-        # self._name will be in the format of 'cell_0_0' which is the cell address in column and row
-        self._col_row = cast(Tuple[int, int], tuple(map(int, self._name.split("_")[1:])))
+        # self._name will be in the format of 'cell_0_0' which is the cell address in row and column
+        # across and then down
+        row_col = cast(Tuple[int, int], tuple(map(int, self._name.split("_")[1:])))
+        self._row = row_col[0]
+        self._col = row_col[1]
         self._src_code = None
         EventsPartial.__init__(self)
 
@@ -41,7 +44,9 @@ class PySource(EventsPartial):
     def __lt__(self, other: Any):
         # for sort
         if isinstance(other, PySource):
-            return self.address < other.address
+            addr1 = (self.row, self.col)
+            addr2 = (other.row, other.col)
+            return addr1 < addr2
         return NotImplemented
 
     def _get_source(self) -> str:
@@ -62,9 +67,14 @@ class PySource(EventsPartial):
         return self._name
 
     @property
-    def address(self) -> Tuple[int, int]:
-        """Address in the format of Column an Row. Zero based."""
-        return self._col_row
+    def row(self) -> int:
+        """Cell row zero based index."""
+        return self._row
+
+    @property
+    def col(self) -> int:
+        """Column zero based index."""
+        return self._col
 
     @property
     def source_code(self) -> str:
@@ -76,10 +86,7 @@ class PySource(EventsPartial):
     @source_code.setter
     def source_code(self, code: str) -> None:
         cargs = CancelEventArgs(self)
-        dd = DotDict()
-        dd.code = code
-        dd.address = self.address
-        cargs.event_data = dd
+        cargs.event_data = DotDict(code=code, row=self.row, col=self.col, sheet=self._mgr._sheet)
         self.trigger_event("BeforeSourceChange", cargs)
         if cargs.cancel:
             return
@@ -99,6 +106,13 @@ class PySource(EventsPartial):
 
 
 class PySourceManager(EventsPartial):
+    """
+    Python Source code manager.
+
+    Internally data is stored with key in the format of (row, col) and value as PySource object.
+    All public facing methods are in the format of (col, row) for cell address because this is how it normally is in Calc.
+    """
+
     # region Init
     def __init__(self, sheet: CalcSheet) -> None:
         EventsPartial.__init__(self)
@@ -128,7 +142,7 @@ class PySourceManager(EventsPartial):
         result = SortedDict()
         for src in sources:
             src.add_event_observers(self.event_observer)
-            result[src.address] = src
+            result[src.row, src.col] = src
         return result
 
     # endregion Init
@@ -145,7 +159,8 @@ class PySourceManager(EventsPartial):
 
         ``event_data`` is a ``DotDict`` with the following keys:
 
-        - ``address``: Tuple[int, int]: Cell address colum and row.
+        - ``col``: [int]: Cell column zero based index.
+        - ``row``: [int]: Cell row zero based index.
         - ``code``: str: Source code.
         - ``sheet``: CalcSheet: CalcSheet object.
 
@@ -168,7 +183,8 @@ class PySourceManager(EventsPartial):
 
         ``event_data`` is a ``DotDict`` with the following keys:
 
-        - ``address``: Tuple[int, int]: Cell address colum and row.
+        - ``col``: [int]: Cell column zero based index.
+        - ``row``: [int]: Cell row zero based index.
         - ``code``: str: Source code.
         - ``sheet``: CalcSheet: CalcSheet object.
         - ``result``: Any: Result of the source code execution.
@@ -193,7 +209,8 @@ class PySourceManager(EventsPartial):
 
         ``event_data`` is a ``DotDict`` with the following keys:
 
-        - ``address``: Tuple[int, int]: Cell address colum and row.
+        - ``col``: [int]: Cell column zero based index.
+        - ``row``: [int]: Cell row zero based index.
         - ``code``: str: Source code.
         - ``sheet``: CalcSheet: CalcSheet object.
 
@@ -217,7 +234,8 @@ class PySourceManager(EventsPartial):
 
         ``event_data`` is a ``DotDict`` with the following keys:
 
-        - ``address``: Tuple[int, int]: Cell address colum and row.
+        - ``col``: [int]: Cell column zero based index.
+        - ``row``: [int]: Cell row zero based index.
         - ``code``: str: Source code.
         - ``sheet``: CalcSheet: CalcSheet object.
         - ``result``: Any: Result of the source code execution.
@@ -240,7 +258,8 @@ class PySourceManager(EventsPartial):
 
         ``event_data`` is a ``DotDict`` with the following keys:
 
-        - ``address``: Tuple[int, int]: Cell address colum and row.
+        - ``col``: [int]: Cell column zero based index.
+        - ``row``: [int]: Cell row zero based index.
         - ``code``: str: Source code.
         - ``sheet``: CalcSheet: CalcSheet object.
 
@@ -262,7 +281,8 @@ class PySourceManager(EventsPartial):
 
         ``event_data`` is a ``DotDict`` with the following keys:
 
-        - ``address``: Tuple[int, int]: Cell address colum and row.
+        - ``col``: [int]: Cell column zero based index.
+        - ``row``: [int]: Cell row zero based index.
         - ``code``: str: Source code.
         - ``sheet``: CalcSheet: CalcSheet object.
 
@@ -284,7 +304,8 @@ class PySourceManager(EventsPartial):
 
         ``event_data`` is a ``DotDict`` with the following keys:
 
-        - ``address``: Tuple[int, int]: Cell address colum and row.
+        - ``col``: [int]: Cell column zero based index.
+        - ``row``: [int]: Cell row zero based index.
         - ``code``: str: Source code.
         - ``sheet``: CalcSheet: CalcSheet object.
 
@@ -306,7 +327,8 @@ class PySourceManager(EventsPartial):
 
         ``event_data`` is a ``DotDict`` with the following keys:
 
-        - ``address``: Tuple[int, int]: Cell address colum and row.
+        - ``col``: [int]: Cell column zero based index.
+        - ``row``: [int]: Cell row zero based index.
         - ``code``: str: Source code.
         - ``sheet``: CalcSheet: CalcSheet object.
 
@@ -328,7 +350,8 @@ class PySourceManager(EventsPartial):
 
         ``event_data`` is a ``DotDict`` with the following keys:
 
-        - ``address``: Tuple[int, int]: Cell address colum and row.
+        - ``col``: [int]: Cell column zero based index.
+        - ``row``: [int]: Cell row zero based index.
         - ``sheet``: CalcSheet: CalcSheet object.
 
         Args:
@@ -349,7 +372,8 @@ class PySourceManager(EventsPartial):
 
         ``event_data`` is a ``DotDict`` with the following keys:
 
-        - ``address``: Tuple[int, int]: Cell address colum and row.
+        - ``col``: [int]: Cell column zero based index.
+        - ``row``: [int]: Cell row zero based index.
         - ``sheet``: CalcSheet: CalcSheet object.
 
         Args:
@@ -369,16 +393,59 @@ class PySourceManager(EventsPartial):
         return len(self._data)
 
     def __getitem__(self, key: Tuple[int, int]) -> PySource:
-        return self._data[key]
+        """
+        Gets an Item
+
+        Args:
+            key (Tuple[int, int]): Tuple of Column and Row
+
+        Returns:
+            PySource: Source object
+        """
+        col = key[0]
+        row = key[1]
+        code_cell = (row, col)
+        return self._data[code_cell]
 
     def __setitem__(self, key: Tuple[int, int], value: PySource) -> None:
-        self._data[key] = value
+        """
+        Sets an Item
+
+        Args:
+            key (Tuple[int, int]): Tuple of Column and Row
+            value (PySource): Source object
+        """
+        col = key[0]
+        row = key[1]
+        code_cell = (row, col)
+        self._data[code_cell] = value
 
     def __delitem__(self, key: Tuple[int, int]) -> None:
-        self.remove_source(key)
+        """
+        Removes an Item
+
+        Args:
+            key (Tuple[int, int]): Tuple of Column and Row.
+        """
+        col = key[0]
+        row = key[1]
+        code_cell = (row, col)
+        self.remove_source(code_cell)
 
     def __contains__(self, key: Tuple[int, int]) -> bool:
-        return key in self._data
+        """
+        Checks if key exists in the data.
+
+        Args:
+            key (Tuple[int, int]): Tuple of Column and Row
+
+        Returns:
+            bool: True if key exists in the data.
+        """
+        col = key[0]
+        row = key[1]
+        code_cell = (row, col)
+        return code_cell in self._data
 
     def __iter__(self):
         return iter(self._data.values())
@@ -388,19 +455,33 @@ class PySourceManager(EventsPartial):
     # region Source Management
 
     def add_source(self, code: str, cell: Tuple[int, int]) -> None:
-        if cell in self._data:
+        """
+        Add Source code for the cell.
+
+        Args:
+            code (str): Source code
+            cell (Tuple[int, int]): Cell address in column and row.
+
+        Raises:
+            Exception: If cell already exists in current data.
+        """
+        col = cell[0]
+        row = cell[1]
+        code_cell = (row, col)
+
+        if code_cell in self._data:
             raise Exception(f"Cell {cell} already exists.")
         cargs = CancelEventArgs(self)
-        cargs.event_data = DotDict(address=cell, code=code, sheet=self._sheet)
+        cargs.event_data = DotDict(row=row, col=col, code=code, sheet=self._sheet)
         self.trigger_event("BeforeAddSource", cargs)
         if cargs.cancel:
             return
         code = cargs.event_data.get("code", code)
-        name = f"cell_{cell[0]}_{cell[1]}.py"
+        name = f"cell_{row}_{col}.py"
         uri = f"{self._root_uri}/{self._sheet.unique_id}/{name}"
         py_src = PySource(uri, self)
         py_src.source_code = code
-        self._data[cell] = py_src
+        self._data[code_cell] = py_src
         index = self.get_index(cell)
         self._update_from_index(index)
         eargs = EventArgs.from_args(cargs)
@@ -408,10 +489,23 @@ class PySourceManager(EventsPartial):
         return None
 
     def update_source(self, code: str, cell: Tuple[int, int]) -> None:
-        if cell not in self._data:
+        """
+        Update the source code for the cell.
+
+        Args:
+            code (str): Source code
+            cell (Tuple[int, int]): Cell address in row and column.
+
+        Raises:
+            Exception: If cell does not exist in current data.
+        """
+        col = cell[0]
+        row = cell[1]
+        code_cell = (row, col)
+        if code_cell not in self._data:
             raise Exception(f"Cell {cell} does not exists.")
         cargs = CancelEventArgs(self)
-        cargs.event_data = DotDict(address=cell, code=code, sheet=self._sheet)
+        cargs.event_data = DotDict(row=row, col=col, code=code, sheet=self._sheet)
         self.trigger_event("BeforeUpdateSource", cargs)
         if cargs.cancel:
             return
@@ -425,21 +519,29 @@ class PySourceManager(EventsPartial):
         return None
 
     def remove_source(self, cell: Tuple[int, int]) -> None:
-        if cell not in self._data:
+        """
+        Removes Source for the cell.
+
+        Args:
+            cell (Tuple[int, int]): Cell address in row and column.
+        """
+        col = cell[0]
+        row = cell[1]
+        code_cell = (row, col)
+        if code_cell not in self._data:
             raise Exception(f"Cell {cell} does not exist.")
-        if cell in self._data:
-            raise Exception(f"Cell {cell} already exists.")
         cargs = CancelEventArgs(self)
-        cargs.event_data = DotDict(address=cell, sheet=self._sheet)
+        cargs.event_data = DotDict(row=row, col=col, sheet=self._sheet)
         self.trigger_event("BeforeRemoveSource", cargs)
         if cargs.cancel:
             return
-        self.trigger_event(f"BeforeRemoveSource_{cell[0]}_{cell[1]}", cargs)
+        # triggers are in col row format
+        self.trigger_event(f"BeforeRemoveSource_{col}_{row}", cargs)
         if cargs.cancel:
             return
         index = self.get_index(cell)
-        self._data[cell].del_source()
-        del self._data[cell]
+        self._data[code_cell].del_source()
+        del self._data[code_cell]
 
         if index == 0 or len(self) == 0:
             self._update_all()
@@ -448,18 +550,32 @@ class PySourceManager(EventsPartial):
 
         eargs = EventArgs.from_args(cargs)
         self.trigger_event("AfterRemoveSource", eargs)
-        self.trigger_event(f"AfterRemoveSource_{cell[0]}_{cell[1]}", eargs)
+        # triggers are in col row format
+        self.trigger_event(f"AfterRemoveSource_{col}_{row}", eargs)
 
     def get_index(self, cell: Tuple[int, int]) -> int:
-        return list(self._data.keys()).index(cell)
+        """
+        Get index of cell in the data.
+
+        Args:
+            cell (Tuple[int, int]): Cell address in Column and Row.
+
+        Returns:
+            int: _description_
+        """
+        code_cell = (cell[1], cell[0])
+        return list(self._data.keys()).index(code_cell)
 
     # endregion Source Management
 
     def _update_item(self, py_src: PySource) -> bool:
         cargs = CancelEventArgs(self)
-        cargs.event_data = DotDict(address=py_src.address, code=py_src.source_code, sheet=self._sheet)
-        cell = py_src.address
-        self.trigger_event(f"BeforeSourceUpdate_{cell[0]}_{cell[1]}", cargs)
+        row = py_src.row
+        col = py_src.col
+        cargs.event_data = DotDict(row=row, col=col, code=py_src.source_code, sheet=self._sheet)
+        code_cell = (row, col)
+        # triggers are in col row format
+        self.trigger_event(f"BeforeSourceUpdate_{col}_{row}", cargs)
         if cargs.cancel:
             return False
         self.trigger_event("BeforeSourceUpdate", cargs)
@@ -474,14 +590,16 @@ class PySourceManager(EventsPartial):
 
         eargs = EventArgs.from_args(cargs)
         eargs.event_data["result"] = result
-        self.trigger_event(f"AfterSourceUpdate_{cell[0]}_{cell[1]}", eargs)
+        # triggers are in col row format
+        self.trigger_event(f"AfterSourceUpdate_{col}_{row}", eargs)
         self.trigger_event("AfterSourceUpdate", eargs)
         return True
 
     def _update_all(self) -> None:
         self.py_mod.reset_module()
         for key in self._data.keys():
-            py_src = self[key]
+            col_row_key = (key[1], key[0])
+            py_src = self[col_row_key]
             self._update_item(py_src)
 
     def _update_from_index(self, index: int) -> None:
@@ -489,19 +607,23 @@ class PySourceManager(EventsPartial):
         if index >= length:
             self._logger.warning("_update_from_index() Index out of range.")
             return
-        if index < 0:
-            index = 0
-        if index == 0:
+        if index < length - 1:
+            # if index < 0:
+            #     index = 0
+            # if index == 0:
             self._update_all()
             return
+
         # reset the module dictionary to before index item changes
         keys = list(self._data.keys())
-        key = keys[index]
-        py_src = self[key]
+        key = keys[index]  # row, col format
+        col_row_key = (key[1], key[0])
+        py_src = self[col_row_key]
         self.py_mod.reset_to_dict(py_src.mod_dict)
         for i in range(index, length):
-            key = keys[i]  # tuple
-            py_src = self[key]
+            key = keys[i]  # tuple in row, col format
+            col_row_key = (key[1], key[0])
+            py_src = self[col_row_key]
             self._update_item(py_src)
 
     # region Properties
