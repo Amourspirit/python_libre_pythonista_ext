@@ -22,7 +22,7 @@ _RUN_MOD = cast(types.ModuleType, None)
 _MOD_DIR = "librepythonista"
 
 
-class PySource(EventsPartial):
+class PySource:
     def __init__(self, uri: str, mgr: PySourceManager) -> None:
         self._uri = uri
         self._mgr = mgr
@@ -35,7 +35,6 @@ class PySource(EventsPartial):
         self._row = row_col[0]
         self._col = row_col[1]
         self._src_code = None
-        EventsPartial.__init__(self)
 
         # node.uri = 'vnd.sun.star.tdoc:/1/librepythonista/jymbvnctmujpyb/cell_0_0.py'
         # node.name 'MyFile1'
@@ -85,16 +84,8 @@ class PySource(EventsPartial):
 
     @source_code.setter
     def source_code(self, code: str) -> None:
-        cargs = CancelEventArgs(self)
-        cargs.event_data = DotDict(code=code, row=self.row, col=self.col, sheet=self._mgr._sheet)
-        self.trigger_event("BeforeSourceChange", cargs)
-        if cargs.cancel:
-            return
-        code = cargs.event_data.get("code", code)
         self._set_source(code)
         self._src_code = code
-        eargs = EventArgs.from_args(cargs)
-        self.trigger_event("AfterSourceChange", eargs)
 
     @property
     def mod_dict(self) -> Dict[str, Any]:
@@ -124,8 +115,8 @@ class PySourceManager(EventsPartial):
         self._root_uri = f"vnd.sun.star.tdoc:/{sheet.calc_doc.runtime_uid}/{_MOD_DIR}"
         if not self._sfa.exists(self._root_uri):
             self._sfa.inst.create_folder(self._root_uri)
-        self._data = self._get_sources()
         self._mod = PyModule()
+        self._data = self._get_sources()
 
     def _get_sources(self) -> SortedDict[Tuple[int, int], PySource]:
         uri = f"{self._root_uri}/{self._sheet.unique_id}"
@@ -141,7 +132,6 @@ class PySourceManager(EventsPartial):
         sources.sort()
         result = SortedDict()
         for src in sources:
-            src.add_event_observers(self.event_observer)
             result[src.row, src.col] = src
         return result
 
@@ -451,6 +441,8 @@ class PySourceManager(EventsPartial):
         return iter(self._data.values())
 
     # endregion Dunder Methods
+    def _is_last_index(self, index: int) -> bool:
+        return index == len(self) - 1
 
     # region Source Management
 
@@ -465,6 +457,7 @@ class PySourceManager(EventsPartial):
         Raises:
             Exception: If cell already exists in current data.
         """
+        # when adding source is should update the whole module unless it is the last cell for the module.
         col = cell[0]
         row = cell[1]
         code_cell = (row, col)
@@ -483,7 +476,10 @@ class PySourceManager(EventsPartial):
         py_src.source_code = code
         self._data[code_cell] = py_src
         index = self.get_index(cell)
-        self._update_from_index(index)
+        if self._is_last_index(index):
+            self.update_from_index(index)
+        else:
+            self.update_all()
         eargs = EventArgs.from_args(cargs)
         self.trigger_event("AfterAddSource", eargs)
         return None
@@ -499,6 +495,7 @@ class PySourceManager(EventsPartial):
         Raises:
             Exception: If cell does not exist in current data.
         """
+        # when updating source is should update the whole module unless it is the last cell for the module.
         col = cell[0]
         row = cell[1]
         code_cell = (row, col)
@@ -513,7 +510,10 @@ class PySourceManager(EventsPartial):
         src = self[cell]
         index = self.get_index(cell)
         src.source_code = code
-        self._update_from_index(index)
+        if self._is_last_index(index):
+            self.update_from_index(index)
+        else:
+            self.update_all()
         eargs = EventArgs.from_args(cargs)
         self.trigger_event("AfterUpdateSource", eargs)
         return None
@@ -525,6 +525,9 @@ class PySourceManager(EventsPartial):
         Args:
             cell (Tuple[int, int]): Cell address in row and column.
         """
+        # when removing even if this was the last cell, the module should be reset.
+        # It is possible that the cell that is being removed contained code that modified a previous cell.
+        # _update_from_index() will not restore the values of cells that were modified by the cell being removed.
         col = cell[0]
         row = cell[1]
         code_cell = (row, col)
@@ -543,10 +546,11 @@ class PySourceManager(EventsPartial):
         self._data[code_cell].del_source()
         del self._data[code_cell]
 
-        if index == 0 or len(self) == 0:
-            self._update_all()
-        else:
-            self._update_from_index(index - 1)
+        self.update_all()
+        # if index == 0 or len(self) == 0:
+        #     self._update_all()
+        # else:
+        #     self._update_from_index(index - 1)
 
         eargs = EventArgs.from_args(cargs)
         self.trigger_event("AfterRemoveSource", eargs)
@@ -595,23 +599,41 @@ class PySourceManager(EventsPartial):
         self.trigger_event("AfterSourceUpdate", eargs)
         return True
 
-    def _update_all(self) -> None:
+    def update_all(self) -> None:
+        """
+        Rebuilds the module for all the cells.
+
+        Triggers ``BeforeSourceUpdate`` and ``AfterSourceUpdate`` events.
+        """
         self.py_mod.reset_module()
         for key in self._data.keys():
             col_row_key = (key[1], key[0])
             py_src = self[col_row_key]
             self._update_item(py_src)
 
-    def _update_from_index(self, index: int) -> None:
+    def update_from_index(self, index: int) -> None:
+        """
+        Rebuilds the module from the specified index to the end of the data.
+
+        Args:
+            index (int): Index of the cell in the data.
+
+        Returns:
+            None:
+
+        Note:
+            This method will not update the module for the cell before the specified index.
+            This means if the current cell or any cell after has modified a previous cells variable, the module will not be updated correctly.
+        """
         length = len(self)
         if index >= length:
             self._logger.warning("_update_from_index() Index out of range.")
             return
-        if index < length - 1:
-            # if index < 0:
-            #     index = 0
-            # if index == 0:
-            self._update_all()
+
+        if index < 0:
+            index = 0
+        if index == 0:
+            self.update_all()
             return
 
         # reset the module dictionary to before index item changes
