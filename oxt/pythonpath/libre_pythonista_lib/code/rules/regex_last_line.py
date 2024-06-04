@@ -18,6 +18,7 @@ class RegexLastLine:
             mod (types.ModuleType): Module
             code (str): Code string.
         """
+        self._result = None
         if regex is None:
             self.regex = re.compile(r"^(\w+)\s*=")
         else:
@@ -32,23 +33,31 @@ class RegexLastLine:
             mod (types.ModuleType): Module
             code (str): Code string.
         """
+        self._result = None
         self.mod = mod
         self.code = code
 
     def get_is_match(self) -> bool:
         """Check if rules is a match for the last line of code."""
+        self._result = None
         if not self.code:
             return False
         last_line = str_util.get_last_line(self.code)
         self.match = self.regex.search(last_line)
-        return self.match is not None
+        if not self.match:
+            return False
+        var_name = self.match.group(1)
+        self._result = getattr(self.mod, var_name, None)
+        if callable(self._result):
+            self._result = None
+        return self._result is not None
 
     def get_value(self) -> Any:
         """Get the value of matched attribute from module."""
-        if self.match is None:
-            return None
-        var_name = self.match.group(1)
-        result = getattr(self.mod, var_name, None)
-        if callable(result):
-            return None
-        return result
+        return self._result
+
+    def reset(self) -> None:
+        """Reset the rule releasing any resource it is holding on to."""
+        self._result = None
+        self.mod = None
+        self.code = None

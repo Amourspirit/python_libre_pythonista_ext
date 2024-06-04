@@ -58,7 +58,7 @@ typing-extensions = ">=4.11.0"
 verr = ">=1.1.2"
 pandas = ">=2"
 odfpy = ">=1.4"
-ooo-dev-tools = ">=0.44.1"
+ooo-dev-tools = ">=0.45.3"
 matplotlib = ">=3.7.5"
 seaborn = ">=0.13"
 sortedcontainers = ">=2.4.0"
@@ -107,7 +107,7 @@ python = "^3.8"
 ooouno = "^2.1.2"
 toml = "^0.10.2"
 typing-extensions = ">=4.11.0"
-ooo-dev-tools = ">=0.44.2"
+ooo-dev-tools = ">=0.45.3"
 sortedcontainers = ">=2.4.0"
 
 
@@ -118,9 +118,9 @@ pytest-dotenv = "^0.5.2"
 black = "^23.7.0"
 oooscript = "^1.1.3"
 lxml = "^4.9.3"
-ooo-dev-tools = ">=0.43.2"
 oooenv = ">=0.2.4"
 sortedcontainers-stubs = "^2.4.2"
+debuggy = "^3.0.1"
 
 
 [build-system]

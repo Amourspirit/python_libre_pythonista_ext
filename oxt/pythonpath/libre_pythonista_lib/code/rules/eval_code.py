@@ -1,15 +1,17 @@
 from __future__ import annotations
 from typing import Any
+import contextlib
 import types
+from ...utils import str_util
 
 
-class LastDict:
+class EvalCode:
     """
     A class to represent the last dictionary item in a module.
     """
 
     def __init__(self) -> None:
-        pass
+        self._result = None
 
     def set_values(self, mod: types.ModuleType, code: str) -> None:
         """
@@ -19,24 +21,31 @@ class LastDict:
             mod (types.ModuleType): Module
             code (str): Code string.
         """
+        self._result = None
         self.mod = mod
         self.code = code
 
     def get_is_match(self) -> bool:
         """Check if rules is a match. For this rule the return result is always True."""
-        return True
+        self._result = None
+        if not self.code:
+            return False
+        last_line = str_util.get_last_line(self.code)
+        if str_util.starts_with_whitespace(last_line):
+            return False
+        result = None
+        with contextlib.suppress(Exception):
+            glbs = globals().copy()
+            result = eval(last_line, glbs)
+            self._result = result
+        return result is not None
 
     def get_value(self) -> Any:
         """Get the list of versions. In this case it will be a single version, unless vstr is invalid in which case it will be an empty list."""
-        last_key = next(reversed(self.mod.__dict__), None)
-        if last_key is None:
-            return None
-        result = getattr(self.mod, last_key)
-        if callable(result):
-            return None
-        return result
+        return self._result
 
     def reset(self) -> None:
         """Reset the rule releasing any resource it is holding on to."""
+        self._result = None
         self.mod = None
         self.code = None

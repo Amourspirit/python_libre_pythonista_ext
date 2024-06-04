@@ -76,5 +76,22 @@ def get_last_line(s: str) -> str:
     Returns:
         str: The last line of the string.
     """
-    lines = s.split("\n")
+    if not s:
+        return ""
+    lines = s.splitlines()
     return lines[-1]
+
+
+def starts_with_whitespace(s: str):
+    """
+    Checks if a string starts with whitespace.
+
+    Args:
+        s (str): The input string.
+
+    Returns:
+        bool: True if the string starts with whitespace, False otherwise.
+    """
+    if not s:
+        return False
+    return s[0].isspace()

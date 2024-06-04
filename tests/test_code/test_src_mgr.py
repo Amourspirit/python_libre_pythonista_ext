@@ -7,6 +7,7 @@ from ooodev.loader.inst.options import Options
 from ooodev.events.args.event_args import EventArgs
 from ooodev.utils.helper.dot_dict import DotDict
 from ooodev.utils.table_helper import TableHelper
+from ooodev.utils import gen_util
 import pytest
 
 if __name__ == "__main__":
@@ -232,6 +233,100 @@ def test_src_manager_remove_cell_code(loader) -> None:
         addr = (0, 2)  # A3
         cell = sheet[addr]
         assert cell.value == 20
+
+    finally:
+        if doc is not None:
+            doc.close()
+
+
+def test_code_formula(loader) -> None:
+    if TYPE_CHECKING:
+        from build.pythonpath.libre_pythonista_lib.code import py_source_mgr
+    else:
+        # import libre_pythonista_lib
+        # import libre_pythonista
+        from libre_pythonista_lib.code import py_source_mgr
+
+    def on_cell(src: Any, event_args: EventArgs) -> None:
+        ed = cast(DotDict, event_args.event_data)
+        if ed.result is not None:
+
+            sheet = cast(CalcSheet, ed.sheet)
+            address = (ed.col, ed.row)
+            sheet[address].value = ed.result
+
+    def get_formula() -> str:
+        return """def custom_formula(a, b):
+    return a + b
+"""
+
+    doc = None
+    try:
+        doc = CalcDoc.create_doc(loader=loader)
+        sheet = doc.sheets[0]
+        cell = sheet["A1"]
+        cell.value = 1
+        mgr = py_source_mgr.PySourceManager(sheet)
+        mgr.subscribe_after_source_update(cb=on_cell)
+        addr = (0, 0)  # A1
+        mgr.add_source(get_formula(), cell=addr)
+
+        addr = (0, 1)  # A2
+        mgr.add_source("my_var = custom_formula(10, 12)", cell=addr)
+        cell = sheet[addr]
+        assert cell.value == 22
+
+        addr = (0, 2)  # A3
+        mgr.add_source("my_var2 = custom_formula(5, 5)", cell=addr)
+        cell = sheet[addr]
+        assert cell.value == 10
+
+    finally:
+        if doc is not None:
+            doc.close()
+
+
+def _test_code_for_loop_after_last_var(loader) -> None:
+    if TYPE_CHECKING:
+        from build.pythonpath.libre_pythonista_lib.code import py_source_mgr
+    else:
+        # import libre_pythonista_lib
+        # import libre_pythonista
+        from libre_pythonista_lib.code import py_source_mgr
+
+    def on_cell(src: Any, event_args: EventArgs) -> None:
+        ed = cast(DotDict, event_args.event_data)
+        if ed.result is not None:
+
+            sheet = cast(CalcSheet, ed.sheet)
+            address = (ed.col, ed.row)
+            if gen_util.Util.is_iterable(ed.result):
+                name = TableHelper.make_cell_name(row=ed.row, col=ed.col, zero_index=True)
+                sheet.set_array(values=ed.result, name=name)
+            else:
+                sheet[address].value = ed.result
+
+    def get_code() -> str:
+        return """items = list(range(10))
+for item in items:
+    item += 10
+"""
+
+    doc = None
+    try:
+        doc = CalcDoc.create_doc(loader=loader)
+        sheet = doc.sheets[0]
+        cell = sheet["A1"]
+        mgr = py_source_mgr.PySourceManager(sheet)
+        mgr.subscribe_after_source_update(cb=on_cell)
+        addr = (0, 0)  # A1
+        mgr.add_source(get_code(), cell=addr)
+
+        cell = sheet["A1"]
+        assert cell.value == 10
+
+        cell = sheet["A2"]
+        assert cell.value == 11
 
     finally:
         if doc is not None:

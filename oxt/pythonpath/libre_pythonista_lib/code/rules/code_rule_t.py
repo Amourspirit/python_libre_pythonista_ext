@@ -25,3 +25,7 @@ class CodeRuleT(Protocol):
     def get_value(self) -> Any:
         """Gets the value from the module"""
         ...
+
+    def reset(self) -> None:
+        """Reset the rule releasing any resource it is holding on to."""
+        ...

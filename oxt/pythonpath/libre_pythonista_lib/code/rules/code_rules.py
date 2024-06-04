@@ -4,6 +4,7 @@ import types
 import re
 from .last_dict import LastDict
 from .regex_last_line import RegexLastLine
+from .eval_code import EvalCode
 
 if TYPE_CHECKING:
     from .code_rule_t import CodeRuleT
@@ -105,6 +106,7 @@ class CodeRules:
         # re.compile(r"^(\w+)\s*=")
         self._reg_rule(rule=RegexLastLine())
         self._reg_rule(rule=RegexLastLine(re.compile(r"^(\w+)$")))
+        self._reg_rule(rule=EvalCode())
         self._reg_rule(rule=LastDict())
 
     def get_matched_rule(self, mod: types.ModuleType, code: str) -> CodeRuleT:
@@ -123,6 +125,7 @@ class CodeRules:
             rule.set_values(mod, code)
             if rule.get_is_match():
                 return rule
+            rule.reset()
         # this should never happen LastDict is always a match
         raise ValueError(f"No rule matched for code: {code}")
 

@@ -47,27 +47,32 @@ from ooodev.utils.data_type.range_obj import RangeObj
         if code:
             exec(code, self.mod.__dict__)
         rule = self._cr.get_matched_rule(self.mod, code)
-        return rule.get_value()
+        result = rule.get_value()
+        rule.reset()
+        return result
 
     def reset_to_dict(self, mod_dict: dict, code: str = "") -> Any:
         """
-        Reset the module to the given dictionary and returns the last variable in the module.
+        Reset the module to the given dictionary and returns the last variable in the module if code is present.
 
         Args:
             mod_dict (dict): A dictionary of variables to reset the module to.
             code (str, optional): Any valid python code
 
         Returns:
-            Any: The last variable in the module if any; Otherwise, None.
+            Any: If there is code the last variable in the module if any; Otherwise, None.
         """
         self.mod.__dict__.clear()
         self.mod.__dict__.update(mod_dict)
+        if not code:
+            return None
+        code = str_util.remove_comments(code)
+        code = str_util.clean_string(code)
         if code:
             exec(code, self.mod.__dict__)
-        last_key = next(reversed(self.mod.__dict__), None)
-        if last_key is None:
+        else:
             return None
-        result = getattr(self.mod, last_key)
-        if callable(result):
-            return None
+        rule = self._cr.get_matched_rule(self.mod, code)
+        result = rule.get_value()
+        rule.reset()
         return result

@@ -35,6 +35,7 @@ class PySource:
         self._row = row_col[0]
         self._col = row_col[1]
         self._src_code = None
+        self._value = None
 
         # node.uri = 'vnd.sun.star.tdoc:/1/librepythonista/jymbvnctmujpyb/cell_0_0.py'
         # node.name 'MyFile1'
@@ -94,6 +95,14 @@ class PySource:
     @mod_dict.setter
     def mod_dict(self, value: Dict[str, Any]) -> None:
         self._mod_dict = value
+
+    @property
+    def value(self) -> Any:
+        return self._value
+
+    @value.setter
+    def value(self, value: Any) -> None:
+        self._value = value
 
 
 class PySourceManager(EventsPartial):
@@ -591,6 +600,7 @@ class PySourceManager(EventsPartial):
         # update the dictionary to the current state of the module
         py_src.mod_dict = self.py_mod.mod.__dict__.copy()
         result = self.py_mod.update_with_result(py_src.source_code)
+        py_src.value = result
 
         eargs = EventArgs.from_args(cargs)
         eargs.event_data["result"] = result
@@ -641,7 +651,8 @@ class PySourceManager(EventsPartial):
         key = keys[index]  # row, col format
         col_row_key = (key[1], key[0])
         py_src = self[col_row_key]
-        self.py_mod.reset_to_dict(py_src.mod_dict)
+        if not self._is_last_index(index):
+            self.py_mod.reset_to_dict(py_src.mod_dict)
         for i in range(index, length):
             key = keys[i]  # tuple in row, col format
             col_row_key = (key[1], key[0])
@@ -659,3 +670,13 @@ class PySourceManager(EventsPartial):
         return self._mod
 
     # endregion Properties
+
+
+class PyInstances:
+    _instances = {}
+
+    def __new__(cls, sheet: CalcSheet) -> PySourceManager:
+        sheet_id = sheet.unique_id
+        if sheet_id not in cls._instances:
+            cls._instances[sheet_id] = PySourceManager(sheet)
+        return cls._instances[sheet_id]
