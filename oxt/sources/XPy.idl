@@ -4,7 +4,7 @@ module com { module github { module amourspirit { module extensions {
  
     interface XPy
     {
-        sequence< sequence< any > > py( );
+        sequence< sequence< any > > py( [in] long sheetIdx, [in] string cAddress );
     };
  
 }; }; }; };

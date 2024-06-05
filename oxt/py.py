@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import cast, TYPE_CHECKING
+from typing import Any, cast, TYPE_CHECKING
 import os
 import sys
 import uno
@@ -46,35 +46,19 @@ class Py(unohelper.Base, XPy):
         # it seems init is only call when the functions is first called.
         # ctx is com.sun.star.uno.XComponentContext
 
-    def py(self) -> tuple:
-        # get access to the Link List that manages the module for all cells.
-        # add/edit or remove this cells python from the Link List.
-        # Link list needs to update all down stream python cells.
-        print(dir(self))
+    def py(self, sheet_num: int, cell_address: str) -> tuple:
 
-        doc = CalcDoc.from_current_doc()
-
-        # returns $A1$1 no matter the current cell.
-        # print("call function", doc.call_fun("CELL", "address"))
-
-        sel = doc.get_current_selection()
-
-        # breakpoint()
-
-        if sel is None:
-            print("no current selection")
-            return (("No current selection",),)
-        if not hasattr(sel, "getImplementationName"):
-            print("no getImplementationName")
-            return (("No getImplementationName",),)
-        impl_name = cast(str, sel.getImplementationName())  # type: ignore
-        print(impl_name)
-        if impl_name != "ScCellObj":
-            print("not a cell object")
-            return (("Not a cell object",),)
-        addr = sel.CellAddress  # type: ignore
-        print("Address", f"Column {addr.Column}, Row {addr.Row}")
-        return (("Col", addr.Column, "Row", addr.Row),)
+        try:
+            doc = CalcDoc.from_current_doc()
+            sheet_idx = sheet_num - 1
+            sheet = doc.sheets[sheet_idx]
+            xcell = sheet.component.getCellRangeByName(cell_address)
+            cell = sheet.get_cell(xcell)
+            cell.set_custom_property("Python", "Python")
+            self._logger.debug(f"Py: py sheet_num: {sheet_num}, cell_address: {cell_address}")
+        except Exception as e:
+            self._logger.error(f"Error: {e}")
+        return ((sheet_idx, cell_address),)
 
         dlg = DialogPython(self.ctx)
         self._logger.debug("Py: py displaying dialog")

@@ -7,8 +7,8 @@
 			<node oor:name="AddInFunctions">
 				<node oor:name="py" oor:op="replace">
 					<prop oor:name="DisplayName">
-						<value xml:lang="en">py</value>
-						<value xml:lang="fr">py</value>
+						<value xml:lang="en">PY.C</value>
+						<value xml:lang="fr">PY.C</value>
 					</prop>
 					<prop oor:name="Description">
 						<value xml:lang="en">Python in Calc</value>
@@ -18,6 +18,26 @@
 						<value>Add-in</value>
 					</prop>
 					<node oor:name="Parameters">
+						<node oor:name="sheetIdx" oor:op="replace">
+							<prop oor:name="DisplayName">
+								<value xml:lang="en">INDEX</value>
+								<value xml:lang="fr">INDEX</value>
+							</prop>
+							<prop oor:name="Description">
+								<value xml:lang="en">Sheet Index.</value>
+								<value xml:lang="fr">Sheet Index.</value>
+							</prop>
+						</node>
+						<node oor:name="cAddress" oor:op="replace">
+							<prop oor:name="DisplayName">
+								<value xml:lang="en">cAddress</value>
+								<value xml:lang="fr">cAddress</value>
+							</prop>
+							<prop oor:name="Description">
+								<value xml:lang="en">Cell Address. Usually CELL(&quot;address&quot;).</value>
+								<value xml:lang="fr">Cell Address. Usually CELL(&quot;address&quot;).</value>
+							</prop>
+						</node>
 					</node>
 				</node>
 			</node>
