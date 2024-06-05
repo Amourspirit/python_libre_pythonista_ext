@@ -46,7 +46,7 @@ class PyImpl(unohelper.Base, XPy):
         # it seems init is only call when the functions is first called.
         # ctx is com.sun.star.uno.XComponentContext
 
-    def py(self, sheet_num: int, cell_address: str) -> tuple:
+    def pyc(self, sheet_num: int, cell_address: str) -> tuple:
 
         try:
             doc = CalcDoc.from_current_doc()

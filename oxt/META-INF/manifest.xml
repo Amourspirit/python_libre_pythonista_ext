@@ -27,5 +27,8 @@
         manifest:full-path="py_impl.py" />
     <manifest:file-entry
         manifest:media-type="application/vnd.sun.star.uno-component;type=Python"
+        manifest:full-path="testing_impl.py" />
+    <manifest:file-entry
+        manifest:media-type="application/vnd.sun.star.uno-component;type=Python"
         manifest:full-path="python_impl.py" />
 </manifest:manifest>

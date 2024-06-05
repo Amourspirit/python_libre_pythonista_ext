@@ -2,9 +2,9 @@
  
 module com { module github { module amourspirit { module extensions { module librepythonista {
  
-interface XPy: com::sun::star::uno::XInterface
+interface XTesting: com::sun::star::uno::XInterface
 {
-    sequence< sequence< any > > pyc( [in] long sheetIdx, [in] string cAddress );
+    any testing( [in] long sheetIdx, [in] string cAddress );
 };
  
 }; }; }; }; };

@@ -5,7 +5,7 @@
 	<node oor:name="AddInInfo">
 		<node oor:name="com.github.amourspirit.extension.librepythonista.PyImpl" oor:op="replace">
 			<node oor:name="AddInFunctions">
-				<node oor:name="py" oor:op="replace">
+				<node oor:name="pyc" oor:op="replace">
 					<prop oor:name="DisplayName">
 						<value xml:lang="en">PY.C</value>
 						<value xml:lang="fr">PY.C</value>
@@ -30,12 +30,47 @@
 						</node>
 						<node oor:name="cAddress" oor:op="replace">
 							<prop oor:name="DisplayName">
-								<value xml:lang="en">cAddress</value>
-								<value xml:lang="fr">cAddress</value>
+								<value xml:lang="en">ADDRESS</value>
+								<value xml:lang="fr">ADDRESS</value>
 							</prop>
 							<prop oor:name="Description">
-								<value xml:lang="en">Cell Address. Usually CELL(&quot;address&quot;).</value>
-								<value xml:lang="fr">Cell Address. Usually CELL(&quot;address&quot;).</value>
+								<value xml:lang="en">Cell Address string. Usually CELL(&quot;address&quot;).</value>
+								<value xml:lang="fr">Cell Address string. Usually CELL(&quot;address&quot;).</value>
+							</prop>
+						</node>
+					</node>
+				</node>
+			</node>
+		</node>
+		<node oor:name="com.github.amourspirit.extension.librepythonista.TestingImpl"
+			oor:op="replace">
+			<node oor:name="AddInFunctions">
+				<node oor:name="testing" oor:op="replace">
+					<prop oor:name="DisplayName">
+						<value xml:lang="en">TESTING</value>
+					</prop>
+					<prop oor:name="Description">
+						<value xml:lang="en">Testing for LibrePythonista</value>
+					</prop>
+					<prop oor:name="Category">
+						<value>Add-in</value>
+					</prop>
+					<node oor:name="Parameters">
+						<node oor:name="sheetIdx" oor:op="replace">
+							<prop oor:name="DisplayName">
+								<value xml:lang="en">INDEX</value>
+							</prop>
+							<prop oor:name="Description">
+								<value xml:lang="en">Sheet Index.</value>
+							</prop>
+						</node>
+						<node oor:name="cAddress" oor:op="replace">
+							<prop oor:name="DisplayName">
+								<value xml:lang="en">ADDRESS</value>
+							</prop>
+							<prop oor:name="Description">
+								<value xml:lang="en">Cell Address string. Usually
+									CELL(&quot;address&quot;).</value>
 							</prop>
 						</node>
 					</node>
