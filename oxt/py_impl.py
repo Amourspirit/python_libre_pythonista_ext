@@ -4,7 +4,7 @@ import os
 import sys
 import uno
 import unohelper
-from com.github.amourspirit.extensions import XPy  # type: ignore
+from com.github.amourspirit.extensions.librepythonista import XPy  # type: ignore
 
 
 from ooodev.calc import CalcDoc
@@ -30,11 +30,11 @@ else:
     from libre_pythonista_lib.code.py_code import PythonCode
     from libre_pythonista_lib.code.py_source_mgr import PyInstances
 
-implementation_name = "com.github.amourspirit.extension.Py"
+implementation_name = "com.github.amourspirit.extension.librepythonista.PyImpl"
 implementation_services = ("com.sun.star.sheet.AddIn",)
 
 
-class Py(unohelper.Base, XPy):
+class PyImpl(unohelper.Base, XPy):
     def __init__(self, ctx):
         self.ctx = ctx
         self._logger = OxtLogger(log_name=self.__class__.__name__)
@@ -82,7 +82,7 @@ class Py(unohelper.Base, XPy):
 
 
 def createInstance(ctx):
-    return Py(ctx)
+    return PyImpl(ctx)
 
 
 g_ImplementationHelper = unohelper.ImplementationHelper()

@@ -3,7 +3,7 @@
 	xmlns:xs="http://www.w3.org/2001/XMLSchema" oor:name="CalcAddIns"
 	oor:package="org.openoffice.Office">
 	<node oor:name="AddInInfo">
-		<node oor:name="com.github.amourspirit.extension.Py" oor:op="replace">
+		<node oor:name="com.github.amourspirit.extension.librepythonista.PyImpl" oor:op="replace">
 			<node oor:name="AddInFunctions">
 				<node oor:name="py" oor:op="replace">
 					<prop oor:name="DisplayName">
