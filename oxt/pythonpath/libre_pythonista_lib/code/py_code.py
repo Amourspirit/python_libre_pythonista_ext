@@ -137,7 +137,7 @@ class PythonCode:
         psa.test_compile_python(code)
         file_name = self._get_file_name()
         self._logger.debug(f"save_code: filename:{file_name}")
-        psa.write_file(file_name, code, allow_override=True)
+        psa.write_file(file_name, code, mode="w")
         self._logger.debug(f"save_code: code saved")
 
     def _get_sheet_id(self) -> str:

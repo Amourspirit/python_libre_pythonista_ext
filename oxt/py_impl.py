@@ -25,10 +25,14 @@ if TYPE_CHECKING:
     from .pythonpath.libre_pythonista_lib.dialog.py.dialog_python import DialogPython
     from .pythonpath.libre_pythonista_lib.code.py_code import PythonCode
     from .pythonpath.libre_pythonista_lib.code.py_source_mgr import PyInstances
+    from .pythonpath.libre_pythonista_lib.code.py_cell import PyCell
+    from .pythonpath.libre_pythonista_lib.code.code_cache import CodeCache
 else:
     from libre_pythonista_lib.dialog.py.dialog_python import DialogPython
     from libre_pythonista_lib.code.py_code import PythonCode
     from libre_pythonista_lib.code.py_source_mgr import PyInstances
+    from libre_pythonista_lib.code.py_cell import PyCell
+    from libre_pythonista_lib.code.code_cache import CodeCache
 
 implementation_name = "com.github.amourspirit.extension.librepythonista.PyImpl"
 implementation_services = ("com.sun.star.sheet.AddIn",)
@@ -47,38 +51,65 @@ class PyImpl(unohelper.Base, XPy):
         # ctx is com.sun.star.uno.XComponentContext
 
     def pyc(self, sheet_num: int, cell_address: str) -> tuple:
-
+        # CodeCache should really only be used in this function.
+        # It tracks the current cell and the previous cell and has listings for all code cells.
+        self._logger.debug("PyImpl - pyc entered")
         try:
+            self._logger.debug(f"PyImpl - pyc -sheet_num: arg {sheet_num}")
+            self._logger.debug(f"PyImpl - pyc -cell_address: arg {cell_address}")
             doc = CalcDoc.from_current_doc()
             sheet_idx = sheet_num - 1
             sheet = doc.sheets[sheet_idx]
             xcell = sheet.component.getCellRangeByName(cell_address)
             cell = sheet.get_cell(xcell)
-            cell.set_custom_property("Python", "Python")
+            py_cell = PyCell(cell)
+            cc = CodeCache()
+            cc.current_sheet_index = sheet_idx
+            cc.current_cell = cell.cell_obj
+            self._logger.debug(f"CodeCache index: {cc.current_sheet_index}")
+            self._logger.debug(f"CodeCache cell: {cc.current_cell}")
+            if not py_cell.has_code():
+                self._logger.debug("Py: py cell has no code")
+                # prompt for code
+                code = self._get_code()
+                if code:
+                    py_cell.save_code(code)
+                    CodeCache.reset_instance()
+                    cc = CodeCache()
+                    cc.current_sheet_index = sheet_idx
+                    cc.current_cell = cell.cell_obj
+            else:
+                self._logger.debug("Py: py cell has code")
+            self._logger.debug(f"Is First Cell: {cc.is_first_cell()}")
+            self._logger.debug(f"Is Last Cell: {cc.is_last_cell()}")
+            self._logger.debug(f"Current Cell Index: {cc.get_cell_index()}")
+
             self._logger.debug(f"Py: py sheet_num: {sheet_num}, cell_address: {cell_address}")
         except Exception as e:
-            self._logger.error(f"Error: {e}")
+            self._logger.error(f"Error: {e}", exc_info=True)
+        self._logger.debug("PyImpl - pyc exiting")
         return ((sheet_idx, cell_address),)
 
+    def _get_code(self) -> str | None:
         dlg = DialogPython(self.ctx)
         self._logger.debug("Py: py displaying dialog")
+        result = None
         if dlg.show():
             self._logger.debug("Py: py dialog returned with OK")
-            code_str = dlg.text
-            if code_str:
-                # inst = PyInstances(doc.get_active_sheet())
-                self._logger.debug(f"Py: py saving code")
-                code = PythonCode(ctx=self.ctx, verify_is_formula=False)
-                code.save_code(code_str)
-                self._logger.debug(f"Py: py code saved")
+            txt = dlg.text.strip()
+            if txt:
+                result = dlg.text
+
+            # if code_str:
+            # inst = PyInstances(doc.get_active_sheet())
+            # self._logger.debug(f"Py: py saving code")
+            # code = PythonCode(ctx=self.ctx, verify_is_formula=False)
+            # code.save_code(code_str)
+            # self._logger.debug(f"Py: py code saved")
+
         else:
             self._logger.debug("Py: py dialog returned with Cancel")
-        # doc.msgbox("Hello from Py!", "Py", boxtype=1)
-        # return (("A", "B", "C"),)
-        # return ((777,),)
-        result = f"\u2774\u2775 {dlg.res_resolver.resolve_string('py001')}"
-        self._logger.debug(f"Py: py returning {result}")
-        return ((result,),)
+        return result
 
 
 def createInstance(ctx):
