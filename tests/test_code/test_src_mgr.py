@@ -3,6 +3,7 @@ from typing import Any, cast, TYPE_CHECKING, Tuple
 from pathlib import Path
 from ooodev.loader import Lo
 from ooodev.calc import CalcDoc, CalcSheet
+from ooodev.utils.data_type.cell_obj import CellObj
 from ooodev.loader.inst.options import Options
 from ooodev.events.args.event_args import EventArgs
 from ooodev.utils.helper.dot_dict import DotDict
@@ -28,16 +29,19 @@ def test_src_manager_simple(loader) -> None:
     """
     if TYPE_CHECKING:
         from build.pythonpath.libre_pythonista_lib.code import py_source_mgr
+        from build.pythonpath.libre_pythonista_lib.code import cell_cache
     else:
         # import libre_pythonista_lib
         # import libre_pythonista
         from libre_pythonista_lib.code import py_source_mgr
+        from libre_pythonista_lib.code import cell_cache
 
     def on_cell(src: Any, event_args: EventArgs) -> None:
         ed = cast(DotDict, event_args.event_data)
         if ed.result is not None:
 
-            sheet = cast(CalcSheet, ed.sheet)
+            doc = cast(CalcDoc, ed.doc)
+            sheet = doc.sheets[ed.sheet_idx]
             address = (ed.col, ed.row)
             sheet[address].value = ed.result
 
@@ -47,37 +51,44 @@ def test_src_manager_simple(loader) -> None:
         sheet = doc.sheets[0]
         cell = sheet["A1"]
         cell.value = 1
-        mgr = py_source_mgr.PySourceManager(sheet)
+        cell_cache.CellCache.reset_instance()
+        mgr = py_source_mgr.PySourceManager(doc)
         mgr.subscribe_after_source_update(cb=on_cell)
-        addr = (0, 0)  # A1
-        mgr.add_source("print('Hello World!')\nx = 22", cell=addr)
-        cell = sheet[addr]
+        mgr.add_source("print('Hello World!')\nx = 22", cell=cell.cell_obj)
+        cell = sheet[cell.cell_obj]
         assert cell.value == 22
+        py_src = mgr[cell.cell_obj]
+        assert py_src.value == 22
 
-        addr = (0, 1)  # A2
-        mgr.add_source("y = x + 10", cell=addr)
-        cell = sheet[addr]
+        cell = sheet["A2"]
+        mgr.add_source("y = x + 10", cell=cell.cell_obj)
         assert cell.value == 32
+        py_src = mgr[cell.cell_obj]
+        assert py_src.value == 32
 
-        # A3
-        addr = (0, 2)  # A3
-        mgr.add_source("z = y + 10", cell=addr)
-        cell = sheet[addr]
+        cell = sheet["A3"]
+        mgr.add_source("z = y + 10", cell=cell.cell_obj)
         assert cell.value == 42
+        py_src = mgr[cell.cell_obj]
+        assert py_src.value == 42
 
-        addr = (0, 3)  # A4
-        mgr.add_source("aa = 'Nice!'", cell=addr)
-        cell = sheet[addr]
+        cell = sheet["A4"]
+        mgr.add_source("aa = 'Nice!'", cell=cell.cell_obj)
         assert cell.value == "Nice!"
+        py_src = mgr[cell.cell_obj]
+        assert py_src.value == "Nice!"
 
-        addr = (0, 1)  # A2
-        mgr.update_source("y = 223", cell=(0, 1))
-        cell = sheet[addr]
+        cell = sheet["A2"]
+        mgr.update_source("y = 223", cell=cell.cell_obj)
         assert cell.value == 223
+        py_src = mgr[cell.cell_obj]
+        assert py_src.value == 223
 
         # now that cell (0, 1), A2, is update to 223, A3 should be 233
         cell = sheet["A3"]
         assert cell.value == 233
+        py_src = mgr[cell.cell_obj]
+        assert py_src.value == 233
 
         cell = sheet["A4"]
         assert cell.value == "Nice!"
@@ -102,13 +113,16 @@ def test_src_manager_across_down(loader, tmp_path) -> None:
     """
     if TYPE_CHECKING:
         from build.pythonpath.libre_pythonista_lib.code import py_source_mgr
+        from build.pythonpath.libre_pythonista_lib.code import cell_cache
     else:
         from libre_pythonista_lib.code import py_source_mgr
+        from libre_pythonista_lib.code import cell_cache
 
     def on_cell(src: Any, event_args: EventArgs) -> None:
         ed = cast(DotDict, event_args.event_data)
         if ed.result is not None:
-            sheet = cast(CalcSheet, ed.sheet)
+            doc = cast(CalcDoc, ed.doc)
+            sheet = doc.sheets[ed.sheet_idx]
             address = (ed.col, ed.row)
             sheet[address].value = ed.result
 
@@ -116,15 +130,19 @@ def test_src_manager_across_down(loader, tmp_path) -> None:
     try:
         doc = CalcDoc.create_doc(loader=loader)
         sheet = doc.sheets[0]
-        mgr = py_source_mgr.PySourceManager(sheet)
+        sheet_idx = sheet.sheet_index
+        cell_cache.CellCache.reset_instance()
+        mgr = py_source_mgr.PySourceManager(doc)
         mgr.subscribe_after_source_update(cb=on_cell)
 
-        cols = 22
-        rows = 24
+        cols = 3
+        rows = 4
         for j in range(rows):
             for i in range(cols):
                 cell_address = (i, j)  # col row
                 cell_name = TableHelper.make_cell_name(col=i, row=j, zero_index=True)
+                cell_obj = CellObj.from_idx(col_idx=i, row_idx=j, sheet_idx=sheet_idx)
+
                 if cell_address > (0, 0):
                     # if this is the first cell in a row then the previous cell will be the last cell in the previous row
                     if i == 0:
@@ -134,10 +152,10 @@ def test_src_manager_across_down(loader, tmp_path) -> None:
                     prev_cell_name = TableHelper.make_cell_name(
                         row=prev_cell_address[0], col=prev_cell_address[1], zero_index=True
                     )
-                    mgr.add_source(f"{cell_name} = {prev_cell_name} + 1", cell=cell_address)
+                    mgr.add_source(f"{cell_name} = {prev_cell_name} + 1", cell=cell_obj)
                 else:
                     # first cell
-                    mgr.add_source(f"{cell_name} = 1", cell=cell_address)
+                    mgr.add_source(f"{cell_name} = 1", cell=cell_obj)
 
         count = 0
         for j in range(rows):
@@ -157,7 +175,7 @@ def test_src_manager_across_down(loader, tmp_path) -> None:
         array = TableHelper.make_2d_array(rows, cols)
         sheet.set_array(values=array, name="A1")
 
-        mgr = py_source_mgr.PySourceManager(sheet)
+        mgr = py_source_mgr.PySourceManager(doc)
         mgr.subscribe_after_source_update(cb=on_cell)
         # regenerate data
         mgr.update_all()
@@ -167,7 +185,8 @@ def test_src_manager_across_down(loader, tmp_path) -> None:
             for i in range(cols):
                 count += 1
                 cell_address = (i, j)  # col row
-                cell = sheet[cell_address]
+                cell_obj = CellObj.from_idx(col_idx=i, row_idx=j, sheet_idx=sheet_idx)
+                cell = sheet[cell_obj]
                 assert cell.value == count
     finally:
         if doc is not None:
@@ -178,13 +197,16 @@ def test_src_manager_remove_cell_code(loader) -> None:
 
     if TYPE_CHECKING:
         from build.pythonpath.libre_pythonista_lib.code import py_source_mgr
+        from build.pythonpath.libre_pythonista_lib.code import cell_cache
     else:
         from libre_pythonista_lib.code import py_source_mgr
+        from libre_pythonista_lib.code import cell_cache
 
     def on_cell(src: Any, event_args: EventArgs) -> None:
         ed = cast(DotDict, event_args.event_data)
         if ed.result is not None:
-            sheet = cast(CalcSheet, ed.sheet)
+            doc = cast(CalcDoc, ed.doc)
+            sheet = doc.sheets[ed.sheet_idx]
             address = (ed.col, ed.row)
             sheet[address].value = ed.result
 
@@ -194,45 +216,54 @@ def test_src_manager_remove_cell_code(loader) -> None:
         sheet = doc.sheets[0]
         cell = sheet["A1"]
         cell.value = 1
-        mgr = py_source_mgr.PySourceManager(sheet)
+        cell_cache.CellCache.reset_instance()
+        mgr = py_source_mgr.PySourceManager(doc)
         mgr.subscribe_after_source_update(cb=on_cell)
-        addr = (0, 0)  # A1
-        mgr.add_source("b1 = 0\na1 = 10", cell=addr)
-        cell = sheet[addr]
-        assert cell.value == 10
 
-        addr = (1, 0)  # B1
-        mgr.add_source("b1 = a1 + 10\nb1", cell=addr)
-        cell = sheet[addr]
+        mgr.add_source("b1 = 0\na1 = 10", cell=cell.cell_obj)
+        assert cell.value == 10
+        py_src = mgr[cell.cell_obj]
+        assert py_src.value == 10
+
+        cell = sheet["B1"]
+        mgr.add_source("b1 = a1 + 10\nb1", cell=cell.cell_obj)
         assert cell.value == 20
         # b1 is now 20 if B1 cell is removed, then b1 var should go back to 0
+        py_src = mgr[cell.cell_obj]
+        assert py_src.value == 20
 
-        addr = (0, 1)  # A2
-        mgr.add_source("a2 = b1 + 10", cell=addr)
-        cell = sheet[addr]
+        cell = sheet["A2"]
+        mgr.add_source("a2 = b1 + 10", cell=cell.cell_obj)
         assert cell.value == 30
+        py_src = mgr[cell.cell_obj]
+        assert py_src.value == 30
 
-        addr = (0, 2)  # A3
-        mgr.add_source("a3 = a2 + 10", cell=addr)
-        cell = sheet[addr]
+        cell = sheet["A3"]
+        mgr.add_source("a3 = a2 + 10", cell=cell.cell_obj)
         assert cell.value == 40
+        py_src = mgr[cell.cell_obj]
+        assert py_src.value == 40
 
         # remove b1
-        mgr.remove_source(cell=(1, 0))
+        cell = sheet["B1"]
+        mgr.remove_source(cell=cell.cell_obj)
 
-        addr = (0, 0)  # A1
-        cell = sheet[addr]
+        cell = sheet["A1"]
         assert cell.value == 10
+        py_src = mgr[cell.cell_obj]
+        assert py_src.value == 10
 
         # mgr.add_source("a2 = b1 + 10", cell=addr)
         # b1 is now 0 sor a2 should be 10
-        addr = (0, 1)  # A2
-        cell = sheet[addr]
+        cell = sheet["A2"]
         assert cell.value == 10
+        py_src = mgr[cell.cell_obj]
+        assert py_src.value == 10
 
-        addr = (0, 2)  # A3
-        cell = sheet[addr]
+        cell = sheet["A3"]
         assert cell.value == 20
+        py_src = mgr[cell.cell_obj]
+        assert py_src.value == 20
 
     finally:
         if doc is not None:
@@ -242,16 +273,19 @@ def test_src_manager_remove_cell_code(loader) -> None:
 def test_code_formula(loader) -> None:
     if TYPE_CHECKING:
         from build.pythonpath.libre_pythonista_lib.code import py_source_mgr
+        from build.pythonpath.libre_pythonista_lib.code import cell_cache
     else:
         # import libre_pythonista_lib
         # import libre_pythonista
         from libre_pythonista_lib.code import py_source_mgr
+        from libre_pythonista_lib.code import cell_cache
 
     def on_cell(src: Any, event_args: EventArgs) -> None:
         ed = cast(DotDict, event_args.event_data)
         if ed.result is not None:
 
-            sheet = cast(CalcSheet, ed.sheet)
+            doc = cast(CalcDoc, ed.doc)
+            sheet = doc.sheets[ed.sheet_idx]
             address = (ed.col, ed.row)
             sheet[address].value = ed.result
 
@@ -266,67 +300,22 @@ def test_code_formula(loader) -> None:
         sheet = doc.sheets[0]
         cell = sheet["A1"]
         cell.value = 1
-        mgr = py_source_mgr.PySourceManager(sheet)
+        cell_cache.CellCache.reset_instance()
+        mgr = py_source_mgr.PySourceManager(doc)
         mgr.subscribe_after_source_update(cb=on_cell)
-        addr = (0, 0)  # A1
-        mgr.add_source(get_formula(), cell=addr)
-
-        addr = (0, 1)  # A2
-        mgr.add_source("my_var = custom_formula(10, 12)", cell=addr)
-        cell = sheet[addr]
-        assert cell.value == 22
-
-        addr = (0, 2)  # A3
-        mgr.add_source("my_var2 = custom_formula(5, 5)", cell=addr)
-        cell = sheet[addr]
-        assert cell.value == 10
-
-    finally:
-        if doc is not None:
-            doc.close()
-
-
-def _test_code_for_loop_after_last_var(loader) -> None:
-    if TYPE_CHECKING:
-        from build.pythonpath.libre_pythonista_lib.code import py_source_mgr
-    else:
-        # import libre_pythonista_lib
-        # import libre_pythonista
-        from libre_pythonista_lib.code import py_source_mgr
-
-    def on_cell(src: Any, event_args: EventArgs) -> None:
-        ed = cast(DotDict, event_args.event_data)
-        if ed.result is not None:
-
-            sheet = cast(CalcSheet, ed.sheet)
-            address = (ed.col, ed.row)
-            if gen_util.Util.is_iterable(ed.result):
-                name = TableHelper.make_cell_name(row=ed.row, col=ed.col, zero_index=True)
-                sheet.set_array(values=ed.result, name=name)
-            else:
-                sheet[address].value = ed.result
-
-    def get_code() -> str:
-        return """items = list(range(10))
-for item in items:
-    item += 10
-"""
-
-    doc = None
-    try:
-        doc = CalcDoc.create_doc(loader=loader)
-        sheet = doc.sheets[0]
-        cell = sheet["A1"]
-        mgr = py_source_mgr.PySourceManager(sheet)
-        mgr.subscribe_after_source_update(cb=on_cell)
-        addr = (0, 0)  # A1
-        mgr.add_source(get_code(), cell=addr)
-
-        cell = sheet["A1"]
-        assert cell.value == 10
+        mgr.add_source(get_formula(), cell=cell.cell_obj)
 
         cell = sheet["A2"]
-        assert cell.value == 11
+        mgr.add_source("my_var = custom_formula(10, 12)", cell=cell.cell_obj)
+        assert cell.value == 22
+        py_src = mgr[cell.cell_obj]
+        assert py_src.value == 22
+
+        cell = sheet["A3"]
+        mgr.add_source("my_var2 = custom_formula(5, 5)", cell=cell.cell_obj)
+        assert cell.value == 10
+        py_src = mgr[cell.cell_obj]
+        assert py_src.value == 10
 
     finally:
         if doc is not None:

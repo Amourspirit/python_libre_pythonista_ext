@@ -33,6 +33,21 @@
 					<value>com.sun.star.sheet.SpreadsheetDocument</value>
 				</prop>
 				<prop oor:name="URL" oor:type="xs:string">
+					<value>service:___lo_identifier___.impl?pyc_formula_with_dependent</value>
+				</prop>
+				<prop oor:name="Title" oor:type="xs:string">
+					<value>Insert Python Dependent</value>
+				</prop>
+				<prop oor:name="Target" oor:type="xs:string">
+					<value>_self</value>
+				</prop>
+			</node>
+			<node oor:name="com.github.amourspirit.extension.librepythonista.AddonMenu.m4"
+				oor:op="replace">
+				<prop oor:name="Context" oor:type="xs:string">
+					<value>com.sun.star.sheet.SpreadsheetDocument</value>
+				</prop>
+				<prop oor:name="URL" oor:type="xs:string">
 					<value>service:___lo_identifier___.impl?testing</value>
 				</prop>
 				<prop oor:name="Title" oor:type="xs:string">

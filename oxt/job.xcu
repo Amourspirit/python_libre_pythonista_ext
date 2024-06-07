@@ -9,11 +9,21 @@
         <value>___lo_identifier___.___lo_implementation_name___</value>
       </prop>
     </node>
+    <node oor:name="LibrePythonistaLoadedJob" oor:op="fuse">
+      <prop oor:name="Service">
+        <value>com.github.amourspirit.extensions.librepythonista.LibrePythonistaLoadedJob</value>
+      </prop>
+    </node>
   </node>
   <node oor:name="Events">
     <node oor:name="___startup_event___" oor:op="fuse">
       <node oor:name="JobList">
         <node oor:name="___lo_implementation_name___Job" oor:op="fuse" />
+      </node>
+    </node>
+    <node oor:name="OnViewCreated" oor:op="fuse">
+      <node oor:name="JobList">
+        <node oor:name="LibrePythonistaLoadedJob" oor:op="fuse" />
       </node>
     </node>
   </node>

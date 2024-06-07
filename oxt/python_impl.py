@@ -1,16 +1,11 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
+import contextlib
 import os
 import sys
 import uno
 import unohelper
 from com.sun.star.task import XJobExecutor
-from ooodev.calc import CalcDoc
-from ooodev.exceptions.ex import CellError
-from ooo.dyn.awt.message_box_results import MessageBoxResultsEnum
-from ooo.dyn.awt.message_box_buttons import MessageBoxButtonsEnum
-from ooo.dyn.awt.message_box_type import MessageBoxType
-from ooodev.dialog.msgbox import MsgBox
 
 
 def add_local_path_to_sys_path() -> None:
@@ -22,12 +17,34 @@ def add_local_path_to_sys_path() -> None:
 
 add_local_path_to_sys_path()
 
+
+def _conditions_met() -> bool:
+    try:
+        import ooodev
+        import verr
+        import sortedcontainers
+    except ImportError:
+        return False
+    return True
+
+_CONDITIONS_MET = _conditions_met()
+
+if _CONDITIONS_MET:
+    from ooodev.calc import CalcDoc
+    from ooodev.exceptions.ex import CellError
+    from ooo.dyn.awt.message_box_results import MessageBoxResultsEnum
+    from ooo.dyn.awt.message_box_buttons import MessageBoxButtonsEnum
+    from ooo.dyn.awt.message_box_type import MessageBoxType
+    from ooodev.dialog.msgbox import MsgBox
+
 from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
 
 if TYPE_CHECKING:
     from pythonpath.libre_pythonista_lib.res.res_resolver import ResResolver
+    from pythonpath.libre_pythonista_lib.code.cell_cache import CellCache
 else:
     from libre_pythonista_lib.res.res_resolver import ResResolver
+    from libre_pythonista_lib.code.cell_cache import CellCache
 
 implementation_name = "___lo_identifier___.impl"
 
@@ -40,8 +57,12 @@ class PythonImpl(unohelper.Base, XJobExecutor):
 
     def trigger(self, event: str):
         print("PythonImpl: trigger: event", event)
+        if not _CONDITIONS_MET:
+            return
         if event == "testing":
             self._do_testing()
+        elif event == "pyc_formula_with_dependent":
+            self._do_pyc_formula_with_dependent()
         else:
             self._do_pyc_formula()
 
@@ -71,6 +92,48 @@ class PythonImpl(unohelper.Base, XJobExecutor):
             cell.component.setFormula(
                 '=COM.GITHUB.AMOURSPIRIT.EXTENSION.LIBREPYTHONISTA.PYIMPL.PYC(SHEET();CELL("ADDRESS"))'
             )
+            _ = cell.value
+        except Exception as e:
+            self._logger.error(f"{self.__class__.__name__} - Error: {e}")
+
+    def _do_pyc_formula_with_dependent(self):
+        try:
+
+            msg = self._res.resolve_string("title10")
+            self._logger.debug(msg)
+            doc = CalcDoc.from_current_doc()
+            sheet = doc.get_active_sheet()
+            try:
+                cell = sheet.get_selected_cell()
+            except CellError:
+                self._logger.error(f"{self.__class__.__name__} - No cell selected")
+                return
+            # https://api.libreoffice.org/docs/idl/ref/namespacecom_1_1sun_1_1star_1_1awt_1_1MessageBoxButtons.html
+            if cell.value is not None:
+                msg_result = MsgBox.msgbox(
+                    msg=self._res.resolve_string("mbmsg002"),
+                    title=self._res.resolve_string("mbtitle002"),
+                    boxtype=MessageBoxType.QUERYBOX,
+                    buttons=MessageBoxButtonsEnum.BUTTONS_YES_NO,
+                )
+                if msg_result != MessageBoxResultsEnum.YES:
+                    return
+            cc = CellCache(doc)
+            formula = '=COM.GITHUB.AMOURSPIRIT.EXTENSION.LIBREPYTHONISTA.PYIMPL.PYC(SHEET();CELL("ADDRESS")'
+            with cc.set_context(cell=cell.cell_obj, sheet_idx=sheet.sheet_index):
+                found = cc.get_cell_before()
+                if found:
+                    formula += ";"
+                    if found.sheet_idx > -1 and found.sheet_idx != cc.current_sheet_index:
+                        with contextlib.suppress(Exception):
+                            # maybe the sheet has been deleted
+                            prev_sheet = doc.get_sheet(cc.previous_sheet_index)
+                            formula += f"${prev_sheet.name}."
+
+                    formula += f"{found.col.upper()}{found.row}"
+            formula += ")"
+            # cell.component.setFormula("=" + res.resolve_string("fml001"))
+            cell.component.setFormula(formula)
             _ = cell.value
         except Exception as e:
             self._logger.error(f"{self.__class__.__name__} - Error: {e}")
