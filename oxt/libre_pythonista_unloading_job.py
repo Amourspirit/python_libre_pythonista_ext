@@ -1,10 +1,10 @@
 # region imports
 from __future__ import unicode_literals, annotations
 from typing import Any, TYPE_CHECKING
+import os
 import uno
 import unohelper
 
-# os.environ["OOODEV_SKIP_AUTOLOAD"] = "1"
 
 from com.sun.star.task import XJob
 
@@ -16,14 +16,14 @@ if TYPE_CHECKING:
 
 # region Constants
 
-implementation_name = "com.github.amourspirit.extensions.librepythonista.LibrePythonistaLoadedJob"
+implementation_name = "com.github.amourspirit.extensions.librepythonista.LibrePythonistaUnLoadingJob"
 implementation_services = ("com.sun.star.task.Job",)
 
 # endregion Constants
 
 
 # region XJob
-class LibrePythonistaLoadedJob(unohelper.Base, XJob):
+class LibrePythonistaUnLoadingJob(unohelper.Base, XJob):
     """Python UNO Component that implements the com.sun.star.task.Job interface."""
 
     # region Init
@@ -37,8 +37,8 @@ class LibrePythonistaLoadedJob(unohelper.Base, XJob):
 
     # region execute
     def execute(self, args: Any) -> None:
-        print("LibrePythonistaLoadedJob execute")
-        self._logger.debug("LibrePythonistaLoadedJob execute")
+        print("LibrePythonistaUnLoadingJob execute")
+        self._logger.debug("execute")
         try:
             # loader = Lo.load_office()
             self._logger.debug(f"Args Length: {len(args)}")
@@ -49,25 +49,19 @@ class LibrePythonistaLoadedJob(unohelper.Base, XJob):
                 if struct.Name == "Model":
                     self.document = struct.Value
                     self._logger.debug("Document Found")
-            # assert loader is not None
-            # self._logger.debug("Loader has Loaded")
-            # inst = Lo.current_lo
-            # assert inst is not None
-            # self._logger.debug("Lo Instance has Loaded")
-            # sc = Lo.XSCRIPTCONTEXT
-            # assert sc is not None
-            # self._logger.debug("Script Context has Loaded")
-            # doc = sc.getDocument()
-            # assert doc is not None
-            # self._logger.debug("Document has Loaded")
             if self.document is None:
-                self._logger.debug("LibrePythonistaLoadedJob - Document is None")
+                self._logger.debug("Document is None")
                 return
             if self.document.supportsService("com.sun.star.sheet.SpreadsheetDocument"):
-                self.document.calculateAll()
-                self._logger.debug("Document recalculated")
+                self._logger.debug("Document UnLoading is a spreadsheet")
+                key = f"LIBRE_PYTHONISTA_DOC_{self.document.RuntimeUID}"
+                if key in os.environ:
+                    self._logger.debug(f"Removing {key} from os.environ")
+                    del os.environ[key]
+                else:
+                    self._logger.debug(f"{key} not found in os.environ")
             else:
-                self._logger.debug("Document is not a spreadsheet")
+                self._logger.debug("Document UnLoading not a spreadsheet")
 
         except Exception as e:
             self._logger.error("Error getting current document", exc_info=True)
@@ -79,7 +73,7 @@ class LibrePythonistaLoadedJob(unohelper.Base, XJob):
 
     def _get_local_logger(self) -> OxtLogger:
         from libre_pythonista.oxt_logger import OxtLogger
-        return OxtLogger(log_name="LibrePythonistaLoadedJob")
+        return OxtLogger(log_name="LibrePythonistaUnLoadingJob")
 
     # endregion Logging
 
@@ -89,11 +83,8 @@ class LibrePythonistaLoadedJob(unohelper.Base, XJob):
 # region Implementation
 
 g_TypeTable = {}
-# python loader looks for a static g_ImplementationHelper variable
 g_ImplementationHelper = unohelper.ImplementationHelper()
 
-# add the FormatFactory class to the implementation container,
-# which the loader uses to register/instantiate the component.
-g_ImplementationHelper.addImplementation(LibrePythonistaLoadedJob, implementation_name, implementation_services)
+g_ImplementationHelper.addImplementation(LibrePythonistaUnLoadingJob, implementation_name, implementation_services)
 
 # endregion Implementation

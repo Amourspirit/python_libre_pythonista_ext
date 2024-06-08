@@ -1,5 +1,6 @@
 from __future__ import annotations
 from typing import Any, cast, TYPE_CHECKING
+import contextlib
 import os
 import sys
 import uno
@@ -8,13 +9,10 @@ from com.github.amourspirit.extensions.librepythonista import XPy  # type: ignor
 
 
 def _conditions_met() -> bool:
-    try:
-        import ooodev
-        import verr
-        import sortedcontainers
-    except ImportError:
-        return False
-    return True
+    with contextlib.suppress(Exception):
+        from ___lo_pip___.install.requirements_check import RequirementsCheck
+        return RequirementsCheck().run_imports_ready()
+    return False
 
 
 if TYPE_CHECKING:
@@ -40,16 +38,14 @@ add_local_path_to_sys_path()
 from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
 
 if TYPE_CHECKING:
-    from pythonpath.libre_pythonista_lib.dialog.py.dialog_python import DialogPython
-    from pythonpath.libre_pythonista_lib.code.py_code import PythonCode
-    from pythonpath.libre_pythonista_lib.code.py_source_mgr import PyInstance
+    from .pythonpath.libre_pythonista_lib.dialog.py.dialog_python import DialogPython
+    from .pythonpath.libre_pythonista_lib.code.py_source_mgr import PyInstance
 
     # from pythonpath.libre_pythonista_lib.code.py_cell import PyCell
-    from pythonpath.libre_pythonista_lib.code.cell_cache import CellCache
+    from .pythonpath.libre_pythonista_lib.code.cell_cache import CellCache
 else:
     if _CONDITIONS_MET:
         from libre_pythonista_lib.dialog.py.dialog_python import DialogPython
-        from libre_pythonista_lib.code.py_code import PythonCode
         from libre_pythonista_lib.code.py_source_mgr import PyInstance
 
         # from libre_pythonista_lib.code.py_cell import PyCell
@@ -61,8 +57,10 @@ implementation_services = ("com.sun.star.sheet.AddIn",)
 
 class PyImpl(unohelper.Base, XPy):
     def __init__(self, ctx):
+        # this is only init one time per session. When a new document is loaded, it is not called.
         self.ctx = ctx
         self._logger = OxtLogger(log_name=self.__class__.__name__)
+        self._logger.debug("Py: PyImpl init")
         # PyInstance.reset_instance()
         # CellCache.reset_instance()
         # it seems init is only call when the functions is first called.
@@ -71,24 +69,34 @@ class PyImpl(unohelper.Base, XPy):
     def pyc(self, sheet_num: int, cell_address: str, *args) -> tuple:
         # CellCache should really only be used in this function.
         # It tracks the current cell and the previous cell and has listings for all code cells.
+        # pprint(self.ctx.getElementNames())
         if not _CONDITIONS_MET:
             self._logger.error("pyc - Conditions not met")
-            return ((sheet_num, cell_address),)
+            return None # type: ignore
         self._logger.debug("pyc entered")
         try:
             _ = Lo.current_doc
+            doc = CalcDoc.from_current_doc()
+
         except mEx.MissingInterfaceError:
             self._logger.warning("pyc - MissingInterfaceError from Lo.current_doc. Returning and expecting a recalculation to take place when document is fully loaded.")
             return ((sheet_num, cell_address),)
         result = None
         try:
-            
+            key = f"LIBRE_PYTHONISTA_DOC_{doc.runtime_uid}"
+            if not key in os.environ:
+                # if len(sheet.draw_page) == 0:
+                # if there are no draw pages for the sheet then they are not yet loaded. Return None, and expect a recalculation to take place when the document is fully loaded.
+                self._logger.debug("pyc - Not yet loaded. Returning.")
+                CellCache.reset_instance(doc)
+                return None # type: ignore
+            cc = CellCache(doc)
+            sheet_idx = sheet_num - 1
             self._logger.debug(f"pyc - sheet_num: arg {sheet_num}")
             self._logger.debug(f"pyc - cell_address: arg {cell_address}")
             if args:
                 self._logger.debug(f"pyc -args: {args}")
-            doc = CalcDoc.from_current_doc()
-            sheet_idx = sheet_num - 1
+
             sheet = doc.sheets[sheet_idx]
             xcell = sheet.component.getCellRangeByName(cell_address)
             cell = sheet.get_cell(xcell)
@@ -110,6 +118,7 @@ class PyImpl(unohelper.Base, XPy):
             self._logger.debug(f"CellCache index: {cc.current_sheet_index}")
             self._logger.debug(f"CellCache cell: {cc.current_cell}")
             if not cc.has_cell(cell=cell.cell_obj, sheet_idx=sheet_idx):
+
                 # if not py_cell.has_code():
                 self._logger.debug("Py: py cell has no code")
                 # prompt for code
@@ -158,13 +167,6 @@ class PyImpl(unohelper.Base, XPy):
             txt = dlg.text.strip()
             if txt:
                 result = dlg.text
-
-            # if code_str:
-            # inst = PyInstances(doc.get_active_sheet())
-            # self._logger.debug(f"Py: py saving code")
-            # code = PythonCode(ctx=self.ctx, verify_is_formula=False)
-            # code.save_code(code_str)
-            # self._logger.debug(f"Py: py code saved")
 
         else:
             self._logger.debug("Py: py dialog returned with Cancel")

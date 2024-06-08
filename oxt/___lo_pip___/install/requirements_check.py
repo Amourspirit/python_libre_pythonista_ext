@@ -20,6 +20,23 @@ class RequirementsCheck(metaclass=Singleton):
         self._logger = OxtLogger(log_name=__name__)
         self._config = Config()
         self._ver_rules = VerRules()
+    
+    def run_imports_ready(self) -> bool:
+        """
+        Check if the run imports are ready.
+
+        Returns:
+            bool: ``True`` if all run imports are ready; Otherwise, ``False``.
+        """
+        if not self._config.run_imports:
+            return True
+        for imp in self._config.run_imports:
+            try:
+                __import__(imp)
+            except (ModuleNotFoundError, ImportError):
+                self._logger.warning(f"Import {imp} failed.")
+                return False
+        return True
 
     def check_requirements(self) -> bool:
         """

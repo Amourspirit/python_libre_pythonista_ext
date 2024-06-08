@@ -603,6 +603,15 @@ class Config(metaclass=Singleton):
         """
         return self._basic_config.sym_link_cpython
 
+    @property
+    def run_imports(self) -> Set[str]:
+        """
+        Gets the set of imports that are required to run this extension.
+
+        The value for this property can be set in pyproject.toml (tool.oxt.isolate.run_imports)
+        """
+        return self._basic_config.run_imports
+
     # endregion Properties
 
 

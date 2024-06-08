@@ -5,6 +5,7 @@
         "mhutchie.git-graph",
         "oderwat.indent-rainbow",
         "redhat.vscode-xml",
-        "yuenm18.ooxml-viewer"
+        "yuenm18.ooxml-viewer",
+        "mgesbert.python-path"
     ]
 }

@@ -78,6 +78,11 @@ class JsonConfig(metaclass=Singleton):
         except Exception:
             self._unload_after_install = True
 
+        try:
+            self._run_imports = cast(list, cfg["tool"]["oxt"]["config"]["run_imports"])
+        except Exception:
+            self._run_imports = []
+
         self._validate()
 
     def update_json_config(self, json_config_path: Path) -> None:
@@ -102,6 +107,7 @@ class JsonConfig(metaclass=Singleton):
         json_config["uninstall_on_update"] = self._uninstall_on_update
         json_config["install_on_no_uninstall_permission"] = self._install_on_no_uninstall_permission
         json_config["unload_after_install"] = self._unload_after_install
+        json_config["run_imports"] = self._run_imports
         # json_config["log_pip_installs"] = self._log_pip_installs
         # update the requirements
         json_config["requirements"] = self._requirements
@@ -132,3 +138,4 @@ class JsonConfig(metaclass=Singleton):
         assert isinstance(
             self._install_on_no_uninstall_permission, bool
         ), "_install_on_no_uninstall_permission must be a bool"
+        assert isinstance(self._run_imports, list), "run_imports must be a list"

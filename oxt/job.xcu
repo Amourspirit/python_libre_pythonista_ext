@@ -9,9 +9,19 @@
         <value>___lo_identifier___.___lo_implementation_name___</value>
       </prop>
     </node>
-    <node oor:name="LibrePythonistaLoadedJob" oor:op="fuse">
+    <node oor:name="LibrePythonistaViewJob" oor:op="fuse">
       <prop oor:name="Service">
-        <value>com.github.amourspirit.extensions.librepythonista.LibrePythonistaLoadedJob</value>
+        <value>com.github.amourspirit.extensions.librepythonista.LibrePythonistaViewJob</value>
+      </prop>
+    </node>
+    <node oor:name="LibrePythonistaLoadingJob" oor:op="fuse">
+      <prop oor:name="Service">
+        <value>com.github.amourspirit.extensions.librepythonista.LibrePythonistaLoadingJob</value>
+      </prop>
+    </node>
+    <node oor:name="LibrePythonistaUnLoadingJob" oor:op="fuse">
+      <prop oor:name="Service">
+        <value>com.github.amourspirit.extensions.librepythonista.LibrePythonistaUnLoadingJob</value>
       </prop>
     </node>
   </node>
@@ -21,9 +31,24 @@
         <node oor:name="___lo_implementation_name___Job" oor:op="fuse" />
       </node>
     </node>
+    <node oor:name="OnLoad" oor:op="fuse">
+      <node oor:name="JobList">
+        <node oor:name="LibrePythonistaLoadingJob" oor:op="fuse" />
+      </node>
+    </node>
+    <node oor:name="OnPrepareUnload" oor:op="fuse">
+      <node oor:name="JobList">
+        <node oor:name="LibrePythonistaUnLoadingJob" oor:op="fuse" />
+      </node>
+    </node>
+    <node oor:name="OnUnload" oor:op="fuse">
+      <node oor:name="JobList">
+        <node oor:name="LibrePythonistaUnLoadingJob" oor:op="fuse" />
+      </node>
+    </node>
     <node oor:name="OnViewCreated" oor:op="fuse">
       <node oor:name="JobList">
-        <node oor:name="LibrePythonistaLoadedJob" oor:op="fuse" />
+        <node oor:name="LibrePythonistaViewJob" oor:op="fuse" />
       </node>
     </node>
   </node>

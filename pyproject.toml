@@ -23,6 +23,7 @@ install_on_no_uninstall_permission = true # https://tinyurl.com/ymeh4c9j#install
 oo_types_uno = ""
 oo_types_office = ""
 unload_after_install = false
+run_imports = ["ooodev", "verr", "sortedcontainers"]
 
 [tool.oxt.token]
 # in the form of "token_name": "token_value"
