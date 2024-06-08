@@ -15,9 +15,11 @@ from ooodev.dialog.msgbox import MessageBoxResultsEnum, MessageBoxType
 from ooodev.loader import Lo
 from ooodev.dialog.dl_control import CtlButton, CtlTextEdit, CtlFixedText
 from ooodev.events.args.event_args import EventArgs
+
 from .window_listener import WindowListener
 from .key_handler import KeyHandler
-from ...res.res_resolver import ResResolver
+
+# from ...res.res_resolver import ResResolver
 from .dialog_menu import DialogMenu
 
 
@@ -31,6 +33,9 @@ if TYPE_CHECKING:
     from ooodev.dialog.dl_control.ctl_base import DialogControlBase
     from ooodev.gui.menu.popup_menu import PopupMenu
     from ..window_type import WindowType
+    from .....___lo_pip___.lo_util.resource_resolver import ResourceResolver
+else:
+    from ___lo_pip___.lo_util.resource_resolver import ResourceResolver
 
 # endregion Imports
 
@@ -51,7 +56,7 @@ class DialogPython:
     # pylint: disable=unused-argument
     # region Init
     def __init__(self, ctx: Any) -> None:
-        self._rr = ResResolver(ctx)  # singleton
+        self._rr = ResourceResolver(ctx)
         self._doc = Lo.current_doc
         self._border_kind = BorderKind.BORDER_3D
         self._width = DialogPython.WIDTH
@@ -422,10 +427,16 @@ class DialogPython:
 
     @property
     def res_resolver(self) -> ResResolver:
+        """Gets the Resource Resolver object."""
         return self._rr
 
     @property
     def text(self) -> str:
+        """Gets/Sets the text of the code edit control."""
         return self._code.text
+
+    @text.setter
+    def text(self, value: str) -> None:
+        self._code.text = value
 
     # endregion properties

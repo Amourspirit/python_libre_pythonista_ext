@@ -2,16 +2,28 @@
 from __future__ import unicode_literals, annotations
 from typing import Any, TYPE_CHECKING
 import os
+import contextlib
 import uno
 import unohelper
 
 
 from com.sun.star.task import XJob
 
+
+def _conditions_met() -> bool:
+    with contextlib.suppress(Exception):
+        from ___lo_pip___.install.requirements_check import RequirementsCheck  # type: ignore
+
+        return RequirementsCheck().run_imports_ready()
+    return False
+
+
 if TYPE_CHECKING:
     # just for design time
-    from libre_pythonista.oxt_logger import OxtLogger
-
+    _CONDITIONS_MET = True
+    from .___lo_pip___.oxt_logger import OxtLogger
+else:
+    _CONDITIONS_MET = _conditions_met()
 # endregion imports
 
 # region Constants
@@ -60,6 +72,16 @@ class LibrePythonistaUnLoadingJob(unohelper.Base, XJob):
                     del os.environ[key]
                 else:
                     self._logger.debug(f"{key} not found in os.environ")
+                if _CONDITIONS_MET:
+                    try:
+                        from ooodev.calc import CalcDoc
+
+                        doc = CalcDoc.from_current_doc()
+                        from libre_pythonista_lib.dispatch import dispatch_mgr  # type: ignore
+
+                        dispatch_mgr.unregister_interceptor(doc)
+                    except Exception as e:
+                        self._logger.error("Error unregistering dispatch manager", exc_info=True)
             else:
                 self._logger.debug("Document UnLoading not a spreadsheet")
 
@@ -73,6 +95,7 @@ class LibrePythonistaUnLoadingJob(unohelper.Base, XJob):
 
     def _get_local_logger(self) -> OxtLogger:
         from libre_pythonista.oxt_logger import OxtLogger
+
         return OxtLogger(log_name="LibrePythonistaUnLoadingJob")
 
     # endregion Logging

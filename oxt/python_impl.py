@@ -20,29 +20,25 @@ add_local_path_to_sys_path()
 
 def _conditions_met() -> bool:
     with contextlib.suppress(Exception):
-        from ___lo_pip___.install.requirements_check import RequirementsCheck
+        from ___lo_pip___.install.requirements_check import RequirementsCheck  # type: ignore
 
         return RequirementsCheck().run_imports_ready()
     return False
 
-if TYPE_CHECKING:
-    from pythonpath.libre_pythonista_lib.res.res_resolver import ResResolver
-else:
-    from libre_pythonista_lib.res.res_resolver import ResResolver
 
 if TYPE_CHECKING:
     _CONDITIONS_MET = True
-    from pythonpath.libre_pythonista_lib.res.res_resolver import ResResolver
-    from pythonpath.libre_pythonista_lib.code.cell_cache import CellCache
+    from .___lo_pip___.lo_util.resource_resolver import ResourceResolver
+    from .pythonpath.libre_pythonista_lib.code.cell_cache import CellCache
     from ooodev.calc import CalcDoc
     from ooodev.exceptions.ex import CellError
     from ooo.dyn.awt.message_box_results import MessageBoxResultsEnum
     from ooo.dyn.awt.message_box_buttons import MessageBoxButtonsEnum
     from ooo.dyn.awt.message_box_type import MessageBoxType
     from ooodev.dialog.msgbox import MsgBox
+    from .___lo_pip___.oxt_logger.oxt_logger import OxtLogger
 else:
     _CONDITIONS_MET = _conditions_met()
-
     if _CONDITIONS_MET:
         from ooodev.calc import CalcDoc
         from ooodev.exceptions.ex import CellError
@@ -51,8 +47,8 @@ else:
         from ooo.dyn.awt.message_box_type import MessageBoxType
         from ooodev.dialog.msgbox import MsgBox
         from libre_pythonista_lib.code.cell_cache import CellCache
-
-from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from ___lo_pip___.lo_util.resource_resolver import ResourceResolver
+    from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
 
 
 implementation_name = "___lo_identifier___.impl"
@@ -62,7 +58,7 @@ class PythonImpl(unohelper.Base, XJobExecutor):
     def __init__(self, ctx):
         self.ctx = ctx
         self._logger = OxtLogger(log_name=self.__class__.__name__)
-        self._res = ResResolver(self.ctx)
+        self._res = ResourceResolver(self.ctx)
 
     def trigger(self, event: str):
         print("PythonImpl: trigger: event", event)

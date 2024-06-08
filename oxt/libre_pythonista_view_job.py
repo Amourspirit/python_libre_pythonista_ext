@@ -1,16 +1,28 @@
 # region imports
 from __future__ import unicode_literals, annotations
 from typing import Any, TYPE_CHECKING
-import uno
+import contextlib
 import os
+import uno
 import unohelper
-
 
 from com.sun.star.task import XJob
 
+
+def _conditions_met() -> bool:
+    with contextlib.suppress(Exception):
+        from ___lo_pip___.install.requirements_check import RequirementsCheck  # type: ignore
+
+        return RequirementsCheck().run_imports_ready()
+    return False
+
+
 if TYPE_CHECKING:
     # just for design time
-    from libre_pythonista.oxt_logger import OxtLogger
+    _CONDITIONS_MET = True
+    from .___lo_pip___.oxt_logger import OxtLogger
+else:
+    _CONDITIONS_MET = _conditions_met()
 
 # endregion imports
 
@@ -59,6 +71,17 @@ class LibrePythonistaViewJob(unohelper.Base, XJob):
                 self._logger.debug(f"Added {key} to environment variables")
                 self.document.calculateAll()
                 self._logger.debug("Document recalculated")
+                if _CONDITIONS_MET:
+                    self._logger.debug("Registering dispatch manager")
+                    from ooodev.calc import CalcDoc
+
+                    doc = CalcDoc.from_current_doc()
+                    from libre_pythonista_lib.dispatch import dispatch_mgr  # type: ignore
+
+                    dispatch_mgr.register_interceptor(doc)
+                else:
+                    self._logger.debug("Conditions not met to register dispatch manager")
+                self._logger.debug("Dispatch manager registered")
             else:
                 self._logger.debug("Document is not a spreadsheet")
 
@@ -71,7 +94,8 @@ class LibrePythonistaViewJob(unohelper.Base, XJob):
     # region Logging
 
     def _get_local_logger(self) -> OxtLogger:
-        from libre_pythonista.oxt_logger import OxtLogger
+        from ___lo_pip___.oxt_logger import OxtLogger
+
         return OxtLogger(log_name="LibrePythonistaViewJob")
 
     # endregion Logging

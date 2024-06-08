@@ -41,11 +41,6 @@
         <node oor:name="LibrePythonistaUnLoadingJob" oor:op="fuse" />
       </node>
     </node>
-    <node oor:name="OnUnload" oor:op="fuse">
-      <node oor:name="JobList">
-        <node oor:name="LibrePythonistaUnLoadingJob" oor:op="fuse" />
-      </node>
-    </node>
     <node oor:name="OnViewCreated" oor:op="fuse">
       <node oor:name="JobList">
         <node oor:name="LibrePythonistaViewJob" oor:op="fuse" />
