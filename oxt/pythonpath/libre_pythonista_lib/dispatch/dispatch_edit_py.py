@@ -21,6 +21,7 @@ else:
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
     from libre_pythonista_lib.code.py_source_mgr import PyInstance
 
+
 class DispatchEditPY(unohelper.Base, XDispatch):
     def __init__(self, sheet: str, cell: str):
         self._sheet = sheet
@@ -65,17 +66,16 @@ class DispatchEditPY(unohelper.Base, XDispatch):
                 if doc.component.isAutomaticCalculationEnabled():
                     doc.component.calculateAll()
 
-
     def removeStatusListener(self, control: XStatusListener, url: URL) -> None:
         """
         Un-registers a listener from a control.
         """
         pass
 
-    def _edit_code(self, doc: CalcDoc, cell_obj:CellObj) -> bool:
+    def _edit_code(self, doc: CalcDoc, cell_obj: CellObj) -> bool:
         ctx = Lo.get_context()
         dlg = DialogPython(ctx)
-        py_inst = PyInstance(doc) # singleton
+        py_inst = PyInstance(doc)  # singleton
         py_src = py_inst[cell_obj]
         code = py_src.source_code
         py_src = None
@@ -86,11 +86,15 @@ class DispatchEditPY(unohelper.Base, XDispatch):
             self._logger.debug("Dialog returned with OK")
             txt = dlg.text.strip()
             if txt != code:
-                self._logger.debug("Code has changed, updating ...")
-                py_inst.update_source(code=txt, cell=cell_obj)
-                py_inst.update_all()
-                self._logger.debug("Code updated")
-                result = True
+                try:
+                    self._logger.debug("Code has changed, updating ...")
+                    py_inst.update_source(code=txt, cell=cell_obj)
+                    self._logger.debug(f"Cell Code updated for {cell_obj}")
+                    py_inst.update_all()
+                    self._logger.debug("Code updated")
+                    result = True
+                except Exception as e:
+                    self._logger.error("Error updating code", exc_info=True)
             else:
                 self._logger.debug("Code has not changed")
         else:

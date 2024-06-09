@@ -76,7 +76,8 @@ class LibrePythonistaUnLoadingJob(unohelper.Base, XJob):
                     try:
                         from ooodev.calc import CalcDoc
 
-                        doc = CalcDoc.from_current_doc()
+                        # doc = CalcDoc.from_current_doc()
+                        doc = CalcDoc.get_doc_from_component(self.document)
                         from libre_pythonista_lib.dispatch import dispatch_mgr  # type: ignore
 
                         dispatch_mgr.unregister_interceptor(doc)

@@ -48,6 +48,21 @@
 					<value>com.sun.star.sheet.SpreadsheetDocument</value>
 				</prop>
 				<prop oor:name="URL" oor:type="xs:string">
+					<value>service:___lo_identifier___.impl?debug_dump_module_to_log</value>
+				</prop>
+				<prop oor:name="Title" oor:type="xs:string">
+					<value>Debug - Log Module</value>
+				</prop>
+				<prop oor:name="Target" oor:type="xs:string">
+					<value>_self</value>
+				</prop>
+			</node>
+			<node oor:name="com.github.amourspirit.extension.librepythonista.AddonMenu.m5"
+				oor:op="replace">
+				<prop oor:name="Context" oor:type="xs:string">
+					<value>com.sun.star.sheet.SpreadsheetDocument</value>
+				</prop>
+				<prop oor:name="URL" oor:type="xs:string">
 					<value>service:___lo_identifier___.impl?testing</value>
 				</prop>
 				<prop oor:name="Title" oor:type="xs:string">

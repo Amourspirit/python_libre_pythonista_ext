@@ -21,9 +21,11 @@ if TYPE_CHECKING:
     # just for design time
     _CONDITIONS_MET = True
     from .___lo_pip___.oxt_logger import OxtLogger
+    from ooodev.loader import Lo
 else:
     _CONDITIONS_MET = _conditions_met()
-
+    if _CONDITIONS_MET:
+        from ooodev.loader import Lo
 # endregion imports
 
 # region Constants
@@ -75,9 +77,15 @@ class LibrePythonistaViewJob(unohelper.Base, XJob):
                     self._logger.debug("Registering dispatch manager")
                     from ooodev.calc import CalcDoc
 
-                    doc = CalcDoc.from_current_doc()
+                    # Lo.load_office() only loads office if it is not already loaded
+                    # It is needed here or the dispatch manager will not receive the correct document
+                    # when multiple documents are open.
+                    _ = Lo.load_office()
+                    doc = CalcDoc.get_doc_from_component(self.document)
+
                     from libre_pythonista_lib.dispatch import dispatch_mgr  # type: ignore
 
+                    self._logger.debug(f"Pre Dispatch manager loaded, UID: {doc.runtime_uid}")
                     dispatch_mgr.register_interceptor(doc)
                 else:
                     self._logger.debug("Conditions not met to register dispatch manager")

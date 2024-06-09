@@ -102,11 +102,11 @@ def register_interceptor(doc_comp: Any):
         log = LogInst()
         log.debug("Registering Dispatch Provider Interceptor")
 
-    if DispatchProviderInterceptor.has_instance():
+    if DispatchProviderInterceptor.has_instance(doc):
         if log:
             log.debug("Dispatch Provider Interceptor already registered.")
         return
-    inst = DispatchProviderInterceptor()  # singleton
+    inst = DispatchProviderInterceptor(doc)  # singleton
     frame = doc.get_frame()
     frame.registerDispatchProviderInterceptor(inst)
     view = doc.get_view()
@@ -137,11 +137,11 @@ def unregister_interceptor(doc_comp: Any):
         log = LogInst()
         log.debug("UnRegistering Dispatch Provider Interceptor")
 
-    if not DispatchProviderInterceptor.has_instance():
+    if not DispatchProviderInterceptor.has_instance(doc):
         if log:
             log.debug("Dispatch Provider Interceptor was not registered.")
         return
-    inst = DispatchProviderInterceptor()  # singleton
+    inst = DispatchProviderInterceptor(doc)  # singleton
     frame = doc.get_frame()
     frame.releaseDispatchProviderInterceptor(inst)
     view = doc.get_view()

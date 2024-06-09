@@ -29,14 +29,14 @@ class DispatchProviderInterceptor(unohelper.Base, XDispatchProviderInterceptor):
 
     _instances = {}
 
-    def __new__(cls, *args, **kwargs):
+    def __new__(cls, doc: CalcDoc, *args, **kwargs):
         # doc = Lo.current_doc
         # doc = CalcDoc.from_current_doc()
-        sc = Lo.xscript_context
-        doc = sc.getDocument()
-        uid = doc.RuntimeUID
+        # sc = Lo.xscript_context
+        # doc = sc.getDocument()
+        # uid = doc.RuntimeUID
 
-        # doc.runtime_uid
+        uid = doc.runtime_uid
         key = f"dpi_{uid}"
         if not key in cls._instances:
             inst = super(DispatchProviderInterceptor, cls).__new__(cls, *args, **kwargs)
@@ -45,9 +45,7 @@ class DispatchProviderInterceptor(unohelper.Base, XDispatchProviderInterceptor):
             cls._instances[key] = inst
         return cls._instances[key]
 
-    def __init__(
-        self,
-    ):
+    def __init__(self, doc: CalcDoc):
         if getattr(self, "_initialized", False):
             return
         self._master = None
@@ -118,9 +116,9 @@ class DispatchProviderInterceptor(unohelper.Base, XDispatchProviderInterceptor):
             del DispatchProviderInterceptor._instances[self._key]
 
     @classmethod
-    def has_instance(cls) -> bool:
+    def has_instance(cls, doc: CalcDoc) -> bool:
         # doc = Lo.current_doc
-        doc = CalcDoc.from_current_doc()
+        # doc = CalcDoc.from_current_doc()
         doc.runtime_uid
         key = f"dpi_{doc.runtime_uid}"
         return key in cls._instances

@@ -73,6 +73,7 @@ class PyImpl(unohelper.Base, XPy):
         try:
             _ = Lo.current_doc
             doc = CalcDoc.from_current_doc()
+            self._logger.debug(f"Doc UID: {doc.runtime_uid}")
 
         except mEx.MissingInterfaceError:
             self._logger.warning(

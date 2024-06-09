@@ -34,6 +34,7 @@ class OxtLogger(Logger):
         """
         self._config = LoggerConfig()  # config.Config()
         self.formatter = logging.Formatter(self._config.log_format)
+
         if not log_file:
             log_file = self._config.log_file
         self._log_file = log_file
@@ -88,7 +89,44 @@ class OxtLogger(Logger):
         file_handler.setLevel(self._config.log_level)
         return file_handler
 
+    def debugs(self, *messages: str) -> None:
+        """
+        Log Several messages debug formatted by tab.
+
+        Args:
+            messages (Any):  One or more messages to log.
+
+        Return:
+            None:
+        """
+        data = [str(m) for m in messages]
+        self.debug("\t".join(data))
+        return
+
     @property
     def log_file(self):
         """Log file path."""
         return self._log_file
+
+    # region Properties
+    @property
+    def is_debug(self) -> bool:
+        """Check if is debug"""
+        return self._config.log_level <= logging.DEBUG
+
+    @property
+    def is_info(self) -> bool:
+        """Check if is info"""
+        return self._config.log_level <= logging.INFO
+
+    @property
+    def is_warning(self) -> bool:
+        """Check if is warning"""
+        return self._config.log_level <= logging.WARNING
+
+    @property
+    def is_error(self) -> bool:
+        """Check if is error"""
+        return self._config.log_level <= logging.ERROR
+
+    # endregion Properties
