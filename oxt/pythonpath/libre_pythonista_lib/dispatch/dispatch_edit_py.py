@@ -7,7 +7,6 @@ from com.sun.star.beans import PropertyValue
 from com.sun.star.util import URL
 from ooodev.loader import Lo
 from ooodev.calc import CalcDoc
-from ooodev.io.log import logging as logger
 from ..dialog.py.dialog_python import DialogPython
 from ..code.cell_cache import CellCache
 
