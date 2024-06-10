@@ -575,7 +575,7 @@ class PySourceManager(EventsPartial):
         # after code has been saved to file, update the cell cache
         # resetting is slower than just adding the cell to the cache
         self._logger.debug(f"PySourceManager - add_source() - inserting for cell {cell}: sheet index: {sheet_idx}")
-        cc.insert(cell=cell, props={cc.code_prop}, sheet_idx=sheet_idx)
+        cc.insert(cell=cell, code_name="str_id", props={cc.code_prop}, sheet_idx=sheet_idx)
         self._logger.debug(f"PySourceManager - add_source() - inserted for cell {cell}: sheet index: {sheet_idx}")
         # CellCache.reset_instance()
         self._data[code_cell] = py_src
@@ -637,6 +637,11 @@ class PySourceManager(EventsPartial):
         """
         Removes Source for the cell.
 
+        - Deletes the source code.
+        - Removes cell from CellCache.
+        - Removes the custom property from the cell.
+        - Updates the module to reflect the changes.
+
         Args:
             cell (Tuple[int, int]): Cell address in row and column.
         """
@@ -690,7 +695,7 @@ class PySourceManager(EventsPartial):
             cell (Tuple[int, int]): Cell address in Column and Row.
 
         Returns:
-            int: _description_
+            int: Index of the cell in the data.
         """
         code_cell = self.convert_cell_obj_to_tuple(cell)
         return list(self._data.keys()).index(code_cell)

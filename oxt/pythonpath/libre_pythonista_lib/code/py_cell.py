@@ -3,17 +3,25 @@ Class that manages cell code.
 """
 
 from __future__ import annotations
+from typing import TYPE_CHECKING
 import uno
 from ooodev.calc import CalcCell
 from ooodev.utils import gen_util as gUtil
 from ooodev.utils.helper.dot_dict import DotDict
 from .cell_code_storage import CellCodeStorage
 
+if TYPE_CHECKING:
+    from ....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from ....___lo_pip___.config import Config
+else:
+    from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from ___lo_pip___.config import Config
+
 
 class PyCell:
     def __init__(self, cell: CalcCell) -> None:
         self._cell = cell
-        self._prop_prefix = "libre_pythonista_"
+        self._cfg = Config()
         self._props = self._get_properties()
         self._storage = CellCodeStorage(self)
 
@@ -25,14 +33,14 @@ class PyCell:
         return props
 
     def _set_code_id(self) -> None:
-        key = f"{self._prop_prefix}codename"
+        key = self._cfg.cell_cp_codename
         str_id = "id_" + gUtil.Util.generate_random_alpha_numeric(14)
         self._cell.set_custom_property(key, str_id)
         setattr(self._props, key, str_id)
         return None
 
     def has_code(self) -> bool:
-        key = f"{self._prop_prefix}codename"
+        key = self._cfg.cell_cp_codename
         if key not in self._props:
             return False
         return self._storage.has_code()
@@ -51,7 +59,7 @@ class PyCell:
 
     @property
     def code_id(self) -> str:
-        key = f"{self._prop_prefix}codename"
+        key = self._cfg.cell_cp_codename
         if key not in self._props:
             self._set_code_id()
         return self._props.get(key)

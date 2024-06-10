@@ -32,8 +32,10 @@ if TYPE_CHECKING:
     from ooodev.exceptions import ex as mEx
     from .___lo_pip___.oxt_logger.oxt_logger import OxtLogger
     from .pythonpath.libre_pythonista_lib.dialog.py.dialog_python import DialogPython
-    from .pythonpath.libre_pythonista_lib.code.py_source_mgr import PyInstance
-    from .pythonpath.libre_pythonista_lib.code.cell_cache import CellCache
+
+    # from .pythonpath.libre_pythonista_lib.code.py_source_mgr import PyInstance
+    # from .pythonpath.libre_pythonista_lib.code.cell_cache import CellCache
+    from .pythonpath.libre_pythonista_lib.cell.cell_mgr import CellMgr
 else:
     _CONDITIONS_MET = _conditions_met()
 
@@ -42,8 +44,10 @@ else:
         from ooodev.calc import CalcDoc
         from ooodev.exceptions import ex as mEx
         from libre_pythonista_lib.dialog.py.dialog_python import DialogPython
-        from libre_pythonista_lib.code.py_source_mgr import PyInstance
-        from libre_pythonista_lib.code.cell_cache import CellCache
+
+        # from libre_pythonista_lib.code.py_source_mgr import PyInstance
+        # from libre_pythonista_lib.code.cell_cache import CellCache
+        from libre_pythonista_lib.cell.cell_mgr import CellMgr
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
 
 
@@ -87,9 +91,10 @@ class PyImpl(unohelper.Base, XPy):
                 # if len(sheet.draw_page) == 0:
                 # if there are no draw pages for the sheet then they are not yet loaded. Return None, and expect a recalculation to take place when the document is fully loaded.
                 self._logger.debug("pyc - Not yet loaded. Returning.")
-                CellCache.reset_instance(doc)
+                CellMgr.reset_instance(doc)
                 return None  # type: ignore
-            cc = CellCache(doc)
+            cm = CellMgr(doc)
+            # cc = CellCache(doc)
             sheet_idx = sheet_num - 1
             self._logger.debug(f"pyc - sheet_num: arg {sheet_num}")
             self._logger.debug(f"pyc - cell_address: arg {cell_address}")
@@ -102,19 +107,19 @@ class PyImpl(unohelper.Base, XPy):
             self._logger.debug(f"pyc - Cell {cell.cell_obj} has custom properties: {cell.has_custom_properties()}")
 
             # py_cell = PyCell(cell)
-            cc = CellCache(doc)
-            cc_len = len(cc.code_cells[sheet_idx])
-            if cc_len == 0:
-                CellCache.reset_instance(doc)
-                cc = CellCache(doc)
-            self._logger.debug(f"pyc - Length of cc: {len(cc.code_cells[sheet_idx])}")
-            py_inst = PyInstance(doc)
+            # cc = CellCache(doc)
+            # cc_len = len(cc.code_cells[sheet_idx])
+            # if cc_len == 0:
+            #     CellCache.reset_instance(doc)
+            #     cc = CellCache(doc)
+            # self._logger.debug(f"pyc - Length of cc: {len(cc.code_cells[sheet_idx])}")
+            # py_inst = PyInstance(doc)
             # cc_prop = cc.code_prop
-            cc.current_sheet_index = sheet_idx
-            cc.current_cell = cell.cell_obj
-            self._logger.debug(f"CellCache index: {cc.current_sheet_index}")
-            self._logger.debug(f"CellCache cell: {cc.current_cell}")
-            if not cc.has_cell(cell=cell.cell_obj, sheet_idx=sheet_idx):
+            # cc.current_sheet_index = sheet_idx
+            # cc.current_cell = cell.cell_obj
+            # self._logger.debug(f"CellCache index: {cc.current_sheet_index}")
+            # self._logger.debug(f"CellCache cell: {cc.current_cell}")
+            if not cm.has_cell(cell_obj=cell.cell_obj):
 
                 # if not py_cell.has_code():
                 self._logger.debug("Py: py cell has no code")
@@ -122,28 +127,24 @@ class PyImpl(unohelper.Base, XPy):
                 code = self._get_code()
                 if code:
                     # py_cell.save_code(code)
-                    py_inst.add_source(code=code, cell=cell.cell_obj)
-                    # cc.insert(cell=cell.cell_obj, props={cc_prop}, sheet_idx=sheet_idx)
-                    # CellCache.reset_instance()
-                    # cc = CellCache(doc)
-                    cc.current_sheet_index = sheet_idx
-                    cc.current_cell = cell.cell_obj
-                    PyInstance.reset_instance(doc)
-                    py_inst = PyInstance(doc)
-                    py_inst.update_all()
+                    cm.add_source_code(source_code=code, cell_obj=cell.cell_obj)
+                    # cc.current_sheet_index = sheet_idx
+                    # cc.current_cell = cell.cell_obj
+                    # PyInstance.reset_instance(doc)
+                    # py_inst = PyInstance(doc)
+                    # py_inst.update_all()
             else:
                 self._logger.debug("Py: py cell has code")
-            self._logger.debug(f"Is First Cell: {cc.is_first_cell()}")
-            self._logger.debug(f"Is Last Cell: {cc.is_last_cell()}")
-            self._logger.debug(f"Current Cell Index: {cc.get_cell_index()}")
+            # self._logger.debug(f"Is First Cell: {cc.is_first_cell()}")
+            # self._logger.debug(f"Is Last Cell: {cc.is_last_cell()}")
+            # self._logger.debug(f"Current Cell Index: {cc.get_cell_index()}")
 
             self._logger.debug(f"Py: py sheet_num: {sheet_num}, cell_address: {cell_address}")
-            py_inst = PyInstance(doc)
-            if cc.is_first_cell():
-                PyInstance.reset_instance()
-                py_inst = PyInstance(doc)
-                py_inst.update_all()
-            py_src = py_inst[cc.current_cell]
+            # py_inst = PyInstance(doc)
+            if cm.is_first_cell(cell_obj=cell.cell_obj):
+                cm.reset_py_inst()
+            py_src = cm.get_py_src(cell_obj=cell.cell_obj)
+            # py_src = py_inst[cc.current_cell]
             if isinstance(py_src.value, tuple):
                 result = py_src.value
             else:
@@ -151,6 +152,7 @@ class PyImpl(unohelper.Base, XPy):
 
         except Exception as e:
             self._logger.error(f"Error: {e}", exc_info=True)
+            raise
         self._logger.debug("pyc exiting")
         # return ((sheet_idx, cell_address),)
         return result

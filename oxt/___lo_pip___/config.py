@@ -612,6 +612,26 @@ class Config(metaclass=Singleton):
         """
         return self._basic_config.run_imports
 
+    # region tool.libre_pythonista.config
+    @property
+    def cell_cp_prefix(self) -> str:
+        """
+        Gets the custom property prefix for cells.
+
+        The value for this property can be set in pyproject.toml (tool.libre_pythonista.config)
+        """
+        return self._basic_config.cell_cp_prefix
+
+    @property
+    def cell_cp_codename(self) -> str:
+        """
+        Gets the custom property code name for cells.
+
+        The value for this property can be set in pyproject.toml (tool.libre_pythonista.config)
+        """
+        return self._basic_config.cell_cp_codename
+
+    # endregion tool.libre_pythonista.config
     # endregion Properties
 
 

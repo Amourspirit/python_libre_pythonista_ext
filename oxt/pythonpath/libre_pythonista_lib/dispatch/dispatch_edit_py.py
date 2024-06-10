@@ -9,7 +9,7 @@ from ooodev.loader import Lo
 from ooodev.calc import CalcDoc
 from ..dialog.py.dialog_python import DialogPython
 from ..code.cell_cache import CellCache
-
+from ..cell.cell_mgr import CellMgr
 
 if TYPE_CHECKING:
     from com.sun.star.frame import XStatusListener
@@ -63,7 +63,17 @@ class DispatchEditPY(unohelper.Base, XDispatch):
             result = self._edit_code(doc=doc, cell_obj=cell_obj)
             if result:
                 if doc.component.isAutomaticCalculationEnabled():
-                    doc.component.calculateAll()
+                    cm = CellMgr(doc)  # singleton. Tracks all Code cells
+                    # https://ask.libreoffice.org/t/mark-a-calc-sheet-cell-as-dirty/106659
+                    with cm.listener_context(cell.component):
+                        # suspend the listeners for this cell
+                        s = cell.component.getFormula()
+                        if not s:
+                            self._logger.error(f"Cell {self._cell} has no formula.")
+                            return
+                        s = s.lstrip("=")  # just in case there are multiple equal signs
+                        cell.component.setFormula(f"={s}")
+                        doc.component.calculate()
 
     def removeStatusListener(self, control: XStatusListener, url: URL) -> None:
         """

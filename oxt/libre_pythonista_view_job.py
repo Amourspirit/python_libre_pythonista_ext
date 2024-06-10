@@ -84,9 +84,12 @@ class LibrePythonistaViewJob(unohelper.Base, XJob):
                     doc = CalcDoc.get_doc_from_component(self.document)
 
                     from libre_pythonista_lib.dispatch import dispatch_mgr  # type: ignore
+                    from libre_pythonista_lib.cell.cell_mgr import CellMgr  # type: ignore
 
                     self._logger.debug(f"Pre Dispatch manager loaded, UID: {doc.runtime_uid}")
                     dispatch_mgr.register_interceptor(doc)
+                    cm = CellMgr(doc)
+                    cm.add_all_listeners()
                 else:
                     self._logger.debug("Conditions not met to register dispatch manager")
                 self._logger.debug("Dispatch manager registered")

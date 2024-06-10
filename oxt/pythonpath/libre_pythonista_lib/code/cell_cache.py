@@ -13,8 +13,10 @@ from ooodev.utils.data_type.cell_obj import CellObj
 
 if TYPE_CHECKING:
     from ....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from ....___lo_pip___.config import Config
 else:
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from ___lo_pip___.config import Config
 
 
 @dataclass
@@ -41,9 +43,9 @@ class CellCache:
         is_init = getattr(self, "_is_init", False)
         if is_init:
             return
+        self._cfg = Config()
         self._log = OxtLogger(log_name=self.__class__.__name__)
-        self._prop_prefix = "libre_pythonista_"
-        self._code_prop = f"{self._prop_prefix}codename"
+        self._code_prop = self._cfg.cell_cp_codename
         self._doc = doc
         self._code = self._get_cells()
         self._cache = {}
@@ -120,6 +122,8 @@ class CellCache:
         self._code[sheet_idx][cell] = IndexCellProps(code_name, props)
         self._update_indexes()
         self._log.debug(f"Inserted Cell: {cell} into Sheet Index: {sheet_idx} with Code Name: {code_name}")
+        if "code_name_map" in self._cache:
+            del self._cache["code_name_map"]
         return None
 
     def remove_cell(self, cell: CellObj, sheet_idx: int = -1) -> None:
@@ -151,6 +155,8 @@ class CellCache:
         del self._code[sheet_idx][cell]
         self._log.debug(f"Removed Cell: {cell} from sheet index: {sheet_idx}")
         self._update_indexes()
+        if "code_name_map" in self._cache:
+            del self._cache["code_name_map"]
         return None
 
     def get_index_cell_props(self, cell: CellObj, sheet_idx: int = -1) -> IndexCellProps:
@@ -441,7 +447,28 @@ class CellCache:
 
     @property
     def code_cells(self) -> Dict[int, Dict[CellObj, IndexCellProps]]:
+        """
+        Gets the code cells.
+
+        This is a dictionary of dictionaries. The key is the sheet index and the value is a dictionary of cells and their properties.
+        """
         return self._code
+
+    @property
+    def code_name_cell_map(self) -> Dict[str, CellObj]:
+        """
+        Gets a dictionary of code name to cell object.
+
+        Because cell code names are unique this is a one to one mapping.
+        """
+        if "code_name_map" in self._cache:
+            return self._cache["code_name_map"]
+        result = {}
+        for _, items in self._code.items():
+            for cell, props in items.items():
+                result[props.code_name] = cell
+        self._cache["code_name_map"] = result
+        return result
 
     @property
     def previous_cell(self) -> CellObj | None:

@@ -1,4 +1,8 @@
 # See: https://github.com/Amourspirit/python-libreoffice-pip/wiki/pyproject.toml
+[tool.libre_pythonista.config]
+cell_custom_prop_prefix = "libre_pythonista_"
+cell_custom_prop_codename = "codename"
+
 [tool.oxt.config]
 auto_install_in_site_packages = true # https://tinyurl.com/ymeh4c9j#auto_install_in_site_packages
 build_dir = "build" # https://tinyurl.com/ymeh4c9j#build_dir

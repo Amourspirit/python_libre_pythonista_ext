@@ -83,6 +83,21 @@ class JsonConfig(metaclass=Singleton):
         except Exception:
             self._run_imports = []
 
+        # region tool.libre_pythonista.config
+        try:
+            self._cell_custom_prop_prefix = cast(
+                str, cfg["tool"]["libre_pythonista"]["config"]["cell_custom_prop_prefix"]
+            )
+        except Exception:
+            self._cell_custom_prop_prefix = "libre_pythonista_"
+
+        try:
+            self._cell_custom_prop_codename = cast(
+                str, cfg["tool"]["libre_pythonista"]["config"]["cell_custom_prop_codename"]
+            )
+        except Exception:
+            self._cell_custom_prop_codename = "codename"
+        # endregion tool.libre_pythonista.config
         self._validate()
 
     def update_json_config(self, json_config_path: Path) -> None:
@@ -113,6 +128,11 @@ class JsonConfig(metaclass=Singleton):
         json_config["requirements"] = self._requirements
         json_config["has_locals"] = self._config.has_locals
 
+        # region tool.libre_pythonista.config
+        json_config["cell_cp_prefix"] = self._cell_custom_prop_prefix
+        json_config["cell_cp_codename"] = f"{self._cell_custom_prop_prefix}{self._cell_custom_prop_codename}"
+        # endregion tool.libre_pythonista.config
+
         # save the file
         with open(json_config_path, "w", encoding="utf-8") as f:
             json.dump(json_config, f, indent=4)
@@ -139,3 +159,7 @@ class JsonConfig(metaclass=Singleton):
             self._install_on_no_uninstall_permission, bool
         ), "_install_on_no_uninstall_permission must be a bool"
         assert isinstance(self._run_imports, list), "run_imports must be a list"
+        # region tool.libre_pythonista.config
+        assert isinstance(self._cell_custom_prop_prefix, str), "cell_custom_prop_prefix must be a string"
+        assert isinstance(self._cell_custom_prop_codename, str), "cell_custom_prop_codename must be a string"
+        # endregion tool.libre_pythonista.config

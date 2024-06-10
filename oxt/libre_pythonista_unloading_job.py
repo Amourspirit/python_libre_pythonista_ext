@@ -79,8 +79,10 @@ class LibrePythonistaUnLoadingJob(unohelper.Base, XJob):
                         # doc = CalcDoc.from_current_doc()
                         doc = CalcDoc.get_doc_from_component(self.document)
                         from libre_pythonista_lib.dispatch import dispatch_mgr  # type: ignore
+                        from libre_pythonista_lib.cell.cell_mgr import CellMgr  # type: ignore
 
                         dispatch_mgr.unregister_interceptor(doc)
+                        CellMgr.reset_instance(doc)
                     except Exception as e:
                         self._logger.error("Error unregistering dispatch manager", exc_info=True)
             else:

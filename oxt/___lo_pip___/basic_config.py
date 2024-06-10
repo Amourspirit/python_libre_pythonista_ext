@@ -39,6 +39,11 @@ class BasicConfig(metaclass=ConfigMeta):
         self._unload_after_install = bool(kwargs["unload_after_install"])
         self._run_imports = set(kwargs["run_imports"])
 
+        # region tool.libre_pythonista.config
+        self._cell_cp_prefix = str(kwargs["cell_cp_prefix"])
+        self._cell_cp_codename = str(kwargs["cell_cp_codename"])
+        # endregion tool.libre_pythonista.config
+
         if "requirements" not in kwargs:
             kwargs["requirements"] = {}
         self._requirements: Dict[str, str] = dict(**kwargs["requirements"])
@@ -228,5 +233,26 @@ class BasicConfig(metaclass=ConfigMeta):
         If this is set to ``True`` then pure python packages will be zipped and installed as a zip file.
         """
         return self._zipped_preinstall_pure
+
+    # region tool.libre_pythonista.config
+    @property
+    def cell_cp_prefix(self) -> str:
+        """
+        Gets the custom property prefix for cells.
+
+        The value for this property can be set in pyproject.toml (tool.libre_pythonista.config)
+        """
+        return self._cell_cp_prefix
+
+    @property
+    def cell_cp_codename(self) -> str:
+        """
+        Gets the custom property code name for cells.
+
+        The value for this property can be set in pyproject.toml (tool.libre_pythonista.config)
+        """
+        return self._cell_cp_codename
+
+    # endregion tool.libre_pythonista.config
 
     # endregion Properties
