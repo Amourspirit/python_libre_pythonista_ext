@@ -101,13 +101,15 @@ class CellMgr:
             cell = cast("SheetCell", dd.event_obj.Source)
             formula = cell.getFormula()
             if formula:
-                s = formula.lstrip("=")  # formula may start with one or two equal signs
+                s = formula.lstrip("{")  # could be a array formula
+                s = s.lstrip("=")  # formula may start with one or two equal signs
             else:
                 s = ""
             if not s.startswith("COM.GITHUB.AMOURSPIRIT.EXTENSION.LIBREPYTHONISTA.PYIMPL.PYC"):
                 self._log.debug(
                     f"Formula has been modified or removed. Not a LibrePythonista cell: {dd.absolute_name}"
                 )
+                self._log.debug(f"Formula: {formula}")
                 address = cell.getCellAddress()
                 cell_obj = CellObj.from_idx(col_idx=address.Column, row_idx=address.Row, sheet_idx=address.Sheet)
                 self._remove_cell(cell_obj=cell_obj, cell=cell)
@@ -324,6 +326,17 @@ class CellMgr:
         Get the PySource for a cell.
         """
         return self._py_inst[cell_obj]
+
+    def set_global_var(self, name: str, value: Any) -> None:
+        """
+        Set a global variable in the module.
+
+        Args:
+            name (str): Variable name.
+            value (Any): Variable value.
+        """
+        self._log.debug(f"set_global_var() - Setting Global Variable: {name}")
+        self._py_inst.set_global_var(name, value)
 
     @contextmanager
     def listener_context(self, cell: SheetCell):

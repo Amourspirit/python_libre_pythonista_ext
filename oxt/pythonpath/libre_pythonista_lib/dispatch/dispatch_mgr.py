@@ -42,22 +42,30 @@ def on_menu_intercept(
         # all seems to work well.
         event.event_data.action = ContextMenuAction.CONTINUE_MODIFIED
 
+        first_cmd = container[0].CommandURL  # type: ignore
+        last_cmd = container[-1].CommandURL  # type: ignore
+        fl = (first_cmd, last_cmd)
+
         # check the first and last items in the container
-        if container[0].CommandURL == ".uno:Cut" and container[-1].CommandURL == ".uno:FormatCellDialog":
+        if fl == (".uno:Cut", ".uno:FormatCellDialog"):
             # get the current selection
             selection = event.event_data.event.selection.get_selection()
 
             if selection.getImplementationName() == "ScCellObj":
                 # current selection is a cell.
 
-                log = LogInst()
+                log = None
+                with contextlib.suppress(Exception):
+                    log = LogInst()
+                # log = LogInst()
                 addr = cast("CellAddress", selection.getCellAddress())
                 doc = CalcDoc.from_current_doc()
                 sheet = doc.get_active_sheet()
                 cell_obj = doc.range_converter.get_cell_obj_from_addr(addr)
                 cell = sheet[cell_obj]
                 if not cell.has_custom_property("libre_pythonista_codename"):
-                    log.debug(f"Cell {cell_obj} does not have libre_pythonista_codename custom property.")
+                    if not log is None:
+                        log.debug(f"Cell {cell_obj} does not have libre_pythonista_codename custom property.")
                     return
 
                 # insert a new menu item.
@@ -65,7 +73,8 @@ def on_menu_intercept(
                 # The command also contains args for the sheet and cell.
                 # A custom dispatch interceptor will be used to handle the command.
                 try:
-                    log.debug("Getting Resource for mnuEditCode")
+                    if not log is None:
+                        log.debug("Getting Resource for mnuEditCode")
                     edit_mnu = ResResolver().resolve_string("mnuEditCode")
 
                     container.insert_by_index(4, ActionTriggerItem(f".uno:libre_pythonista.calc.menu.code.edit?sheet={sheet.name}&cell={cell_obj}", edit_mnu))  # type: ignore
@@ -73,7 +82,8 @@ def on_menu_intercept(
                     container.insert_by_index(4, ActionTriggerSep())  # type: ignore
                     event.event_data.action = ContextMenuAction.CONTINUE_MODIFIED
                 except Exception:
-                    log.error("Error inserting context menu item.", exc_info=True)
+                    if not log is None:
+                        log.error("Error inserting context menu item.", exc_info=True)
 
 
 def register_interceptor(doc_comp: Any):

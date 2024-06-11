@@ -29,7 +29,7 @@ _MOD_DIR = "librepythonista"
 
 
 class PySource:
-    def __init__(self, uri: str, cell: CellObj, mgr: PySourceManager) -> None:
+    def __init__(self, uri: str, unique_id: str, cell: CellObj, mgr: PySourceManager) -> None:
         is_init = getattr(self, "_is_init", False)
         if is_init:
             return
@@ -44,6 +44,7 @@ class PySource:
         self._sheet_idx = cell.sheet_idx
         self._src_code = None
         self._value = None
+        self._unique_id = unique_id
         self._is_init = True
 
     def __lt__(self, other: Any):
@@ -107,6 +108,10 @@ class PySource:
         self._mod_dict = value
 
     @property
+    def unique_id(self) -> str:
+        return self._unique_id
+
+    @property
     def value(self) -> Any:
         return self._value
 
@@ -165,7 +170,7 @@ class PySourceManager(EventsPartial):
 
                 if not self._sfa.exists(uri):
                     continue
-                sources.append(PySource(uri, cell, self))
+                sources.append(PySource(uri, code_id, cell, self))
 
             sources.sort()
             result = SortedDict()
@@ -570,12 +575,12 @@ class PySourceManager(EventsPartial):
         calc_cell.set_custom_property(cc.code_prop, str_id)
         name = str_id + ".py"
         uri = f"{self._root_uri}/{sheet.unique_id}/{name}"
-        py_src = PySource(uri, cell, self)
+        py_src = PySource(uri, str_id, cell, self)
         py_src.source_code = code  # writes code to file
         # after code has been saved to file, update the cell cache
         # resetting is slower than just adding the cell to the cache
         self._logger.debug(f"PySourceManager - add_source() - inserting for cell {cell}: sheet index: {sheet_idx}")
-        cc.insert(cell=cell, code_name="str_id", props={cc.code_prop}, sheet_idx=sheet_idx)
+        cc.insert(cell=cell, code_name=str_id, props={cc.code_prop}, sheet_idx=sheet_idx)
         self._logger.debug(f"PySourceManager - add_source() - inserted for cell {cell}: sheet index: {sheet_idx}")
         # CellCache.reset_instance()
         self._data[code_cell] = py_src
@@ -687,6 +692,17 @@ class PySourceManager(EventsPartial):
         self.trigger_event(f"AfterRemoveSource_{col}_{row}", eargs)
         self._logger.debug("PySourceManager - remove_source() Leaving.")
 
+    def set_global_var(self, name: str, value: Any) -> None:
+        """
+        Set a global variable in the module.
+
+        Args:
+            name (str): Variable name.
+            value (Any): Variable value.
+        """
+        self._logger.debug(f"PySourceManager - set_global_var() - Setting Global Variable: {name} = {value}")
+        self.py_mod.set_global_var(name, value)
+
     def get_index(self, cell: CellObj) -> int:
         """
         Get index of cell in the data.
@@ -722,6 +738,9 @@ class PySourceManager(EventsPartial):
             py_src.source_code = code
         # update the dictionary to the current state of the module
         py_src.mod_dict = self.py_mod.mod.__dict__.copy()
+        cell_obj = CellObj.from_idx(col_idx=py_src.col, row_idx=py_src.row, sheet_idx=py_src.sheet_idx)
+        self.py_mod.set_global_var("CURRENT_CELL_ID", py_src.unique_id)
+        self.py_mod.set_global_var("CURRENT_CELL_OBJ", cell_obj)
         result = self.py_mod.update_with_result(py_src.source_code)
         py_src.value = result
 

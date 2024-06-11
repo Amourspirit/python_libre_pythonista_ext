@@ -54,12 +54,12 @@ class CellCache:
         self._previous_sheet_index = -1
         self._current_sheet_index = -1
         if self._log.is_debug:
-            self._log.debug(f"init for doc: {doc.runtime_uid}")
+            self._log.debug(f"__init__() for doc: {doc.runtime_uid}")
             for sheet_idx, items in self._code.items():
                 self._log.debug(f"Sheet Index: {sheet_idx}")
                 for cell, props in items.items():
                     self._log.debug(f"Cell: {cell} - Props: {props.props}")
-        self._log.debug(f"Code Property: {self._code_prop}")
+            self._log.debug(f"__init__() Code Property: {self._code_prop}")
         self._is_init = True
 
     def __len__(self) -> int:
@@ -80,15 +80,23 @@ class CellCache:
                 cell = sheet[key]
                 code_name = cell.get_custom_property(filter_key, "")
                 if not code_name:
-                    self._log.error(f"Code Name not found for cell: {cell}. Skipping?")
+                    self._log.error(f"_get_cells() Code Name not found for cell: {cell}. Skipping?")
                     continue
                 code_index[key] = IndexCellProps(code_name, value, i)
             code_cells[index] = code_index
         return code_cells
 
+    def _ensure_sheet_index(self, sheet_idx: int) -> None:
+        if sheet_idx < 0:
+            self._log.error("_ensure_sheet_index() Sheet index not set")
+            raise ValueError("Sheet index not set")
+        if not self.has_sheet(sheet_idx):
+            self._log.debug(f"_ensure_sheet_index() Sheet index {sheet_idx} not in code. Adding.")
+            self._code[sheet_idx] = {}
+
     def insert(self, cell: CellObj, code_name: str, props: Set[str], sheet_idx: int = -1) -> None:
         """
-        Insert a new cell into the cache and updates the indexes.
+        Insert a new cell into the cache and updates the indexes. If the sheet index is not in the cache it is added.
 
         Args:
             cell (CellObj): Cell Object.
@@ -108,21 +116,21 @@ class CellCache:
         if sheet_idx < 0:
             sheet_idx = self.current_sheet_index
         if sheet_idx < 0:
-            self._log.error("Sheet index not set")
+            self._log.error("insert() Sheet index not set")
             raise ValueError("Sheet index not set")
+        self._ensure_sheet_index(sheet_idx)
         if self.has_cell(cell, sheet_idx):
-            self._log.error("Cell already exists")
+            self._log.error("insert() Cell already exists")
             raise ValueError("Cell already exists")
         if self._code_prop not in props:
-            self._log.error(f"Code property '{self._code_prop}' not in props")
+            self._log.error(f"insert() Code property '{self._code_prop}' not in props")
             raise ValueError(f"Code property '{self._code_prop}' not in props")
-        if sheet_idx not in self._code:
-            self._code[sheet_idx] = {}
-        self._log.debug(f"Inserting Cell: {cell} into Sheet Index: {sheet_idx} with Code Name: {code_name}")
+        self._log.debug(f"insert() Inserting Cell: {cell} into Sheet Index: {sheet_idx} with Code Name: {code_name}")
         self._code[sheet_idx][cell] = IndexCellProps(code_name, props)
         self._update_indexes()
-        self._log.debug(f"Inserted Cell: {cell} into Sheet Index: {sheet_idx} with Code Name: {code_name}")
+        self._log.debug(f"insert() Inserted Cell: {cell} into Sheet Index: {sheet_idx} with Code Name: {code_name}")
         if "code_name_map" in self._cache:
+            self._log.debug("insert() Removing code_name_map from cache")
             del self._cache["code_name_map"]
         return None
 
@@ -143,17 +151,17 @@ class CellCache:
         Note:
             Reading the sheet custom cell properties from the sheets is a bit slow. Allowing the deletion rather then reloading the custom properties is faster.
         """
-        self._log.debug(f"Removing Cell: {cell} from sheet index: {sheet_idx}")
+        self._log.debug(f"remove_cell() Removing Cell: {cell} from sheet index: {sheet_idx}")
         if sheet_idx < 0:
             sheet_idx = self.current_sheet_index
         if sheet_idx < 0:
-            self._log.error("Sheet index not set")
+            self._log.error("remove_cell() Sheet index not set")
             raise ValueError("Sheet index not set")
         if not self.has_cell(cell, sheet_idx):
-            self._log.error(f"Cell: {cell} not in sheet index: {sheet_idx}")
+            self._log.error(f"remove_cell() Cell: {cell} not in sheet index: {sheet_idx}")
             return
         del self._code[sheet_idx][cell]
-        self._log.debug(f"Removed Cell: {cell} from sheet index: {sheet_idx}")
+        self._log.debug(f"remove_cell() Removed Cell: {cell} from sheet index: {sheet_idx}")
         self._update_indexes()
         if "code_name_map" in self._cache:
             del self._cache["code_name_map"]
@@ -177,17 +185,17 @@ class CellCache:
         if sheet_idx < 0:
             sheet_idx = self.current_sheet_index
         if sheet_idx < 0:
-            self._log.error("Sheet index not set")
+            self._log.error("get_index_cell_props() Sheet index not set")
             raise ValueError("Sheet index not set")
         if not self.has_cell(cell, sheet_idx):
-            self._log.error(f"Cell: {cell} not in sheet index: {sheet_idx}")
+            self._log.error(f"get_index_cell_props() Cell: {cell} not in sheet index: {sheet_idx}")
             raise ValueError(f"Cell: {cell} not in sheet index: {sheet_idx}")
         return self._code[sheet_idx][cell]
 
     def _update_indexes(self) -> None:
-        self._log.debug("Updating Indexes")
-        i = -1
+        self._log.debug("_update_indexes() Updating Indexes")
         for sheet_idx in self._code.keys():
+            i = -1
             items = self.code_cells[sheet_idx]
             for itm in items.values():
                 i += 1
@@ -197,7 +205,7 @@ class CellCache:
             key = f"{sheet_idx}_indexes"
             if key in self._cache:
                 del self._cache[key]
-        self._log.debug("Indexes Updated")
+        self._log.debug("_update_indexes() Indexes Updated")
 
     def _get_indexes(self, sheet_idx: int = -1) -> Dict[int, CellObj]:
         if sheet_idx < 0:
@@ -218,9 +226,16 @@ class CellCache:
         if sheet_idx < 0:
             sheet_idx = self.current_sheet_index
         if sheet_idx < 0:
-            self._log.error("Sheet index not set")
+            self._log.error("get_by_index() Sheet index not set")
             raise ValueError("Sheet index not set")
+        self._ensure_sheet_index(sheet_idx)
         indexes = self._get_indexes(sheet_idx)
+        if self._log.is_debug:
+            for key, value in indexes.items():
+                self._log.debug(f"get_by_index() Index: {key} - Cell: {value}")
+        if index not in indexes:
+            self._log.error(f"get_by_index() Index: {index} not in indexes")
+            raise ValueError(f"Index: {index} not in indexes")
         return indexes[index]
 
     def get_cell_index(self, cell: CellObj | None = None, sheet_idx: int = -1) -> int:
@@ -257,15 +272,49 @@ class CellCache:
             raise ValueError("Sheet index not set")
         return len(self.get_sheet_cells(sheet_idx))
 
+    def has_sheet(self, sheet_idx: int) -> bool:
+        """
+        Gets if the current instance has a sheet index.
+
+        Args:
+            sheet_idx (int): Sheet Index - Zero Based.
+        """
+        return sheet_idx in self._code
+
     def has_cell(self, cell: CellObj, sheet_idx: int = -1) -> bool:
+        """
+        Gets if the current instance as a cell.
+
+        Args:
+            cell (CellObj): Cell Object.
+            sheet_idx (int, optional): Sheet Index. Defaults to ``current_sheet_index``.
+
+        Raises:
+            ValueError: Sheet index not set
+
+        Returns:
+            bool: ``True`` if the cell is in the current instance; Otherwise, ``False``.
+
+        Note:
+            If the sheet index in not in the current instance then ``False`` is returned.
+        """
         if sheet_idx < 0:
             sheet_idx = self.current_sheet_index
         if sheet_idx < 0:
             self._log.error("has_cell() Sheet index not set")
             raise ValueError("Sheet index not set")
+        if not self.has_sheet(sheet_idx):
+            self._log.debug(f"has_cell() Sheet index {sheet_idx} not in code")
+            return False
         return cell in self._code[sheet_idx]
 
-    def get_first_cell(self, sheet_idx: int) -> CellObj:
+    def get_first_cell(self, sheet_idx: int = -1) -> CellObj:
+        if sheet_idx < 0:
+            sheet_idx = self.current_sheet_index
+        if sheet_idx < 0:
+            self._log.error("get_first_cell() Sheet index not set")
+            raise ValueError("Sheet index not set")
+        self._ensure_sheet_index(sheet_idx)
         count = self.get_cell_count(sheet_idx)
         if count == 0:
             self._log.error("get_first_cell() No cells in sheet")
@@ -284,6 +333,7 @@ class CellCache:
         if sheet_idx < 0:
             self._log.error("get_last_cell() Sheet index not set")
             raise ValueError("Sheet index not set")
+        self._ensure_sheet_index(sheet_idx)
         count = self.get_cell_count(sheet_idx)
         if count == 0:
             self._log.error("get_last_cell() No cells in sheet")
@@ -315,6 +365,7 @@ class CellCache:
         if sheet_idx < 0:
             self._log.error("is_first_cell() Sheet index not set")
             raise ValueError("Sheet index not set")
+        self._ensure_sheet_index(sheet_idx)
         if cell is None:
             cell = self.current_cell
         if cell is None:
@@ -331,6 +382,7 @@ class CellCache:
         if sheet_idx < 0:
             self._log.error("is_last_cell() Sheet index not set")
             raise ValueError("Sheet index not set")
+        self._ensure_sheet_index(sheet_idx)
         count = self.get_cell_count(sheet_idx)
         if count == 0:
             return True
@@ -348,6 +400,7 @@ class CellCache:
         if sheet_idx < 0:
             self._log.error("is_before_first() Sheet index not set")
             raise ValueError("Sheet index not set")
+        self._ensure_sheet_index(sheet_idx)
         first_cell = self.get_first_cell(sheet_idx)
         return cell < first_cell
 
@@ -357,6 +410,7 @@ class CellCache:
         if sheet_idx < 0:
             self._log.error("is_after_last() Sheet index not set")
             raise ValueError("Sheet index not set")
+        self._ensure_sheet_index(sheet_idx)
         last_cell = self.get_last_cell(sheet_idx)
         return cell > last_cell
 
