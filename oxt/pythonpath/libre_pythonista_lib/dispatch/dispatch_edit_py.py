@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Tuple, TYPE_CHECKING
+from typing import cast, Tuple, TYPE_CHECKING
 import uno
 import unohelper
 from com.sun.star.frame import XDispatch
@@ -13,6 +13,7 @@ from ..cell.cell_mgr import CellMgr
 
 if TYPE_CHECKING:
     from com.sun.star.frame import XStatusListener
+    from com.sun.star.sheet import SheetCellCursor
     from ooodev.utils.data_type.cell_obj import CellObj
     from ....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
     from ..code.py_source_mgr import PyInstance
@@ -67,12 +68,29 @@ class DispatchEditPY(unohelper.Base, XDispatch):
                     # https://ask.libreoffice.org/t/mark-a-calc-sheet-cell-as-dirty/106659
                     with cm.listener_context(cell.component):
                         # suspend the listeners for this cell
-                        s = cell.component.getFormula()
-                        if not s:
+                        formula = cell.component.getFormula()
+                        if not formula:
                             self._logger.error(f"Cell {self._cell} has no formula.")
                             return
-                        s = s.lstrip("=")  # just in case there are multiple equal signs
-                        cell.component.setFormula(f"={s}")
+                        # s = s.lstrip("=")  # just in case there are multiple equal signs
+                        is_formula_array = False
+                        if formula.startswith("{"):
+                            is_formula_array = True
+                            formula = formula.lstrip("{")
+                            formula = formula.rstrip("}")
+                        if is_formula_array:
+                            try:
+                                self._logger.debug("Resetting array formula")
+                                cursor = cast("SheetCellCursor", sheet.component.createCursorByRange(cell.component))  # type: ignore
+                                # this next line also works.
+                                # cursor = cast("SheetCellCursor", cell.component.getSpreadsheet().createCursorByRange(cell.component))  # type: ignore
+                                cursor.collapseToCurrentArray()
+                                cursor.setArrayFormula(formula)
+                            except Exception:
+                                self._logger.error("Error setting array formula", exc_info=True)
+                        else:
+                            self._logger.debug("Resetting formula")
+                            cell.component.setFormula(formula)
                         doc.component.calculate()
 
     def removeStatusListener(self, control: XStatusListener, url: URL) -> None:

@@ -63,7 +63,7 @@ class CodeCellListener(unohelper.Base, XModifyListener, EventsPartial):
                 cell_obj = CellObj.from_idx(col_idx=cell_addr.Column, row_idx=cell_addr.Row, sheet_idx=cell_addr.Sheet)
                 calc_cell = CalcCell(owner=sheet, cell=cell_obj, lo_inst=sheet.lo_inst)
                 cfg = Config()
-                key = f"{cfg.cell_cp_prefix}_modify_trigger_event"
+                key = f"{cfg.cell_cp_prefix}modify_trigger_event"
                 if calc_cell.has_custom_property(key):
                     trigger_name = str(calc_cell.get_custom_property(key))
                     eargs.event_data.trigger_name = trigger_name
@@ -71,7 +71,8 @@ class CodeCellListener(unohelper.Base, XModifyListener, EventsPartial):
                     self._log.debug(f"CodeCellListener: modified: Triggering event: {trigger_name}")
                     self.trigger_event(trigger_name, eargs)
                     if eargs.event_data.remove_custom_property:
-                        calc_cell.remove_custom_property(key)
+                        if calc_cell.has_custom_property(key):
+                            calc_cell.remove_custom_property(key)
                 else:
                     self.trigger_event("cell_modified", eargs)
             except Exception as e:

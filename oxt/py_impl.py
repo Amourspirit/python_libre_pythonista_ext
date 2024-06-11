@@ -143,7 +143,7 @@ class PyImpl(unohelper.Base, XPy):
             rng_obj += ColObj.from_int(width - 1)
             rng_obj += height - 1
             cfg = Config()
-            key = f"{cfg.cell_cp_prefix}_modify_trigger_event"
+            key = f"{cfg.cell_cp_prefix}modify_trigger_event"
             cell.set_custom_property(key, "cell_table_data")
             self._logger.debug(f"pyc - Table Range: {rng_obj}")
             # rng = sheet.get_range(range_obj=rng_obj)
