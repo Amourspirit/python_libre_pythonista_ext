@@ -50,48 +50,55 @@ class DispatchEditPY(unohelper.Base, XDispatch):
         By default, and absent any arguments, ``SynchronMode`` is considered ``False`` and the execution is performed asynchronously (i.e. dispatch() returns immediately, and the action is performed in the background).
         But when set to ``True``, dispatch() processes the request synchronously.
         """
-        self._logger.debug(f"dispatch(): url={url}")
-        doc = CalcDoc.from_current_doc()
-        sheet = doc.sheets[self._sheet]
-        cell = sheet[self._cell]
-        cc = CellCache(doc)  # singleton
-        cell_obj = cell.cell_obj
-        sheet_idx = sheet.sheet_index
-        if not cc.has_cell(cell=cell_obj, sheet_idx=sheet_idx):
-            self._logger.error(f"Cell {self._cell} is not in the cache.")
-            return
-        with cc.set_context(cell=cell_obj, sheet_idx=sheet_idx):
-            result = self._edit_code(doc=doc, cell_obj=cell_obj)
-            if result:
-                if doc.component.isAutomaticCalculationEnabled():
-                    cm = CellMgr(doc)  # singleton. Tracks all Code cells
-                    # https://ask.libreoffice.org/t/mark-a-calc-sheet-cell-as-dirty/106659
-                    with cm.listener_context(cell.component):
-                        # suspend the listeners for this cell
-                        formula = cell.component.getFormula()
-                        if not formula:
-                            self._logger.error(f"Cell {self._cell} has no formula.")
-                            return
-                        # s = s.lstrip("=")  # just in case there are multiple equal signs
-                        is_formula_array = False
-                        if formula.startswith("{"):
-                            is_formula_array = True
-                            formula = formula.lstrip("{")
-                            formula = formula.rstrip("}")
-                        if is_formula_array:
-                            try:
+        try:
+            self._logger.debug(f"dispatch(): url={url}")
+            doc = CalcDoc.from_current_doc()
+            sheet = doc.sheets[self._sheet]
+            cell = sheet[self._cell]
+            cc = CellCache(doc)  # singleton
+            cell_obj = cell.cell_obj
+            sheet_idx = sheet.sheet_index
+            if not cc.has_cell(cell=cell_obj, sheet_idx=sheet_idx):
+                self._logger.error(f"Cell {self._cell} is not in the cache.")
+                return
+            with cc.set_context(cell=cell_obj, sheet_idx=sheet_idx):
+                result = self._edit_code(doc=doc, cell_obj=cell_obj)
+                if result:
+                    if doc.component.isAutomaticCalculationEnabled():
+                        # the purpose of writing the formulas back to the cell(s) is to trigger the recalculation
+                        cm = CellMgr(doc)  # singleton. Tracks all Code cells
+                        # https://ask.libreoffice.org/t/mark-a-calc-sheet-cell-as-dirty/106659
+                        with cm.listener_context(cell.component):
+                            # suspend the listeners for this cell
+                            formula = cell.component.getFormula()
+                            if not formula:
+                                self._logger.error(f"Cell {self._cell} has no formula.")
+                                return
+                            # s = s.lstrip("=")  # just in case there are multiple equal signs
+                            is_formula_array = False
+                            if formula.startswith("{"):
+                                is_formula_array = True
+                                formula = formula.lstrip("{")
+                                formula = formula.rstrip("}")
+                            if is_formula_array:
+                                # The try block is important. If there is a error without the block then the entire LibreOffice app can crash.
                                 self._logger.debug("Resetting array formula")
+                                # get the cell that are involved in the array formula.
                                 cursor = cast("SheetCellCursor", sheet.component.createCursorByRange(cell.component))  # type: ignore
                                 # this next line also works.
                                 # cursor = cast("SheetCellCursor", cell.component.getSpreadsheet().createCursorByRange(cell.component))  # type: ignore
                                 cursor.collapseToCurrentArray()
+                                # reset the array formula
                                 cursor.setArrayFormula(formula)
-                            except Exception:
-                                self._logger.error("Error setting array formula", exc_info=True)
-                        else:
-                            self._logger.debug("Resetting formula")
-                            cell.component.setFormula(formula)
-                        doc.component.calculate()
+                            else:
+                                self._logger.debug("Resetting formula")
+                                cell.component.setFormula(formula)
+                            doc.component.calculate()
+        except Exception as e:
+            # log the error and do not re-raise it.
+            # re-raising the error may crash the entire LibreOffice app.
+            self._logger.error(f"Error: {e}", exc_info=True)
+            return
 
     def removeStatusListener(self, control: XStatusListener, url: URL) -> None:
         """

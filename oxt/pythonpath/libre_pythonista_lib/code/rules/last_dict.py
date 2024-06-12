@@ -40,3 +40,6 @@ class LastDict:
         """Reset the rule releasing any resource it is holding on to."""
         self.mod = None
         self.code = None
+
+    def __repr__(self) -> str:
+        return f"<LastDict()>"

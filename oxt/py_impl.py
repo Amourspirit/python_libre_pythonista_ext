@@ -37,6 +37,8 @@ if TYPE_CHECKING:
     from .___lo_pip___.config import Config
     from .pythonpath.libre_pythonista_lib.dialog.py.dialog_python import DialogPython
     from .pythonpath.libre_pythonista_lib.cell.cell_mgr import CellMgr
+    from .pythonpath.libre_pythonista_lib.cell.result_action.pyc.rules.pyc_rules import PycRules
+
 else:
     _CONDITIONS_MET = _conditions_met()
 
@@ -49,6 +51,7 @@ else:
         from ooodev.exceptions import ex as mEx
         from libre_pythonista_lib.dialog.py.dialog_python import DialogPython
         from libre_pythonista_lib.cell.cell_mgr import CellMgr
+        from libre_pythonista_lib.cell.result_action.pyc.rules.pyc_rules import PycRules
     from ___lo_pip___.config import Config
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
 
@@ -122,6 +125,13 @@ class PyImpl(unohelper.Base, XPy):
                 cm.reset_py_inst()
             py_src = cm.get_py_src(cell_obj=cell.cell_obj)
             # py_src = py_inst[cc.current_cell]
+            pyc_rules = PycRules()
+            matched_rule = pyc_rules.get_matched_rule(cell=cell, data=py_src.value)
+            if matched_rule:
+                if self._logger.is_debug:
+                    self._logger.debug(f"pyc - Matched Rule: {matched_rule}")
+                return matched_rule.action()
+
             if isinstance(py_src.value, tuple):
                 result = py_src.value
             else:

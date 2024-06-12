@@ -61,3 +61,6 @@ class RegexLastLine:
         self._result = None
         self.mod = None
         self.code = None
+
+    def __repr__(self) -> str:
+        return f"<RegexLastLine()>"

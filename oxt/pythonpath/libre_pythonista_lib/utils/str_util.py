@@ -95,3 +95,91 @@ def starts_with_whitespace(s: str):
     if not s:
         return False
     return s[0].isspace()
+
+
+def get_last_unindent_line(s: str) -> str:
+    """
+    Gets the last unindent line of a string.
+
+    Args:
+        s (str): The input string.
+
+    Returns:
+        str: The last unindent line of the string.
+    """
+    if not s:
+        return ""
+    lines = s.splitlines()
+    for line in reversed(lines):
+        if line.startswith((" ", "\t")):
+            continue
+        return line
+    return ""
+
+
+def get_last_unindent_index(s: str) -> int:
+    """
+    Gets the last unindent index of a string.
+
+    Args:
+        s (str): The input string.
+
+    Returns:
+        int: The last unindent index of the string.
+    """
+    if not s:
+        return -1
+    lines = s.splitlines()
+    for index, line in reversed(list(enumerate(lines))):
+        if line.startswith((" ", "\t")):
+            continue
+        return index
+    return -1
+
+
+def get_str_from_index(s: str, index: int) -> str:
+    """
+    Gets the string from a given index.
+
+    Args:
+        s (str): The input string.
+        index (int): The index.
+
+    Returns:
+        str: The string from the index.
+    """
+    if index < 0:
+        return ""
+    return s[index:]
+
+
+def remove_new_lines(s: str) -> str:
+    """
+    Removes new lines from a string.
+
+    Args:
+        s (str): The input string.
+
+    Returns:
+        str: The string with new lines removed.
+    """
+    return s.replace("\n", "").replace("\r", "")
+
+
+def flatten_str(s: str) -> str:
+    """
+    Removes new lines, tabs and spaces from a string.
+
+    Args:
+        s (str): The input string.
+
+    Returns:
+        str: The string with new lines and tabs removed.
+    """
+    if not s:
+        return ""
+    lines = s.splitlines()
+    result = []
+    for line in lines:
+        result.append(line.strip())
+    return "".join(result)

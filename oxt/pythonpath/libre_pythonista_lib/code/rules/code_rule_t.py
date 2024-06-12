@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, List, Protocol
+from typing import Any, Protocol
 import types
 
 

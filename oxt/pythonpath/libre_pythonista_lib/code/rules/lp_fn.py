@@ -3,9 +3,10 @@ from typing import Any
 import contextlib
 import types
 from ...utils import str_util
+from ...log.log_inst import LogInst
 
 
-class EvalCode:
+class LpFn:
     """
     A class to represent the last dictionary item in a module.
     """
@@ -30,14 +31,35 @@ class EvalCode:
         self._result = None
         if not self.code:
             return False
-        last_line = str_util.get_last_line(self.code)
-        if str_util.starts_with_whitespace(last_line):
+        log = LogInst()
+
+        last_lp = self.code.rfind("lp(")
+        if last_lp < 0:
+            log.debug(f"LpFn - get_is_match() No lp() found: {last_lp}")
             return False
+
+        # get the substring from the last_lp index.
+        s = str_util.get_str_from_index(self.code, last_lp)
+        # find the next index of )
+        next_bracket_index = s.find(")")
+        if next_bracket_index < 0:
+            return False
+
+        if next_bracket_index != len(s) - 1:
+            log.debug(f"LpFn - get_is_match() Last bracket is not the end of the string: {next_bracket_index}")
+            return False
+
         result = None
-        with contextlib.suppress(Exception):
-            glbs = globals().copy()
-            result = eval(last_line, glbs)
+        # with contextlib.suppress(Exception):
+        try:
+            if "lp_mod" in self.mod.__dict__:
+                log.debug("LpFn - get_is_match() lp_mod is in module")
+                result = self.mod.lp_mod.LAST_LP_RESULT  # type: ignore
+            else:
+                log.debug("LpFn - get_is_match() lp_mod is NOT in module")
             self._result = result
+        except Exception as e:
+            log.error(f"LpFn - get_is_match() Exception: {e}", exc_info=True)
         return result is not None
 
     def get_value(self) -> Any:
@@ -51,4 +73,4 @@ class EvalCode:
         self.code = None
 
     def __repr__(self) -> str:
-        return f"<EvalCode()>"
+        return f"<LpFn()>"
