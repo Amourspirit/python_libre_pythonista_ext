@@ -2,6 +2,7 @@ from __future__ import annotations
 from typing import Any
 import contextlib
 import types
+from ooodev.utils.gen_util import NULL_OBJ
 from ...utils import str_util
 
 
@@ -27,21 +28,23 @@ class EvalCode:
 
     def get_is_match(self) -> bool:
         """Check if rules is a match. For this rule the return result is always True."""
-        self._result = None
+        self._result = NULL_OBJ
         if not self.code:
             return False
         last_line = str_util.get_last_line(self.code)
         if str_util.starts_with_whitespace(last_line):
             return False
-        result = None
+        result = NULL_OBJ
         with contextlib.suppress(Exception):
             glbs = globals().copy()
             result = eval(last_line, glbs)
             self._result = result
-        return result is not None
+        return result is not NULL_OBJ
 
     def get_value(self) -> Any:
         """Get the list of versions. In this case it will be a single version, unless vstr is invalid in which case it will be an empty list."""
+        if self._result is NULL_OBJ:
+            return None
         return self._result
 
     def reset(self) -> None:

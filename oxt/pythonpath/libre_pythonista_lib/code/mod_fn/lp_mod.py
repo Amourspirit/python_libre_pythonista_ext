@@ -23,9 +23,20 @@ else:
     from libre_pythonista_lib.log.log_inst import LogInst
 
 
-def lp(addr: str, **Kwargs: Any) -> Any:
-    global CURRENT_CELL_OBJ, LAST_LP_RESULT
+def _set_last_lp_result(result: Any) -> Any:
+    global LAST_LP_RESULT
     log = LogInst()
+
+    LAST_LP_RESULT = result
+    if log.is_debug:
+        log.debug(f"lp_mod - _set_last_lp_result() - LAST_LP_RESULT: {LAST_LP_RESULT}")
+    return LAST_LP_RESULT
+
+
+def lp(addr: str, **Kwargs: Any) -> Any:
+    global CURRENT_CELL_OBJ
+    log = LogInst()
+    log.debug(f"lp - Current Cell Obj Global: {CURRENT_CELL_OBJ}")
     if not addr:
         return None
     gbl_cell = cast(CellObj, CURRENT_CELL_OBJ)
@@ -44,7 +55,10 @@ def lp(addr: str, **Kwargs: Any) -> Any:
         # Maximum number of Columns per worksheet = 16384 (Col A to XFD).
 
         cell_name_regex = r"^[A-Za-z]{1,3}\d{1,7}$"
+        sheet_cell_name_regex = r"^[A-Za-z\s\d]+\.[A-Za-z]{1,3}\d{1,7}$"
         is_cell_name = bool(re.match(cell_name_regex, addr))
+        if not is_cell_name:
+            is_cell_name = bool(re.match(sheet_cell_name_regex, addr))
         if is_cell_name:
             log.debug(f"lp - Cell Name: {addr}")
             addr_cell = CellObj.from_cell(addr)
@@ -53,13 +67,12 @@ def lp(addr: str, **Kwargs: Any) -> Any:
             sheet = doc.sheets[sheet_idx]
             cell = sheet[addr_cell]
             if cm.has_cell(cell_obj=cell.cell_obj):
-                log.debug(f"lp - Cell found in cache: {addr}")
+                log.debug(f"lp - Cell found in cache: {cell.cell_obj} for sheet: {cell.cell_obj.sheet_idx}")
                 py_src = cm.get_py_src(cell_obj=cell.cell_obj)
-                return py_src.value
-            log.debug(f"lp - Cell not found in cache: {addr}")
+                return _set_last_lp_result(py_src.value)
+            log.debug(f"lp - Cell not found in cache: {cell.cell_obj} for sheet: {cell.cell_obj.sheet_idx}")
             log.debug("Returning actual cell value")
-            LAST_LP_RESULT = cell.value
-            return LAST_LP_RESULT
+            return _set_last_lp_result(cell.value)
         else:
             # named range
             # return the range
@@ -80,26 +93,27 @@ def lp(addr: str, **Kwargs: Any) -> Any:
                 nc = doc.named_ranges.get_by_name(addr)
             else:
                 log.error(f"lp - Named range {addr} not found in sheet or document.")
-                LAST_LP_RESULT = None
-                return None
+                return _set_last_lp_result(None)
             cell_range = cast("SheetCellRange", nc.get_referred_cells())
             addr_rng = RangeObj.from_range(cell_range.getRangeAddress())
             log.debug(f"lp - Name addr_rng: {addr_rng}")
 
-    if addr_rng is None:
-        addr_rng = RangeObj.from_range(addr)
-    log.debug(f"lp - addr_rng: {addr_rng}")
+    try:
 
-    sheet_idx = cell_obj.sheet_idx
-    if addr_rng.sheet_idx >= 0:
-        sheet_idx = addr_rng.sheet_idx
-    sheet = doc.sheets[sheet_idx]
-    data = sheet.get_array(range_obj=addr_rng)
-    # range
+        if addr_rng is None:
+            addr_rng = RangeObj.from_range(addr)
+        log.debug(f"lp - addr_rng: {addr_rng}")
 
-    header = Kwargs.get("headers", False)
-    LAST_LP_RESULT = pd.DataFrame(data)
-    return LAST_LP_RESULT
+        sheet_idx = cell_obj.sheet_idx
+        if addr_rng.sheet_idx >= 0:
+            sheet_idx = addr_rng.sheet_idx
+        sheet = doc.sheets[sheet_idx]
+        data = sheet.get_array(range_obj=addr_rng)
+
+        return _set_last_lp_result(pd.DataFrame(data))
+    except Exception as e:
+        log.error(f"lp - Exception: {e}", exc_info=True)
+        return _set_last_lp_result(None)
     # Convert the DataFrame to a record array, then to a tuple
     # this should be return to the function as an object.
     # the function needs to be responsible for converting it from object to a record array

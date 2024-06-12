@@ -22,8 +22,15 @@ if TYPE_CHECKING:
     # just for design time
     _CONDITIONS_MET = True
     from .___lo_pip___.oxt_logger import OxtLogger
+    from .pythonpath.libre_pythonista_lib.sheet.listen.code_sheet_modify_listener import CodeSheetModifyListener
+    from .pythonpath.libre_pythonista_lib.sheet.listen.code_sheet_activation_listener import (
+        CodeSheetActivationListener,
+    )
 else:
     _CONDITIONS_MET = _conditions_met()
+    if _CONDITIONS_MET:
+        from libre_pythonista_lib.sheet.listen.code_sheet_modify_listener import CodeSheetModifyListener
+        from libre_pythonista_lib.sheet.listen.code_sheet_activation_listener import CodeSheetActivationListener
 # endregion imports
 
 # region Constants
@@ -83,6 +90,13 @@ class LibrePythonistaUnLoadingJob(unohelper.Base, XJob):
 
                         dispatch_mgr.unregister_interceptor(doc)
                         CellMgr.reset_instance(doc)
+                        view = doc.get_view()
+                        view.component.addActivationEventListener(CodeSheetActivationListener())
+                        for sheet in doc.sheets:
+                            unique_id = sheet.unique_id
+                            if CodeSheetModifyListener.has_listener(unique_id):
+                                listener = CodeSheetModifyListener(unique_id)  # singleton
+                                sheet.component.removeModifyListener(listener)
                     except Exception as e:
                         self._logger.error("Error unregistering dispatch manager", exc_info=True)
             else:

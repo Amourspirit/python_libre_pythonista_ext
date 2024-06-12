@@ -24,6 +24,11 @@
         <value>com.github.amourspirit.extensions.librepythonista.LibrePythonistaUnLoadingJob</value>
       </prop>
     </node>
+    <node oor:name="LibrePythonistaViewCloseJob" oor:op="fuse">
+      <prop oor:name="Service">
+        <value>com.github.amourspirit.extensions.librepythonista.LibrePythonistaViewCloseJob</value>
+      </prop>
+    </node>
   </node>
   <node oor:name="Events">
     <node oor:name="___startup_event___" oor:op="fuse">

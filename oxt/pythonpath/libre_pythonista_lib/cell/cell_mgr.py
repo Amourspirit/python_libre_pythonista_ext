@@ -327,6 +327,22 @@ class CellMgr:
         """
         return self._py_inst[cell_obj]
 
+    def update_from_cell_obj(self, cell_obj: CellObj) -> None:
+        """
+        Update the PyInstance from a cell object. This will update the PyInstance with the latest code for the cell and all cells that come after.
+
+        Args:
+            cell_obj (CellObj): cell object.
+        """
+        self._log.debug(f"update_from_cell_obj() - Updating PyInstance from cell object: {cell_obj}")
+        index = self._py_inst.get_index(cell_obj)
+        if index < 0:
+            self._log.error(f"Cell does not exist in PyInstance: {cell_obj}")
+            raise KeyError(f"Cell does not exist in PyInstance: {cell_obj}")
+        self._log.debug(f"update_from_cell_obj() - Index: {index}")
+        self._py_inst.update_from_index(index)
+        self._log.debug(f"update_from_cell_obj() - Updated PyInstance from cell object: {cell_obj}")
+
     def set_global_var(self, name: str, value: Any) -> None:
         """
         Set a global variable in the module.

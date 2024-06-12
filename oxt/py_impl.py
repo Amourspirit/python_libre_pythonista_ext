@@ -27,6 +27,7 @@ add_local_path_to_sys_path()
 
 if TYPE_CHECKING:
     _CONDITIONS_MET = True
+    from com.sun.star.frame import Desktop
     from ooodev.loader import Lo
     from ooodev.calc import CalcDoc
     from ooodev.utils.data_type.cell_obj import CellObj
@@ -61,11 +62,17 @@ implementation_services = ("com.sun.star.sheet.AddIn",)
 
 
 class PyImpl(unohelper.Base, XPy):
-    def __init__(self, ctx):
+    def __init__(self, ctx: Any):
         # this is only init one time per session. When a new document is loaded, it is not called.
         self.ctx = ctx
         self._logger = OxtLogger(log_name=self.__class__.__name__)
         self._logger.debug("Py: PyImpl init")
+        try:
+            mgr = self.ctx.getServiceManager()
+            self.desktop = cast("Desktop", mgr.createInstanceWithContext("com.sun.star.frame.Desktop", self.ctx))
+        except Exception as e:
+            self._logger.error(f"Error: {e}", exc_info=True)
+
         # it seems init is only call when the functions is first called.
 
     def pyc(self, sheet_num: int, cell_address: str, *args) -> Any:
@@ -74,17 +81,26 @@ class PyImpl(unohelper.Base, XPy):
             return None  # type: ignore
         self._logger.debug("pyc entered")
         try:
-            _ = Lo.current_doc
-            doc = CalcDoc.from_current_doc()
-            self._logger.debug(f"Doc UID: {doc.runtime_uid}")
-
-        except mEx.MissingInterfaceError:
+            # CalcDoc.from_current_doc() should not be used here.
+            # It will return the previous active document if this document is not yet ready.
+            # This will cause the code to run on the wrong document.
+            # This only happens when a current Calc Document is open and an existing doc is opened via File -> Open.
+            # Even then it is only an issue while the document is opening.
+            # However that issue cause the popup dialog to be displayed one time for each formula.
+            # Getting the document from this desktop solve this issue. Mainly becaues the controller is None when the document is not ready.
+            frame = self.desktop.getActiveFrame()
+            controller = frame.getController()
+            model = controller.getModel()
+            # self._logger.debug(f"pyc - Doc UID: {model.RuntimeUID}")
+            doc = CalcDoc.get_doc_from_component(model)
+        except Exception:
             self._logger.warning(
-                "pyc - MissingInterfaceError from Lo.current_doc. Returning and expecting a recalculation to take place when document is fully loaded."
+                "pyc - Could not get current document. This usually happens when the document is not fully loaded."
             )
-            return ((sheet_num, cell_address),)
+            return None
         result = None
         try:
+            self._logger.debug(f"pyc - Doc UID: {doc.runtime_uid}")
             key = f"LIBRE_PYTHONISTA_DOC_{doc.runtime_uid}"
             if not key in os.environ:
                 # if len(sheet.draw_page) == 0:
@@ -111,18 +127,19 @@ class PyImpl(unohelper.Base, XPy):
             if not cm.has_cell(cell_obj=cell.cell_obj):
 
                 # if not py_cell.has_code():
-                self._logger.debug("Py: py cell has no code")
+                self._logger.debug("pyc - py cell has no code")
                 # prompt for code
                 code = self._get_code()
                 if code:
                     cm.add_source_code(source_code=code, cell_obj=cell.cell_obj)
             else:
-                self._logger.debug("Py: py cell has code")
+                self._logger.debug("pyc - py cell has code")
+            # resetting is handled by the CodeSheetModifyListener
+            # if cm.is_first_cell(cell_obj=cell.cell_obj):
+            #     cm.reset_py_inst()
+            # else:
+            #     cm.update_from_cell_obj(cell_obj=cell.cell_obj)
 
-            self._logger.debug(f"Py: py sheet_num: {sheet_num}, cell_address: {cell_address}")
-            # py_inst = PyInstance(doc)
-            if cm.is_first_cell(cell_obj=cell.cell_obj):
-                cm.reset_py_inst()
             py_src = cm.get_py_src(cell_obj=cell.cell_obj)
             # py_src = py_inst[cc.current_cell]
             pyc_rules = PycRules()
@@ -164,16 +181,16 @@ class PyImpl(unohelper.Base, XPy):
 
     def _get_code(self) -> str | None:
         dlg = DialogPython(self.ctx)
-        self._logger.debug("Py: py displaying dialog")
+        self._logger.debug("Py - _get_code() py displaying dialog")
         result = None
         if dlg.show():
-            self._logger.debug("Py: py dialog returned with OK")
+            self._logger.debug("Py - _get_code() - py dialog returned with OK")
             txt = dlg.text.strip()
             if txt:
                 result = dlg.text
 
         else:
-            self._logger.debug("Py: py dialog returned with Cancel")
+            self._logger.debug("Py - _get_code() - py dialog returned with Cancel")
         return result
 
 

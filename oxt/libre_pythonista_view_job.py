@@ -22,10 +22,20 @@ if TYPE_CHECKING:
     _CONDITIONS_MET = True
     from .___lo_pip___.oxt_logger import OxtLogger
     from ooodev.loader import Lo
+    from .pythonpath.libre_pythonista_lib.dispatch import dispatch_mgr  # type: ignore
+    from .pythonpath.libre_pythonista_lib.cell.cell_mgr import CellMgr  # type: ignore
+    from .pythonpath.libre_pythonista_lib.sheet.listen.code_sheet_modify_listener import CodeSheetModifyListener
+    from .pythonpath.libre_pythonista_lib.sheet.listen.code_sheet_activation_listener import (
+        CodeSheetActivationListener,
+    )
 else:
     _CONDITIONS_MET = _conditions_met()
     if _CONDITIONS_MET:
         from ooodev.loader import Lo
+        from libre_pythonista_lib.dispatch import dispatch_mgr  # type: ignore
+        from libre_pythonista_lib.cell.cell_mgr import CellMgr  # type: ignore
+        from libre_pythonista_lib.sheet.listen.code_sheet_modify_listener import CodeSheetModifyListener
+        from libre_pythonista_lib.sheet.listen.code_sheet_activation_listener import CodeSheetActivationListener
 # endregion imports
 
 # region Constants
@@ -71,25 +81,36 @@ class LibrePythonistaViewJob(unohelper.Base, XJob):
                 key = f"LIBRE_PYTHONISTA_DOC_{self.document.RuntimeUID}"
                 os.environ[key] = "1"
                 self._logger.debug(f"Added {key} to environment variables")
-                self.document.calculateAll()
                 self._logger.debug("Document recalculated")
                 if _CONDITIONS_MET:
-                    self._logger.debug("Registering dispatch manager")
-                    from ooodev.calc import CalcDoc
+                    try:
+                        self._logger.debug("Registering dispatch manager")
+                        from ooodev.calc import CalcDoc
 
-                    # Lo.load_office() only loads office if it is not already loaded
-                    # It is needed here or the dispatch manager will not receive the correct document
-                    # when multiple documents are open.
-                    _ = Lo.load_office()
-                    doc = CalcDoc.get_doc_from_component(self.document)
+                        # Lo.load_office() only loads office if it is not already loaded
+                        # It is needed here or the dispatch manager will not receive the correct document
+                        # when multiple documents are open.
+                        _ = Lo.load_office()
+                        doc = CalcDoc.get_doc_from_component(self.document)
 
-                    from libre_pythonista_lib.dispatch import dispatch_mgr  # type: ignore
-                    from libre_pythonista_lib.cell.cell_mgr import CellMgr  # type: ignore
+                        for sheet in doc.sheets:
+                            unique_id = sheet.unique_id
+                            if not CodeSheetModifyListener.has_listener(unique_id):
+                                listener = CodeSheetModifyListener(unique_id)  # singleton
+                                sheet.component.addModifyListener(listener)
 
-                    self._logger.debug(f"Pre Dispatch manager loaded, UID: {doc.runtime_uid}")
-                    dispatch_mgr.register_interceptor(doc)
-                    cm = CellMgr(doc)
-                    cm.add_all_listeners()
+                        view = doc.get_view()
+                        view.component.addActivationEventListener(CodeSheetActivationListener())
+
+                        self._logger.debug(f"Pre Dispatch manager loaded, UID: {doc.runtime_uid}")
+                        dispatch_mgr.register_interceptor(doc)
+                        cm = CellMgr(doc)
+                        cm.reset_py_inst()
+                        cm.add_all_listeners()
+
+                        self.document.calculateAll()
+                    except Exception:
+                        self._logger.error("Error setting components on view.", exc_info=True)
                 else:
                     self._logger.debug("Conditions not met to register dispatch manager")
                 self._logger.debug("Dispatch manager registered")

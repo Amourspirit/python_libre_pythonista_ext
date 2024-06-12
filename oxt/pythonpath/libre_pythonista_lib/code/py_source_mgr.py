@@ -585,6 +585,9 @@ class PySourceManager(EventsPartial):
         # CellCache.reset_instance()
         self._data[code_cell] = py_src
         index = self.get_index(cell)
+        if index < 0:
+            self._logger.error(f"PySourceManager - add_source() - Cell {cell} not found.")
+            raise Exception(f"Cell {cell} not found.")
         if self._is_last_index(index):
             self._logger.debug(f"PySourceManager - add_source() - Last Index, updating from index {index}")
             self.update_from_index(index)
@@ -625,6 +628,9 @@ class PySourceManager(EventsPartial):
         code = cargs.event_data.get("code", code)
         src = self[cell]
         index = self.get_index(cell)
+        if index < 0:
+            self._logger.error(f"PySourceManager - update_source() - Cell {cell} not found.")
+            raise Exception(f"Cell {cell} not found.")
         src.source_code = code  # writes code to file
         # CellCache.reset_instance()
 
@@ -708,13 +714,17 @@ class PySourceManager(EventsPartial):
         Get index of cell in the data.
 
         Args:
-            cell (Tuple[int, int]): Cell address in Column and Row.
+            cell (CellObj): Cell object.
 
         Returns:
-            int: Index of the cell in the data.
+            int: Index of the cell in the data or ``-1`` if not found.
         """
-        code_cell = self.convert_cell_obj_to_tuple(cell)
-        return list(self._data.keys()).index(code_cell)
+        try:
+            code_cell = self.convert_cell_obj_to_tuple(cell)
+            return list(self._data.keys()).index(code_cell)
+        except Exception:
+            self._logger.warning(f"PySourceManager - get_index() - Cell {cell} not found.")
+            return -1
 
     # endregion Source Management
 

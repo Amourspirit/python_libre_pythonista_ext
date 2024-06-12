@@ -1,6 +1,6 @@
 from __future__ import annotations
 from typing import Any
-import contextlib
+from ooodev.utils.gen_util import NULL_OBJ
 import types
 from ...utils import str_util
 from ...log.log_inst import LogInst
@@ -49,21 +49,24 @@ class LpFn:
             log.debug(f"LpFn - get_is_match() Last bracket is not the end of the string: {next_bracket_index}")
             return False
 
-        result = None
+        result = NULL_OBJ
         # with contextlib.suppress(Exception):
         try:
             if "lp_mod" in self.mod.__dict__:
                 log.debug("LpFn - get_is_match() lp_mod is in module")
                 result = self.mod.lp_mod.LAST_LP_RESULT  # type: ignore
+                log.debug(f"LpFn - get_is_match() lp_mod.LAST_LP_RESULT {result}")
             else:
                 log.debug("LpFn - get_is_match() lp_mod is NOT in module")
             self._result = result
         except Exception as e:
             log.error(f"LpFn - get_is_match() Exception: {e}", exc_info=True)
-        return result is not None
+        return result is not NULL_OBJ
 
     def get_value(self) -> Any:
         """Get the list of versions. In this case it will be a single version, unless vstr is invalid in which case it will be an empty list."""
+        if self._result is NULL_OBJ:
+            return None
         return self._result
 
     def reset(self) -> None:
