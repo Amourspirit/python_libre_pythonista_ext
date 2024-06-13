@@ -101,6 +101,8 @@ class LibrePythonistaViewJob(unohelper.Base, XJob):
 
                         view = doc.get_view()
                         view.component.addActivationEventListener(CodeSheetActivationListener())
+                        if view.is_form_design_mode():
+                            doc.toggle_design_mode()
 
                         self._logger.debug(f"Pre Dispatch manager loaded, UID: {doc.runtime_uid}")
                         dispatch_mgr.register_interceptor(doc)

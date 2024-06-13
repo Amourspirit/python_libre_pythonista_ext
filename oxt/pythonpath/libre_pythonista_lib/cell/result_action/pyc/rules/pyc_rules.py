@@ -3,6 +3,7 @@ from typing import Any, List, TYPE_CHECKING, Type
 from ooodev.calc import CalcCell
 
 from .rule_float import RuleFloat
+from .rule_int import RuleInt
 from .rule_str import RuleStr
 
 if TYPE_CHECKING:
@@ -111,6 +112,7 @@ class PycRules:
     def _register_known_rules(self):
         # re.compile(r"^(\w+)\s*=")
         self._reg_rule(rule=RuleFloat)
+        self._reg_rule(rule=RuleInt)
         self._reg_rule(rule=RuleStr)
 
     def get_matched_rule(self, cell: CalcCell, data: Any) -> PycRuleT | None:

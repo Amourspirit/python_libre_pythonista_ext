@@ -148,6 +148,8 @@ class PyImpl(unohelper.Base, XPy):
                 if self._logger.is_debug:
                     self._logger.debug(f"pyc - Matched Rule: {matched_rule}")
                 return matched_rule.action()
+            else:
+                self._logger.debug("pyc - No matched rule")
 
             if isinstance(py_src.value, tuple):
                 result = py_src.value

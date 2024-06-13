@@ -68,8 +68,11 @@ class CodeCellListener(unohelper.Base, XModifyListener, EventsPartial):
                     trigger_name = str(calc_cell.get_custom_property(key))
                     eargs.event_data.trigger_name = trigger_name
                     eargs.event_data.remove_custom_property = True
+                    eargs.event_data.calc_cell = calc_cell
+                    eargs.event_data.cell_cp_codename = cfg.cell_cp_codename
+
                     self._log.debug(f"CodeCellListener: modified: Triggering event: {trigger_name}")
-                    self.trigger_event(trigger_name, eargs)
+                    self.trigger_event("cell_custom_prop_modify", eargs)
                     if eargs.event_data.remove_custom_property:
                         if calc_cell.has_custom_property(key):
                             calc_cell.remove_custom_property(key)
@@ -109,6 +112,9 @@ class CodeCellListener(unohelper.Base, XModifyListener, EventsPartial):
     def subscribe_cell_modified(self, cb: Callable[[Any, Any], None]) -> None:
         self.subscribe_event("cell_modified", cb)
 
+    def subscribe_cell_custom_prop_modify(self, cb: Callable[[Any, Any], None]) -> None:
+        self.subscribe_event("cell_custom_prop_modify", cb)
+
     def subscribe_cell_moved(self, cb: Callable[[Any, Any], None]) -> None:
         self.subscribe_event("cell_moved", cb)
 
@@ -120,3 +126,6 @@ class CodeCellListener(unohelper.Base, XModifyListener, EventsPartial):
 
     def unsubscribe_cell_moved(self, cb: Callable[[Any, Any], None]) -> None:
         self.unsubscribe_event("cell_moved", cb)
+
+    def unsubscribe_cell_custom_prop_modify(self, cb: Callable[[Any, Any], None]) -> None:
+        self.unsubscribe_event("cell_custom_prop_modify", cb)

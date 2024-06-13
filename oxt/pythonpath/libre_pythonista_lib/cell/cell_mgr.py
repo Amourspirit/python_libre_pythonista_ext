@@ -16,7 +16,7 @@ from .listen.code_cell_listener import CodeCellListener
 from ..code.cell_cache import CellCache
 from ..code.py_source_mgr import PyInstance
 from ..code.py_source_mgr import PySource
-
+from ..cell.ctl.ctl_mgr import CtlMgr
 
 if TYPE_CHECKING:
     from com.sun.star.sheet import SheetCell  # service
@@ -56,6 +56,7 @@ class CellMgr:
         self._fn_on_cell_deleted = self.on_cell_deleted
         self._fn_on_cell_moved = self.on_cell_moved
         self._fn_on_cell_modified = self.on_cell_modified
+        self._fn_on_cell_custom_prop_modify = self.on_cell_custom_prop_modify
 
     def on_cell_deleted(self, src: Any, event: EventArgs) -> None:
         """
@@ -119,6 +120,28 @@ class CellMgr:
 
         self._log.debug(f"Cell modified: {dd.absolute_name}")
 
+    def on_cell_custom_prop_modify(self, src: Any, event: EventArgs) -> None:
+        """
+        Event handler for when a cell custom property is modified.
+
+        ``EventArgs.event_data`` is a DotDict with the following keys:
+        - absolute_name: str
+        - event_obj: ``com.sun.star.lang.EventObject``
+        - code_name: str
+        - trigger_name: str
+        - remove_custom_property: bool
+        - calc_cell: CalcCell
+        """
+        try:
+            if self._log.is_debug:
+                self._log.debug(
+                    f"Cell custom property modify Event for {event.event_data.absolute_name} with event {event.event_data.trigger_name}"
+                )
+            ct_mgr = CtlMgr()
+            ct_mgr.set_ctl(event)
+        except Exception:
+            self._log.error("Error setting custom property control", exc_info=True)
+
     # endregion Cell Events
 
     def _remove_cell(self, cell_obj: CellObj, cell: SheetCell) -> None:
@@ -134,7 +157,7 @@ class CellMgr:
         # - removing cell from CellCache
         # - removing listener from cell
         # - removing custom property from cell
-        # Everythhing is removed via self._py_inst.remove_source() except removing listener.
+        # Everything is removed via self._py_inst.remove_source() except removing listener.
         if cell_obj.sheet_idx < 0:
             self._log.error(f"Sheet index is less than 0: {cell_obj.sheet_idx} for {cell_obj}")
             raise ValueError(f"Sheet index is less than 0: {cell_obj.sheet_idx} for {cell_obj}")
@@ -196,6 +219,7 @@ class CellMgr:
                 listener.subscribe_cell_deleted(self._fn_on_cell_deleted)
                 listener.subscribe_cell_modified(self._fn_on_cell_modified)
                 listener.subscribe_cell_moved(self._fn_on_cell_moved)
+                listener.subscribe_cell_custom_prop_modify(self._fn_on_cell_custom_prop_modify)
                 cell.addModifyListener(listener)
                 self._log.debug(f"Added listener to cell: {cell.AbsoluteName} with codename {name}.")
             else:
@@ -210,6 +234,7 @@ class CellMgr:
                 listener.unsubscribe_cell_deleted(self._fn_on_cell_deleted)
                 listener.unsubscribe_cell_modified(self._fn_on_cell_modified)
                 listener.unsubscribe_cell_moved(self._fn_on_cell_moved)
+                listener.unsubscribe_cell_custom_prop_modify(self._fn_on_cell_custom_prop_modify)
                 cell.removeModifyListener(listener)
                 self._log.debug(f"Removed listener from cell with codename {name}.")
             else:
@@ -379,6 +404,7 @@ class CellMgr:
                 listener.unsubscribe_cell_deleted(self._fn_on_cell_deleted)
                 listener.unsubscribe_cell_modified(self._fn_on_cell_modified)
                 listener.unsubscribe_cell_moved(self._fn_on_cell_moved)
+                listener.unsubscribe_cell_custom_prop_modify(self._fn_on_cell_custom_prop_modify)
                 # cell.removeModifyListener(listener)
             else:
                 self._log.debug(f"Listener does not exist for cell: {cell.AbsoluteName}")
@@ -389,6 +415,7 @@ class CellMgr:
                 listener.subscribe_cell_deleted(self._fn_on_cell_deleted)
                 listener.subscribe_cell_modified(self._fn_on_cell_modified)
                 listener.subscribe_cell_moved(self._fn_on_cell_moved)
+                listener.subscribe_cell_custom_prop_modify(self._fn_on_cell_custom_prop_modify)
                 self._listeners[code_name] = listener
                 # cell.addModifyListener(listener)
 
