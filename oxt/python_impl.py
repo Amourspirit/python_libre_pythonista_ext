@@ -82,12 +82,22 @@ class PythonImpl(unohelper.Base, XJobExecutor):
             self._logger.debug(msg)
             doc = CalcDoc.from_current_doc()
             sheet = doc.get_active_sheet()
+            sheet_locked = sheet.is_sheet_protected()
             try:
                 cell = sheet.get_selected_cell()
             except CellError:
                 self._logger.error(f"{self.__class__.__name__} - No cell selected")
                 return
             # https://api.libreoffice.org/docs/idl/ref/namespacecom_1_1sun_1_1star_1_1awt_1_1MessageBoxButtons.html
+            cell_locked = cell.cell_protection.is_locked
+            if cell_locked and sheet_locked:
+                MsgBox.msgbox(
+                    msg=self._res.resolve_string("mbmsg003"),
+                    title=self._res.resolve_string("mbtitle003"),
+                    boxtype=MessageBoxType.INFOBOX,
+                    buttons=MessageBoxButtonsEnum.BUTTONS_OK,
+                )
+                return
             if cell.value is not None:
                 msg_result = MsgBox.msgbox(
                     msg=self._res.resolve_string("mbmsg002"),
@@ -112,12 +122,22 @@ class PythonImpl(unohelper.Base, XJobExecutor):
             self._logger.debug(msg)
             doc = CalcDoc.from_current_doc()
             sheet = doc.get_active_sheet()
+            sheet_locked = sheet.is_sheet_protected()
             try:
                 cell = sheet.get_selected_cell()
             except CellError:
                 self._logger.error(f"{self.__class__.__name__} - No cell selected")
                 return
             # https://api.libreoffice.org/docs/idl/ref/namespacecom_1_1sun_1_1star_1_1awt_1_1MessageBoxButtons.html
+            cell_locked = cell.cell_protection.is_locked
+            if cell_locked and sheet_locked:
+                MsgBox.msgbox(
+                    msg=self._res.resolve_string("mbmsg003"),
+                    title=self._res.resolve_string("mbtitle003"),
+                    boxtype=MessageBoxType.INFOBOX,
+                    buttons=MessageBoxButtonsEnum.BUTTONS_OK,
+                )
+                return
             if cell.value is not None:
                 msg_result = MsgBox.msgbox(
                     msg=self._res.resolve_string("mbmsg002"),

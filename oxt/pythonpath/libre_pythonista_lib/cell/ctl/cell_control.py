@@ -7,11 +7,11 @@ from com.sun.star.container import NoSuchElementException
 from ooo.dyn.drawing.text_vertical_adjust import TextVerticalAdjust
 from ooodev.calc.controls.sheet_control_base import SheetControlBase
 from ooodev.calc.partial.calc_sheet_prop_partial import CalcSheetPropPartial
-from ooodev.events.args.event_args import EventArgs
 from ooodev.events.args.cancel_event_args import CancelEventArgs
 from ooodev.exceptions import ex as mEx
 from ooodev.loader import Lo
 from ooodev.utils.helper.dot_dict import DotDict
+from .ctl_namer import CtlNamer
 from ...ex import CustomPropertyMissingError
 from ...log.log_inst import LogInst
 
@@ -37,9 +37,7 @@ class CellControl(SheetControlBase):
         self._form_name = f"Form_{self._cfg.general_code_name}"
         if not self.calc_obj.has_custom_property(self._cfg.cell_cp_codename):
             raise CustomPropertyMissingError(f"Custom Property not found: {self._cfg.cell_cp_codename}")
-        self._code_name = self.calc_obj.get_custom_property(self._cfg.cell_cp_codename)
-        self._control_name = f"ctl_cell_{self._code_name}"
-        self._shape_name = f"SHAPE_{self._control_name}"
+        self.namer = CtlNamer(self.calc_obj)
         self.__log.debug(f"CellControl: __init__(): Exit")
 
     def _init_calc_sheet_prop(self) -> None:
@@ -63,7 +61,9 @@ class CellControl(SheetControlBase):
         self.__log.debug(f"CellControl: _find_current_control(): Entered")
         # pylint: disable=import-outside-toplevel
         cargs = CancelEventArgs(source=self)
-        cargs.event_data = DotDict(control_name=self._control_name, shape_name=self._shape_name, cell=self.calc_obj)
+        cargs.event_data = DotDict(
+            control_name=self.namer.ctl_name, shape_name=self.namer.ctl_shape_name, cell=self.calc_obj
+        )
         self.on_finding_control(cargs)
         if cargs.cancel:
             return None
@@ -74,15 +74,17 @@ class CellControl(SheetControlBase):
 
         shape = None
         with contextlib.suppress(mEx.ShapeMissingError):
-            shape = sheet.draw_page.find_shape_by_name(self._shape_name)
+            shape = sheet.draw_page.find_shape_by_name(self.namer.ctl_shape_name)
 
         if shape is None:
-            self.__log.debug(f"CellControl - _find_current_control(): Shape not found: {self._shape_name}")
+            self.__log.debug(f"CellControl - _find_current_control(): Shape not found: {self.namer.ctl_shape_name}")
             return None
 
         x_shape = Lo.qi(XControlShape, shape.component)
         if x_shape is None:
-            self.__log.debug(f"CellControl - _find_current_control(): XControlShape not found: {self._shape_name}")
+            self.__log.debug(
+                f"CellControl - _find_current_control(): XControlShape not found: {self.namer.ctl_shape_name}"
+            )
             return None
 
         ctl = x_shape.getControl()
@@ -94,12 +96,12 @@ class CellControl(SheetControlBase):
         try:
             factory_ctl = factory.get_control_from_model(ctl)
             self.__log.debug(
-                f"CellControl - _find_current_control(): Found Control from factory: {self._control_name}"
+                f"CellControl - _find_current_control(): Found Control from factory: {self.namer.ctl_name}"
             )
             return factory_ctl
         except NoSuchElementException:
             self.__log.warning(
-                f"CellControl - _find_current_control() NoSuchElementException error from FormControlFactory Control not found: {self._control_name}"
+                f"CellControl - _find_current_control() NoSuchElementException error from FormControlFactory Control not found: {self.namer.ctl_name}"
             )
             return None
 
@@ -107,12 +109,12 @@ class CellControl(SheetControlBase):
         event_data = DotDict(
             Anchor=self.calc_obj.component,
             Decorative=False,
-            ResizeWithCell=False,
-            Printable=False,
+            HoriOrient=0,
             MoveProtect=True,
+            Printable=False,
+            ResizeWithCell=True,
             SizeProtect=False,
             TextVerticalAdjust=TextVerticalAdjust.CENTER,
-            HoriOrient=0,
             Visible=True,
         )
         eargs = CancelEventArgs(source=shape)

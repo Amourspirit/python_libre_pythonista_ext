@@ -10,7 +10,7 @@ from .simple_ctl import SimpleCtl
 class StrCtl(SimpleCtl):
 
     def add_ctl(self) -> Any:
-        btn = super().add_ctl()
+        shape = super().add_ctl()
         cell = cast("CalcCell", self.calc_cell)
         cell.style_align_text(hori_align=HoriAlignKind.LEFT, indent=UnitPT(14))
-        return btn
+        return shape

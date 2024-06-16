@@ -7,5 +7,5 @@ from .simple_ctl import SimpleCtl
 class FloatCtl(SimpleCtl):
 
     def add_ctl(self) -> Any:
-        btn = super().add_ctl()
-        return btn
+        shape = super().add_ctl()
+        return shape
