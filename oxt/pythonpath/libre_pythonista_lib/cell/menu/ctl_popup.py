@@ -5,6 +5,7 @@ from ooodev.calc import CalcCell
 from ooodev.gui.menu.popup_menu import PopupMenu
 from ooodev.gui.menu.popup.popup_creator import PopupCreator
 from ...res.res_resolver import ResResolver
+from ...dispatch.cell_dispatch_state import CellDispatchState
 
 if TYPE_CHECKING:
     from com.sun.star.awt import MenuEvent
@@ -30,8 +31,11 @@ class CtlPopup:
 
     def _get_popup_menu(self) -> list:
         edit_name = self._res.resolve_string("mnuEditCode")  # Edit Menu
-        edit_uno = f".uno:libre_pythonista.calc.menu.code.edit?sheet={self._sheet_name}&cell={self._cell.cell_obj}"
-        new_menu = [{"text": edit_name, "command": edit_uno}]
+        cps = CellDispatchState(cell=self._cell)
+        cmd = ".uno:libre_pythonista.calc.menu.code.edit"
+        cmd_enabled = cps.is_dispatch_enabled(cmd)
+        edit_uno = f"{cmd}?sheet={self._sheet_name}&cell={self._cell.cell_obj}"
+        new_menu = [{"text": edit_name, "command": edit_uno, "enabled": cmd_enabled}]
         return new_menu
 
     def get_menu(self) -> PopupMenu:

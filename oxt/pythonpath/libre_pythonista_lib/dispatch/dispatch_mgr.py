@@ -16,6 +16,7 @@ from ooodev.gui.menu.context.action_trigger_item import ActionTriggerItem
 from ooodev.gui.menu.context.action_trigger_sep import ActionTriggerSep
 from ooodev.loader.inst.doc_type import DocType
 from .dispatch_provider_interceptor import DispatchProviderInterceptor
+from .cell_dispatch_state import CellDispatchState
 from ..log.log_inst import LogInst
 from ..res.res_resolver import ResResolver
 
@@ -76,11 +77,13 @@ def on_menu_intercept(
                     if not log is None:
                         log.debug("Getting Resource for mnuEditCode")
                     edit_mnu = ResResolver().resolve_string("mnuEditCode")
-
-                    container.insert_by_index(4, ActionTriggerItem(f".uno:libre_pythonista.calc.menu.code.edit?sheet={sheet.name}&cell={cell_obj}", edit_mnu))  # type: ignore
-                    # container.insert_by_index(4, ActionTriggerItem(f".uno:libre_pythonista.calc.menu.reset.orig?sheet={sheet.name}&cell={cell_obj}", "Rest to Original"))  # type: ignore
-                    container.insert_by_index(4, ActionTriggerSep())  # type: ignore
-                    event.event_data.action = ContextMenuAction.CONTINUE_MODIFIED
+                    cps = CellDispatchState(cell=cell)
+                    cmd = ".uno:libre_pythonista.calc.menu.code.edit"
+                    if cps.is_dispatch_enabled(cmd):
+                        container.insert_by_index(4, ActionTriggerItem(f"{cmd}?sheet={sheet.name}&cell={cell_obj}", edit_mnu))  # type: ignore
+                        # container.insert_by_index(4, ActionTriggerItem(f".uno:libre_pythonista.calc.menu.reset.orig?sheet={sheet.name}&cell={cell_obj}", "Rest to Original"))  # type: ignore
+                        container.insert_by_index(4, ActionTriggerSep())  # type: ignore
+                        event.event_data.action = ContextMenuAction.CONTINUE_MODIFIED
                 except Exception:
                     if not log is None:
                         log.error("Error inserting context menu item.", exc_info=True)
