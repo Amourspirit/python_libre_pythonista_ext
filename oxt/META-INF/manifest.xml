@@ -38,4 +38,6 @@
     <manifest:file-entry
         manifest:media-type="application/vnd.sun.star.uno-component;type=Python"
         manifest:full-path="libre_pythonista_unloading_job.py" />
+    <manifest:file-entry manifest:media-type="application/vnd.sun.star.framework-script"
+        manifest:full-path="python/scripts" />
 </manifest:manifest>

@@ -6,8 +6,11 @@ Manages adding and removing listeners to cells.
 
 from __future__ import annotations
 from typing import Any, cast, Dict, TYPE_CHECKING
+import contextlib
 from contextlib import contextmanager
 import uno
+from com.sun.star.uno import RuntimeException
+from ooo.dyn.lang.event_object import EventObject
 from ooodev.calc import CalcDoc, CalcCell, CalcSheet
 from ooodev.utils.data_type.cell_obj import CellObj
 from ooodev.events.args.event_args import EventArgs
@@ -17,11 +20,14 @@ from ..code.cell_cache import CellCache
 from ..code.py_source_mgr import PyInstance
 from ..code.py_source_mgr import PySource
 from ..cell.ctl.ctl_mgr import CtlMgr
+from ..cell.result_action.pyc.rules.pyc_rules import PycRules
+from ..cell.cell_info import CellInfo
 
 if TYPE_CHECKING:
     from com.sun.star.sheet import SheetCell  # service
     from ....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
     from ....___lo_pip___.config import Config
+    from .result_action.pyc.rules.pyc_rule_t import PycRuleT
 else:
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
     from ___lo_pip___.config import Config
@@ -55,6 +61,7 @@ class CellMgr:
     def _init_events(self) -> None:
         self._fn_on_cell_deleted = self.on_cell_deleted
         self._fn_on_cell_moved = self.on_cell_moved
+        self._fn_on_cell_pyc_formula_removed = self.on_cell_pyc_formula_removed
         self._fn_on_cell_modified = self.on_cell_modified
         self._fn_on_cell_custom_prop_modify = self.on_cell_custom_prop_modify
 
@@ -62,59 +69,88 @@ class CellMgr:
         """
         Event handler for when a cell is deleted.
 
-        ``EventArgs.event_data`` is a DotDict with the following keys:
+        ``CalcCell.extra_data`` of event_data will the same key value pairs of the event_data keys.
+
+        ``EventArgs.event_data`` and ``EventArgs.event_data.calc_cell.extra_data`` will have the following
+
         - absolute_name: str
         - event_obj: ``com.sun.star.lang.EventObject``
         - code_name: str
+        - calc_cell: CalcCell
+        - deleted: True
+
 
         """
         dd = cast(DotDict, event.event_data)
-        self._remove_listener_from_cell(dd.event_obj.Source, dd.code_name)
+        self._log.debug("on_cell_deleted() Entering.")
+        self._remove_cell(calc_cell=dd.calc_cell)
+        # self._remove_listener_from_cell(dd.event_obj.Source, dd.code_name)
         self._log.debug(f"Cell deleted: {dd.absolute_name}")
 
     def on_cell_moved(self, src: Any, event: EventArgs) -> None:
         """
-        Event handler for when a cell is deleted.
+        Event handler for when a cell is moved.
 
         ``EventArgs.event_data`` is a DotDict with the following keys:
         - absolute_name: current cell absolute name.
         - old_name: old cell absolute name.
         - event_obj: ``com.sun.star.lang.EventObject``
         - code_name: str
+        - deleted: False
 
         """
         dd = cast(DotDict, event.event_data)
         self.reset_cell_cache()
         self._log.debug(f"Cell moved: {dd.absolute_name}")
 
+    def on_cell_pyc_formula_removed(self, src: Any, event: EventArgs) -> None:
+        """
+        Event handler for when a cell has pyc formula removed.
+
+        ``EventArgs.event_data`` and ``EventArgs.event_data.calc_cell.extra_data`` will have the following:
+
+        - absolute_name: current cell absolute name.
+        - old_name: old cell absolute name.
+        - event_obj: ``com.sun.star.lang.EventObject``
+        - code_name: str
+        - calc_cell: CalcCell
+        - deleted: False
+
+        """
+        try:
+            self._log.debug("on_cell_pyc_formula_removed() Entering.")
+            dd = cast(DotDict, event.event_data)
+            self._remove_cell(calc_cell=dd.calc_cell)
+            self._log.debug(f"on_cell_pyc_formula_removed() Leaving: {dd.absolute_name}")
+        except Exception:
+            self._log.error(f"Error removing pyc formula from cell: {dd.absolute_name}", exc_info=True)
+
     def on_cell_modified(self, src: Any, event: EventArgs) -> None:
         """
         Event handler for when a cell is modified.
 
-        ``EventArgs.event_data`` is a DotDict with the following keys:
+        ``CalcCell.extra_data`` of event_data will the same key value pairs of the event_data keys.
+
+        ``EventArgs.event_data`` and ``EventArgs.event_data.calc_cell.extra_data`` will have the following:
+
         - absolute_name: str
         - event_obj: ``com.sun.star.lang.EventObject``
         - code_name: str
+        - calc_cell: CalcCell
+        - deleted: False
 
         """
         dd = cast(DotDict, event.event_data)
         try:
             cell = cast("SheetCell", dd.event_obj.Source)
-            formula = cell.getFormula()
-            if formula:
-                s = formula.lstrip("{")  # could be a array formula
-                s = s.lstrip("=")  # formula may start with one or two equal signs
-            else:
-                s = ""
-            if not s.startswith("COM.GITHUB.AMOURSPIRIT.EXTENSION.LIBREPYTHONISTA.PYIMPL.PYC"):
+            ci = CellInfo(cell)
+
+            if not ci.is_pyc_formula():
                 self._log.debug(
                     f"Formula has been modified or removed. Not a LibrePythonista cell: {dd.absolute_name}"
                 )
-                self._log.debug(f"Formula: {formula}")
-                address = cell.getCellAddress()
-                cell_obj = CellObj.from_idx(col_idx=address.Column, row_idx=address.Row, sheet_idx=address.Sheet)
-                self._remove_cell(cell_obj=cell_obj, cell=cell)
-
+                # address = cell.getCellAddress()
+                self._remove_cell(calc_cell=dd.calc_cell)
         except Exception:
             self._log.error(f"Error modifying cell: {dd.absolute_name}", exc_info=True)
 
@@ -132,19 +168,33 @@ class CellMgr:
         - remove_custom_property: bool
         - calc_cell: CalcCell
         """
-        try:
-            if self._log.is_debug:
-                self._log.debug(
-                    f"Cell custom property modify Event for {event.event_data.absolute_name} with event {event.event_data.trigger_name}"
-                )
-            ct_mgr = CtlMgr()
-            ct_mgr.set_ctl(event)
-        except Exception:
-            self._log.error("Error setting custom property control", exc_info=True)
+        return
+        # try:
+        #     if self._log.is_debug:
+        #         self._log.debug(
+        #             f"Cell custom property modify Event for {event.event_data.absolute_name} with event {event.event_data.trigger_name}"
+        #         )
+        #     ct_mgr = CtlMgr()
+        #     ct_mgr.set_ctl(event)
+        # except Exception:
+        #     self._log.error("Error setting custom property control", exc_info=True)
 
     # endregion Cell Events
 
-    def _remove_cell(self, cell_obj: CellObj, cell: SheetCell) -> None:
+    def add_cell_control_from_pyc_rule(self, rule: PycRuleT) -> None:
+        """
+        Add a control to a cell from a PycRule.
+
+        Args:
+            rule (PycRuleT): PycRule.
+        """
+        try:
+            ct_mgr = CtlMgr()
+            ct_mgr.set_ctl_from_pyc_rule(rule)
+        except Exception:
+            self._log.error("Error setting custom property control", exc_info=True)
+
+    def _remove_cell(self, calc_cell: CalcCell) -> None:
         """
         Remove a cell.
 
@@ -157,27 +207,76 @@ class CellMgr:
         # - removing cell from CellCache
         # - removing listener from cell
         # - removing custom property from cell
+        # - removing cell control.
         # Everything is removed via self._py_inst.remove_source() except removing listener.
-        if cell_obj.sheet_idx < 0:
-            self._log.error(f"Sheet index is less than 0: {cell_obj.sheet_idx} for {cell_obj}")
-            raise ValueError(f"Sheet index is less than 0: {cell_obj.sheet_idx} for {cell_obj}")
-        if self._cell_cache is None:
-            # this should never happen.
-            self._log.error("Cell cache is None")
-            raise ValueError("Cell cache is None")
-        icp = self._cell_cache.get_index_cell_props(cell=cell_obj, sheet_idx=cell_obj.sheet_idx)
-        code_name = icp.code_name
+        is_deleted = calc_cell.extra_data.get("deleted", False)
+        cell_obj = calc_cell.cell_obj
+        self._log.debug(f"_remove_cell() Removing cell: {cell_obj}")
+        if is_deleted:
+            self._log.debug(f"Cell is deleted: {cell_obj} getting code name from deleted cell extra data.")
+            code_name = calc_cell.extra_data.code_name
+        else:
+            if cell_obj.sheet_idx < 0:
+                self._log.error(f"Sheet index is less than 0: {cell_obj.sheet_idx} for {cell_obj}")
+                raise ValueError(f"Sheet index is less than 0: {cell_obj.sheet_idx} for {cell_obj}")
+            if self._cell_cache is None:
+                # this should never happen.
+                self._log.error("Cell cache is None")
+                raise ValueError("Cell cache is None")
+            icp = self._cell_cache.get_index_cell_props(cell=cell_obj, sheet_idx=cell_obj.sheet_idx)
+            code_name = icp.code_name
         try:
-            py_src_index = self._py_inst.get_index(cell_obj)
-            if py_src_index < 0:
-                self._log.error(f"Cell does not exist in PyInstance: {cell_obj}")
-                raise KeyError(f"Cell does not exist in PyInstance: {cell_obj}")
+            self._log.debug(f"Removing listener from cell: {cell_obj}")
+            self._remove_listener_from_cell(calc_cell.component, code_name)
+        except:
+            self._log.error(f"Error removing listener from cell: {cell_obj}", exc_info=True)
 
-            self._py_inst.remove_source(cell_obj)
+        # don't check using self.is_cell_deleted(calc_cell.component) because it may
+        # not be accurate if the cell is deleted.
+        # This has to do with how the CodeCellListener() is constructing the CalcCell on Delete.
+        # if self.is_cell_deleted(calc_cell.component):
+        if is_deleted:
+            self._log.debug(f"Cell is deleted: {cell_obj}")
+            absolute_name = False
+        else:
+            absolute_name = calc_cell.component.AbsoluteName
+            self._log.debug(f"Cell absolute Name: {absolute_name}")
+        try:
+            # remove cell control.
+            # CtlMgr can handle cell that are deleted.
+            ctl_mgr = CtlMgr()
+            ctl_mgr.remove_ctl(calc_cell)
+            self._log.debug(f"Removed cell control for cell: {cell_obj}")
+        except Exception:
+            self._log.error(f"Error removing cell control: {cell_obj}", exc_info=True)
+
+        try:
+            if absolute_name:
+                py_src_index = self._py_inst.get_index(cell_obj)
+                if py_src_index < 0:
+                    self._log.error(f"Cell does not exist in PyInstance: {cell_obj}")
+                    raise KeyError(f"Cell does not exist in PyInstance: {cell_obj}")
+
+                self._py_inst.remove_source(cell_obj)
+            else:
+                self._py_inst.remove_source_by_calc_cell(calc_cell)
         except Exception:
             self._log.error(f"Error getting cell index from PyInstance: {cell_obj}", exc_info=True)
 
-        self._remove_listener_from_cell(cell, code_name)
+        try:
+            if absolute_name:
+                prefix = self._cfg.cell_cp_prefix
+                props = calc_cell.get_custom_properties()
+                for key in props.keys():
+                    if key.startswith(prefix):
+                        calc_cell.remove_custom_property(key)
+                        self._log.debug(f"Removed custom property: {key} for cell: {cell_obj}")
+
+        except Exception:
+            self._log.error(f"Error removing cell rules: {cell_obj}", exc_info=True)
+
+        self.reset_cell_cache()
+        self._log.debug(f"_remove_cell() Removed cell: {cell_obj}")
 
     def has_cell(self, cell_obj: CellObj) -> bool:
         if cell_obj.sheet_idx < 0:
@@ -187,6 +286,28 @@ class CellMgr:
             self._log.error("Cell cache is None")
             raise ValueError("Cell cache is None")
         return self._cell_cache.has_cell(cell_obj, cell_obj.sheet_idx)
+
+    def trigger_cell_modify_event(self, cell: SheetCell, code_name: str) -> None:
+        """
+        Triggers the Modifier event for a cell.
+
+        Args:
+            cell (SheetCell): UNO Cell.
+            code_name (str): Cell unique id.
+        """
+        try:
+            # cell_addr = cell.getCellAddress()
+            # cell_obj = CellObj.from_idx(col_idx=cell_addr.Column, row_idx=cell_addr.Row, sheet_idx=cell_addr.Sheet)
+            if not self.has_listener(code_name):
+                self._log.debug(
+                    f"Cell '{code_name}' does not have listener. Adding listener to cell: {cell.AbsoluteName}"
+                )
+                self._add_listener_to_cell(cell, code_name)
+            listener = self.get_listener(code_name)
+            event_obj = EventObject(cell)
+            listener.modified(event_obj)
+        except Exception:
+            self._log.error(f"Error triggering cell modify event for cell: {cell.AbsoluteName}", exc_info=True)
 
     def add_source_code(self, cell_obj: CellObj, source_code: str) -> None:
         """
@@ -220,6 +341,7 @@ class CellMgr:
                 listener.subscribe_cell_modified(self._fn_on_cell_modified)
                 listener.subscribe_cell_moved(self._fn_on_cell_moved)
                 listener.subscribe_cell_custom_prop_modify(self._fn_on_cell_custom_prop_modify)
+                listener.subscribe_cell_pyc_formula_removed(self._fn_on_cell_pyc_formula_removed)
                 cell.addModifyListener(listener)
                 self._log.debug(f"Added listener to cell: {cell.AbsoluteName} with codename {name}.")
             else:
@@ -235,12 +357,21 @@ class CellMgr:
                 listener.unsubscribe_cell_modified(self._fn_on_cell_modified)
                 listener.unsubscribe_cell_moved(self._fn_on_cell_moved)
                 listener.unsubscribe_cell_custom_prop_modify(self._fn_on_cell_custom_prop_modify)
-                cell.removeModifyListener(listener)
-                self._log.debug(f"Removed listener from cell with codename {name}.")
+                listener.unsubscribe_cell_pyc_formula_removed(self._fn_on_cell_pyc_formula_removed)
+                if not self.is_cell_deleted(cell):
+                    cell.removeModifyListener(listener)
+                    self._log.debug(f"Removed listener from cell with codename {name}.")
+                else:
+                    self._log.debug(f"Cell with codename {name} has been deleted. Not removing listener.")
             else:
                 self._log.error(f"Listener does not exists for cell with codename {name}.")
         except Exception:
             self._log.error(f"Error removing listener from cell with codename {name}.", exc_info=True)
+
+    def is_cell_deleted(self, cell: SheetCell) -> bool:
+        """Gets if a sheet cell has been deleted."""
+        ci = CellInfo(cell)
+        return ci.is_cell_deleted()
 
     def add_all_listeners(self) -> None:
         """
@@ -250,6 +381,7 @@ class CellMgr:
         if self._listeners:
             self._log.warning("Listeners already exist. Not adding listeners.")
             return
+        assert self._cell_cache is not None, "Cell cache is None"
         cc = self._cell_cache.code_cells
         i = 0
         for sheet_idx, obj in cc.items():
@@ -270,6 +402,7 @@ class CellMgr:
         sheet_cells = {}
         # gather cells by sheet
         for name in self._listeners.keys():
+            assert self._cell_cache is not None, "Cell cache is None"
             cell_obj = self._cell_cache.code_name_cell_map.get(name, None)
             if cell_obj is None:
                 self._log.error(f"Cell object does not exist for code name: {name}")
@@ -405,6 +538,7 @@ class CellMgr:
                 listener.unsubscribe_cell_modified(self._fn_on_cell_modified)
                 listener.unsubscribe_cell_moved(self._fn_on_cell_moved)
                 listener.unsubscribe_cell_custom_prop_modify(self._fn_on_cell_custom_prop_modify)
+                listener.unsubscribe_cell_pyc_formula_removed(self._fn_on_cell_pyc_formula_removed)
                 # cell.removeModifyListener(listener)
             else:
                 self._log.debug(f"Listener does not exist for cell: {cell.AbsoluteName}")
@@ -416,6 +550,7 @@ class CellMgr:
                 listener.subscribe_cell_modified(self._fn_on_cell_modified)
                 listener.subscribe_cell_moved(self._fn_on_cell_moved)
                 listener.subscribe_cell_custom_prop_modify(self._fn_on_cell_custom_prop_modify)
+                listener.subscribe_cell_pyc_formula_removed(self._fn_on_cell_pyc_formula_removed)
                 self._listeners[code_name] = listener
                 # cell.addModifyListener(listener)
 

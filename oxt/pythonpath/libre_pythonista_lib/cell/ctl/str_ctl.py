@@ -11,6 +11,6 @@ class StrCtl(SimpleCtl):
 
     def add_ctl(self) -> Any:
         btn = super().add_ctl()
-        cell = cast("CalcCell", self.event_data.calc_cell)
+        cell = cast("CalcCell", self.calc_cell)
         cell.style_align_text(hori_align=HoriAlignKind.LEFT, indent=UnitPT(14))
         return btn

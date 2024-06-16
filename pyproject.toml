@@ -1,5 +1,6 @@
 # See: https://github.com/Amourspirit/python-libreoffice-pip/wiki/pyproject.toml
 [tool.libre_pythonista.config]
+general_code_name = "libre_pythonista"
 cell_custom_prop_prefix = "libre_pythonista_"
 cell_custom_prop_codename = "codename"
 
@@ -63,7 +64,7 @@ typing-extensions = ">=4.11.0"
 verr = ">=1.1.2"
 pandas = ">=2"
 odfpy = ">=1.4"
-ooo-dev-tools = ">=0.45.5"
+ooo-dev-tools = ">=0.46.0"
 matplotlib = ">=3.7.5"
 seaborn = ">=0.13"
 sortedcontainers = ">=2.4.0"
@@ -112,7 +113,7 @@ python = "^3.8"
 ooouno = "^2.1.2"
 toml = "^0.10.2"
 typing-extensions = ">=4.11.0"
-ooo-dev-tools = ">=0.45.5"
+ooo-dev-tools = ">=0.46.0"
 sortedcontainers = ">=2.4.0"
 
 

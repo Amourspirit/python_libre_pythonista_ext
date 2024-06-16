@@ -102,7 +102,14 @@ class LibrePythonistaViewJob(unohelper.Base, XJob):
                         view = doc.get_view()
                         view.component.addActivationEventListener(CodeSheetActivationListener())
                         if view.is_form_design_mode():
-                            doc.toggle_design_mode()
+
+                            try:
+                                self._logger.debug("Setting form design mode to False")
+                                view.set_form_design_mode(False)
+                                self._logger.debug("Form design mode set to False")
+                                # doc.toggle_design_mode()
+                            except Exception:
+                                self._logger.warning("Unable to set form design mode", exc_info=True)
 
                         self._logger.debug(f"Pre Dispatch manager loaded, UID: {doc.runtime_uid}")
                         dispatch_mgr.register_interceptor(doc)

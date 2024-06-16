@@ -87,7 +87,7 @@ class PyImpl(unohelper.Base, XPy):
             # This only happens when a current Calc Document is open and an existing doc is opened via File -> Open.
             # Even then it is only an issue while the document is opening.
             # However that issue cause the popup dialog to be displayed one time for each formula.
-            # Getting the document from this desktop solve this issue. Mainly becaues the controller is None when the document is not ready.
+            # Getting the document from this desktop solve this issue. Mainly because the controller is None when the document is not ready.
             frame = self.desktop.getActiveFrame()
             controller = frame.getController()
             model = controller.getModel()
@@ -131,7 +131,12 @@ class PyImpl(unohelper.Base, XPy):
                 # prompt for code
                 code = self._get_code()
                 if code:
+                    # When source code is added to CellMgr is will add CodeCellListener listener to this cell.
                     cm.add_source_code(source_code=code, cell_obj=cell.cell_obj)
+                    # now the listener has been added to the cell, return a result and recalculate the cell.
+                else:
+                    self._logger.debug("pyc - No code entered")
+                    return None
             else:
                 self._logger.debug("pyc - py cell has code")
             # resetting is handled by the CodeSheetModifyListener
@@ -147,7 +152,13 @@ class PyImpl(unohelper.Base, XPy):
             if matched_rule:
                 if self._logger.is_debug:
                     self._logger.debug(f"pyc - Matched Rule: {matched_rule}")
-                return matched_rule.action()
+                # calling the action method of the matched rule will return the data for the cell and
+                # set the custom property for the cell that is used by CodeCellListener to raise an event that is then
+                # handled by the CellMgr which uses CtlMgr to assign the control to the cell.
+                rule_result = matched_rule.action()
+                cm.add_cell_control_from_pyc_rule(rule=matched_rule)
+                return rule_result
+
             else:
                 self._logger.debug("pyc - No matched rule")
 

@@ -2,12 +2,16 @@ from __future__ import annotations
 from typing import Any, List, TYPE_CHECKING, Type
 from ooodev.calc import CalcCell
 
+from .rule_base import RuleBase
 from .rule_float import RuleFloat
 from .rule_int import RuleInt
 from .rule_str import RuleStr
 
 if TYPE_CHECKING:
     from .pyc_rule_t import PycRuleT
+    from .......___lo_pip___.config import Config
+else:
+    from ___lo_pip___.config import Config
 
 
 class PycRules:
@@ -130,6 +134,28 @@ class PycRules:
         for rule in self._rules:
             inst = rule(cell, data)
             if inst.get_is_match():
+                return inst
+        # this should never happen LastDict is always a match
+        return None
+
+    def find_rule(self, cell: CalcCell) -> PycRuleT | None:
+        """
+        Find rule by name
+
+        Args:
+            rule_name (str): Name of rule
+
+        Returns:
+            PycRuleT: Rule if found. The returned instance will have no data.
+        """
+        key = RuleBase.get_rule_name_key()
+        if not cell.has_custom_property(key):
+            return None
+        rule_name = cell.get_custom_property(key)
+
+        for rule in self._rules:
+            inst = rule(cell, None)
+            if inst.name == rule_name:
                 return inst
         # this should never happen LastDict is always a match
         return None

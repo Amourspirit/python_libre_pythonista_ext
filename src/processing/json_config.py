@@ -97,6 +97,11 @@ class JsonConfig(metaclass=Singleton):
             )
         except Exception:
             self._cell_custom_prop_codename = "codename"
+
+        try:
+            self._general_codename = cast(str, cfg["tool"]["libre_pythonista"]["config"]["general_code_name"])
+        except Exception:
+            self._general_codename = "libre_pythonista"
         # endregion tool.libre_pythonista.config
         self._validate()
 
@@ -131,6 +136,7 @@ class JsonConfig(metaclass=Singleton):
         # region tool.libre_pythonista.config
         json_config["cell_cp_prefix"] = self._cell_custom_prop_prefix
         json_config["cell_cp_codename"] = f"{self._cell_custom_prop_prefix}{self._cell_custom_prop_codename}"
+        json_config["general_code_name"] = self._general_codename
         # endregion tool.libre_pythonista.config
 
         # save the file
@@ -162,4 +168,5 @@ class JsonConfig(metaclass=Singleton):
         # region tool.libre_pythonista.config
         assert isinstance(self._cell_custom_prop_prefix, str), "cell_custom_prop_prefix must be a string"
         assert isinstance(self._cell_custom_prop_codename, str), "cell_custom_prop_codename must be a string"
+        assert isinstance(self._general_codename, str), "general_codename must be a string"
         # endregion tool.libre_pythonista.config

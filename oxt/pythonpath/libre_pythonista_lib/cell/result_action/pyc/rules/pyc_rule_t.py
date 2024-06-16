@@ -17,3 +17,25 @@ class PycRuleT(Protocol):
     def action(self) -> Any:
         """Action to be taken when the rule is matched. Should return a value that can be used by the pyc function."""
         ...
+
+    def remove_custom_properties(self) -> None:
+        """Removes the custom properties that were added for this rule"""
+        ...
+
+    @property
+    def is_match(self) -> bool:
+        """Gets if the rule is a match. Same as calling get_is_match()."""
+        ...
+
+    @property
+    def data_type_name(self) -> str:
+        """Gets the data type name."""
+        ...
+
+    @property
+    def name(self) -> str:
+        """Gets the data type name."""
+        ...
+
+    @property
+    def cell(self) -> CalcCell: ...

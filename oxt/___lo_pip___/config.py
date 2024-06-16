@@ -631,6 +631,15 @@ class Config(metaclass=Singleton):
         """
         return self._basic_config.cell_cp_codename
 
+    @property
+    def general_code_name(self) -> str:
+        """
+        Gets the General code name for the extension. This is a code safe name and can be use in var names.
+
+        The value for this property can be set in pyproject.toml (tool.libre_pythonista.config)
+        """
+        return self._basic_config.general_code_name
+
     # endregion tool.libre_pythonista.config
     # endregion Properties
 

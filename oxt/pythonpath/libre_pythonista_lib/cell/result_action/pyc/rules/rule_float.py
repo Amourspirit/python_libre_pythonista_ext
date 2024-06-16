@@ -6,11 +6,17 @@ from .rule_base import RuleBase
 
 class RuleFloat(RuleBase):
 
+    def _get_data_type_name(self) -> str:
+        return "cell_data_type_float"
+
     def get_is_match(self) -> bool:
         if self.data is None:
             return False
         return isinstance(self.data, float)
 
     def action(self) -> Any:
-        self.cell.set_custom_property(self.cell_prop_key, "cell_data_type_float")
+        self._update_properties(
+            **{self.cell_prop_key: self.data_type_name, self.cell_pyc_rule_key: self.data_type_name}
+        )
+
         return ((self.data,),)
