@@ -7,6 +7,7 @@ from .regex_last_line import RegexLastLine
 from .eval_code import EvalCode
 from .lp_fn import LpFn
 from .lp_fn_obj import LpFnObj
+from .any_fn import AnyFn
 from ...log.log_inst import LogInst
 
 if TYPE_CHECKING:
@@ -118,6 +119,7 @@ class CodeRules:
         # re.compile(r"^(\w+)\s*=")
         self._reg_rule(rule=RegexLastLine())
         self._reg_rule(rule=RegexLastLine(re.compile(r"^(\w+)$")))
+        self._reg_rule(rule=AnyFn())
         self._reg_rule(rule=EvalCode())
         self._reg_rule(rule=LpFn())
         self._reg_rule(rule=LpFnObj())
