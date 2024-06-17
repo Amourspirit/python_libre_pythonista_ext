@@ -17,7 +17,7 @@ from ooodev.calc import CalcDoc
 from ..const import UNO_DISPATCH_CODE_EDIT, UNO_DISPATCH_DF_STATE, UNO_DISPATCH_DS_STATE, UNO_DISPATCH_CODE_DEL
 from .dispatch_edit_py_cell import DispatchEditPyCell
 from .dispatch_toggle_df_state import DispatchToggleDfState
-from .dispatch_toggle_ds_state import DispatchToggleDsState
+from .dispatch_toggle_series_state import DispatchToggleSeriesState
 from .dispatch_del_py_cell import DispatchDelPyCell
 
 
@@ -108,7 +108,7 @@ class DispatchProviderInterceptor(unohelper.Base, XDispatchProviderInterceptor):
         elif url.Main == UNO_DISPATCH_DS_STATE:
             with contextlib.suppress(Exception):
                 args = self._convert_query_to_dict(url.Arguments)
-                return DispatchToggleDsState(sheet=args["sheet"], cell=args["cell"])
+                return DispatchToggleSeriesState(sheet=args["sheet"], cell=args["cell"])
         elif url.Main == UNO_DISPATCH_CODE_DEL:
             with contextlib.suppress(Exception):
                 args = self._convert_query_to_dict(url.Arguments)

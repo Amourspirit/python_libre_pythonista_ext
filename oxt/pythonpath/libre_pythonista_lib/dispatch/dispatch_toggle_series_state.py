@@ -25,7 +25,7 @@ else:
     from libre_pythonista_lib.code.py_source_mgr import PyInstance
 
 
-class DispatchToggleDsState(unohelper.Base, XDispatch):
+class DispatchToggleSeriesState(unohelper.Base, XDispatch):
     def __init__(self, sheet: str, cell: str):
         super().__init__()
         self._sheet = sheet
@@ -124,6 +124,7 @@ class DispatchToggleDsState(unohelper.Base, XDispatch):
             row_end=ca.Row + max(0, rows - 1),
         )
         ro = RangeObj.from_range(rv)
+        self._logger.debug(f"_set_array_formula() Range: {ro}")
         cell_rng = cell.calc_sheet.get_range(range_obj=ro)
 
         with cm.listener_context(cell.component):
@@ -172,4 +173,9 @@ class DispatchToggleDsState(unohelper.Base, XDispatch):
 
     def _get_rows_cols(self, doc: CalcDoc, cell: CellObj) -> Tuple[int, int]:
         s = cast("pd.Series", self._get_data(doc, cell))
-        return len(s), 1
+        series_len = len(s)
+        if not series_len:
+            return 0, 0
+        if s.name:
+            return series_len + 1, 2
+        return series_len, 2

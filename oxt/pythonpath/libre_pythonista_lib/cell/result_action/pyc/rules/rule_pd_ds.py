@@ -1,5 +1,6 @@
 from __future__ import annotations
 from typing import Any, cast
+from collections import OrderedDict
 from ooodev.calc import CalcCell
 from ooodev.utils.table_helper import TableHelper
 import pandas as pd
@@ -32,9 +33,13 @@ class RulePdDs(RuleBase):
 
     def _pandas_to_array(self) -> Any:
         ds = cast(pd.Series, self.data)
-        lst = ds.tolist()
-        d2 = TableHelper.convert_1d_to_2d(seq_obj=lst, col_count=1)
-        return d2
+        ds.name
+        d = ds.to_dict(into=OrderedDict)
+
+        list_2d = [[k, v] for k, v in d.items()]
+        if ds.name:
+            list_2d.insert(0, ["", ds.name])
+        return list_2d
 
     def action(self) -> Any:
         state = self._get_state()
