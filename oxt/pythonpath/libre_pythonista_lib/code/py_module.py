@@ -10,19 +10,10 @@ else:
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
 
 
-class PyModule:
-
-    def __init__(self):
-
-        self._log = OxtLogger(log_name=self.__class__.__name__)
-        self.mod = types.ModuleType("PyMod")
-        self._cr = CodeRules()
-        self._init_mod()
-
-    def _init_mod(self) -> None:
-        self._log.debug("_init_mod()")
-        code = """from __future__ import annotations
+def get_module_init_code() -> str:
+    return """from __future__ import annotations
 from typing import Any, cast, TYPE_CHECKING
+from ooodev.loader import Lo
 from ooodev.calc import CalcDoc
 from ooodev.calc import CalcSheet
 from ooodev.utils.data_type.cell_obj import CellObj
@@ -36,8 +27,22 @@ import numpy as np
 PY_ARGS = None
 CURRENT_CELL_OBJ = None
 CURRENT_CELL_ID = ""
-
+DUMMY_LAST_VALUE = None
     """
+
+
+class PyModule:
+
+    def __init__(self):
+
+        self._log = OxtLogger(log_name=self.__class__.__name__)
+        self.mod = types.ModuleType("PyMod")
+        self._cr = CodeRules()
+        self._init_mod()
+
+    def _init_mod(self) -> None:
+        self._log.debug("_init_mod()")
+        code = get_module_init_code()
         # from .mod_fn import lp
 
         exec(code, self.mod.__dict__)

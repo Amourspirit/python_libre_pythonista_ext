@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Tuple
+from typing import cast, Tuple
 from urllib.parse import parse_qs
 import contextlib
 import uno
@@ -14,7 +14,11 @@ from ooodev.loader import Lo
 from ooodev.calc import CalcDoc
 
 # from ooodev.calc import CalcDoc
-from .dispatch_edit_py import DispatchEditPY
+from ..const import UNO_DISPATCH_CODE_EDIT, UNO_DISPATCH_DF_STATE, UNO_DISPATCH_DS_STATE, UNO_DISPATCH_CODE_DEL
+from .dispatch_edit_py_cell import DispatchEditPyCell
+from .dispatch_toggle_df_state import DispatchToggleDfState
+from .dispatch_toggle_ds_state import DispatchToggleDsState
+from .dispatch_del_py_cell import DispatchDelPyCell
 
 
 class DispatchProviderInterceptor(unohelper.Base, XDispatchProviderInterceptor):
@@ -48,8 +52,8 @@ class DispatchProviderInterceptor(unohelper.Base, XDispatchProviderInterceptor):
     def __init__(self, doc: CalcDoc):
         if getattr(self, "_initialized", False):
             return
-        self._master = None
-        self._slave = None
+        self._master = cast(XDispatchProvider, None)
+        self._slave = cast(XDispatchProvider, None)
         self._initialized = True
         self._key: str
 
@@ -93,10 +97,22 @@ class DispatchProviderInterceptor(unohelper.Base, XDispatchProviderInterceptor):
             # of crashes without this check.
             return None
 
-        if url.Main == ".uno:libre_pythonista.calc.menu.code.edit":
+        if url.Main == UNO_DISPATCH_CODE_EDIT:
             with contextlib.suppress(Exception):
                 args = self._convert_query_to_dict(url.Arguments)
-                return DispatchEditPY(sheet=args["sheet"], cell=args["cell"])
+                return DispatchEditPyCell(sheet=args["sheet"], cell=args["cell"])
+        elif url.Main == UNO_DISPATCH_DF_STATE:
+            with contextlib.suppress(Exception):
+                args = self._convert_query_to_dict(url.Arguments)
+                return DispatchToggleDfState(sheet=args["sheet"], cell=args["cell"])
+        elif url.Main == UNO_DISPATCH_DS_STATE:
+            with contextlib.suppress(Exception):
+                args = self._convert_query_to_dict(url.Arguments)
+                return DispatchToggleDsState(sheet=args["sheet"], cell=args["cell"])
+        elif url.Main == UNO_DISPATCH_CODE_DEL:
+            with contextlib.suppress(Exception):
+                args = self._convert_query_to_dict(url.Arguments)
+                return DispatchDelPyCell(sheet=args["sheet"], cell=args["cell"])
         # elif url.Main == ".uno:libre_pythonista.calc.menu.update.orig":
         #     with contextlib.suppress(Exception):
         #         args = self._convert_query_to_dict(url.Arguments)
@@ -109,7 +125,7 @@ class DispatchProviderInterceptor(unohelper.Base, XDispatchProviderInterceptor):
 
         It's not allowed to pack it - because every request must match to its real result. Means: don't delete NULL entries inside this list.
         """
-        pass
+        return ()
 
     def dispose(self) -> None:
         if self._key in DispatchProviderInterceptor._instances:

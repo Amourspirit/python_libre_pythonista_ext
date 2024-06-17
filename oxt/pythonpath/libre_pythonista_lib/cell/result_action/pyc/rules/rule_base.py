@@ -2,6 +2,7 @@ from __future__ import annotations
 from typing import Any, TYPE_CHECKING
 from ooodev.calc import CalcCell
 from ooodev.utils.helper.dot_dict import DotDict
+from ....props.key_maker import KeyMaker
 
 if TYPE_CHECKING:
     from .......___lo_pip___.config import Config
@@ -14,8 +15,9 @@ class RuleBase:
         self._cell = cell
         self._data = data
         self.cfg = Config()
-        self.cell_prop_key = f"{self.cfg.cell_cp_prefix}modify_trigger_event"
-        self.cell_pyc_rule_key = RuleBase.get_rule_name_key()
+        self.key_maker = KeyMaker()
+        self.cell_prop_key = self.key_maker.modify_trigger_event
+        self.cell_pyc_rule_key = self.key_maker.pyc_rule_key
 
     def get_is_match(self) -> bool:
         raise NotImplementedError
@@ -72,5 +74,4 @@ class RuleBase:
 
     @staticmethod
     def get_rule_name_key() -> str:
-        cfg = Config()
-        return f"{cfg.cell_cp_prefix}pyc_rule"
+        return KeyMaker().pyc_rule_key

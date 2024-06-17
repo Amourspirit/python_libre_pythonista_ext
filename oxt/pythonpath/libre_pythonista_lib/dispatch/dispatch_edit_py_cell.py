@@ -10,20 +10,20 @@ from ooodev.calc import CalcDoc
 from ..dialog.py.dialog_python import DialogPython
 from ..code.cell_cache import CellCache
 from ..cell.cell_mgr import CellMgr
+from ..code.py_source_mgr import PyInstance
 
 if TYPE_CHECKING:
     from com.sun.star.frame import XStatusListener
     from com.sun.star.sheet import SheetCellCursor
     from ooodev.utils.data_type.cell_obj import CellObj
     from ....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
-    from ..code.py_source_mgr import PyInstance
 else:
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
-    from libre_pythonista_lib.code.py_source_mgr import PyInstance
 
 
-class DispatchEditPY(unohelper.Base, XDispatch):
+class DispatchEditPyCell(unohelper.Base, XDispatch):
     def __init__(self, sheet: str, cell: str):
+        super().__init__()
         self._sheet = sheet
         self._cell = cell
         self._logger = OxtLogger(log_name=self.__class__.__name__)

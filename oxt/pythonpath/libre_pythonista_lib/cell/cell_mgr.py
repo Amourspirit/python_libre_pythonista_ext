@@ -194,6 +194,19 @@ class CellMgr:
         except Exception:
             self._log.error("Error setting custom property control", exc_info=True)
 
+    def update_control(self, cell: CalcCell) -> None:
+        """
+        Updates the control for the cell via the Control Manager.
+
+        Args:
+            cell (CalcCell): _description_
+        """
+        # this method is also called by dispatch.dispatch_toggle_df_state.DispatchToggleDFState
+        self._log.debug(f"update_control() Updating control for cell: {cell.cell_obj}")
+        ct_mgr = CtlMgr()
+        ct_mgr.update_ctl(cell)
+        self._log.debug(f"update_control() Updated control for cell: {cell.cell_obj}")
+
     def _remove_cell(self, calc_cell: CalcCell) -> None:
         """
         Remove a cell.

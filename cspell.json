@@ -30,6 +30,7 @@
         "POSSIZE",
         "preexec",
         "preinstall",
+        "Pythoninsta",
         "pythonista",
         "setpgrp",
         "soffice",

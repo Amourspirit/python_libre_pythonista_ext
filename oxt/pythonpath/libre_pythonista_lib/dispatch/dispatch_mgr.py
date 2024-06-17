@@ -14,12 +14,16 @@ from ooodev.calc import CalcDoc, CalcSheetView
 from ooodev.events.args.event_args_generic import EventArgsGeneric
 from ooodev.gui.menu.context.action_trigger_item import ActionTriggerItem
 from ooodev.gui.menu.context.action_trigger_sep import ActionTriggerSep
+from ooodev.gui.menu.context.action_trigger_container import ActionTriggerContainer
 from ooodev.loader.inst.doc_type import DocType
 from .dispatch_provider_interceptor import DispatchProviderInterceptor
 from .cell_dispatch_state import CellDispatchState
 from ..log.log_inst import LogInst
 from ..res.res_resolver import ResResolver
-
+from ..const import UNO_DISPATCH_CODE_EDIT, UNO_DISPATCH_CODE_DEL
+from ..cell.props.key_maker import KeyMaker
+from ..cell.state.ctl_state import CtlState
+from ..cell.state.state_kind import StateKind
 
 if TYPE_CHECKING:
     from com.sun.star.table import CellAddress
@@ -31,6 +35,7 @@ def on_menu_intercept(
     view: CalcSheetView,
 ) -> None:
     """Event Listener for the context menu intercept."""
+    global UNO_DISPATCH_CODE_EDIT
     with contextlib.suppress(Exception):
         # don't block other menus if there is an issue.
 
@@ -59,6 +64,7 @@ def on_menu_intercept(
                 with contextlib.suppress(Exception):
                     log = LogInst()
                 # log = LogInst()
+                key_maker = KeyMaker()  # singleton
                 addr = cast("CellAddress", selection.getCellAddress())
                 doc = CalcDoc.from_current_doc()
                 sheet = doc.get_active_sheet()
@@ -76,13 +82,32 @@ def on_menu_intercept(
                 try:
                     if not log is None:
                         log.debug("Getting Resource for mnuEditCode")
-                    edit_mnu = ResResolver().resolve_string("mnuEditCode")
+                    items = ActionTriggerContainer()
+                    rr = ResResolver()
+                    edit_mnu = rr.resolve_string("mnuEditCode")
+                    del_mnu = rr.resolve_string("mnuDeletePyCell")
+                    menu_main_sub = ResResolver().resolve_string("mnuMainSub")  # Pythoninsta
                     cps = CellDispatchState(cell=cell)
-                    cmd = ".uno:libre_pythonista.calc.menu.code.edit"
-                    if cps.is_dispatch_enabled(cmd):
-                        container.insert_by_index(4, ActionTriggerItem(f"{cmd}?sheet={sheet.name}&cell={cell_obj}", edit_mnu))  # type: ignore
+                    if cps.is_dispatch_enabled(UNO_DISPATCH_CODE_EDIT):
+                        items.append(ActionTriggerItem(f"{UNO_DISPATCH_CODE_EDIT}?sheet={sheet.name}&cell={cell_obj}", edit_mnu))  # type: ignore
+                        items.append(ActionTriggerItem(f"{UNO_DISPATCH_CODE_DEL}?sheet={sheet.name}&cell={cell_obj}", del_mnu))  # type: ignore
                         # container.insert_by_index(4, ActionTriggerItem(f".uno:libre_pythonista.calc.menu.reset.orig?sheet={sheet.name}&cell={cell_obj}", "Rest to Original"))  # type: ignore
-                        container.insert_by_index(4, ActionTriggerSep())  # type: ignore
+                        items.append(ActionTriggerSep())  # type: ignore
+                        item = ActionTriggerItem(menu_main_sub, menu_main_sub, sub_menu=items)
+
+                    # is this a DataFrame or similar?
+                    dp_cmd = cps.get_rule_dispatch_cmd()
+                    if dp_cmd and cell.get_custom_property(key_maker.cell_array_ability_key, False):
+                        state = CtlState(cell).get_state()
+                        if state == StateKind.ARRAY:
+                            py_obj = rr.resolve_string("mnuViewPyObj")  # Python Object
+                            items.append(ActionTriggerItem(f"{dp_cmd}?sheet={sheet.name}&cell={cell_obj}", py_obj))  # type: ignore
+                        else:
+                            array = rr.resolve_string("mnuViewArray")  # Array
+                            items.append(ActionTriggerItem(f"{dp_cmd}?sheet={sheet.name}&cell={cell_obj}", array))  # type: ignore
+
+                    if items.getCount() > 0:
+                        container.insert_by_index(4, item)  # type: ignore
                         event.event_data.action = ContextMenuAction.CONTINUE_MODIFIED
                 except Exception:
                     if not log is None:

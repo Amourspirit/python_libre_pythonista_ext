@@ -7,7 +7,7 @@ from .rule_base import RuleBase
 class RuleInt(RuleBase):
 
     def _get_data_type_name(self) -> str:
-        return "cell_data_type_int"
+        return self.key_maker.rule_names.cell_data_type_int
 
     def get_is_match(self) -> bool:
         if self.data is None:
@@ -16,6 +16,10 @@ class RuleInt(RuleBase):
 
     def action(self) -> Any:
         self._update_properties(
-            **{self.cell_prop_key: self.data_type_name, self.cell_pyc_rule_key: self.data_type_name}
+            **{
+                self.key_maker.cell_array_ability_key: False,
+                self.cell_prop_key: self.data_type_name,
+                self.cell_pyc_rule_key: self.data_type_name,
+            }
         )
         return ((self.data,),)

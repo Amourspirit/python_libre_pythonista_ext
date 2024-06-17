@@ -109,14 +109,18 @@ def lp(addr: str, **Kwargs: Any) -> Any:
             sheet_idx = addr_rng.sheet_idx
         sheet = doc.sheets[sheet_idx]
         data = sheet.get_array(range_obj=addr_rng)
+        if header:
+            data_len = len(data)
+            if data_len == 0:
+                df = pd.DataFrame()
+            elif data_len == 1:
+                df = pd.DataFrame([], columns=data[0])
+            else:
+                df = pd.DataFrame(data[1:], columns=data[0])
+        else:
+            df = pd.DataFrame(data)
 
-        return _set_last_lp_result(pd.DataFrame(data))
+        return _set_last_lp_result(df)
     except Exception as e:
         log.error(f"lp - Exception: {e}", exc_info=True)
         return _set_last_lp_result(None)
-    # Convert the DataFrame to a record array, then to a tuple
-    # this should be return to the function as an object.
-    # the function needs to be responsible for converting it from object to a record array
-    data_tuple = tuple(df.itertuples(index=False, name=None))
-    log.debug(f"data\n{data_tuple}")
-    return data_tuple
