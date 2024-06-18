@@ -34,8 +34,18 @@ class KeyMaker:
 
     @property
     def ctl_state_key(self) -> str:
-        """Gets the key for the pandas DataFrame state."""
-        return f"{self.cell_cp_prefix}pd_df_state"
+        """Gets the key for the control state."""
+        return f"{self.cell_cp_prefix}ctl_state"
+
+    @property
+    def ctl_shape_key(self) -> str:
+        """Gets the key for the control shape."""
+        return f"{self.cell_cp_prefix}shape"
+
+    @property
+    def ctl_orig_ctl_key(self) -> str:
+        """Gets the key for the control original. This key is used to track when a cell control is to be replaced."""
+        return f"{self.cell_cp_prefix}orig_ctl"
 
     @property
     def cell_array_ability_key(self) -> str:

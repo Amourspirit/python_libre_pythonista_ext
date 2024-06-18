@@ -10,10 +10,17 @@ class CtlRuleT(Protocol):
 
     def __init__(self, cell: CalcCell) -> None: ...
 
+    def get_rule_name(self) -> str:
+        """Gets the rule name for this class instance."""
+        ...
+
     def add_ctl(self) -> Any:
         """Add control to the cell"""
         ...
 
     def remove_ctl(self):
         """Remove control From the cell"""
+        ...
+
+    def update_ctl(self) -> None:
         ...

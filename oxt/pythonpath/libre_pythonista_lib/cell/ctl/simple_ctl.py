@@ -15,6 +15,7 @@ from .cell_control import CellControl
 from ...ex import CellDeletedError
 from ...log.log_inst import LogInst
 from ...res.res_resolver import ResResolver
+from ..props.key_maker import KeyMaker
 
 if TYPE_CHECKING:
     from com.sun.star.drawing import ControlShape  # service
@@ -45,6 +46,11 @@ class SimpleCtl:
         self.log = LogInst()
         self.namer = CtlNamer(calc_cell)
         self.res = ResResolver()
+        self.key_maker = KeyMaker()
+
+    def get_rule_name(self) -> str:
+        """Gets the rule name for this class instance."""
+        return self.key_maker.rule_names.cell_data_type_simple_ctl
 
     def add_ctl(self) -> Any:
         """
@@ -107,6 +113,9 @@ class SimpleCtl:
             )
             # self.calc_cell.set_custom_property("CTL", "1")
             self.log.debug(f"{self.__class__.__name__}: add_ctl(): Leaving")
+            self.calc_cell.set_custom_property(self.key_maker.ctl_shape_key, self.namer.ctl_shape_name)
+            self.calc_cell.set_custom_property(self.key_maker.ctl_orig_ctl_key, self.get_rule_name())
+
             return shape
         except Exception as e:
             self.log.error(f"{self.__class__.__name__}: add_ctl error: {e}", exc_info=True)
@@ -169,6 +178,17 @@ class SimpleCtl:
             except mEx.ShapeMissingError:
                 self.log.debug(f"{self.__class__.__name__}: remove_ctl(): Shape not found: {shape_name}")
                 self.log.debug(f"{self.__class__.__name__}: remove_ctl(): Leaving")
+
+            if self.calc_cell.has_custom_property(self.key_maker.ctl_shape_key):
+                self.log.debug(
+                    f"{self.__class__.__name__}: remove_ctl(): Removing custom {self.key_maker.ctl_shape_key}"
+                )
+                self.calc_cell.remove_custom_property(self.key_maker.ctl_shape_key)
+            if self.calc_cell.has_custom_property(self.key_maker.ctl_orig_ctl_key):
+                self.log.debug(
+                    f"{self.__class__.__name__}: remove_ctl(): Removing custom {self.key_maker.ctl_orig_ctl_key}"
+                )
+                self.calc_cell.remove_custom_property(self.key_maker.ctl_orig_ctl_key)
 
         except Exception as e:
             self.log.error(f"{self.__class__.__name__}: remove_ctl error: {e}", exc_info=True)

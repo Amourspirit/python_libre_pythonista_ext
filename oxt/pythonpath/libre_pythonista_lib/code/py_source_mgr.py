@@ -13,6 +13,7 @@ from ooodev.events.args.event_args import EventArgs
 # from ooodev.io.log.named_logger import NamedLogger
 from ooodev.utils.helper.dot_dict import DotDict
 from ooodev.utils.string.str_list import StrList
+from ..event.shared_cell_event import SharedCellEvent
 
 # from libre_pythonista.oxt_logger.oxt_logger import OxtLogger
 from .py_module import PyModule
@@ -130,6 +131,8 @@ class PySourceManager(EventsPartial):
 
     # region Init
     def __init__(self, doc: CalcDoc) -> None:
+        if getattr(self, "_is_init", False):
+            return
         EventsPartial.__init__(self)
         # don't use CalcDoc.from_current_doc() because there many be multiple documents opened already.
         self._doc = doc
@@ -143,6 +146,14 @@ class PySourceManager(EventsPartial):
             self._sfa.inst.create_folder(self._root_uri)
         self._mod = PyModule()
         self._data = self._get_sources()
+        self._se = SharedCellEvent(doc)
+        self._se.trigger_event("PySourceManagerCreated", EventArgs(self))
+        self._is_init = True
+
+    def dispose(self) -> None:
+        if self._se is not None:
+            self._se.trigger_event("PySourceManagerDisposed", EventArgs(self))
+        self._se = None
 
     def _get_logger(self) -> Logger:
         # can be patched for testing.
@@ -393,6 +404,19 @@ class PySourceManager(EventsPartial):
         """
         # triggered from self.update_source()
         self.subscribe_event("AfterUpdateSource", cb)
+
+    def unsubscribe_after_update_source(self, cb: EventCallback) -> None:
+        """
+        UnSubscribe to after update source event.
+
+        Args:
+            cb (EventCallback): Callback.
+
+        Return:
+            None:
+        """
+        # triggered from self.update_source()
+        self.unsubscribe_event("AfterUpdateSource", cb)
 
     def subscribe_before_remove_source(self, cb: EventCallback) -> None:
         """
@@ -858,7 +882,7 @@ class PySourceManager(EventsPartial):
 
 
 class PyInstance:
-    _instances = {}
+    _instances: Dict[str, PySourceManager] = {}
 
     def __new__(cls, doc: CalcDoc) -> PySourceManager:
         key = f"doc_{doc.runtime_uid}"
@@ -881,4 +905,7 @@ class PyInstance:
             return
         key = f"doc_{doc.runtime_uid}"
         if key in cls._instances:
+            inst = cls._instances[key]
+            inst.dispose()
+            inst = None
             del cls._instances[key]

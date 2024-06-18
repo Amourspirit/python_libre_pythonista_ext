@@ -25,6 +25,11 @@ class RuleNames:
 
     # region Properties
     @property
+    def cell_data_type_simple_ctl(self) -> str:
+        """Rule name for cell data type of simple control. This is only used in the SimpleCtl Base Class."""
+        return "cell_data_type_simple_ctl"
+
+    @property
     def cell_data_type_str(self) -> str:
         """Rule name for cell data type of string."""
         return "cell_data_type_str"

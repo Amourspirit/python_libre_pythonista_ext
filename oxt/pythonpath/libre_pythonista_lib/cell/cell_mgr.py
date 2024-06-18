@@ -17,11 +17,12 @@ from ooodev.events.args.event_args import EventArgs
 from ooodev.utils.helper.dot_dict import DotDict
 from .listen.code_cell_listener import CodeCellListener
 from ..code.cell_cache import CellCache
-from ..code.py_source_mgr import PyInstance
+from ..code.py_source_mgr import PyInstance, PySourceManager
 from ..code.py_source_mgr import PySource
 from ..cell.ctl.ctl_mgr import CtlMgr
 from ..cell.result_action.pyc.rules.pyc_rules import PycRules
 from ..cell.cell_info import CellInfo
+from ..event.shared_cell_event import SharedCellEvent
 
 if TYPE_CHECKING:
     from com.sun.star.sheet import SheetCell  # service
@@ -53,9 +54,29 @@ class CellMgr:
         self._log.debug(f"init for doc: {doc.runtime_uid}")
         self._listeners = {}  # type: dict[str, CodeCellListener]
         self._cell_cache = CellCache(doc)  # singleton
-        self._py_inst = PyInstance(doc)  # singleton
+        self._py_inst = None  # PyInstance(doc)  # singleton
         self._init_events()
+        self._se = SharedCellEvent(doc)
+        self._se.trigger_event("CellMgrCreated", EventArgs(self))
         self._is_init = True
+
+    def dispose(self) -> None:
+        if self._se is not None:
+            self._se.trigger_event("CellMgrDisposed", EventArgs(self))
+
+    # region Py Instance Events
+
+    def on_py_code_updated(self, src: Any, event: EventArgs) -> None:
+        # update controls for the affected cell
+        # The CtlMgr.update_ctl() method will handle the control update including change controls if needed.
+        # No need to handle the control update here.
+        # The Cell state of PyObj or Array needs to be updated here.
+        self._log.debug("on_py_code_updated() Entering.")
+        # cell_obj = CellObj.from_idx(
+        #     col_idx=event.event_data.col, row_idx=event.event_data.row, sheet_idx=event.event_data.sheet_idx
+        # )
+
+    # endregion Py Instance Events
 
     # region Cell Events
     def _init_events(self) -> None:
@@ -64,6 +85,10 @@ class CellMgr:
         self._fn_on_cell_pyc_formula_removed = self.on_cell_pyc_formula_removed
         self._fn_on_cell_modified = self.on_cell_modified
         self._fn_on_cell_custom_prop_modify = self.on_cell_custom_prop_modify
+        # region py instance events
+
+        self._fn_on_py_code_updated = self.on_py_code_updated
+        # endregion py instance events
 
     def on_cell_deleted(self, src: Any, event: EventArgs) -> None:
         """
@@ -221,7 +246,7 @@ class CellMgr:
         # - removing listener from cell
         # - removing custom property from cell
         # - removing cell control.
-        # Everything is removed via self._py_inst.remove_source() except removing listener.
+        # Everything is removed via self.py_inst.remove_source() except removing listener.
         is_deleted = calc_cell.extra_data.get("deleted", False)
         cell_obj = calc_cell.cell_obj
         self._log.debug(f"_remove_cell() Removing cell: {cell_obj}")
@@ -265,14 +290,14 @@ class CellMgr:
 
         try:
             if absolute_name:
-                py_src_index = self._py_inst.get_index(cell_obj)
+                py_src_index = self.py_inst.get_index(cell_obj)
                 if py_src_index < 0:
                     self._log.error(f"Cell does not exist in PyInstance: {cell_obj}")
                     raise KeyError(f"Cell does not exist in PyInstance: {cell_obj}")
 
-                self._py_inst.remove_source(cell_obj)
+                self.py_inst.remove_source(cell_obj)
             else:
-                self._py_inst.remove_source_by_calc_cell(calc_cell)
+                self.py_inst.remove_source_by_calc_cell(calc_cell)
         except Exception:
             self._log.error(f"Error getting cell index from PyInstance: {cell_obj}", exc_info=True)
 
@@ -333,7 +358,7 @@ class CellMgr:
         # - source code to cell
         # - custom property to cell
         # - cell to cell cache
-        self._py_inst.add_source(code=source_code, cell=cell_obj)
+        self.py_inst.add_source(code=source_code, cell=cell_obj)
         # at this point the cell custom name can be gotten from CellCache
         if self._cell_cache is None:
             # this should never happen.
@@ -477,9 +502,9 @@ class CellMgr:
         Reset the PyInstance.
         """
         self._log.debug("Resetting PyInstance")
+        self._py_inst = None
         PyInstance.reset_instance(self._doc)
-        self._py_inst = PyInstance(self._doc)  # singleton
-        self._py_inst.update_all()
+        self.py_inst.update_all()
         self._log.debug("Reset PyInstance")
 
     def reset_cell_cache(self) -> None:
@@ -496,7 +521,7 @@ class CellMgr:
         """
         Get the PySource for a cell.
         """
-        return self._py_inst[cell_obj]
+        return self.py_inst[cell_obj]
 
     def update_from_cell_obj(self, cell_obj: CellObj) -> None:
         """
@@ -506,12 +531,12 @@ class CellMgr:
             cell_obj (CellObj): cell object.
         """
         self._log.debug(f"update_from_cell_obj() - Updating PyInstance from cell object: {cell_obj}")
-        index = self._py_inst.get_index(cell_obj)
+        index = self.py_inst.get_index(cell_obj)
         if index < 0:
             self._log.error(f"Cell does not exist in PyInstance: {cell_obj}")
             raise KeyError(f"Cell does not exist in PyInstance: {cell_obj}")
         self._log.debug(f"update_from_cell_obj() - Index: {index}")
-        self._py_inst.update_from_index(index)
+        self.py_inst.update_from_index(index)
         self._log.debug(f"update_from_cell_obj() - Updated PyInstance from cell object: {cell_obj}")
 
     def set_global_var(self, name: str, value: Any) -> None:
@@ -523,7 +548,7 @@ class CellMgr:
             value (Any): Variable value.
         """
         self._log.debug(f"set_global_var() - Setting Global Variable: {name}")
-        self._py_inst.set_global_var(name, value)
+        self.py_inst.set_global_var(name, value)
 
     @contextmanager
     def listener_context(self, cell: SheetCell):
@@ -567,6 +592,13 @@ class CellMgr:
                 self._listeners[code_name] = listener
                 # cell.addModifyListener(listener)
 
+    @property
+    def py_inst(self) -> PySourceManager:
+        if self._py_inst is None:
+            self._py_inst = PyInstance(self._doc)
+            self._py_inst.subscribe_after_update_source(self._fn_on_py_code_updated)
+        return self._py_inst
+
     @classmethod
     def reset_instance(cls, doc: CalcDoc | None = None) -> None:
         """
@@ -591,5 +623,7 @@ class CellMgr:
                 inst._cell_cache.reset_instance(doc)
             inst._log.debug(f"Resetting PyInstance for doc: {doc.runtime_uid}")
             del cls._instances[key]
+            se = SharedCellEvent(doc)
+            se.trigger_event("CellMgrReset", EventArgs(cls))
         PyInstance.reset_instance(doc)
         CellCache.reset_instance(doc)
