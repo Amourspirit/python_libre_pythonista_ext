@@ -91,3 +91,7 @@ class CodeSheetModifyListener(unohelper.Base, XModifyListener):
     @classmethod
     def has_listener(cls, inst_name: str) -> bool:
         return inst_name in cls._instances
+
+    @classmethod
+    def get_listener(cls, inst_name: str) -> CodeSheetModifyListener:
+        return cls._instances.get(inst_name, None)

@@ -22,6 +22,7 @@ if TYPE_CHECKING:
     _CONDITIONS_MET = True
     from .___lo_pip___.oxt_logger import OxtLogger
     from ooodev.loader import Lo
+    from ooodev.exceptions import ex as mEx
     from .pythonpath.libre_pythonista_lib.dispatch import dispatch_mgr  # type: ignore
     from .pythonpath.libre_pythonista_lib.cell.cell_mgr import CellMgr  # type: ignore
     from .pythonpath.libre_pythonista_lib.sheet.listen.code_sheet_modify_listener import CodeSheetModifyListener
@@ -32,6 +33,7 @@ else:
     _CONDITIONS_MET = _conditions_met()
     if _CONDITIONS_MET:
         from ooodev.loader import Lo
+        from ooodev.exceptions import ex as mEx
         from libre_pythonista_lib.dispatch import dispatch_mgr  # type: ignore
         from libre_pythonista_lib.cell.cell_mgr import CellMgr  # type: ignore
         from libre_pythonista_lib.sheet.listen.code_sheet_modify_listener import CodeSheetModifyListener
@@ -61,7 +63,10 @@ class LibrePythonistaViewJob(unohelper.Base, XJob):
 
     # region execute
     def execute(self, args: Any) -> None:
-        print("LibrePythonistaViewJob execute")
+        # This job may be executed more then once.
+        # When a spreadsheet is put into print preview this is fired.
+        # When the print preview is closed this is fired again.
+        # print("LibrePythonistaViewJob execute")
         self._logger.debug("LibrePythonistaViewJob execute")
         try:
             # loader = Lo.load_office()
@@ -81,9 +86,17 @@ class LibrePythonistaViewJob(unohelper.Base, XJob):
                 key = f"LIBRE_PYTHONISTA_DOC_{self.document.RuntimeUID}"
                 os.environ[key] = "1"
                 self._logger.debug(f"Added {key} to environment variables")
-                self._logger.debug("Document recalculated")
                 if _CONDITIONS_MET:
                     try:
+                        # Because print preview is a different view controller it can cause issues
+                        # when the document is put into print preview.
+                        # When print preview is opened and is closed this method fires.
+                        # Checking for com.sun.star.sheet.XSpreadsheetView via the qi() method,
+                        # which is what OooDev does when it is getting the view,
+                        # is a good way to check if the view is the default view controller.
+                        # Removing all listeners and adding them again seems to work.
+                        # If this is not done the dispatch manager will not work correctly.
+                        # Specifically the intercept menu's stop working after print preview is closed.
                         self._logger.debug("Registering dispatch manager")
                         from ooodev.calc import CalcDoc
 
@@ -92,15 +105,35 @@ class LibrePythonistaViewJob(unohelper.Base, XJob):
                         # when multiple documents are open.
                         _ = Lo.load_office()
                         doc = CalcDoc.get_doc_from_component(self.document)
+                        try:
+                            view = doc.get_view()
+                        except mEx.MissingInterfaceError as e:
+                            self._logger.debug(f"Error getting view from document. {e}")
+                            view = None
+                        if view is None:
+                            self._logger.debug("View is None. May be print preview. Returning.")
+                            return
+                        if not view.view_controller_name == "Default":
+                            # this could mean that the print preview has been activated.
+                            # Print Preview view controller Name: PrintPreview
+                            self._logger.debug(
+                                f"'{view.view_controller_name}' is not the default view controller. Returning."
+                            )
+                            return
 
                         for sheet in doc.sheets:
                             unique_id = sheet.unique_id
                             if not CodeSheetModifyListener.has_listener(unique_id):
                                 listener = CodeSheetModifyListener(unique_id)  # singleton
                                 sheet.component.addModifyListener(listener)
+                            else:
+                                listener = CodeSheetModifyListener.get_listener(unique_id)  # singleton
+                                sheet.component.removeModifyListener(listener)
+                                sheet.component.addModifyListener(listener)
 
-                        view = doc.get_view()
-                        view.component.addActivationEventListener(CodeSheetActivationListener())
+                        code_sheet_activation_listener = CodeSheetActivationListener()
+                        view.component.removeActivationEventListener(code_sheet_activation_listener)
+                        view.component.addActivationEventListener(code_sheet_activation_listener)
                         if view.is_form_design_mode():
 
                             try:
@@ -112,9 +145,11 @@ class LibrePythonistaViewJob(unohelper.Base, XJob):
                                 self._logger.warning("Unable to set form design mode", exc_info=True)
 
                         self._logger.debug(f"Pre Dispatch manager loaded, UID: {doc.runtime_uid}")
+                        dispatch_mgr.unregister_interceptor(doc)
                         dispatch_mgr.register_interceptor(doc)
                         cm = CellMgr(doc)
                         cm.reset_py_inst()
+                        cm.remove_all_listeners()
                         cm.add_all_listeners()
 
                         self.document.calculateAll()
