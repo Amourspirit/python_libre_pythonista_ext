@@ -223,6 +223,7 @@ class PySourceManager(EventsPartial):
 
         ``event_data`` is a ``DotDict`` with the following keys:
 
+        - ``source``: PySource: PySource object.
         - ``col``: [int]: Cell column zero based index.
         - ``row``: [int]: Cell row zero based index.
         - ``code``: str: Source code.
@@ -247,6 +248,7 @@ class PySourceManager(EventsPartial):
 
         ``event_data`` is a ``DotDict`` with the following keys:
 
+        - ``source``: PySource: PySource object.
         - ``col``: [int]: Cell column zero based index.
         - ``row``: [int]: Cell row zero based index.
         - ``code``: str: Source code.
@@ -273,6 +275,7 @@ class PySourceManager(EventsPartial):
 
         ``event_data`` is a ``DotDict`` with the following keys:
 
+        - ``source``: PySource: PySource object.
         - ``col``: [int]: Cell column zero based index.
         - ``row``: [int]: Cell row zero based index.
         - ``code``: str: Source code.
@@ -298,6 +301,7 @@ class PySourceManager(EventsPartial):
 
         ``event_data`` is a ``DotDict`` with the following keys:
 
+        - ``source``: PySource: PySource object.
         - ``col``: [int]: Cell column zero based index.
         - ``row``: [int]: Cell row zero based index.
         - ``code``: str: Source code.
@@ -322,6 +326,8 @@ class PySourceManager(EventsPartial):
 
         ``event_data`` is a ``DotDict`` with the following keys:
 
+
+        - ``source``: PySource: PySource object.
         - ``col``: [int]: Cell column zero based index.
         - ``row``: [int]: Cell row zero based index.
         - ``code``: str: Source code.
@@ -345,6 +351,8 @@ class PySourceManager(EventsPartial):
 
         ``event_data`` is a ``DotDict`` with the following keys:
 
+
+        - ``source``: PySource: PySource object.
         - ``col``: [int]: Cell column zero based index.
         - ``row``: [int]: Cell row zero based index.
         - ``code``: str: Source code.
@@ -368,6 +376,8 @@ class PySourceManager(EventsPartial):
 
         ``event_data`` is a ``DotDict`` with the following keys:
 
+
+        - ``source``: PySource: PySource object.
         - ``col``: [int]: Cell column zero based index.
         - ``row``: [int]: Cell row zero based index.
         - ``code``: str: Source code.
@@ -391,6 +401,8 @@ class PySourceManager(EventsPartial):
 
         ``event_data`` is a ``DotDict`` with the following keys:
 
+
+        - ``source``: PySource: PySource object.
         - ``col``: [int]: Cell column zero based index.
         - ``row``: [int]: Cell row zero based index.
         - ``code``: str: Source code.
@@ -586,7 +598,7 @@ class PySourceManager(EventsPartial):
             self._log.error(f"PySourceManager - add_source() - Cell {cell} already exists.")
             raise Exception(f"Cell {cell} already exists.")
         cargs = CancelEventArgs(self)
-        cargs.event_data = DotDict(sheet_idx=sheet_idx, row=row, col=col, code=code, doc=self._doc)
+        cargs.event_data = DotDict(source=self, sheet_idx=sheet_idx, row=row, col=col, code=code, doc=self._doc)
         self.trigger_event("BeforeAddSource", cargs)
         if cargs.cancel:
             return
@@ -645,7 +657,7 @@ class PySourceManager(EventsPartial):
         if code_cell not in self._data:
             raise Exception(f"Cell {cell} does not exists.")
         cargs = CancelEventArgs(self)
-        cargs.event_data = DotDict(sheet_idx=sheet_idx, row=row, col=col, code=code, doc=self._doc)
+        cargs.event_data = DotDict(source=self, sheet_idx=sheet_idx, row=row, col=col, code=code, doc=self._doc)
         self.trigger_event("BeforeUpdateSource", cargs)
         if cargs.cancel:
             return
@@ -693,7 +705,7 @@ class PySourceManager(EventsPartial):
         if code_cell not in self._data:
             raise Exception(f"Cell {cell} does not exist.")
         cargs = CancelEventArgs(self)
-        cargs.event_data = DotDict(sheet_idx=sheet_idx, row=row, col=col, doc=self._doc)
+        cargs.event_data = DotDict(source=self, sheet_idx=sheet_idx, row=row, col=col, doc=self._doc)
         self.trigger_event("BeforeRemoveSource", cargs)
         if cargs.cancel:
             return
@@ -782,7 +794,9 @@ class PySourceManager(EventsPartial):
         col = py_src.col
         self._log.debug("PySourceManager - _update_item() Entered.")
         self._log.debug(f"PySourceManager - _update_item() sheet index: {sheet_idx} col: {col}, row: {row}")
-        cargs.event_data = DotDict(sheet_idx=sheet_idx, row=row, col=col, code=py_src.source_code, doc=self._doc)
+        cargs.event_data = DotDict(
+            source=self, sheet_idx=sheet_idx, row=row, col=col, code=py_src.source_code, doc=self._doc
+        )
         # triggers are in col row format
         self.trigger_event(f"BeforeSourceUpdate_{col}_{row}", cargs)
         if cargs.cancel:

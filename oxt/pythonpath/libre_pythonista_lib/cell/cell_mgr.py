@@ -9,20 +9,30 @@ from typing import Any, cast, Dict, TYPE_CHECKING
 import contextlib
 from contextlib import contextmanager
 import uno
-from com.sun.star.uno import RuntimeException
 from ooo.dyn.lang.event_object import EventObject
 from ooodev.calc import CalcDoc, CalcCell, CalcSheet
 from ooodev.utils.data_type.cell_obj import CellObj
 from ooodev.events.args.event_args import EventArgs
 from ooodev.utils.helper.dot_dict import DotDict
 from .listen.code_cell_listener import CodeCellListener
+from .state.state_kind import StateKind
 from ..code.cell_cache import CellCache
 from ..code.py_source_mgr import PyInstance, PySourceManager
 from ..code.py_source_mgr import PySource
 from ..cell.ctl.ctl_mgr import CtlMgr
-from ..cell.result_action.pyc.rules.pyc_rules import PycRules
 from ..cell.cell_info import CellInfo
+from ..cell.props.key_maker import KeyMaker
 from ..event.shared_cell_event import SharedCellEvent
+from .lpl_cell import LplCell
+from ..style.default_sytle import DefaultStyle
+from ..const import (
+    UNO_DISPATCH_CODE_DEL,
+    UNO_DISPATCH_CODE_EDIT,
+    UNO_DISPATCH_DF_STATE,
+    UNO_DISPATCH_DS_STATE,
+    UNO_DISPATCH_PY_OBJ_STATE,
+    UNO_DISPATCH_CELL_SELECT,
+)
 
 if TYPE_CHECKING:
     from com.sun.star.sheet import SheetCell  # service
@@ -55,26 +65,64 @@ class CellMgr:
         self._listeners = {}  # type: dict[str, CodeCellListener]
         self._cell_cache = CellCache(doc)  # singleton
         self._py_inst = None  # PyInstance(doc)  # singleton
+        self._ctl_mgr = CtlMgr()
+        self._key_maker = KeyMaker()
+        self._style = DefaultStyle()
         self._init_events()
         self._se = SharedCellEvent(doc)
         self._se.trigger_event("CellMgrCreated", EventArgs(self))
+        self._subscribe_to_shared_events()
         self._is_init = True
 
     def dispose(self) -> None:
         if self._se is not None:
             self._se.trigger_event("CellMgrDisposed", EventArgs(self))
 
+    # region Control Update Methods
+    def _update_py_event_control(self, cell: CalcCell) -> None:
+        """
+        Update the control for a cell when the cell is modified.
+        This may mean the the control get changed or removed.
+
+        Args:
+            cell (CalcCell): cell object.
+        """
+        self._log.debug(f"_update_py_event_control() Updating control for cell: {cell.cell_obj}")
+        lpl = LplCell(cell)
+        # current_state = lpl.ctl_state
+        lpl.ctl_state = StateKind.PY_OBJ
+        lpl.update_control()
+        self._log.debug("_update_py_event_control() Done.")
+
+    def _update_py_event_formula(self, cell: CalcCell) -> None:
+        # when code is updated the formula will be the same but the state may change.
+        # This means if the state is being displayed as a formula array then it is possible
+        # that the code changes not longer result in an array or data.
+        # Also it is possible that the new code result has a different size of array.
+        # If the current view state is Py_Obj then this is not an issue.
+        # perhaps the best thing to do is to convert to single formula and display as py object only.
+        # This is because the formula array is not a good representation of the data when it changes.
+
+        # Get the current state of the cell.
+        pass
+
+    # endregion Control Update Methods
+
     # region Py Instance Events
 
     def on_py_code_updated(self, src: Any, event: EventArgs) -> None:
         # update controls for the affected cell
-        # The CtlMgr.update_ctl() method will handle the control update including change controls if needed.
         # No need to handle the control update here.
-        # The Cell state of PyObj or Array needs to be updated here.
+        # DotDict(source=self, sheet_idx=sheet_idx, row=row, col=col, code=code, doc=self._doc)
+
         self._log.debug("on_py_code_updated() Entering.")
-        # cell_obj = CellObj.from_idx(
-        #     col_idx=event.event_data.col, row_idx=event.event_data.row, sheet_idx=event.event_data.sheet_idx
-        # )
+        cell_obj = CellObj.from_idx(
+            col_idx=event.event_data.col, row_idx=event.event_data.row, sheet_idx=event.event_data.sheet_idx
+        )
+        sheet = self._doc.sheets[event.event_data.sheet_idx]
+        cell = sheet[cell_obj]
+        self._update_py_event_control(cell)
+        self._log.debug("on_py_code_updated() Done.")
 
     # endregion Py Instance Events
 
@@ -89,6 +137,17 @@ class CellMgr:
 
         self._fn_on_py_code_updated = self.on_py_code_updated
         # endregion py instance events
+        # region shared events
+        self._fn_on_shared_dispatch_data_frame_state_before = self.on_shared_dispatch_data_frame_state_before
+        self._fn_on_shared_dispatch_data_frame_state_after = self.on_shared_dispatch_data_frame_state_after
+
+        self._fn_on_shared_dispatch_added_cell_formula = self.on_shared_dispatch_added_cell_formula
+        self._fn_on_shared_dispatch_removed_cell_formula = self.on_shared_dispatch_removed_cell_formula
+        self._fn_on_shared_dispatch_dispatch_add_array_formula = self.on_shared_dispatch_dispatch_add_array_formula
+        self._fn_on_shared_dispatch_dispatch_remove_array_formula = (
+            self.on_shared_dispatch_dispatch_remove_array_formula
+        )
+        # endregion shared events
 
     def on_cell_deleted(self, src: Any, event: EventArgs) -> None:
         """
@@ -206,6 +265,55 @@ class CellMgr:
 
     # endregion Cell Events
 
+    # region Shared Events
+    def _subscribe_to_shared_events(self) -> None:
+        self._se.subscribe_event(
+            f"{UNO_DISPATCH_DF_STATE}_before_dispatch", self._fn_on_shared_dispatch_data_frame_state_before
+        )
+        self._se.subscribe_event(
+            f"{UNO_DISPATCH_DF_STATE}_after_dispatch", self._fn_on_shared_dispatch_data_frame_state_after
+        )
+
+        self._se.subscribe_event("dispatch_added_cell_formula", self._fn_on_shared_dispatch_added_cell_formula)
+        self._se.subscribe_event("dispatch_removed_cell_formula", self._fn_on_shared_dispatch_removed_cell_formula)
+        self._se.subscribe_event("dispatch_add_array_formula", self._fn_on_shared_dispatch_dispatch_add_array_formula)
+        self._se.subscribe_event(
+            "dispatch_remove_array_formula", self._fn_on_shared_dispatch_dispatch_remove_array_formula
+        )
+
+    def on_shared_dispatch_data_frame_state_before(self, src: Any, event: EventArgs) -> None:
+        self._log.debug("on_shared_dispactch_data_frame_state_before() Entering.")
+
+    def on_shared_dispatch_data_frame_state_after(self, src: Any, event: EventArgs) -> None:
+        self._log.debug("on_shared_dispactch_data_frame_state_after() Entering.")
+
+    def on_shared_dispatch_added_cell_formula(self, src: Any, event: EventArgs) -> None:
+        self._log.debug("on_shared_dispatch_added_cell_formula() Entering.")
+
+    def on_shared_dispatch_removed_cell_formula(self, src: Any, event: EventArgs) -> None:
+        self._log.debug("on_shared_dispatch_removed_cell_formula() Entering.")
+
+    def on_shared_dispatch_dispatch_add_array_formula(self, src: Any, event: EventArgs) -> None:
+        try:
+            self._log.debug("on_shared_dispatch_dispatch_add_array_formula() Entering.")
+            sheet = cast(CalcSheet, event.event_data.sheet)
+            cr = sheet.get_range(range_obj=event.event_data.range_obj)
+            self._style.add_style_range(cr)
+        except Exception:
+            self._log.error("Error adding array formula style", exc_info=True)
+
+    def on_shared_dispatch_dispatch_remove_array_formula(self, src: Any, event: EventArgs) -> None:
+        try:
+            self._log.debug("on_shared_dispatch_dispatch_remove_array_formula() Entering.")
+            self._log.debug("on_shared_dispatch_dispatch_add_array_formula() Entering.")
+            sheet = cast(CalcSheet, event.event_data.sheet)
+            cr = sheet.get_range(range_obj=event.event_data.range_obj)
+            self._style.remove_style_range(cr)
+        except Exception:
+            self._log.error("Error removing array formula style", exc_info=True)
+
+    # endregion Shared Events
+
     def add_cell_control_from_pyc_rule(self, rule: PycRuleT) -> None:
         """
         Add a control to a cell from a PycRule.
@@ -214,8 +322,7 @@ class CellMgr:
             rule (PycRuleT): PycRule.
         """
         try:
-            ct_mgr = CtlMgr()
-            ct_mgr.set_ctl_from_pyc_rule(rule)
+            self._ctl_mgr.set_ctl_from_pyc_rule(rule)
         except Exception:
             self._log.error("Error setting custom property control", exc_info=True)
 
@@ -228,8 +335,7 @@ class CellMgr:
         """
         # this method is also called by dispatch.dispatch_toggle_df_state.DispatchToggleDFState
         self._log.debug(f"update_control() Updating control for cell: {cell.cell_obj}")
-        ct_mgr = CtlMgr()
-        ct_mgr.update_ctl(cell)
+        self._ctl_mgr.update_ctl(cell)
         self._log.debug(f"update_control() Updated control for cell: {cell.cell_obj}")
 
     def _remove_cell(self, calc_cell: CalcCell) -> None:
@@ -282,8 +388,7 @@ class CellMgr:
         try:
             # remove cell control.
             # CtlMgr can handle cell that are deleted.
-            ctl_mgr = CtlMgr()
-            ctl_mgr.remove_ctl(calc_cell)
+            self._ctl_mgr.remove_ctl(calc_cell)
             self._log.debug(f"Removed cell control for cell: {cell_obj}")
         except Exception:
             self._log.error(f"Error removing cell control: {cell_obj}", exc_info=True)

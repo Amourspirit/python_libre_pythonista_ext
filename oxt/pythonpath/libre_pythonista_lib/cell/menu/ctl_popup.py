@@ -8,7 +8,7 @@ from ooodev.gui.menu.popup.popup_creator import PopupCreator
 from ...res.res_resolver import ResResolver
 from ...dispatch.cell_dispatch_state import CellDispatchState
 from ..props.key_maker import KeyMaker
-from ...const import UNO_DISPATCH_CODE_EDIT, UNO_DISPATCH_CODE_DEL
+from ...const import UNO_DISPATCH_CODE_EDIT, UNO_DISPATCH_CODE_DEL, UNO_DISPATCH_CELL_SELECT
 from ..state.state_kind import StateKind
 from ..state.ctl_state import CtlState
 
@@ -69,13 +69,17 @@ class CtlPopup:
         global UNO_DISPATCH_CODE_EDIT
         edit_name = self._res.resolve_string("mnuEditCode")  # Edit Menu
         del_name = self._res.resolve_string("mnuDeletePyCell")  # Delete Python
+        sel_name = self._res.resolve_string("mnuSelCell")  # Select Cell
 
         cmd_enabled = self._cps.is_dispatch_enabled(UNO_DISPATCH_CODE_EDIT)
         edit_url = f"{UNO_DISPATCH_CODE_EDIT}?sheet={self._sheet_name}&cell={self._cell.cell_obj}"
         del_url = f"{UNO_DISPATCH_CODE_DEL}?sheet={self._sheet_name}&cell={self._cell.cell_obj}"
+        sel_url = f"{UNO_DISPATCH_CELL_SELECT}?sheet={self._sheet_name}&cell={self._cell.cell_obj}"
         new_menu = [
             {"text": edit_name, "command": edit_url, "enabled": cmd_enabled},
             {"text": del_name, "command": del_url, "enabled": cmd_enabled},
+            {"text": "-"},
+            {"text": sel_name, "command": sel_url, "enabled": True},
         ]
         if self._cell.get_custom_property(self._key_maker.cell_array_ability_key, False):
             state_menu = self._get_state_menu()

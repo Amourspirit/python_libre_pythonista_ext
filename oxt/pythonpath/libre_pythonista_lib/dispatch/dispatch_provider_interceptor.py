@@ -14,11 +14,20 @@ from ooodev.loader import Lo
 from ooodev.calc import CalcDoc
 
 # from ooodev.calc import CalcDoc
-from ..const import UNO_DISPATCH_CODE_EDIT, UNO_DISPATCH_DF_STATE, UNO_DISPATCH_DS_STATE, UNO_DISPATCH_CODE_DEL
+from ..const import (
+    UNO_DISPATCH_CODE_EDIT,
+    UNO_DISPATCH_DF_STATE,
+    UNO_DISPATCH_DS_STATE,
+    UNO_DISPATCH_CODE_DEL,
+    UNO_DISPATCH_PY_OBJ_STATE,
+    UNO_DISPATCH_CELL_SELECT,
+)
 from .dispatch_edit_py_cell import DispatchEditPyCell
 from .dispatch_toggle_df_state import DispatchToggleDfState
 from .dispatch_toggle_series_state import DispatchToggleSeriesState
 from .dispatch_del_py_cell import DispatchDelPyCell
+from .dispatch_py_obj_state import DispatchPyObjState
+from .dispatch_cell_select import DispatchCellSelect
 
 
 class DispatchProviderInterceptor(unohelper.Base, XDispatchProviderInterceptor):
@@ -113,6 +122,14 @@ class DispatchProviderInterceptor(unohelper.Base, XDispatchProviderInterceptor):
             with contextlib.suppress(Exception):
                 args = self._convert_query_to_dict(url.Arguments)
                 return DispatchDelPyCell(sheet=args["sheet"], cell=args["cell"])
+        elif url.Main == UNO_DISPATCH_PY_OBJ_STATE:
+            with contextlib.suppress(Exception):
+                args = self._convert_query_to_dict(url.Arguments)
+                return DispatchPyObjState(sheet=args["sheet"], cell=args["cell"])
+        elif url.Main == UNO_DISPATCH_CELL_SELECT:
+            with contextlib.suppress(Exception):
+                args = self._convert_query_to_dict(url.Arguments)
+                return DispatchCellSelect(sheet=args["sheet"], cell=args["cell"])
         # elif url.Main == ".uno:libre_pythonista.calc.menu.update.orig":
         #     with contextlib.suppress(Exception):
         #         args = self._convert_query_to_dict(url.Arguments)

@@ -29,7 +29,7 @@ def _set_last_lp_result(result: Any) -> Any:
 
     LAST_LP_RESULT = result
     if log.is_debug:
-        log.debug(f"lp_mod - _set_last_lp_result() - LAST_LP_RESULT: {LAST_LP_RESULT}")
+        log.debug(f"lp_mod - _set_last_lp_result() - LAST_LP_RESULT Type: {type(LAST_LP_RESULT).__name__}")
     return LAST_LP_RESULT
 
 

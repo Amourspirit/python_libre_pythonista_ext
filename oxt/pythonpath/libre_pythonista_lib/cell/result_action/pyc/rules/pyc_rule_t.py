@@ -14,6 +14,14 @@ class PycRuleT(Protocol):
         """Gets if data is a Match for the current rule."""
         ...
 
+    def get_dispatch_state(self) -> str:
+        """
+        Gets the dispatch command the toggles the state such as ``.uno:libre_pythonista.calc.menu.code.df.state``.
+
+        This is an empty string for rules that do not support state.
+        """
+        ...
+
     def action(self) -> Any:
         """Action to be taken when the rule is matched. Should return a value that can be used by the pyc function."""
         ...

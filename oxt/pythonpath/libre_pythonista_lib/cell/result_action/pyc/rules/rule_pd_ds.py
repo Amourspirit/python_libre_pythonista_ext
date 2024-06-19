@@ -7,6 +7,7 @@ import pandas as pd
 from .rule_base import RuleBase
 from .....cell.state.ctl_state import CtlState
 from .....cell.state.state_kind import StateKind
+from .....const import UNO_DISPATCH_DS_STATE
 
 
 class RulePdDs(RuleBase):
@@ -18,6 +19,12 @@ class RulePdDs(RuleBase):
 
     def _get_data_type_name(self) -> str:
         return self.key_maker.rule_names.cell_data_type_pd_series
+
+    def get_dispatch_state(self) -> str:
+        """
+        Gets the dispatch command from the const ``UNO_DISPATCH_DS_STATE``.
+        """
+        return UNO_DISPATCH_DS_STATE
 
     def get_is_match(self) -> bool:
         if self.data is None:
@@ -54,3 +61,6 @@ class RulePdDs(RuleBase):
         if state == StateKind.ARRAY:
             return self._pandas_to_array()
         return (("",),)
+
+    def __repr__(self) -> str:
+        return f"<RulePdDs({self.cell.cell_obj}, {type(self.data).__name__})>"

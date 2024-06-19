@@ -151,6 +151,7 @@ class CtlMgr:
             self._log.debug(f"CtlMgr - update_ctl() Control type for cell {cell.cell_obj} has not changed. Updating.")
             ctl = current_ctl_type(cell)
             ctl.update_ctl()  # refresh size and pos
+            self._log.debug("CtlMgr - update_ctl() Done.")
             return
 
         if current_ctl_type is not None:
@@ -161,6 +162,7 @@ class CtlMgr:
                 )
                 ctl = current_ctl_type(cell)
                 ctl.add_ctl()
+                self._log.debug("CtlMgr - update_ctl() Done.")
                 return
             # both controls exist and they are different
             self._log.debug(
@@ -168,8 +170,10 @@ class CtlMgr:
             )
             old_ctl = orig_ctl_type(cell)
             old_ctl.remove_ctl()
+            self._log.debug(f"CtlMgr - update_ctl() Removed Old Control. Adding new control.")
             ctl = current_ctl_type(cell)
             ctl.add_ctl()
+            self._log.debug("CtlMgr - update_ctl() Done.")
             return
         else:
             if orig_ctl_type is not None:
@@ -178,7 +182,8 @@ class CtlMgr:
                 )
                 ctl = orig_ctl_type(cell)
                 ctl.remove_ctl()
-                return
+        self._log.debug("CtlMgr - update_ctl() Done.")
+        return
 
     def remove_ctl(self, cell: CalcCell) -> None:
         """Removes the control for a cell if it exists."""

@@ -172,7 +172,7 @@ class SimpleCtl:
                 shape = dp.find_shape_by_name(shape_name)
                 self.log.debug(f"{self.__class__.__name__}: remove_ctl(): Found Shape: {shape_name}")
                 dp.remove(shape.component)  # type: ignore
-                self.log.debug(f"SimpleCtl: remove_ctl(): Removed Shape: {shape_name}")
+                self.log.debug(f"{self.__class__.__name__}: remove_ctl(): Removed Shape: {shape_name}")
                 shape = None
                 self.log.debug(f"{self.__class__.__name__}: remove_ctl(): Leaving")
             except mEx.ShapeMissingError:

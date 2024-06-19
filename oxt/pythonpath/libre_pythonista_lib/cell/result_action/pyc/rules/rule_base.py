@@ -22,6 +22,14 @@ class RuleBase:
     def get_is_match(self) -> bool:
         raise NotImplementedError
 
+    def get_dispatch_state(self) -> str:
+        """
+        Gets the dispatch command the toggles the state such as ``.uno:libre_pythonista.calc.menu.code.df.state``.
+
+        This is an empty string for rules that do not support state.
+        """
+        return ""
+
     def action(self) -> Any:
         return self.data
 
@@ -43,7 +51,7 @@ class RuleBase:
             self.cell.remove_custom_property(self.cell_pyc_rule_key)
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}({self.cell.cell_obj}, {self.data})"
+        return f"<{self.__class__.__name__}({self.cell.cell_obj}, {self.data})>"
 
     @property
     def is_match(self) -> bool:

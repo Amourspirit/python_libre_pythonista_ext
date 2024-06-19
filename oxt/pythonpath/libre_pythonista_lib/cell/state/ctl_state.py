@@ -29,13 +29,20 @@ class CtlState(StateBase):
             state = self.cell.get_custom_property(self.key_maker.ctl_state_key, StateKind.PY_OBJ.value)
             with contextlib.suppress(Exception):
                 return StateKind(state)
+
         return StateKind.PY_OBJ
 
     def set_state(self, value: StateKind) -> None:
         """
-        Sets the state
+        Sets the state.
+
+        If the state is ``StateKind.UNKNOWN``, the custom property is removed.
 
         Args:
             value (StateKind): The state.
         """
+        if value == StateKind.UNKNOWN:
+            if self.cell.has_custom_property(self.key_maker.ctl_state_key):
+                self.cell.remove_custom_property(self.key_maker.ctl_state_key)
+            return
         self.cell.set_custom_property(self.key_maker.ctl_state_key, int(value))
