@@ -6,7 +6,7 @@ from ..listener.listener_base import ListenerBase
 
 if TYPE_CHECKING:
     from com.sun.star.awt import WindowEvent
-    from dialog_python import DialogPython
+    from .dialog_python import DialogPython
 
 # Component events are provided only for notification purposes.
 # Moves and resizes will be handled internally by the window component, so that GUI layout works properly regardless

@@ -68,4 +68,9 @@
       <value>___delay_startup___</value>
     </prop>
   </node>
+  <node oor:name="LpDialogWindow">
+    <prop oor:name="CodeWindowJson" oor:type="xs:string">
+      <value></value>
+    </prop>
+  </node>
 </oor:component-data>

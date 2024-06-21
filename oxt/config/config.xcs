@@ -124,5 +124,12 @@
                 </info>
             </prop>
         </group>
+        <group oor:name="LpDialogWindow">
+            <prop oor:name="CodeWindowJson" oor:type="xs:string">
+                <info>
+                    <desc>Code Edit Window Edit Data</desc>
+                </info>
+            </prop>
+        </group>
     </component>
 </oor:component-schema>

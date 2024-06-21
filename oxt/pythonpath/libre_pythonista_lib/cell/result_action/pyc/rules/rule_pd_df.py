@@ -56,7 +56,6 @@ class RulePdDf(RuleBase):
         list_values = df.values.tolist()
         if not list_values:
             return headers
-        row = list_values[0]
 
         has_index_names = PandasUtil.has_index_names(df)
         if has_index_names:

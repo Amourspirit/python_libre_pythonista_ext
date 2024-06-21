@@ -2,7 +2,6 @@ from __future__ import annotations
 from typing import cast, Dict, Tuple, TYPE_CHECKING
 import uno
 import unohelper
-from ooo.dyn.frame.feature_state_event import FeatureStateEvent
 from com.sun.star.frame import XDispatch
 from com.sun.star.beans import PropertyValue
 from com.sun.star.util import URL

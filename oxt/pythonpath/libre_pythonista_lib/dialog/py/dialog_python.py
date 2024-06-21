@@ -21,6 +21,7 @@ from .key_handler import KeyHandler
 
 # from ...res.res_resolver import ResResolver
 from .dialog_menu import DialogMenu
+from ...config.dialog.code_cfg import CodeCfg
 
 
 # from .focus_listener import FocusListener
@@ -34,8 +35,10 @@ if TYPE_CHECKING:
     from ooodev.gui.menu.popup_menu import PopupMenu
     from ..window_type import WindowType
     from .....___lo_pip___.lo_util.resource_resolver import ResourceResolver
+    from .....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
 else:
     from ___lo_pip___.lo_util.resource_resolver import ResourceResolver
+    from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
 
 # endregion Imports
 
@@ -56,11 +59,21 @@ class DialogPython:
     # pylint: disable=unused-argument
     # region Init
     def __init__(self, ctx: Any) -> None:
-        self._rr = ResourceResolver(ctx)
+        self.ctx = ctx
+        self._log = OxtLogger(log_name=self.__class__.__name__)
+        self._log.debug("Init")
+        self._cfg = CodeCfg()
+        self._rr = ResourceResolver(self.ctx)
         self._doc = Lo.current_doc
         self._border_kind = BorderKind.BORDER_3D
-        self._width = DialogPython.WIDTH
-        self._height = DialogPython.HEIGHT
+        if self._cfg.has_size():
+            self._log.debug("Config Has Size")
+            self._width = self._cfg.width
+            self._height = self._cfg.height
+        else:
+            self._log.debug("Config does not have Size. Using Defaults.")
+            self._width = DialogPython.WIDTH
+            self._height = DialogPython.HEIGHT
         self._btn_width = DialogPython.BUTTON_WIDTH
         self._btn_height = DialogPython.BUTTON_HEIGHT
         self._margin = DialogPython.MARGIN
@@ -85,24 +98,43 @@ class DialogPython:
         self.code_focused = False
         self._mnu = DialogMenu(self)
         self._init_dialog()
+        self._log.debug("Init Complete")
 
     def _init_dialog(self) -> None:
         """Create dialog and add controls."""
         rect = Rectangle()
         rect.Width = self._width
         rect.Height = self._height
-        ps = self.parent.getPosSize()
-        rect.X = int((ps.Width - self._width) / 2 - 50)
-        rect.Y = int((ps.Height - self._height) / 2 - 100)
+        # Although the x and y positions are correctly loading and saving from the configuration
+        # the x and y are not being observed on all systems.
+        # In the docker image the x and y work fine.
+        # On the Flatpak and APT versions of LibreOffice, the x and y are not being observed
+        # and the dialog is just show in the center of the app. This is not a big deal but I am noting it here.
+
+        if self._cfg.has_position():
+            self._log.debug("_init_dialog() Config Has Position")
+            rect.X = self._cfg.x
+            rect.Y = self._cfg.y
+        else:
+            ps = self.parent.getPosSize()
+            rect.X = int((ps.Width - self._width) / 2 - 50)
+            rect.Y = int((ps.Height - self._height) / 2 - 100)
 
         desc = WindowDescriptor()
         desc.Type = TOP
         desc.WindowServiceName = "dialog"
         desc.ParentIndex = -1
         desc.Bounds = rect
+
+        # if WindowAttributeEnum.SHOW is set here, the dialog will not be sized on
+        # some systems. The dialog would be displayed near full screen size.
+        # This was the case for Flatpak and APT versions on Ubuntu 22.04.
+        # This is not an issues as not setting the SHOW flag does not seem to have
+        # any negative effects.
+
         desc.WindowAttributes = int(
-            WindowAttributeEnum.SHOW
-            | WindowAttributeEnum.MOVEABLE
+            # WindowAttributeEnum.SHOW
+            WindowAttributeEnum.MOVEABLE
             | WindowAttributeEnum.SIZEABLE
             | WindowAttributeEnum.CLOSEABLE
             | WindowAttributeEnum.BORDER
@@ -112,7 +144,7 @@ class DialogPython:
 
         self._init_handlers()
         self._dialog = cast("WindowType", dialog_peer)
-        # self._dialog = self._doc.create_dialog(x=-1, y=-1, width=self._width, height=self._height, title=self._title)
+
         self._dialog.setVisible(False)
         self._dialog.setTitle(self._title)
         self._init_code()
@@ -266,7 +298,7 @@ class DialogPython:
         if not sel:
             sel = (self.end, self.end)
         # sel = (0, 0)
-        print("Write", f'Data:"{data}"', "Selection", sel)
+        self._log.debug("Write", f'Data:"{data}"', "Selection", sel)
         self._code.view.insertText(Selection(*sel), data)
 
     # endregion Read/Write
@@ -276,7 +308,7 @@ class DialogPython:
     def onkey_1282(self, modifiers: str) -> bool:  # TAB
         """Catch TAB keyboard entry"""
         if not modifiers:
-            # print("TAB")
+            # self._log.debug("TAB")
             sel = self._code.view.getSelection()
             self._write(" " * DialogPython.NB_TAB, (sel.Min, sel.Max))
             return True
@@ -304,9 +336,9 @@ class DialogPython:
         """Handle text changed event"""
         self.end = len(control_src.text)
         return
-        print("Text Changed", self.end)
+        self._log.debug(f"Text Changed {self.end}")
         sel = control_src.view.getSelection()
-        print("Selection:", sel.Min, sel.Max)
+        self._log.debug("Selection: {sel.Min}, {sel.Max}")
 
     # endregion text_changed
 
@@ -324,12 +356,12 @@ class DialogPython:
     def on_code_focus_gained(self, source: Any, event: EventArgs, control_src: CtlTextEdit) -> None:
         self.code_focused = True
         self.tk.addKeyHandler(self.keyhandler)
-        print("Focus Gained")
+        self._log.debug("Focus Gained")
 
     def on_code_focus_lost(self, source: Any, event: EventArgs, control_src: CtlTextEdit) -> None:
         self.code_focused = False
         self.tk.removeKeyHandler(self.keyhandler)
-        print("Focus Lost")
+        self._log.debug("Focus Lost")
 
     # endregion focus handlers
 
@@ -348,9 +380,22 @@ class DialogPython:
         """Returns parent frame"""
         return Lo.desktop.get_active_frame().getContainerWindow()
 
+    def _update_config(self) -> None:
+        sz = self._dialog.getPosSize()
+        self._cfg.width = sz.Width
+        self._cfg.height = sz.Height
+        self._cfg.x = sz.X
+        self._cfg.y = sz.Y
+        self._cfg.save()
+
     # region Show Dialog
     def end_dialog(self, result: int = 0) -> None:
         """Terminate dialog"""
+        self._log.debug("End Dialog Called.")
+        try:
+            self._update_config()
+        except Exception as e:
+            self._log.error(f"Error saving configuration: {e}", exc_info=True)
         self._dialog.endDialog(result)
 
     def show(self) -> int:
@@ -375,18 +420,15 @@ class DialogPython:
         return self._main_menu
 
     def _display_popup(self, control_src: CtlFixedText) -> None:
-        sz = control_src.view.getPosSize()
-        rect = Rectangle(
-            X=sz.X,
-            Y=sz.Y,
-            Width=10,
-            Height=10,
-        )
-        pm = self._get_main_menu()
-        pm.execute(self._dialog, rect, 0)
+        try:
+            pm = self._get_main_menu()
+            view = control_src.view
+            pm.execute(self._dialog, view.getPosSize(), 0)  # type: ignore
+        except Exception as e:
+            self._log.error(f"Error displaying popup: {e}", exc_info=True)
 
     def _on_menu_select(self, src: Any, event: EventArgs, menu: PopupMenu) -> None:
-        print("Menu Selected")
+        self._log.debug("Menu Selected")
         me = cast("MenuEvent", event.event_data)
         command = menu.get_command(me.MenuId)
         # self._write_line(f"Menu Selected: {command}, Menu ID: {me.MenuId}")
@@ -426,7 +468,7 @@ class DialogPython:
     # region properties
 
     @property
-    def res_resolver(self) -> ResResolver:
+    def res_resolver(self) -> ResourceResolver:
         """Gets the Resource Resolver object."""
         return self._rr
 

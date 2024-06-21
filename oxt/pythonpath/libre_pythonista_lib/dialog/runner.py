@@ -1,3 +1,5 @@
+"""This file is strictly for testing dialog. It is not used in production."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
