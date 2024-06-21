@@ -11,9 +11,9 @@ else:
 
 
 class RuleBase:
-    def __init__(self, cell: CalcCell, data: Any) -> None:
+    def __init__(self, cell: CalcCell, data: DotDict) -> None:
         self._cell = cell
-        self._data = data
+        self._dd_data = data
         self.cfg = Config()
         self.key_maker = KeyMaker()
         self.cell_prop_key = self.key_maker.modify_trigger_event
@@ -73,12 +73,12 @@ class RuleBase:
         return self._get_name()
 
     @property
-    def data(self) -> Any:
-        return self._data
+    def data(self) -> DotDict:
+        return self._dd_data
 
     @data.setter
-    def data(self, value: Any) -> None:
-        self._data = value
+    def data(self, value: DotDict) -> None:
+        self._dd_data = value
 
     @staticmethod
     def get_rule_name_key() -> str:

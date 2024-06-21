@@ -35,6 +35,16 @@ class RuleNames:
         return "cell_data_type_str"
 
     @property
+    def cell_data_type_none(self) -> str:
+        """Rule name for cell data type of None."""
+        return "cell_data_type_none"
+
+    @property
+    def cell_data_type_error(self) -> str:
+        """Rule name for cell data type of error."""
+        return "cell_data_type_error"
+
+    @property
     def cell_data_type_int(self) -> str:
         """Rule name for cell data type of int."""
         return "cell_data_type_int"

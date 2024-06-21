@@ -31,6 +31,7 @@ class BasicConfig(metaclass=ConfigMeta):
         self._dialog_desktop_owned = bool(kwargs["dialog_desktop_owned"])
         self._default_locale = cast(List[str], (kwargs["default_locale"]))
         self._resource_dir_name = str(kwargs["resource_dir_name"])
+        self._extension_version = str(kwargs["extension_version"])
         self._resource_properties_prefix = str(kwargs["resource_properties_prefix"])
         self._isolate_windows = set(kwargs["isolate_windows"])
         self._sym_link_cpython = bool(kwargs["sym_link_cpython"])
@@ -87,6 +88,15 @@ class BasicConfig(metaclass=ConfigMeta):
         If this is set to ``True`` then the dialog is owned by the LibreOffice desktop window.
         """
         return self._dialog_desktop_owned
+
+    @property
+    def extension_version(self) -> str:
+        """
+        Gets extension version.
+
+        The value for this property can be set in pyproject.toml (tool.poetry.version)
+        """
+        return self._extension_version
 
     @property
     def has_locals(self) -> bool:

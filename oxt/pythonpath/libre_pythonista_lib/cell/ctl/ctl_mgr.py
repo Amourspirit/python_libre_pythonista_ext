@@ -4,10 +4,11 @@ from ooodev.calc import CalcCell
 from .simple_ctl import SimpleCtl
 from .float_ctl import FloatCtl
 from .str_ctl import StrCtl
+from .none_ctl import NoneCtl
+from .error_ctl import ErrorCtl
 from .data_frame_ctl import DataFrameCtl
 from .data_series_ctl import DataSeriesCtl
 from ...log.log_inst import LogInst
-from .ctl_namer import CtlNamer
 from ..props.key_maker import KeyMaker
 
 if TYPE_CHECKING:
@@ -55,6 +56,10 @@ class CtlMgr:
             return DataFrameCtl
         if rule_name == rules.cell_data_type_pd_series:
             return DataSeriesCtl
+        if rule_name == rules.cell_data_type_error:
+            return ErrorCtl
+        if rule_name == rules.cell_data_type_none:
+            return NoneCtl
         is_deleted = cell.extra_data.get("deleted", False)
         if is_deleted:
             self._log.debug(f"CtlMgr - _get_rule() Cell is deleted: {cell.cell_obj}. Returning SimpleCtl instance.")

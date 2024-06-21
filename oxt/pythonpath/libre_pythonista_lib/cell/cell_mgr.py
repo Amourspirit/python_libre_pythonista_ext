@@ -79,7 +79,7 @@ class CellMgr:
             self._se.trigger_event("CellMgrDisposed", EventArgs(self))
 
     # region Control Update Methods
-    def _update_py_event_control(self, cell: CalcCell) -> None:
+    def _update_lp_cell_control(self, cell: CalcCell) -> None:
         """
         Update the control for a cell when the cell is modified.
         This may mean the the control get changed or removed.
@@ -93,6 +93,40 @@ class CellMgr:
         lpl.ctl_state = StateKind.PY_OBJ
         lpl.update_control()
         self._log.debug("_update_py_event_control() Done.")
+
+    def _update_controls_forward(self, cell: CalcCell) -> None:
+        """
+        Update the controls for this cell and cells that come after the current cell.
+
+        Args:
+            cell (CalcCell): cell object.
+        """
+        self._log.debug(f"_update_controls_forward() Updating controls for cells on and after: {cell.cell_obj}")
+        if self._cell_cache is None:
+            # this should never happen.
+            self._log.error("Cell cache is None")
+            raise ValueError("Cell cache is None")
+        try:
+            idx = self._cell_cache.get_cell_index(cell.cell_obj, cell.cell_obj.sheet_idx)
+            count = self._cell_cache.get_cell_complete_count()
+            self._log.debug(f"Index: {idx} Count: {count}")
+            cells = [cell]
+            idx += 1
+            for i in range(idx, count):
+                co = self._cell_cache.get_by_index(i)
+                cells.append(cell.calc_sheet[co])
+            if cells and self._log.is_debug:
+                self._log.debug(f"Updating controls for {len(cells)} cells")
+                for current_cell in cells:
+                    self._log.debug(f"Going to update control for cell: {current_cell.cell_obj}")
+            for current_cell in cells:
+                self._update_lp_cell_control(current_cell)
+        except Exception:
+            self._log.error(
+                f"_update_controls_forward() Error updating controls for cell: {cell.cell_obj}", exc_info=True
+            )
+
+        self._log.debug("_update_controls_forward() Done.")
 
     def _update_py_event_formula(self, cell: CalcCell) -> None:
         # when code is updated the formula will be the same but the state may change.
@@ -121,7 +155,7 @@ class CellMgr:
         )
         sheet = self._doc.sheets[event.event_data.sheet_idx]
         cell = sheet[cell_obj]
-        self._update_py_event_control(cell)
+        self._update_controls_forward(cell)
         self._log.debug("on_py_code_updated() Done.")
 
     # endregion Py Instance Events

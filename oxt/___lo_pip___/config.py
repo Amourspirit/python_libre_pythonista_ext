@@ -612,6 +612,15 @@ class Config(metaclass=Singleton):
         """
         return self._basic_config.run_imports
 
+    @property
+    def extension_version(self) -> str:
+        """
+        Gets extension version.
+
+        The value for this property can be set in pyproject.toml (tool.poetry.version)
+        """
+        return self._basic_config.extension_version
+
     # region tool.libre_pythonista.config
     @property
     def cell_cp_prefix(self) -> str:

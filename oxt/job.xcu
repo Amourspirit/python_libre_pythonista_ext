@@ -29,6 +29,11 @@
         <value>com.github.amourspirit.extensions.librepythonista.LibrePythonistaViewCloseJob</value>
       </prop>
     </node>
+    <node oor:name="LibrePythonistaSavingJob" oor:op="fuse">
+      <prop oor:name="Service">
+        <value>com.github.amourspirit.extensions.librepythonista.LibrePythonistaSavingJob</value>
+      </prop>
+    </node>
   </node>
   <node oor:name="Events">
     <node oor:name="___startup_event___" oor:op="fuse">
@@ -49,6 +54,16 @@
     <node oor:name="OnViewCreated" oor:op="fuse">
       <node oor:name="JobList">
         <node oor:name="LibrePythonistaViewJob" oor:op="fuse" />
+      </node>
+    </node>
+    <node oor:name="OnSave" oor:op="fuse">
+      <node oor:name="JobList">
+        <node oor:name="LibrePythonistaSavingJob" oor:op="fuse" />
+      </node>
+    </node>
+    <node oor:name="OnCopyTo" oor:op="fuse">
+      <node oor:name="JobList">
+        <node oor:name="LibrePythonistaSavingJob" oor:op="fuse" />
       </node>
     </node>
   </node>

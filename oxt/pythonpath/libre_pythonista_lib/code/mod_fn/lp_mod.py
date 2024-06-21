@@ -1,13 +1,13 @@
 from typing import Any, cast, TYPE_CHECKING
 import re
+from ooodev.utils.helper.dot_dict import DotDict
 from ...cell.cell_mgr import CellMgr
 
-LAST_LP_RESULT = None
+LAST_LP_RESULT = DotDict(data=None)
 
 if TYPE_CHECKING:
     from com.sun.star.sheet import SheetCellRange
     import pandas as pd
-    import numpy as np
     from ooodev.calc import CalcDoc
     from ooodev.utils.data_type.cell_obj import CellObj
     from ooodev.utils.data_type.range_obj import RangeObj
@@ -23,14 +23,15 @@ else:
     from libre_pythonista_lib.log.log_inst import LogInst
 
 
-def _set_last_lp_result(result: Any) -> Any:
+def _set_last_lp_result(result: Any, **kwargs) -> Any:
     global LAST_LP_RESULT
     log = LogInst()
-
-    LAST_LP_RESULT = result
+    dd = DotDict(**kwargs)
+    dd.data = result
+    LAST_LP_RESULT = dd
     if log.is_debug:
-        log.debug(f"lp_mod - _set_last_lp_result() - LAST_LP_RESULT Type: {type(LAST_LP_RESULT).__name__}")
-    return LAST_LP_RESULT
+        log.debug(f"lp_mod - _set_last_lp_result() - LAST_LP_RESULT.data Type: {type(LAST_LP_RESULT.data).__name__}")
+    return LAST_LP_RESULT.data
 
 
 def lp(addr: str, **Kwargs: Any) -> Any:
@@ -45,7 +46,7 @@ def lp(addr: str, **Kwargs: Any) -> Any:
     cm = CellMgr(doc)  # singleton
     # also needs to be able to look up the name from named ranges.
     # Also needs to return the cell value if the cell is not a python cell.
-    header = Kwargs.get("headers", False)
+    headers = Kwargs.get("headers", False)
     addr_rng = None
     sheet_idx = cell_obj.sheet_idx
     if not ":" in addr:
@@ -109,7 +110,7 @@ def lp(addr: str, **Kwargs: Any) -> Any:
             sheet_idx = addr_rng.sheet_idx
         sheet = doc.sheets[sheet_idx]
         data = sheet.get_array(range_obj=addr_rng)
-        if header:
+        if headers:
             data_len = len(data)
             if data_len == 0:
                 df = pd.DataFrame()
@@ -120,7 +121,7 @@ def lp(addr: str, **Kwargs: Any) -> Any:
         else:
             df = pd.DataFrame(data)
 
-        return _set_last_lp_result(df)
+        return _set_last_lp_result(df, headers=headers)
     except Exception as e:
         log.error(f"lp - Exception: {e}", exc_info=True)
         return _set_last_lp_result(None)

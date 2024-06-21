@@ -148,7 +148,7 @@ class PyImpl(unohelper.Base, XPy):
             py_src = cm.get_py_src(cell_obj=cell.cell_obj)
             # py_src = py_inst[cc.current_cell]
             pyc_rules = PycRules()
-            matched_rule = pyc_rules.get_matched_rule(cell=cell, data=py_src.value)
+            matched_rule = pyc_rules.get_matched_rule(cell=cell, data=py_src.dd_data)
             if matched_rule:
                 if self._logger.is_debug:
                     self._logger.debug(f"pyc - Matched Rule: {matched_rule}")

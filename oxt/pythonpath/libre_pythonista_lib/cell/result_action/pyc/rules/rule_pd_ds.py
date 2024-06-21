@@ -2,7 +2,6 @@ from __future__ import annotations
 from typing import Any, cast
 from collections import OrderedDict
 from ooodev.calc import CalcCell
-from ooodev.utils.table_helper import TableHelper
 import pandas as pd
 from .rule_base import RuleBase
 from .....cell.state.ctl_state import CtlState
@@ -27,9 +26,10 @@ class RulePdDs(RuleBase):
         return UNO_DISPATCH_DS_STATE
 
     def get_is_match(self) -> bool:
-        if self.data is None:
+        result = self.data.get("data", None)
+        if result is None:
             return False
-        return isinstance(self.data, pd.Series)
+        return isinstance(result, pd.Series)
 
     def _get_state(self) -> StateKind:
         state = CtlState(self.cell).get_state()
@@ -39,8 +39,7 @@ class RulePdDs(RuleBase):
         CtlState(self.cell).set_state(state)
 
     def _pandas_to_array(self) -> Any:
-        ds = cast(pd.Series, self.data)
-        ds.name
+        ds = cast(pd.Series, self.data.data)
         d = ds.to_dict(into=OrderedDict)
 
         list_2d = [[k, v] for k, v in d.items()]

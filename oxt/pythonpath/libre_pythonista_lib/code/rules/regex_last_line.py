@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any
+from ooodev.utils.helper.dot_dict import DotDict
 import types
 import re
 from ...utils import str_util
@@ -47,13 +47,16 @@ class RegexLastLine:
         if not self.match:
             return False
         var_name = self.match.group(1)
-        self._result = getattr(self.mod, var_name, None)
-        if callable(self._result):
-            self._result = None
+        result = DotDict(data=getattr(self.mod, var_name, None))
+        if not callable(result.data):
+            self._result = result
         return self._result is not None
 
-    def get_value(self) -> Any:
+    def get_value(self) -> DotDict:
         """Get the value of matched attribute from module."""
+        if self._result is None:
+            return DotDict(data=None)
+
         return self._result
 
     def reset(self) -> None:

@@ -67,7 +67,7 @@ class LplCell:
         There is not need to call ``RemoveControl()`` before calling this method.
         """
         self._log.debug("update_control() Entered")
-        matched_rule = self._pyc_rules.get_matched_rule(cell=self.cell, data=self.pyc_src.value)
+        matched_rule = self._pyc_rules.get_matched_rule(cell=self.cell, data=self.pyc_src.dd_data)
 
         if matched_rule is None:
             self._log.debug("update_control() No matched rule found. Removing any existing control")

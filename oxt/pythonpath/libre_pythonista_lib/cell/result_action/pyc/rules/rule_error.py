@@ -2,18 +2,17 @@ from __future__ import annotations
 from typing import Any
 
 from .rule_base import RuleBase
+from ....errors.general_error import GeneralError
 
 
-class RuleInt(RuleBase):
+class RuleError(RuleBase):
 
     def _get_data_type_name(self) -> str:
-        return self.key_maker.rule_names.cell_data_type_int
+        return self.key_maker.rule_names.cell_data_type_error
 
     def get_is_match(self) -> bool:
         result = self.data.get("data", None)
-        if result is None:
-            return False
-        return isinstance(result, int)
+        return isinstance(result, GeneralError)
 
     def action(self) -> Any:
         self._update_properties(
@@ -23,4 +22,7 @@ class RuleInt(RuleBase):
                 self.cell_pyc_rule_key: self.data_type_name,
             }
         )
-        return ((self.data.data,),)
+        return ((None,),)
+
+    def __repr__(self) -> str:
+        return f"<{self.__class__.__name__}({self.cell.cell_obj}, ERROR)>"

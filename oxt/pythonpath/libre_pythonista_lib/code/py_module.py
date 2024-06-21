@@ -1,8 +1,12 @@
 from __future__ import annotations
 from typing import Any, TYPE_CHECKING
 import types
+from ooodev.utils.helper.dot_dict import DotDict
 from ..utils import str_util
 from .rules.code_rules import CodeRules
+
+from .mod_fn.lp_log import LpLog as LibrePythonistaLog
+from ..cell.errors.general_error import GeneralError
 
 if TYPE_CHECKING:
     from ....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
@@ -22,6 +26,7 @@ from ___lo_pip___.oxt_logger import OxtLogger
 from libre_pythonista_lib.log.log_inst import LogInst
 from libre_pythonista_lib.code.mod_fn import lp_mod
 from libre_pythonista_lib.code.mod_fn.lp_mod import lp
+from libre_pythonista_lib.code.mod_fn.lp_log import lp_log, LpLog as LibrePythonistaLog
 import pandas as pd
 import numpy as np
 PY_ARGS = None
@@ -36,6 +41,12 @@ class PyModule:
     def __init__(self):
 
         self._log = OxtLogger(log_name=self.__class__.__name__)
+        try:
+            self._log_ps = LibrePythonistaLog().log  # OxtLogger(log_name=self.__class__.__name__)
+        except Exception:
+            self._log.error("Error initializing LibrePythonistaLog.", exc_info=True)
+            self._log_ps = None
+
         self.mod = types.ModuleType("PyMod")
         self._cr = CodeRules()
         self._init_mod()
@@ -60,7 +71,7 @@ class PyModule:
         self.mod.__dict__.update(self._init_dict)
         self._log.debug("reset_module() done.")
 
-    def update_with_result(self, code: str = "") -> Any:
+    def update_with_result(self, code: str = "") -> DotDict:
         """
         Appends code to current module and returns the last variable in the module.
 
@@ -69,10 +80,14 @@ class PyModule:
 
         Returns:
             Any: The last variable in the module if any; Otherwise, None.
+
+        Note:
+            If there is an error the result will be a DotDict with ``data=GeneralError(e)`` and ``error=True`` the error.
         """
         self._log.debug("update_with_result()")
         code = str_util.remove_comments(code)
         code = str_util.clean_string(code)
+        result = None
         try:
             if code:
                 exec(code, self.mod.__dict__)
@@ -80,9 +95,14 @@ class PyModule:
             result = rule.get_value()
             rule.reset()
             return result
-        except Exception:
-            self._log.error(f"Error updating module.\n{code}\n", exc_info=True)
-        return None
+        # other exceptions can be caught and new error classes can be created.
+        except Exception as e:
+            # result will be assigned to the py_source.value Other rules for the cell will handle this.
+            result = DotDict(data=GeneralError(e), error=True)
+            if self._log_ps:
+                self._log_ps.error(f"Error updating module.\n{code}\n", exc_info=True)
+            self._log.warning(f"Error updating module. Result set to {result}.\n{code}\n", exc_info=True)
+        return result
 
     def set_global_var(self, var_name: str, value: Any) -> None:
         """

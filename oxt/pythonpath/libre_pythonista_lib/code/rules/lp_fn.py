@@ -1,6 +1,6 @@
 from __future__ import annotations
-from typing import Any
-from ooodev.utils.gen_util import NULL_OBJ
+from typing import cast
+from ooodev.utils.helper.dot_dict import DotDict
 import types
 from ...utils import str_util
 from ...log.log_inst import LogInst
@@ -32,6 +32,7 @@ class LpFn:
         if not self.code:
             return False
         log = LogInst()
+        log.debug(f"LpFn - get_is_match() Entered.")
 
         last_lp = self.code.rfind("lp(")
         if last_lp < 0:
@@ -49,24 +50,25 @@ class LpFn:
             log.debug(f"LpFn - get_is_match() Last bracket is not the end of the string: {next_bracket_index}")
             return False
 
-        result = NULL_OBJ
+        result = None
         # with contextlib.suppress(Exception):
         try:
             if "lp_mod" in self.mod.__dict__:
                 log.debug("LpFn - get_is_match() lp_mod is in module")
-                result = self.mod.lp_mod.LAST_LP_RESULT  # type: ignore
+                result = cast(DotDict, self.mod.lp_mod.LAST_LP_RESULT)  # type: ignore
                 log.debug(f"LpFn - get_is_match() lp_mod.LAST_LP_RESULT {result}")
+                log.debug(f"LpFnObj - get_is_match() has headers: {result.headers}")
             else:
                 log.debug("LpFn - get_is_match() lp_mod is NOT in module")
             self._result = result
         except Exception as e:
             log.error(f"LpFn - get_is_match() Exception: {e}", exc_info=True)
-        return result is not NULL_OBJ
+        return self._result is not None
 
-    def get_value(self) -> Any:
+    def get_value(self) -> DotDict:
         """Get the list of versions. In this case it will be a single version, unless vstr is invalid in which case it will be an empty list."""
-        if self._result is NULL_OBJ:
-            return None
+        if self._result is None:
+            return DotDict(data=None)
         return self._result
 
     def reset(self) -> None:

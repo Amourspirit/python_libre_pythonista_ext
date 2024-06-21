@@ -1,5 +1,6 @@
 from __future__ import annotations
-from typing import Any, Protocol
+from typing import Protocol
+from ooodev.utils.helper.dot_dict import DotDict
 import types
 
 
@@ -22,8 +23,11 @@ class CodeRuleT(Protocol):
         """Check if the code matches the rule"""
         ...
 
-    def get_value(self) -> Any:
-        """Gets the value from the module"""
+    def get_value(self) -> DotDict:
+        """
+        Gets the value from the module.
+        Result is in ``DotDict.data`` key.
+        """
         ...
 
     def reset(self) -> None:

@@ -1,17 +1,21 @@
 from __future__ import annotations
+from typing import cast
 import contextlib
-import types
 from ooodev.utils.helper.dot_dict import DotDict
-from ...utils import str_util
+import types
+from ...log.log_inst import LogInst
 
 
-class EvalCode:
+class LpFnValue:
     """
-    A class to represent the last dictionary item in a module.
+    This is a special rule and is not added to the code_rules list.
+    It is used to get the value of the last lp() function call. If it matches.
     """
 
     def __init__(self) -> None:
         self._result = None
+        self.data = None
+        self._log = LogInst()
 
     def set_values(self, mod: types.ModuleType, code: str) -> None:
         """
@@ -28,17 +32,21 @@ class EvalCode:
     def get_is_match(self) -> bool:
         """Check if rules is a match. For this rule the return result is always True."""
         self._result = None
-        if not self.code:
+        if self.data is None:
+            self._log.debug("LpFnValue - get_is_match() self.data is None. Returning False.")
             return False
-        last_line = str_util.get_last_line(self.code)
-        if str_util.starts_with_whitespace(last_line):
-            return False
-        result = None
-        with contextlib.suppress(Exception):
-            glbs = self.mod.__dict__.copy()
-            result = eval(last_line, glbs)
-            self._result = DotDict(data=result)
-        return self._result is not None
+        self._result = None
+        # with contextlib.suppress(Exception):
+        try:
+            result = cast(DotDict, self.mod.lp_mod.LAST_LP_RESULT)  # type: ignore
+            if self.data.data is result.data:
+                self._result = result
+                self._log.debug(f"LpFnValue - get_is_match() self.data.data is result.data. Returning True.")
+                return True
+        except Exception as e:
+            self._log.debug(f"LpFnValue - get_is_match() Exception: {e}")
+        self._log.debug(f"LpFnValue - get_is_match() Not a match. Returning False.")
+        return False
 
     def get_value(self) -> DotDict:
         """Get the list of versions. In this case it will be a single version, unless vstr is invalid in which case it will be an empty list."""
@@ -51,6 +59,7 @@ class EvalCode:
         self._result = None
         self.mod = None
         self.code = None
+        self.data = None
 
     def __repr__(self) -> str:
-        return f"<EvalCode()>"
+        return f"<LpFnValue()>"

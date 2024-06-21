@@ -10,9 +10,10 @@ class RuleFloat(RuleBase):
         return self.key_maker.rule_names.cell_data_type_float
 
     def get_is_match(self) -> bool:
-        if self.data is None:
+        result = self.data.get("data", None)
+        if result is None:
             return False
-        return isinstance(self.data, float)
+        return isinstance(result, float)
 
     def action(self) -> Any:
         self._update_properties(
@@ -23,4 +24,4 @@ class RuleFloat(RuleBase):
             }
         )
 
-        return ((self.data,),)
+        return ((self.data.data,),)

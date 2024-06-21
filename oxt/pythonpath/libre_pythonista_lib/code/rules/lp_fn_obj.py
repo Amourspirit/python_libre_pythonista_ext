@@ -1,6 +1,6 @@
 from __future__ import annotations
-from typing import Any
-from ooodev.utils.gen_util import NULL_OBJ
+from typing import cast
+from ooodev.utils.helper.dot_dict import DotDict
 import types
 from ...utils import str_util
 from ...log.log_inst import LogInst
@@ -32,6 +32,7 @@ class LpFnObj:
         if not self.code:
             return False
         log = LogInst()
+        log.debug(f"LpFnObj - get_is_match() Entered.")
 
         last_lp = self.code.rfind("lp(")
         if last_lp < 0:
@@ -49,7 +50,7 @@ class LpFnObj:
             log.debug(f"LpFnObj - get_is_match() Last bracket is not the end of the string: {next_bracket_index}")
             return False
 
-        result = NULL_OBJ
+        result = None
         # with contextlib.suppress(Exception):
         try:
             if "lp_mod" in self.mod.__dict__:
@@ -62,23 +63,28 @@ class LpFnObj:
                     return False
                 # get the flat_line after the first index
                 short_line = flat_line[first_index + 1 :]
-                new_line = f"result = lp_mod.LAST_LP_RESULT{short_line}"
-                log.debug(f"LpFnObj - get_is_match() new_line: {new_line}")
+                new_line = f"result = lp_mod.LAST_LP_RESULT.data{short_line}"
+                new_line += "\ndot_dictionary = lp_mod.LAST_LP_RESULT"
                 mod_copy = self.mod.__dict__.copy()
                 exec(new_line, mod_copy)
                 result = mod_copy["result"]
+                dd = cast(DotDict, mod_copy["dot_dictionary"])
+                headers = bool(dd.get("headers", False))
+                dd.headers = headers
+                dd.data = result
+                log.debug(f"LpFnObj - get_is_match() has headers: {dd.headers}")
 
             else:
                 log.debug("LpFnObj - get_is_match() lp_mod is NOT in module")
-            self._result = result
+            self._result = dd
         except Exception as e:
             log.error(f"LpFnObj - get_is_match() Exception: {e}", exc_info=True)
-        return result is not NULL_OBJ
+        return self._result is not None
 
-    def get_value(self) -> Any:
+    def get_value(self) -> DotDict:
         """Get the list of versions. In this case it will be a single version, unless vstr is invalid in which case it will be an empty list."""
-        if self._result is NULL_OBJ:
-            return None
+        if self._result is None:
+            return DotDict(data=None)
         return self._result
 
     def reset(self) -> None:

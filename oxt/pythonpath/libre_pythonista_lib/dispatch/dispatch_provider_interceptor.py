@@ -29,6 +29,9 @@ from .dispatch_del_py_cell import DispatchDelPyCell
 from .dispatch_py_obj_state import DispatchPyObjState
 from .dispatch_cell_select import DispatchCellSelect
 
+# from .listen.edit_status_listener import EditStatusListener
+from ..log.log_inst import LogInst
+
 
 class DispatchProviderInterceptor(unohelper.Base, XDispatchProviderInterceptor):
     """
@@ -106,29 +109,50 @@ class DispatchProviderInterceptor(unohelper.Base, XDispatchProviderInterceptor):
             # of crashes without this check.
             return None
 
+        log = LogInst()
+        # this next line adds over 1000 lines to the log file
+        # log.debug(f"DispatchProviderInterceptor.queryDispatch: {url.Complete}")
+
+        # example log entries
+        # 2024-06-19 21:23:54,872 - libre_pythonista - DEBUG - DispatchProviderInterceptor.queryDispatch: .uno:Quit
+        # 2024-06-19 21:23:54,872 - libre_pythonista - DEBUG - DispatchProviderInterceptor.queryDispatch: .uno:About
+        # 2024-06-19 21:23:54,873 - libre_pythonista - DEBUG - DispatchProviderInterceptor.queryDispatch: .uno:PrinterSetup
+        # 2024-06-19 21:23:54,873 - libre_pythonista - DEBUG - DispatchProviderInterceptor.queryDispatch: .uno:SafeMode
+        # 2024-06-19 21:23:54,874 - libre_pythonista - DEBUG - DispatchProviderInterceptor.queryDispatch: .uno:DevelopmentToolsDockingWindow
+
         if url.Main == UNO_DISPATCH_CODE_EDIT:
             with contextlib.suppress(Exception):
                 args = self._convert_query_to_dict(url.Arguments)
-                return DispatchEditPyCell(sheet=args["sheet"], cell=args["cell"])
+                log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchEditPyCell")
+                result = DispatchEditPyCell(sheet=args["sheet"], cell=args["cell"])
+                # listener = EditStatusListener(sheet=args["sheet"], cell=args["cell"])
+                # result.addStatusListener(listener, url)
+                # result.removeStatusListener(listener, url)
+                return result
         elif url.Main == UNO_DISPATCH_DF_STATE:
             with contextlib.suppress(Exception):
                 args = self._convert_query_to_dict(url.Arguments)
+                log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchToggleDfState")
                 return DispatchToggleDfState(sheet=args["sheet"], cell=args["cell"])
         elif url.Main == UNO_DISPATCH_DS_STATE:
             with contextlib.suppress(Exception):
                 args = self._convert_query_to_dict(url.Arguments)
+                log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchToggleSeriesState")
                 return DispatchToggleSeriesState(sheet=args["sheet"], cell=args["cell"])
         elif url.Main == UNO_DISPATCH_CODE_DEL:
             with contextlib.suppress(Exception):
                 args = self._convert_query_to_dict(url.Arguments)
+                log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchDelPyCell")
                 return DispatchDelPyCell(sheet=args["sheet"], cell=args["cell"])
         elif url.Main == UNO_DISPATCH_PY_OBJ_STATE:
             with contextlib.suppress(Exception):
                 args = self._convert_query_to_dict(url.Arguments)
+                log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchPyObjState")
                 return DispatchPyObjState(sheet=args["sheet"], cell=args["cell"])
         elif url.Main == UNO_DISPATCH_CELL_SELECT:
             with contextlib.suppress(Exception):
                 args = self._convert_query_to_dict(url.Arguments)
+                log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchCellSelect")
                 return DispatchCellSelect(sheet=args["sheet"], cell=args["cell"])
         # elif url.Main == ".uno:libre_pythonista.calc.menu.update.orig":
         #     with contextlib.suppress(Exception):

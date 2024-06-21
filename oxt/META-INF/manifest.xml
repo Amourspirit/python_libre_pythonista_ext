@@ -35,6 +35,8 @@
         manifest:full-path="libre_pythonista_view_job.py" />
     <manifest:file-entry manifest:media-type="application/vnd.sun.star.uno-component;type=Python"
             manifest:full-path="libre_pythonista_loading_job.py" />
+    <manifest:file-entry manifest:media-type="application/vnd.sun.star.uno-component;type=Python"
+        manifest:full-path="libre_pythonista_saving_job.py" />
     <manifest:file-entry
         manifest:media-type="application/vnd.sun.star.uno-component;type=Python"
         manifest:full-path="libre_pythonista_unloading_job.py" />

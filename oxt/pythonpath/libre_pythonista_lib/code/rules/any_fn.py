@@ -1,7 +1,7 @@
 from __future__ import annotations
-from typing import Any
 import contextlib
 import types
+from ooodev.utils.helper.dot_dict import DotDict
 from ...utils import str_util
 from ...log.log_inst import LogInst
 
@@ -47,13 +47,16 @@ class AnyFn:
         with contextlib.suppress(Exception):
             glbs = self.mod.__dict__.copy()
             exec(f"some_kinda_var = {last_line}", glbs)
-            self._result = glbs.get("some_kinda_var", None)
+            result = glbs.get("some_kinda_var", None)
+            self._result = DotDict(data=result)
         # except Exception as e:
         #     log.debug(f"AnyFn - get_is_match() exception: {e}")
         return self._result is not None
 
-    def get_value(self) -> Any:
+    def get_value(self) -> DotDict:
         """Get the list of versions. In this case it will be a single version, unless vstr is invalid in which case it will be an empty list."""
+        if self._result is None:
+            return DotDict(data=None)
         return self._result
 
     def reset(self) -> None:

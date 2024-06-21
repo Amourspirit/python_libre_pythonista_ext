@@ -101,7 +101,7 @@ class SimpleCtl:
 
             self._set_size(shape)
             btn.printable = False
-            btn.model.BackgroundColor = StandardColor.TEAL_LIGHT3  # type: ignore
+            btn.model.BackgroundColor = self._get_button_bg_color()  # type: ignore
             btn.tab_stop = False
             # btn.apply_styles()
             btn.assign_script(
@@ -139,6 +139,9 @@ class SimpleCtl:
         except Exception as e:
             self.log.error(f"{self.__class__.__name__}: update_ctl error: {e}", exc_info=True)
             return None
+
+    def _get_button_bg_color(self) -> int:
+        return StandardColor.TEAL_LIGHT3
 
     def _set_size(self, shape: ControlShape) -> None:
         x, y, width, height = self.get_cell_pos_size()

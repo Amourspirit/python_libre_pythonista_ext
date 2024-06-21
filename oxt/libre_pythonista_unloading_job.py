@@ -26,11 +26,13 @@ if TYPE_CHECKING:
     from .pythonpath.libre_pythonista_lib.sheet.listen.code_sheet_activation_listener import (
         CodeSheetActivationListener,
     )
+    from .pythonpath.libre_pythonista_lib.code.mod_fn.lp_log import LpLog
 else:
     _CONDITIONS_MET = _conditions_met()
     if _CONDITIONS_MET:
         from libre_pythonista_lib.sheet.listen.code_sheet_modify_listener import CodeSheetModifyListener
         from libre_pythonista_lib.sheet.listen.code_sheet_activation_listener import CodeSheetActivationListener
+        from libre_pythonista_lib.code.mod_fn.lp_log import LpLog
 # endregion imports
 
 # region Constants
@@ -80,6 +82,7 @@ class LibrePythonistaUnLoadingJob(unohelper.Base, XJob):
                 else:
                     self._logger.debug(f"{key} not found in os.environ")
                 if _CONDITIONS_MET:
+                    run_time_id = self.document.RuntimeUID
                     try:
                         from ooodev.calc import CalcDoc
 
@@ -99,6 +102,15 @@ class LibrePythonistaUnLoadingJob(unohelper.Base, XJob):
                                 sheet.component.removeModifyListener(listener)
                     except Exception as e:
                         self._logger.error("Error unregistering dispatch manager", exc_info=True)
+                    try:
+                        self._logger.debug("Cleaning up LpLog file")
+                        lp_log = LpLog(run_time_id)
+                        if lp_log.log_path.exists():
+                            self._logger.debug(f"Removing LpLog file: {lp_log.log_path}")
+                            lp_log.log_path.unlink()
+                        LpLog.reset_instance(run_time_id)
+                    except Exception as e:
+                        self._logger.error("Error removing log file", exc_info=True)
             else:
                 self._logger.debug("Document UnLoading not a spreadsheet")
 

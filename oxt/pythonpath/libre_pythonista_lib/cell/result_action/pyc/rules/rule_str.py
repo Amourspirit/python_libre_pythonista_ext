@@ -10,9 +10,10 @@ class RuleStr(RuleBase):
         return self.key_maker.rule_names.cell_data_type_str
 
     def get_is_match(self) -> bool:
-        if self.data is None:
+        result = self.data.get("data", None)
+        if result is None:
             return False
-        return isinstance(self.data, str)
+        return isinstance(result, str)
 
     def action(self) -> Any:
         self._update_properties(
@@ -22,4 +23,4 @@ class RuleStr(RuleBase):
                 self.cell_pyc_rule_key: self.data_type_name,
             }
         )
-        return ((self.data,),)
+        return ((self.data.data,),)

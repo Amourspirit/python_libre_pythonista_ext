@@ -44,7 +44,7 @@ class PySource:
         self._col = cell.col_obj.index
         self._sheet_idx = cell.sheet_idx
         self._src_code = None
-        self._value = None
+        self._dd_data = DotDict(data=None)
         self._unique_id = unique_id
         self._is_init = True
 
@@ -114,11 +114,22 @@ class PySource:
 
     @property
     def value(self) -> Any:
-        return self._value
+        return self._dd_data.data
 
-    @value.setter
-    def value(self, value: Any) -> None:
-        self._value = value
+    @property
+    def is_error(self) -> bool:
+        key = "error"
+        if "error" in self._dd_data:
+            return self._dd_data.error
+        return False
+
+    @property
+    def dd_data(self) -> DotDict:
+        return self._dd_data
+
+    @dd_data.setter
+    def dd_data(self, value: DotDict) -> None:
+        self._dd_data = value
 
 
 class PySourceManager(EventsPartial):
@@ -210,6 +221,15 @@ class PySourceManager(EventsPartial):
         self._log.debug(
             f"PySourceManager - dump_module_source_code_to_log() - Module Source Code:\n# Start Dump\n{src_code}\n\n# End Dump"
         )
+        try:
+            from .mod_fn.lp_log import LpLog
+
+            log = LpLog().log
+            log.debug(
+                f"PySourceManager - dump_module_source_code_to_log() - Module Source Code:\n# Start Dump\n{src_code}\n\n# End Dump"
+            )
+        except Exception:
+            self._log.error("PySourceManager - dump_module_source_code_to_log() - Error dumping to LpLog log.")
 
     # region Event Subscriptions
 
@@ -813,7 +833,7 @@ class PySourceManager(EventsPartial):
         self.py_mod.set_global_var("CURRENT_CELL_ID", py_src.unique_id)
         self.py_mod.set_global_var("CURRENT_CELL_OBJ", cell_obj)
         result = self.py_mod.update_with_result(py_src.source_code)
-        py_src.value = result
+        py_src.dd_data = result
 
         eargs = EventArgs.from_args(cargs)
         eargs.event_data["result"] = result

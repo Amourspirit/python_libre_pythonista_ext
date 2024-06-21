@@ -28,12 +28,15 @@ class OxtLogger(Logger):
             log_file (str, optional): Log file. Defaults to configuration value.
             log_name (str, optional): Log Name. Defaults to configuration value.
             trigger (bool, optional): Trigger log ready event. Defaults to True.
+            add_console_logger (bool, optional): Add console logger. Defaults to False.
+                If The config setting have console logger enabled, it will be added automatically.
 
         Returns:
             None: None
         """
         self._config = LoggerConfig()  # config.Config()
         self.formatter = logging.Formatter(self._config.log_format)
+        add_console_logger = kwargs.get("add_console_logger", False)
 
         if not log_file:
             log_file = self._config.log_file
@@ -51,6 +54,7 @@ class OxtLogger(Logger):
         super().__init__(name=log_name, level=self._config.log_level)
 
         has_handler = False
+        has_console_handler = False
 
         if self._log_file and self._config.log_level >= 10:  # DEBUG
             self.addHandler(self._get_file_handler())
@@ -59,6 +63,12 @@ class OxtLogger(Logger):
         if self._config.log_add_console and self._config.log_level > 0:
             self.addHandler(self._get_console_handler())
             has_handler = True
+            has_console_handler = True
+
+        if not has_console_handler and add_console_logger:
+            self.addHandler(self._get_console_handler())
+            has_handler = True
+            has_console_handler = True
 
         if not has_handler:
             self.addHandler(self._get_null_handler())

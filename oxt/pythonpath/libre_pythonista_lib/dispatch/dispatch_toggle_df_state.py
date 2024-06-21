@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, cast, Dict, Tuple, TYPE_CHECKING
+from typing import Any, cast, Dict, Tuple, List, TYPE_CHECKING
 import uno
 import unohelper
 from com.sun.star.frame import XDispatch
@@ -19,6 +19,7 @@ from ..cell.state.ctl_state import CtlState
 from ..cell.state.state_kind import StateKind
 from ..code.py_source_mgr import PyInstance
 from ..event.shared_cell_event import SharedCellEvent
+from ..utils.pandas_util import PandasUtil
 
 if TYPE_CHECKING:
     from com.sun.star.frame import XStatusListener
@@ -226,19 +227,36 @@ class DispatchToggleDfState(XDispatch, EventsPartial, unohelper.Base):
         cursor.collapseToCurrentArray()
         cursor.setArrayFormula(formula)
 
-    def _get_data(self, doc: CalcDoc, cell_obj: CellObj) -> Any:
+    def _get_data(self, doc: CalcDoc, cell_obj: CellObj) -> DotDict:
         py_inst = PyInstance(doc)  # singleton
         py_src = py_inst[cell_obj]
-        return py_src.value
+        return py_src.dd_data
 
-    def _get_rows_cols(self, doc: CalcDoc, cell: CellObj) -> Tuple[int, int]:
-        df = cast("pd.DataFrame", self._get_data(doc, cell))
+    def _get_rows_cols(self, doc: CalcDoc, cell: CellObj) -> List[int]:
+        dd = self._get_data(doc, cell)
+
+        df = cast("pd.DataFrame", dd.data)
+        has_headers = bool(dd.get("headers", False))
+        if has_headers is False:
+            has_headers = PandasUtil.has_headers(df)
+        has_index_names = PandasUtil.has_index_names(df)
+
         if self._log.is_debug:
             self._log.debug(f"DataFrame Shape: {df.shape}")
         shape = df.shape
         shape_len = len(shape)
+        lst = [0, 0]
         if shape_len == 0:
-            return 0, 0
+            return lst
+
         if shape_len == 1:
-            return shape[0], 0
-        return df.shape[0], df.shape[1]
+            lst[0] = shape[0]
+        else:
+            lst[0] = shape[0]
+            lst[1] = shape[1]
+        if has_headers:
+            lst[0] += 1
+
+        if has_index_names:
+            lst[1] += 1
+        return lst

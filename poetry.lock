@@ -344,13 +344,13 @@ files = [
 
 [[package]]
 name = "ooo-dev-tools"
-version = "0.46.0"
+version = "0.47.0"
 description = "LibreOffice Developer Tools"
 optional = false
 python-versions = "<4.0,>=3.8"
 files = [
-    {file = "ooo_dev_tools-0.46.0-py3-none-any.whl", hash = "sha256:cc76795e8706efa90c9267fd342dfa45865cd2baa0774025daf5dd0caa70ba43"},
-    {file = "ooo_dev_tools-0.46.0.tar.gz", hash = "sha256:38170f6653835be0c07c0be16a3f2eeb1c872cd050123ff8f52eb9dd05412b01"},
+    {file = "ooo_dev_tools-0.47.0-py3-none-any.whl", hash = "sha256:50f837a88dfd069673738dbad258b032f4459ab43888e465e7b9dce98c822de4"},
+    {file = "ooo_dev_tools-0.47.0.tar.gz", hash = "sha256:595c9ee37d29883cce80c802b76e934a28dd46fb74a3187bcd401a53673a68e0"},
 ]
 
 [package.dependencies]
@@ -777,4 +777,4 @@ socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "13050724419fc654967316ae7cab9850ecb9b0a05e6b6edb2851be32facb625b"
+content-hash = "253841daee1f2877e44ee64b72ef70c3a8efa3766763a1ad2c05f5e22ecc7fba"

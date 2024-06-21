@@ -1,12 +1,16 @@
 from __future__ import annotations
 from typing import Any, List, TYPE_CHECKING, Type
 from ooodev.calc import CalcCell
+from ooodev.utils.helper.dot_dict import DotDict
 
 from .rule_base import RuleBase
 from .rule_float import RuleFloat
 from .rule_int import RuleInt
 from .rule_str import RuleStr
+from .rule_none import RuleNone
+from .rule_error import RuleError
 from .rule_pd_df import RulePdDf
+from .rule_pd_df_headers import RulePdDfHeaders
 from .rule_pd_ds import RulePdDs
 
 if TYPE_CHECKING:
@@ -40,6 +44,7 @@ class PycRules:
         self._rules: List[Type[PycRuleT]] = []
         self._register_known_rules()
         self._is_init = True
+        self._default_rule = RuleNone
         self._log.debug(f"{self.__class__.__name__}.__init__() Initialized.")
 
     def __len__(self) -> int:
@@ -129,13 +134,16 @@ class PycRules:
 
     def _register_known_rules(self):
         # re.compile(r"^(\w+)\s*=")
+        self._reg_rule(rule=RulePdDfHeaders)
         self._reg_rule(rule=RulePdDf)
         self._reg_rule(rule=RulePdDs)
         self._reg_rule(rule=RuleFloat)
         self._reg_rule(rule=RuleInt)
         self._reg_rule(rule=RuleStr)
+        self._reg_rule(rule=RuleError)
+        self._reg_rule(rule=RuleNone)
 
-    def get_matched_rule(self, cell: CalcCell, data: Any) -> PycRuleT | None:
+    def get_matched_rule(self, cell: CalcCell, data: DotDict) -> PycRuleT | None:
         """
         Get matched rules
 
@@ -144,24 +152,31 @@ class PycRules:
             code (str): Code string.
 
         Returns:
-            List[PycRuleT]: List of matched rules
+            List[PycRuleT]: Matched rule. Defaults to ``default_rule`` value.
         """
         is_db = self._log.is_debug
         if is_db:
             self._log.debug(f"get_matched_rule() cell: {cell.cell_obj}. Data Type {type(data).__name__}")
+        result = None
         for rule in self._rules:
             inst = rule(cell, data)
             if inst.get_is_match():
                 if is_db:
                     self._log.debug(f"get_matched_rule() Rule {inst} matched.")
-                return inst
+                result = inst
+                break
+        if result is not None:
+            return result
+        if self._default_rule is not None:
+            self._log.warning(f"get_matched_rule() No rule matched. Using default rule.")
+            return self._default_rule(cell, data)
         # this should never happen LastDict is always a match
         self._log.warning(f"get_matched_rule() No rule matched.")
         return None
 
     def find_rule(self, cell: CalcCell) -> PycRuleT | None:
         """
-        Find rule by name
+        Find rule by name. ``default_rule`` is not used here.
 
         Args:
             rule_name (str): Name of rule
@@ -184,3 +199,16 @@ class PycRules:
         return None
 
     # endregion Methods
+
+    # region Properties
+
+    @property
+    def default_rule(self) -> Type[PycRuleT] | None:
+        """Gets/Sets the default rule type if no rules is matched."""
+        return self._default_rule
+
+    @default_rule.setter
+    def default_rule(self, value: Type[PycRuleT] | None):
+        self._default_rule = value
+
+    # endregion Properties

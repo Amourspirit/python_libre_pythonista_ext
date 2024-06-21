@@ -65,6 +65,20 @@ class CellCache:
     def __len__(self) -> int:
         return len(self._code)
 
+    def get_cell_complete_count(self) -> int:
+        """
+        Get the total number of cells in all the sheets.
+
+        Returns:
+            int: Total number of cells in all the sheets.
+        """
+        sheets_count = len(self._code)
+        count = 0
+        for i in range(sheets_count):
+            sheet = self._code[i]
+            count += len(sheet)
+        return count
+
     def _get_cells(self) -> Dict[int, Dict[CellObj, IndexCellProps]]:
         filter_key = self._code_prop
         code_cells = {}
@@ -194,18 +208,20 @@ class CellCache:
 
     def _update_indexes(self) -> None:
         self._log.debug("_update_indexes() Updating Indexes")
+        count = 0
         for sheet_idx in self._code.keys():
             i = -1
             items = self.code_cells[sheet_idx]
             for itm in items.values():
                 i += 1
                 itm.index = i
+                count += 1
 
             # clear the cache for the indexes
             key = f"{sheet_idx}_indexes"
             if key in self._cache:
                 del self._cache[key]
-        self._log.debug("_update_indexes() Indexes Updated")
+        self._log.debug(f"_update_indexes() {count} Indexes Updated")
 
     def _get_indexes(self, sheet_idx: int = -1) -> Dict[int, CellObj]:
         if sheet_idx < 0:

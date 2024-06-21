@@ -1,15 +1,15 @@
 from __future__ import annotations
 from typing import Any, cast
+from collections import OrderedDict
 from ooodev.calc import CalcCell
 import pandas as pd
 from .rule_base import RuleBase
 from .....cell.state.ctl_state import CtlState
 from .....cell.state.state_kind import StateKind
 from .....const import UNO_DISPATCH_DF_STATE
-from .....utils.pandas_util import PandasUtil
 
 
-class RulePdDf(RuleBase):
+class RulePdDfHeaders(RuleBase):
 
     def __init__(self, cell: CalcCell, data: Any) -> None:
         super().__init__(cell, data)
@@ -32,9 +32,7 @@ class RulePdDf(RuleBase):
         if not is_df:
             return False
         headers = self.data.get("headers", False)
-        if headers:
-            return False
-        return True
+        return bool(headers)
 
     def _get_state(self) -> StateKind:
         state = CtlState(self.cell).get_state()
@@ -45,30 +43,20 @@ class RulePdDf(RuleBase):
 
     def _pandas_to_array(self) -> Any:
         df = cast(pd.DataFrame, self.data.data)
-        has_headers = PandasUtil.has_headers(df)
-        if not has_headers:
-            df.values.tolist()
-
-        # data_tuple = tuple(df.itertuples(index=False, name=None))
-        # return data_tuple
-        headers = [df.columns.tolist()]
+        # Convert the column names to a list and initialize the 2D list with it
+        list_2d = [df.columns.tolist()]
         # Append the DataFrame values to the list
         list_values = df.values.tolist()
         if not list_values:
-            return headers
+            return list_2d
         row = list_values[0]
+        row_len = len(row)
+        while row_len > len(list_2d[0]):
+            # the columns may be less the the rows such as with df.describe()
+            # Insert empty strings for the missing columns.
+            return list_2d[0].insert(0, "")
 
-        has_index_names = PandasUtil.has_index_names(df)
-        if has_index_names:
-            index_names = PandasUtil.get_index_names(df)
-            # insert an index name into each row
-            for i, index_name in enumerate(index_names):
-                list_values[i].insert(0, index_name)
-            # insert an empty value into the start of the headers
-            headers[0].insert(0, "")
-
-        result = headers + list_values
-        return result
+        return list_2d + list_values
 
     def action(self) -> Any:
         state = self._get_state()
@@ -85,4 +73,4 @@ class RulePdDf(RuleBase):
         return (("",),)
 
     def __repr__(self) -> str:
-        return f"<RulePdDf({self.cell.cell_obj}, {type(self.data).__name__})>"
+        return f"<RulePdDfHeaders({self.cell.cell_obj}, {type(self.data).__name__})>"
