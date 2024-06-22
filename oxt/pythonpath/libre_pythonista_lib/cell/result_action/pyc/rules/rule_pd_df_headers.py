@@ -44,6 +44,7 @@ class RulePdDfHeaders(RuleBase):
 
     def _pandas_to_array(self) -> Any:
         df = cast(pd.DataFrame, self.data.data)
+        return PandasUtil.pandas_to_array(df, header_opt=1, index_opt=0)
         # Convert the column names to a list and initialize the 2D list with it
         headers = [df.columns.tolist()]
         # Append the DataFrame values to the list

@@ -45,6 +45,7 @@ class RulePdDf(RuleBase):
 
     def _pandas_to_array(self) -> Any:
         df = cast(pd.DataFrame, self.data.data)
+        return PandasUtil.pandas_to_array(df)
         has_headers = PandasUtil.has_headers(df)
         if not has_headers:
             df.values.tolist()

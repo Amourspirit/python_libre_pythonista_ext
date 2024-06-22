@@ -10,6 +10,7 @@ from .state.state_kind import StateKind
 from ..const import UNO_DISPATCH_PY_OBJ_STATE
 from ..cell.result_action.pyc.rules.pyc_rules import PycRules
 from ..code.py_source_mgr import PySource, PyInstance
+from ..utils.pandas_util import PandasUtil
 
 
 if TYPE_CHECKING:
@@ -225,6 +226,18 @@ class LplCell:
             return DotDict()
 
     @property
+    def is_dataframe(self) -> bool:
+        """
+        Get if the cell is a dataframe.
+        """
+        src = self.pyc_src
+        if src.dd_data is None:
+            return False
+        if "data" in src.dd_data:
+            return PandasUtil.is_dataframe(src.dd_data.data)
+        return False
+
+    @property
     def pyc_rule_name(self) -> str:
         """
         Get/Sets the pyc rule of the control. If the rule is not found, return an empty string.
@@ -304,5 +317,15 @@ class LplCell:
         src = self._get_pyc_src()
         self._cache[key] = src
         return src
+
+    @property
+    def has_array_ability(self) -> bool:
+        """
+        Get/Sets whether the cell has the ability to be an array.
+        """
+        key = self._key_maker.cell_array_ability_key
+        if key in self.custom_properties:
+            return self.custom_properties[key]
+        return False
 
     # endregion Properties

@@ -19,15 +19,9 @@ from ooodev.events.args.event_args import EventArgs
 from .window_listener import WindowListener
 from .key_handler import KeyHandler
 
-# from ...res.res_resolver import ResResolver
 from .dialog_menu import DialogMenu
 from ...config.dialog.code_cfg import CodeCfg
 
-
-# from .focus_listener import FocusListener
-
-# from ooodev.dialog.dialog import Dialog
-from ooodev.dialog.dialogs import Dialogs
 
 if TYPE_CHECKING:
     from com.sun.star.awt import MenuEvent

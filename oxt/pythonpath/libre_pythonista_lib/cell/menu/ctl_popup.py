@@ -8,9 +8,10 @@ from ooodev.gui.menu.popup.popup_creator import PopupCreator
 from ...res.res_resolver import ResResolver
 from ...dispatch.cell_dispatch_state import CellDispatchState
 from ..props.key_maker import KeyMaker
-from ...const import UNO_DISPATCH_CODE_EDIT, UNO_DISPATCH_CODE_DEL, UNO_DISPATCH_CELL_SELECT
+from ...const import UNO_DISPATCH_CODE_EDIT, UNO_DISPATCH_CODE_DEL, UNO_DISPATCH_CELL_SELECT, UNO_DISPATCH_DF_CARD
 from ..state.state_kind import StateKind
 from ..state.ctl_state import CtlState
+from ..lpl_cell import LplCell
 
 from ...log.log_inst import LogInst
 
@@ -40,6 +41,7 @@ class CtlPopup:
         self._ctl_state = CtlState(self._cell)
         self._cps = CellDispatchState(cell=self._cell)
         self._log = LogInst()
+        self._lpl_cell = LplCell(self._cell)
 
     def _get_state_menu(self) -> list:
         # key = self._key_maker.ctl_state_key
@@ -65,6 +67,11 @@ class CtlPopup:
             },
         ]
 
+    def _get_card_menu(self) -> list:
+        card_name = self._res.resolve_string("mnuViewCard")
+        card_url = f"{UNO_DISPATCH_DF_CARD}?sheet={self._sheet_name}&cell={self._cell.cell_obj}"
+        return [{"text": card_name, "command": card_url, "enabled": True}]
+
     def _get_popup_menu(self) -> list:
         global UNO_DISPATCH_CODE_EDIT
         edit_name = self._res.resolve_string("mnuEditCode")  # Edit Menu
@@ -81,10 +88,13 @@ class CtlPopup:
             {"text": "-"},
             {"text": sel_name, "command": sel_url, "enabled": True},
         ]
-        if self._cell.get_custom_property(self._key_maker.cell_array_ability_key, False):
+        if self._lpl_cell.has_array_ability:
+            # if self._cell.get_custom_property(self._key_maker.cell_array_ability_key, False):
             state_menu = self._get_state_menu()
             if state_menu:
                 new_menu.extend(state_menu)
+        if self._lpl_cell.is_dataframe:
+            new_menu.extend(self._get_card_menu())
         return new_menu
 
     def get_menu(self) -> PopupMenu:
