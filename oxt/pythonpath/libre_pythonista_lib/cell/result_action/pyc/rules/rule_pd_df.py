@@ -45,6 +45,10 @@ class RulePdDf(RuleBase):
 
     def _pandas_to_array(self) -> Any:
         df = cast(pd.DataFrame, self.data.data)
+        if PandasUtil.is_describe_output(df):
+            arr = PandasUtil.pandas_to_array(df, convert=False)
+            PandasUtil.convert_array_to_lo(arr)
+            return arr
         return PandasUtil.pandas_to_array(df)
         has_headers = PandasUtil.has_headers(df)
         if not has_headers:

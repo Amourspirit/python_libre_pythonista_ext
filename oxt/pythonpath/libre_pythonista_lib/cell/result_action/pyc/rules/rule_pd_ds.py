@@ -7,6 +7,7 @@ from .rule_base import RuleBase
 from .....cell.state.ctl_state import CtlState
 from .....cell.state.state_kind import StateKind
 from .....const import UNO_DISPATCH_DS_STATE
+from .....utils.pandas_util import PandasUtil
 
 
 class RulePdDs(RuleBase):
@@ -40,7 +41,14 @@ class RulePdDs(RuleBase):
 
     def _pandas_to_array(self) -> Any:
         ds = cast(pd.Series, self.data.data)
-        d = ds.to_dict(into=OrderedDict)
+        if PandasUtil.is_date_series(ds):
+            ds_copy = ds.copy()
+            PandasUtil.pandas_series_to_lo_calc(ds_copy)
+            d = ds_copy.to_dict(into=OrderedDict)
+        else:
+            d = ds.to_dict(into=OrderedDict)
+
+        d = PandasUtil.convert_dict_keys_to_lo_date(d)
 
         list_2d = [[k, v] for k, v in d.items()]
         if ds.name:

@@ -117,14 +117,19 @@ class DfCard:
     def _set_table_data(self) -> None:
         py_src = self._lpl_cell.pyc_src
         df = cast(pd.DataFrame, py_src.dd_data.data)
+
         if not PandasUtil.is_dataframe(df):
             self._log.error("Data is not a DataFrame")
             return
         rows = df.shape[0]
-        if rows <= 5:
-            tbl, max_len = self._get_table_data_head()
+        if PandasUtil.is_describe_output(df):
+            self._log.debug("DataFrame is a describe output")
+            tbl, max_len = self._get_table_data_describe()
         else:
-            tbl, max_len = self._get_table_data_head_tail()
+            if rows <= 5:
+                tbl, max_len = self._get_table_data_head()
+            else:
+                tbl, max_len = self._get_table_data_head_tail()
 
         row_header_width = int(UnitAppFontWidth(max_len * 6))
         self._log.debug(f"_set_table_data() Row header width: {row_header_width}")
@@ -138,6 +143,17 @@ class DfCard:
         )
         self._ctl_table1.horizontal_scrollbar = True
 
+    def _get_table_data_describe(self) -> Tuple[list, int]:
+        """Convert the dataframe and display in dialog grid control."""
+        py_src = self._lpl_cell.pyc_src
+        df = cast(pd.DataFrame, py_src.dd_data.data)
+
+        tbl = PandasUtil.pandas_to_array(df)
+        max_len = PandasUtil.get_df_index_max_len(df.describe())
+        self._log.debug(f"_set_table_data() Max length: {max_len}")
+        PandasUtil.convert_array_to_lo(tbl)
+        return tbl, max_len
+
     def _get_table_data_head(self) -> Tuple[list, int]:
         """Convert the dataframe and display in dialog grid control."""
         py_src = self._lpl_cell.pyc_src
@@ -147,6 +163,7 @@ class DfCard:
         max_len = PandasUtil.get_df_index_max_len(head_data)
         self._log.debug(f"_set_table_data() Max length: {max_len}")
         tbl = PandasUtil.pandas_to_array(df.head(), index_opt=1)
+        PandasUtil.convert_array_to_lo(tbl)
         return tbl, max_len
 
     def _get_table_data_head_tail(self) -> Tuple[list, int]:
@@ -161,8 +178,11 @@ class DfCard:
         tail_max = PandasUtil.get_df_index_max_len(tail_data)
         max_len = max(head_max, tail_max)
         self._log.debug(f"_set_table_data() Max length: {max_len}")
-        head = PandasUtil.pandas_to_array(df.head(), index_opt=1)
-        tail = PandasUtil.pandas_to_array(df.tail(), header_opt=2, index_opt=1)
+        head = PandasUtil.pandas_to_array(df.head(), index_opt=1, convert=False)
+        tail = PandasUtil.pandas_to_array(df.tail(), header_opt=2, index_opt=1, convert=False)
+
+        PandasUtil.convert_array_to_lo(head)
+        PandasUtil.convert_array_to_lo(tail)
         # create a row of ellipse to insert before tail.
         ellipse = ["..." for _ in range(cols + 1)]  # one extra column for row index
         tbl = head + [ellipse] + tail

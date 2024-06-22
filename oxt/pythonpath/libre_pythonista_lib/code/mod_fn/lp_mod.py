@@ -1,7 +1,8 @@
-from typing import Any, cast, TYPE_CHECKING
+from typing import Any, cast, List, TYPE_CHECKING
 import re
 from ooodev.utils.helper.dot_dict import DotDict
 from ...cell.cell_mgr import CellMgr
+from ...utils.pandas_util import PandasUtil
 
 LAST_LP_RESULT = DotDict(data=None)
 
@@ -101,6 +102,8 @@ def lp(addr: str, **Kwargs: Any) -> Any:
 
     try:
 
+        column_types = Kwargs.get("column_types", None)
+
         if addr_rng is None:
             addr_rng = RangeObj.from_range(addr)
         log.debug(f"lp - addr_rng: {addr_rng}")
@@ -121,7 +124,38 @@ def lp(addr: str, **Kwargs: Any) -> Any:
         else:
             df = pd.DataFrame(data)
 
+        if isinstance(column_types, dict):
+            log.debug(f"lp - Column Types: {column_types}")
+            _process_column_types(df, column_types, log)
+        else:
+            log.debug("lp - No Column Types")
+
         return _set_last_lp_result(df, headers=headers)
     except Exception as e:
         log.error(f"lp - Exception: {e}", exc_info=True)
         return _set_last_lp_result(None)
+
+
+def _process_column_types(df: pd.DataFrame, column: dict, log: LogInst):
+    names = {}
+    indexes = {}
+    for key, value in column.items():
+        if isinstance(key, str):
+            names[key] = value
+        elif isinstance(key, int):
+            indexes[key] = value
+    date_cols: List[str | int] = []
+
+    for key, value in names.items():
+
+        if value == "date":
+            if key in df.columns:
+                date_cols.append(key)
+    for key, value in indexes.items():
+        if value == "date":
+            date_cols.append(key)
+    if date_cols:
+        log.debug(f"_process_column_types() - Date Columns: {date_cols}")
+        PandasUtil.convert_lo_to_pandas_date_columns(df, *date_cols)
+    else:
+        log.debug("_process_column_types() - No Date Columns")
