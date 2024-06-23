@@ -11,7 +11,7 @@ from ooodev.events.args.cancel_event_args import CancelEventArgs
 from ooodev.events.args.event_args import EventArgs
 from ooodev.utils.helper.dot_dict import DotDict
 
-from ..dialog.py.card.tbl_data_card import TblDataCard
+from ..dialog.card.tbl_data_card import TblDataCard
 from ..event.shared_cell_event import SharedCellEvent
 
 if TYPE_CHECKING:
