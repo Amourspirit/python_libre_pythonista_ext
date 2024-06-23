@@ -238,6 +238,13 @@ class LplCell:
         return False
 
     @property
+    def is_table_data(self) -> bool:
+        """
+        Get if the cell is a Table Data.
+        """
+        return self.pyc_rule_name == self._key_maker.rule_names.cell_data_type_tbl_data
+
+    @property
     def pyc_rule_name(self) -> str:
         """
         Get/Sets the pyc rule of the control. If the rule is not found, return an empty string.

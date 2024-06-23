@@ -50,6 +50,11 @@ class RuleNames:
         return "cell_data_type_int"
 
     @property
+    def cell_data_type_tbl_data(self) -> str:
+        """Rule name for cell data type of 2D."""
+        return "cell_data_type_tbl_data"
+
+    @property
     def cell_data_type_float(self) -> str:
         """Rule name for cell data type of float."""
         return "cell_data_type_float"

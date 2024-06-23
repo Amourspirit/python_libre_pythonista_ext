@@ -1,6 +1,6 @@
 from __future__ import annotations
 from ooodev.calc import CalcCell
-from ..const import UNO_DISPATCH_CODE_EDIT, UNO_DISPATCH_DF_STATE, UNO_DISPATCH_DS_STATE
+from ..const import UNO_DISPATCH_CODE_EDIT, UNO_DISPATCH_DF_STATE, UNO_DISPATCH_DS_STATE, UNO_DISPATCH_DATA_TBL_STATE
 from ..cell.props.key_maker import KeyMaker
 from ..cell.state.ctl_state import CtlState
 from ..cell.state.state_kind import StateKind
@@ -39,6 +39,8 @@ class CellDispatchState:
             return UNO_DISPATCH_DF_STATE
         if rule == rules.cell_data_type_pd_series:
             return UNO_DISPATCH_DS_STATE
+        if rule == rules.cell_data_type_tbl_data:
+            return UNO_DISPATCH_DATA_TBL_STATE
         return ""
 
     def get_state(self) -> StateKind:

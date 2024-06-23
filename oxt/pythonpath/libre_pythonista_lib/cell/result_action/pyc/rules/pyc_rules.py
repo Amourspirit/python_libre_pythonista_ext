@@ -12,6 +12,7 @@ from .rule_error import RuleError
 from .rule_pd_df import RulePdDf
 from .rule_pd_df_headers import RulePdDfHeaders
 from .rule_pd_ds import RulePdDs
+from .rule_tbl_data import RuleTblData
 
 if TYPE_CHECKING:
     from .pyc_rule_t import PycRuleT
@@ -140,6 +141,7 @@ class PycRules:
         self._reg_rule(rule=RuleFloat)
         self._reg_rule(rule=RuleInt)
         self._reg_rule(rule=RuleStr)
+        self._reg_rule(rule=RuleTblData)
         self._reg_rule(rule=RuleError)
         self._reg_rule(rule=RuleNone)
 

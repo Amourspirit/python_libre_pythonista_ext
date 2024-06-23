@@ -8,7 +8,13 @@ from ooodev.gui.menu.popup.popup_creator import PopupCreator
 from ...res.res_resolver import ResResolver
 from ...dispatch.cell_dispatch_state import CellDispatchState
 from ..props.key_maker import KeyMaker
-from ...const import UNO_DISPATCH_CODE_EDIT, UNO_DISPATCH_CODE_DEL, UNO_DISPATCH_CELL_SELECT, UNO_DISPATCH_DF_CARD
+from ...const import (
+    UNO_DISPATCH_CODE_EDIT,
+    UNO_DISPATCH_CODE_DEL,
+    UNO_DISPATCH_CELL_SELECT,
+    UNO_DISPATCH_DF_CARD,
+    UNO_DISPATCH_DATA_TBL_CARD,
+)
 from ..state.state_kind import StateKind
 from ..state.ctl_state import CtlState
 from ..lpl_cell import LplCell
@@ -67,9 +73,14 @@ class CtlPopup:
             },
         ]
 
-    def _get_card_menu(self) -> list:
+    def _get_card_df_menu(self) -> list:
         card_name = self._res.resolve_string("mnuViewCard")
         card_url = f"{UNO_DISPATCH_DF_CARD}?sheet={self._sheet_name}&cell={self._cell.cell_obj}"
+        return [{"text": card_name, "command": card_url, "enabled": True}]
+
+    def _get_card_tbl_data_menu(self) -> list:
+        card_name = self._res.resolve_string("mnuViewCard")
+        card_url = f"{UNO_DISPATCH_DATA_TBL_CARD}?sheet={self._sheet_name}&cell={self._cell.cell_obj}"
         return [{"text": card_name, "command": card_url, "enabled": True}]
 
     def _get_popup_menu(self) -> list:
@@ -94,7 +105,9 @@ class CtlPopup:
             if state_menu:
                 new_menu.extend(state_menu)
         if self._lpl_cell.is_dataframe:
-            new_menu.extend(self._get_card_menu())
+            new_menu.extend(self._get_card_df_menu())
+        if self._lpl_cell.is_table_data:
+            new_menu.extend(self._get_card_tbl_data_menu())
         return new_menu
 
     def get_menu(self) -> PopupMenu:

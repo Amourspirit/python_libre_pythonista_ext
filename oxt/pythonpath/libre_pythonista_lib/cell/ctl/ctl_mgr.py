@@ -8,6 +8,7 @@ from .none_ctl import NoneCtl
 from .error_ctl import ErrorCtl
 from .data_frame_ctl import DataFrameCtl
 from .data_series_ctl import DataSeriesCtl
+from .data_tbl_ctl import DataTblCtl
 from ...log.log_inst import LogInst
 from ..props.key_maker import KeyMaker
 
@@ -60,6 +61,8 @@ class CtlMgr:
             return ErrorCtl
         if rule_name == rules.cell_data_type_none:
             return NoneCtl
+        if rule_name == rules.cell_data_type_tbl_data:
+            return DataTblCtl
         is_deleted = cell.extra_data.get("deleted", False)
         if is_deleted:
             self._log.debug(f"CtlMgr - _get_rule() Cell is deleted: {cell.cell_obj}. Returning SimpleCtl instance.")
