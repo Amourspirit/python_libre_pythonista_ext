@@ -33,8 +33,10 @@ def on_menu_select(src: Any, event: EventArgs, menu: PopupMenu) -> None:
     if command:
         # check if command is a dispatch command
         if menu.is_dispatch_cmd(command):
-
-            menu.execute_cmd(command)
+            if command in (UNO_DISPATCH_DF_CARD, UNO_DISPATCH_CODE_EDIT, UNO_DISPATCH_DATA_TBL_CARD):
+                menu.execute_cmd(command, in_thread=True)
+            else:
+                menu.execute_cmd(command)
 
 
 class CtlPopup:

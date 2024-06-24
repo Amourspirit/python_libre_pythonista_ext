@@ -15,11 +15,11 @@ class KeyHandler(ListenerBase["DialogPython"], XKeyHandler):
     def keyPressed(self, event: KeyEvent) -> bool:
         try:
             attr = f"onkey_{event.KeyCode}"
-            print("KeyHandler: keyPressed: attr", attr)
-            # print(str(event.KeyCode))(event.Modifiers))
+            # print("KeyHandler: keyPressed: attr", attr)
+            # print(event.KeyCode, event.Modifiers)
             return getattr(self.component, attr)(event.Modifiers)
         except AttributeError:
-            print("KeyHandler: keyPressed: AttributeError")
+            # print("KeyHandler: keyPressed: AttributeError")
             return False
 
     def keyReleased(self, event: KeyEvent) -> bool:

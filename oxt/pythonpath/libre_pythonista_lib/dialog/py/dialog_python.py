@@ -1,30 +1,42 @@
 # region Imports
 from __future__ import annotations
+import time
 from typing import Any, cast, TYPE_CHECKING, Tuple
 import uno
+import unohelper
+from com.sun.star.awt import XTopWindowListener
 from com.sun.star.awt import Selection
 from com.sun.star.awt import WindowDescriptor
 from com.sun.star.awt.WindowClass import TOP
+from com.sun.star.awt import KeyModifier
 from ooo.dyn.awt.window_attribute import WindowAttributeEnum
 from ooo.dyn.awt.rectangle import Rectangle
 from ooo.dyn.awt.font_descriptor import FontDescriptor
 from ooo.dyn.awt.pos_size import PosSize
 from ooo.dyn.style.vertical_alignment import VerticalAlignment
+from ooodev.globals import GblEvents
 from ooodev.dialog import BorderKind
 from ooodev.dialog.msgbox import MessageBoxResultsEnum, MessageBoxType
 from ooodev.loader import Lo
 from ooodev.dialog.dl_control import CtlButton, CtlTextEdit, CtlFixedText
 from ooodev.events.args.event_args import EventArgs
+from ooodev.loader.inst.doc_type import DocType
+from ooodev.utils.partial.the_dictionary_partial import TheDictionaryPartial
 
+from ...const import UNO_DISPATCH_PY_CODE_VALIDATE, UNO_DISPATCH_SEL_RNG
 from .window_listener import WindowListener
 from .key_handler import KeyHandler
 
 from .dialog_menu import DialogMenu
 from ...config.dialog.code_cfg import CodeCfg
+from .top_listener_rng import TopListenerRng
 
 
 if TYPE_CHECKING:
     from com.sun.star.awt import MenuEvent
+    from com.sun.star.lang import EventObject
+    from ooodev.proto.office_document_t import OfficeDocumentT
+    from ooodev.calc import CalcDoc
     from ooodev.dialog.dl_control.ctl_base import DialogControlBase
     from ooodev.gui.menu.popup_menu import PopupMenu
     from ..window_type import WindowType
@@ -37,7 +49,7 @@ else:
 # endregion Imports
 
 
-class DialogPython:
+class DialogPython(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
     FONT = "DejaVu Sans Mono"
     MARGIN = 3
     BUTTON_WIDTH = 100
@@ -53,12 +65,17 @@ class DialogPython:
     # pylint: disable=unused-argument
     # region Init
     def __init__(self, ctx: Any) -> None:
+        TheDictionaryPartial.__init__(self)
+        XTopWindowListener.__init__(self)
+        unohelper.Base.__init__(self)
+        self._is_shown = True
         self.ctx = ctx
         self._log = OxtLogger(log_name=self.__class__.__name__)
         self._log.debug("Init")
         self._cfg = CodeCfg()
         self._rr = ResourceResolver(self.ctx)
         self._doc = Lo.current_doc
+        self._doc.DOC_TYPE
         self._border_kind = BorderKind.BORDER_3D
         if self._cfg.has_size():
             self._log.debug("Config Has Size")
@@ -127,8 +144,8 @@ class DialogPython:
         # any negative effects.
 
         desc.WindowAttributes = int(
-            # WindowAttributeEnum.SHOW
-            WindowAttributeEnum.MOVEABLE
+            WindowAttributeEnum.SHOW
+            | WindowAttributeEnum.MOVEABLE
             | WindowAttributeEnum.SIZEABLE
             | WindowAttributeEnum.CLOSEABLE
             | WindowAttributeEnum.BORDER
@@ -137,6 +154,8 @@ class DialogPython:
         dialog_peer = self.tk.createWindow(desc)
 
         self._init_handlers()
+        glbs = GblEvents()
+
         self._dialog = cast("WindowType", dialog_peer)
 
         self._dialog.setVisible(False)
@@ -169,8 +188,49 @@ class DialogPython:
         self._fn_on_btn_cancel_click = self.on_btn_cancel_click
         self._fn_on_menu_select = self._on_menu_select
         self._fn_on_menu_lbl_mouse_entered = self._on_menu_lbl_mouse_entered
+        self._fn_on_menu_range_select_result = self._on_menu_range_select_result
 
-        # self._fn_on_menu_lbl_mouse_entered = self.on_menu_lbl_mouse_entered
+    # region XTopWindowListener
+    def windowOpened(self, event: EventObject) -> None:
+        """is invoked when a window is activated."""
+        self._log.debug("Window Opened")
+
+    def windowActivated(self, event: EventObject) -> None:
+        """is invoked when a window is activated."""
+
+        self._log.debug("Window Activated")
+
+    def windowDeactivated(self, event: EventObject) -> None:
+        """is invoked when a window is deactivated."""
+        self._log.debug("Window De-activated")
+
+    def windowMinimized(self, event: EventObject) -> None:
+        """Is invoked when a window is iconified."""
+        self._log.debug("Window Minimized")
+
+    def windowNormalized(self, event: EventObject) -> None:
+        """is invoked when a window is deiconified."""
+        self._log.debug("Window Normalized")
+
+    def windowClosing(self, event: EventObject) -> None:
+        """
+        is invoked when a window is in the process of being closed.
+
+        The close operation can be overridden at this point.
+        """
+        self._log.debug("Window Closing")
+        self._is_shown = False
+
+    def windowClosed(self, event: EventObject) -> None:
+        """is invoked when a window has been closed."""
+        self._log.debug("Window Closed")
+
+    def disposing(self, event: EventObject) -> None:
+        self._log.debug("Disposing")
+
+    # endregion XTopWindowListener
+
+    # self._fn_on_menu_lbl_mouse_entered = self.on_menu_lbl_mouse_entered
 
     def _init_menu_label(self) -> None:
         """Add a fixed text label to the dialog control"""
@@ -308,7 +368,34 @@ class DialogPython:
             return True
         return False
 
+    def onkey_526(self, modifiers: str) -> bool:  # o
+        if modifiers == KeyModifier.SHIFT | KeyModifier.MOD1:
+            # self._write("ö")
+            self._log.debug("Shift+Ctrl+o pressed")
+            self._write_range_sel()
+            return True
+        else:
+            self._log.debug(f"o pressed with modifiers {modifiers}")
+        return False
+
     # endregion Key Handlers
+
+    def _write_range_sel(self) -> None:
+
+        doc = cast("CalcDoc", self._doc)
+        self._log.debug("_write_range_sel_popup() Write Range Selection Popup")
+        try:
+            glbs = GblEvents()
+            glbs.subscribe_event("GlobalCalcRangeSelector", self._fn_on_menu_range_select_result)
+            self._log.debug("_write_range_sel_popup() Hide Dialog")
+            doc.activate()
+            _ = TopListenerRng(doc)
+        except:
+            self._log.error("_write_range_sel_popup() Error getting range selection", exc_info=True)
+        finally:
+            # For some reason this need to be here.
+            # If not self._dialog.setFocus() the the top window listener will not fire right away.
+            self._dialog.setFocus()
 
     # region Handle Results
     def _handle_results(self, result: int) -> None:
@@ -394,11 +481,18 @@ class DialogPython:
 
     def show(self) -> int:
 
-        self._dialog.setVisible(True)
+        self._is_shown = True
+        self._dialog.addTopWindowListener(self)
+
+        # while self._is_shown:
+        #     self._dialog.setVisible(self._is_shown)
+        #     time.sleep(0.3)
+
         result = self._dialog.execute()
         # self._handle_results(result)
         self._dialog.dispose()
         return result
+        return 1
 
     # endregion Show Dialog
 
@@ -427,7 +521,7 @@ class DialogPython:
         command = menu.get_command(me.MenuId)
         # self._write_line(f"Menu Selected: {command}, Menu ID: {me.MenuId}")
 
-        if command == ".uno:py_validate":
+        if command == UNO_DISPATCH_PY_CODE_VALIDATE:
             try:
                 self._doc.python_script.test_compile_python(self._code.text)
                 title = self._rr.resolve_string("mbtitle001")
@@ -440,12 +534,13 @@ class DialogPython:
 
             self._doc.msgbox(msg, title, box_type)
             return
+        if self._doc.DOC_TYPE == DocType.CALC:
+            if command == UNO_DISPATCH_SEL_RNG:
+                self._dialog.setFocus()
+                self._write_range_sel()
+                # self._write_range_sel_popup(menu)
+                return
         return
-        if command == ".uno:exitok":
-            self._dialog.end_dialog(MessageBoxResultsEnum.OK.value)
-            return
-        if command in self._execute_cmds and menu.is_dispatch_cmd(command):
-            menu.execute_cmd(command)
 
     def _on_menu_lbl_mouse_entered(
         self,
@@ -456,6 +551,30 @@ class DialogPython:
         **kwargs,
     ) -> None:
         self._display_popup(control_src)
+
+    def _on_menu_range_select_result(self, src: Any, event: EventArgs) -> None:
+        log = self._log
+        try:
+            glbs = GblEvents()
+            glbs.unsubscribe_event("GlobalCalcRangeSelector", self._fn_on_menu_range_select_result)
+        except:
+            log.error("_on_menu_range_select_result() unsubscribing from GlobalCalcRangeSelector", exc_info=True)
+        if event.event_data.state != "done":
+            log.debug("on_sel _on_menu_range_select_result aborted")
+            return
+        log.debug(f"_on_menu_range_select_result {event.event_data.rng_obj}")
+        try:
+            view = event.event_data.view
+            # doc = view.calc_doc
+            # doc.msgbox(f"Selection made {event.event_data.rng_obj}")
+            self._dialog.toFront()
+            self._dialog.setFocus()
+
+            sel = self._code.view.getSelection()
+            # self._write(, (sel.Min, sel.Max))
+            self._write(str(event.event_data.rng_obj), (sel.Min, sel.Max))
+        except Exception:
+            log.error("_on_menu_range_select_result", exc_info=True)
 
     # endregion Menu
 
@@ -474,5 +593,10 @@ class DialogPython:
     @text.setter
     def text(self, value: str) -> None:
         self._code.text = value
+
+    @property
+    def doc(self) -> OfficeDocumentT:
+        """Gets the current document."""
+        return self._doc
 
     # endregion properties

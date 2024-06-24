@@ -6,7 +6,7 @@ from ..listener.listener_base import ListenerBase
 
 if TYPE_CHECKING:
     from com.sun.star.awt import FocusEvent
-    from dialog_python import DialogPython
+    from .dialog_python import DialogPython
 
 
 class FocusListener(ListenerBase["DialogPython"], XFocusListener):

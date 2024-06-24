@@ -24,6 +24,7 @@ from ..const import (
     UNO_DISPATCH_CELL_SELECT,
     UNO_DISPATCH_DF_CARD,
     UNO_DISPATCH_DATA_TBL_CARD,
+    UNO_DISPATCH_SEL_RNG,
 )
 from .dispatch_edit_py_cell import DispatchEditPyCell
 from .dispatch_toggle_df_state import DispatchToggleDfState
@@ -34,6 +35,7 @@ from .dispatch_py_obj_state import DispatchPyObjState
 from .dispatch_cell_select import DispatchCellSelect
 from .dispatch_card_df import DispatchCardDf
 from .dispatch_card_tbl_data import DispatchCardTblData
+from .dispatch_rng_select_popup import DispatchRngSelectPopup
 
 # from .listen.edit_status_listener import EditStatusListener
 from ..log.log_inst import LogInst
@@ -175,6 +177,11 @@ class DispatchProviderInterceptor(unohelper.Base, XDispatchProviderInterceptor):
                 args = self._convert_query_to_dict(url.Arguments)
                 log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchCardTblData")
                 return DispatchCardTblData(sheet=args["sheet"], cell=args["cell"])
+        elif url.Main == UNO_DISPATCH_SEL_RNG:
+            with contextlib.suppress(Exception):
+                # args = self._convert_query_to_dict(url.Arguments)
+                log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchRngSelectPopup")
+                return DispatchRngSelectPopup()
 
         return self._slave.queryDispatch(url, target_frame_name, search_flags)
 
