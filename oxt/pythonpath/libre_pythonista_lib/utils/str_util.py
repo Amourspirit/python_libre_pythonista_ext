@@ -183,3 +183,41 @@ def flatten_str(s: str) -> str:
     for line in lines:
         result.append(line.strip())
     return "".join(result)
+
+
+def convert_to_bool(value: str | bool) -> bool:
+    """
+    Converts a string to a boolean.
+
+    Can handle the following values:
+    - "True", "true", "t", "T", "1", "Yes" -> True
+    - "False", "false", "f", "F", "0", "No" -> False
+
+    Args:
+        value (str | bool): The input value.
+
+    Raises:
+        ValueError: If the string cannot be converted to boolean.
+        TypeError: If the input is not a boolean or a string.
+
+    Returns:
+        bool: The boolean value.
+    """
+    # Example usage
+    # print(convert_to_bool(True))  # Output: True
+    # print(convert_to_bool("False"))  # Output: False
+    # print(convert_to_bool("true"))  # Output: True
+    # If the value is already a boolean, return it directly
+    if isinstance(value, bool):
+        return value
+    # If the value is a string, convert it to boolean
+    elif isinstance(value, str):
+        lower_value = value.lower()
+        if lower_value in ("t", "true", "1", "yes"):
+            return True
+        elif lower_value in ("f", "false", "0", "no"):
+            return False
+        else:
+            raise ValueError(f"String '{value}' cannot be converted to boolean.")
+    else:
+        raise TypeError("Input must be a boolean or a string.")

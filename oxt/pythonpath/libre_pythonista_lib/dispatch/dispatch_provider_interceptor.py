@@ -179,9 +179,12 @@ class DispatchProviderInterceptor(unohelper.Base, XDispatchProviderInterceptor):
                 return DispatchCardTblData(sheet=args["sheet"], cell=args["cell"])
         elif url.Main == UNO_DISPATCH_SEL_RNG:
             with contextlib.suppress(Exception):
-                # args = self._convert_query_to_dict(url.Arguments)
+                if url.Arguments:
+                    args = self._convert_query_to_dict(url.Arguments)
+                else:
+                    args = {}
                 log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchRngSelectPopup")
-                return DispatchRngSelectPopup()
+                return DispatchRngSelectPopup(**args)
 
         return self._slave.queryDispatch(url, target_frame_name, search_flags)
 

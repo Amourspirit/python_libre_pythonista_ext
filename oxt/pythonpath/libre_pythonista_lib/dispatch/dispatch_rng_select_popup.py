@@ -6,22 +6,49 @@ from com.sun.star.frame import XDispatch
 from com.sun.star.beans import PropertyValue
 from com.sun.star.util import URL
 from ooodev.calc import CalcDoc
+from ooodev.loader import Lo
+from ..utils import str_util
 
 if TYPE_CHECKING:
     from com.sun.star.frame import XStatusListener
     from ....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from ....___lo_pip___.lo_util.resource_resolver import ResourceResolver
 else:
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from ___lo_pip___.lo_util.resource_resolver import ResourceResolver
 
 
 class DispatchRngSelectPopup(XDispatch, unohelper.Base):
     """If the View is not in PY_OBJ state the it is switched into PY_OBJ State."""
 
-    def __init__(self):
+    def __init__(self, **kwargs):
+        """
+        Constructor:
+
+        Keyword Args:
+            close_on_mouse_release (bool, str): If True, the dialog will close on mouse release.
+            single_cell_mode (bool, str): If True, the dialog will be in single cell mode.
+            initial_value (str): The initial value for the dialog.
+        """
         XDispatch.__init__(self)
         unohelper.Base.__init__(self)
         self._log = OxtLogger(log_name=self.__class__.__name__)
         self._status_listeners: Dict[str, XStatusListener] = {}
+        try:
+            self._close_on_mouse_release = str_util.convert_to_bool(kwargs.get("close_on_mouse_release", False))
+            self._single_cell_mode = str_util.convert_to_bool(kwargs.get("single_cell_mode", False))
+            self._initial_value = str(kwargs.get("initial_value", ""))
+        except Exception:
+            self._close_on_mouse_release = False
+            self._single_cell_mode = False
+            self._initial_value = ""
+            self._log.error("Error in constructor.", exc_info=True)
+        try:
+            self.ctx = Lo.get_context()
+            self._rr = ResourceResolver(self.ctx)
+        except Exception:
+            self._log.error("Error in constructor.", exc_info=True)
+            raise
 
     def addStatusListener(self, control: XStatusListener, url: URL) -> None:
         """
@@ -52,7 +79,13 @@ class DispatchRngSelectPopup(XDispatch, unohelper.Base):
             self._log.debug(f"dispatch(): url={url.Main}")
             doc = CalcDoc.from_current_doc()
             # no need to run in a thread as it already runs in a thread.
-            doc.invoke_range_selection()
+            title = self._rr.resolve_string("strRngSelTitle")
+            doc.invoke_range_selection(
+                title=title,
+                close_on_mouse_release=self._close_on_mouse_release,
+                single_cell_mode=self._single_cell_mode,
+                initial_value=self._initial_value,
+            )
             return
 
         except Exception as e:
