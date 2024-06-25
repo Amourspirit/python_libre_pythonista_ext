@@ -18,6 +18,8 @@ from ..cell.state.ctl_state import CtlState
 from ..cell.state.state_kind import StateKind
 from ..code.py_source_mgr import PyInstance
 from ..event.shared_cell_event import SharedCellEvent
+from ..sheet.range.rng_util import RangeUtil
+from ..ex import CellFormulaExpandError
 
 if TYPE_CHECKING:
     from com.sun.star.frame import XStatusListener
@@ -109,6 +111,7 @@ class DispatchToggleSeriesState(XDispatch, EventsPartial, unohelper.Base):
 
             ctl_state = CtlState(cell=cell)
             state = ctl_state.get_state()
+            orig_state = state
             if state == StateKind.PY_OBJ:
                 self._log.debug("Current State to DataFrame")
                 state = StateKind.ARRAY
@@ -119,17 +122,20 @@ class DispatchToggleSeriesState(XDispatch, EventsPartial, unohelper.Base):
 
             if state == StateKind.ARRAY:
                 self._log.debug("Changing State to Array")
-                # change the formula to an array formula
-                # The formula must be removed from the cell.
-                # The number of rows and cols must be gotten from the data.
-                # A range must be constructed from the number of rows and cols.
-                # The formula must be set as an array formula on the range.
-
-                self._set_array_formula(cell=cell, dd_args=cargs.event_data)
+                try:
+                    self._set_array_formula(cell=cell, dd_args=cargs.event_data)
+                except Exception:
+                    ctl_state.set_state(value=orig_state)
+                    raise
 
             elif state == StateKind.PY_OBJ:
-                self._log.debug("Changing State to DataFrame")
-                self._set_formula(cell=cell, dd_args=cargs.event_data)
+
+                try:
+                    self._log.debug("Changing State to Series")
+                    self._set_formula(cell=cell, dd_args=cargs.event_data)
+                except Exception:
+                    ctl_state.set_state(value=orig_state)
+                    raise
             else:
                 self._log.warning(f"Invalid State: {state}")
                 eargs = EventArgs.from_args(cargs)
@@ -167,6 +173,17 @@ class DispatchToggleSeriesState(XDispatch, EventsPartial, unohelper.Base):
         ro = RangeObj.from_range(rv)
         self._log.debug(f"_set_array_formula() Range: {ro}")
         cell_rng = cell.calc_sheet.get_range(range_obj=ro)
+
+        rng_util = RangeUtil(doc=cell.calc_doc)
+        if not rng_util.get_cell_can_expand(cell_rng):
+            msg = f"Range can not expand into range: {ro}"
+            if cell.calc_sheet.is_sheet_protected():
+                msg += " Sheet is protected. Cells may be protected or contain other data."
+            else:
+                msg += " Cells may contain other data."
+            self._log.error(msg)
+            raise CellFormulaExpandError(msg)
+
         dd = DotDict()
         for key, value in dd_args.items():
             dd[key] = value

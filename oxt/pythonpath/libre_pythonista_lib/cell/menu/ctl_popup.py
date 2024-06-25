@@ -101,7 +101,7 @@ class CtlPopup:
             {"text": "-"},
             {"text": sel_name, "command": sel_url, "enabled": True},
         ]
-        if self._lpl_cell.has_array_ability:
+        if not self._cps.is_protected() and self._lpl_cell.has_array_ability:
             # if self._cell.get_custom_property(self._key_maker.cell_array_ability_key, False):
             state_menu = self._get_state_menu()
             if state_menu:

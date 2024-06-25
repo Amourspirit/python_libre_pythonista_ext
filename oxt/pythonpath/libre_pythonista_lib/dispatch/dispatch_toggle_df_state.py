@@ -5,6 +5,7 @@ import unohelper
 from com.sun.star.frame import XDispatch
 from com.sun.star.beans import PropertyValue
 from com.sun.star.util import URL
+from com.sun.star.sheet import CellFlags
 from ooodev.calc import CalcDoc, CalcCell
 from ooodev.utils.data_type.range_obj import RangeObj
 from ooodev.utils.data_type.range_values import RangeValues
@@ -20,6 +21,8 @@ from ..cell.state.state_kind import StateKind
 from ..code.py_source_mgr import PyInstance
 from ..event.shared_cell_event import SharedCellEvent
 from ..utils.pandas_util import PandasUtil
+from ..sheet.range.rng_util import RangeUtil
+from ..ex import CellFormulaExpandError
 
 if TYPE_CHECKING:
     from com.sun.star.frame import XStatusListener
@@ -110,12 +113,14 @@ class DispatchToggleDfState(XDispatch, EventsPartial, unohelper.Base):
 
             ctl_state = CtlState(cell=cell)
             state = ctl_state.get_state()
+            orig_state = state
             if state == StateKind.PY_OBJ:
                 self._log.debug("Current State to DataFrame")
                 state = StateKind.ARRAY
             else:
                 self._log.debug("Current State to Array")
                 state = StateKind.PY_OBJ
+
             ctl_state.set_state(value=state)
 
             if state == StateKind.ARRAY:
@@ -125,10 +130,23 @@ class DispatchToggleDfState(XDispatch, EventsPartial, unohelper.Base):
                 # The number of rows and cols must be gotten from the data.
                 # A range must be constructed from the number of rows and cols.
                 # The formula must be set as an array formula on the range.
-                self._set_array_formula(cell=cell, dd_args=cargs.event_data)
+                try:
+                    self._set_array_formula(cell=cell, dd_args=cargs.event_data)
+                except Exception:
+                    ctl_state.set_state(value=orig_state)
+                    raise
+                # only change the state if the formula was set successfully.
+                # ctl_state.set_state(value=state)
             elif state == StateKind.PY_OBJ:
-                self._log.debug("Changing State to DataFrame")
-                self._set_formula(cell=cell, dd_args=cargs.event_data)
+
+                try:
+                    self._log.debug("Changing State to DataFrame")
+                    self._set_formula(cell=cell, dd_args=cargs.event_data)
+                except Exception:
+                    ctl_state.set_state(value=orig_state)
+                    raise
+                # only change the state if the formula was set successfully.
+                # ctl_state.set_state(value=state)
             else:
                 self._log.warning(f"Invalid State: {state}")
                 eargs = EventArgs.from_args(cargs)
@@ -140,6 +158,9 @@ class DispatchToggleDfState(XDispatch, EventsPartial, unohelper.Base):
             eargs.event_data.success = True
             self.trigger_event(f"{url.Main}_after_dispatch", eargs)
             return
+
+        except CellFormulaExpandError:
+            raise
 
         except Exception as e:
             # log the error and do not re-raise it.
@@ -164,7 +185,19 @@ class DispatchToggleDfState(XDispatch, EventsPartial, unohelper.Base):
             row_end=ca.Row + max(0, rows - 1),
         )
         ro = RangeObj.from_range(rv)
+
         cell_rng = cell.calc_sheet.get_range(range_obj=ro)
+
+        rng_util = RangeUtil(doc=cell.calc_doc)
+        if not rng_util.get_cell_can_expand(cell_rng):
+            msg = f"Range can not expand into range: {ro}"
+            if cell.calc_sheet.is_sheet_protected():
+                msg += " Sheet is protected. Cells may be protected or contain other data."
+            else:
+                msg += " Cells may contain other data."
+            self._log.error(msg)
+            raise CellFormulaExpandError(msg)
+
         dd = DotDict()
         for key, value in dd_args.items():
             dd[key] = value
@@ -201,7 +234,8 @@ class DispatchToggleDfState(XDispatch, EventsPartial, unohelper.Base):
             eargs.event_data = dd
             self.trigger_event("dispatch_remove_array_formula", eargs)
             del eargs.event_data["range_obj"]
-            cursor.setArrayFormula("")
+            # cursor.setArrayFormula("")
+            cursor.clearContents(CellFlags.DATETIME | CellFlags.VALUE | CellFlags.STRING | CellFlags.FORMULA)
             cell.component.setFormula(formula)
             self.trigger_event("dispatch_added_cell_formula", eargs)
         cm.update_control(cell)

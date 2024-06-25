@@ -22,3 +22,21 @@ class CellDeletedError(Exception):
     """Cell Deleted Error."""
 
     pass
+
+
+class NonEmptyCellError(Exception):
+    """Non Empty Cell Error."""
+
+    pass
+
+
+class CellError(Exception):
+    """Cell Error."""
+
+    pass
+
+
+class CellFormulaExpandError(CellError):
+    """Cell Formula Expand Error."""
+
+    pass

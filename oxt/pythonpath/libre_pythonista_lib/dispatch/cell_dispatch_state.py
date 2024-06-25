@@ -1,6 +1,12 @@
 from __future__ import annotations
 from ooodev.calc import CalcCell
-from ..const import UNO_DISPATCH_CODE_EDIT, UNO_DISPATCH_DF_STATE, UNO_DISPATCH_DS_STATE, UNO_DISPATCH_DATA_TBL_STATE
+from ..const import (
+    UNO_DISPATCH_CODE_EDIT,
+    UNO_DISPATCH_DF_STATE,
+    UNO_DISPATCH_DS_STATE,
+    UNO_DISPATCH_DATA_TBL_STATE,
+    UNO_DISPATCH_CODE_DEL,
+)
 from ..cell.props.key_maker import KeyMaker
 from ..cell.state.ctl_state import CtlState
 from ..cell.state.state_kind import StateKind
@@ -17,11 +23,30 @@ class CellDispatchState:
 
     def is_dispatch_enabled(self, cmd: str) -> bool:
         global UNO_DISPATCH_CODE_EDIT
-        if cmd == UNO_DISPATCH_CODE_EDIT:
+        if cmd in (
+            UNO_DISPATCH_CODE_EDIT,
+            UNO_DISPATCH_DF_STATE,
+            UNO_DISPATCH_DS_STATE,
+            UNO_DISPATCH_DATA_TBL_STATE,
+            UNO_DISPATCH_CODE_DEL,
+        ):
             if not self.sheet_locked:
                 return True
             return not self.cell_locked
         return True
+
+    def is_protected(self) -> bool:
+        """
+        Gets if the cell is protected.
+        If the sheet not protected then the cell is not considered to be protected.
+
+
+        Returns:
+            bool: True if the sheet is protected and the cell is protected.
+        """
+        if not self.sheet_locked:  # unlocked
+            return False
+        return self.cell_locked
 
     def get_rule_dispatch_cmd(self) -> str:
         """

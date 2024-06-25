@@ -88,6 +88,7 @@ def on_menu_intercept(
                     del_mnu = rr.resolve_string("mnuDeletePyCell")
                     menu_main_sub = ResResolver().resolve_string("mnuMainSub")  # Pythoninsta
                     cps = CellDispatchState(cell=cell)
+                    item = None
                     if cps.is_dispatch_enabled(UNO_DISPATCH_CODE_EDIT):
                         items.append(ActionTriggerItem(f"{UNO_DISPATCH_CODE_EDIT}?sheet={sheet.name}&cell={cell_obj}", edit_mnu))  # type: ignore
                         items.append(ActionTriggerItem(f"{UNO_DISPATCH_CODE_DEL}?sheet={sheet.name}&cell={cell_obj}", del_mnu))  # type: ignore
@@ -106,9 +107,9 @@ def on_menu_intercept(
                             array = rr.resolve_string("mnuViewArray")  # Array
                             items.append(ActionTriggerItem(f"{dp_cmd}?sheet={sheet.name}&cell={cell_obj}", array))  # type: ignore
 
-                    if items.getCount() > 0:
+                    if item is not None and items.getCount() > 0:
                         container.insert_by_index(4, item)  # type: ignore
-                        event.event_data.action = ContextMenuAction.CONTINUE_MODIFIED
+                    event.event_data.action = ContextMenuAction.CONTINUE_MODIFIED
                 except Exception:
                     if not log is None:
                         log.error("Error inserting context menu item.", exc_info=True)
