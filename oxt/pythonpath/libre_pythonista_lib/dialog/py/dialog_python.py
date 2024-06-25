@@ -144,8 +144,8 @@ class DialogPython(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
         # any negative effects.
 
         desc.WindowAttributes = int(
-            WindowAttributeEnum.SHOW
-            | WindowAttributeEnum.MOVEABLE
+            # WindowAttributeEnum.SHOW
+            WindowAttributeEnum.MOVEABLE
             | WindowAttributeEnum.SIZEABLE
             | WindowAttributeEnum.CLOSEABLE
             | WindowAttributeEnum.BORDER
