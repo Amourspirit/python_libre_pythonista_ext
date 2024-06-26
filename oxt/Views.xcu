@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<oor:component-data 
+    xmlns:oor="http://openoffice.org/2001/registry" 
+    xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+    oor:name="Views" 
+    oor:package="org.openoffice.Office">
+    <node oor:name="Windows">
+        <node oor:name="SplitWindow2" oor:op="replace">
+            <prop oor:name="Visible" oor:type="xs:boolean">
+                <value xsi:nil="true"/>
+            </prop>
+            <prop oor:name="WindowState" oor:type="xs:string">
+                <value xsi:nil="true"/>
+            </prop>
+            <node oor:name="UserData">
+                <prop oor:name="UserItem" oor:op="replace" oor:type="xs:string">
+                    <value>V1,2,1,0,9809</value>
+                </prop>
+            </node>
+        </node>
+        <node oor:name="9809" oor:op="replace">
+            <prop oor:name="Visible" oor:type="xs:boolean">
+                <value xsi:nil="true"/>
+            </prop>
+            <prop oor:name="WindowState" oor:type="xs:string">
+                <value>1017,410,484,524;1;0,0,0,0;</value>
+            </prop>
+            <node oor:name="UserData">
+                <prop oor:name="Data" oor:op="replace" oor:type="xs:string">
+                    <value>V2,V,0,AL:(5,16,0/0/276/240,276;676)</value>
+                </prop>
+            </node>
+        </node>
+    </node>
+</oor:component-data>
