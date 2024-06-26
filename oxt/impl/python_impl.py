@@ -1,6 +1,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 import contextlib
+from pathlib import Path
 import os
 import sys
 import uno
@@ -10,7 +11,7 @@ from com.sun.star.task import XJobExecutor
 
 def add_local_path_to_sys_path() -> None:
     # add the path of this module to the sys.path
-    this_pth = os.path.dirname(__file__)
+    this_pth = str(Path(__file__).parent.parent)
     if this_pth not in sys.path:
         sys.path.append(this_pth)
 
@@ -28,16 +29,16 @@ def _conditions_met() -> bool:
 
 if TYPE_CHECKING:
     _CONDITIONS_MET = True
-    from .___lo_pip___.lo_util.resource_resolver import ResourceResolver
-    from .pythonpath.libre_pythonista_lib.code.cell_cache import CellCache
-    from .pythonpath.libre_pythonista_lib.code.py_source_mgr import PyInstance
+    from ..___lo_pip___.lo_util.resource_resolver import ResourceResolver
+    from ..pythonpath.libre_pythonista_lib.code.cell_cache import CellCache
+    from ..pythonpath.libre_pythonista_lib.code.py_source_mgr import PyInstance
     from ooodev.calc import CalcDoc
     from ooodev.exceptions.ex import CellError
     from ooo.dyn.awt.message_box_results import MessageBoxResultsEnum
     from ooo.dyn.awt.message_box_buttons import MessageBoxButtonsEnum
     from ooo.dyn.awt.message_box_type import MessageBoxType
     from ooodev.dialog.msgbox import MsgBox
-    from .___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from ..___lo_pip___.oxt_logger.oxt_logger import OxtLogger
 else:
     _CONDITIONS_MET = _conditions_met()
     if _CONDITIONS_MET:

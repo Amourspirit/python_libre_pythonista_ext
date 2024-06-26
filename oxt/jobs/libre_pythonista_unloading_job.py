@@ -21,12 +21,12 @@ def _conditions_met() -> bool:
 if TYPE_CHECKING:
     # just for design time
     _CONDITIONS_MET = True
-    from .___lo_pip___.oxt_logger import OxtLogger
-    from .pythonpath.libre_pythonista_lib.sheet.listen.code_sheet_modify_listener import CodeSheetModifyListener
-    from .pythonpath.libre_pythonista_lib.sheet.listen.code_sheet_activation_listener import (
+    from ..___lo_pip___.oxt_logger import OxtLogger
+    from ..pythonpath.libre_pythonista_lib.sheet.listen.code_sheet_modify_listener import CodeSheetModifyListener
+    from ..pythonpath.libre_pythonista_lib.sheet.listen.code_sheet_activation_listener import (
         CodeSheetActivationListener,
     )
-    from .pythonpath.libre_pythonista_lib.code.mod_fn.lp_log import LpLog
+    from ..pythonpath.libre_pythonista_lib.code.mod_fn.lp_log import LpLog
 else:
     _CONDITIONS_MET = _conditions_met()
     if _CONDITIONS_MET:

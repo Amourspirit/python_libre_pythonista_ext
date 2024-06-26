@@ -1,5 +1,6 @@
 from __future__ import annotations
 from typing import Any, cast, TYPE_CHECKING
+from pathlib import Path
 import contextlib
 import os
 import sys
@@ -18,7 +19,8 @@ def _conditions_met() -> bool:
 
 def add_local_path_to_sys_path() -> None:
     # add the path of this module to the sys.path
-    this_pth = os.path.dirname(__file__)
+    # this_pth = os.path.dirname(__file__)
+    this_pth = str(Path(__file__).parent.parent)
     if this_pth not in sys.path:
         sys.path.append(this_pth)
 
@@ -34,11 +36,11 @@ if TYPE_CHECKING:
     from ooodev.utils.data_type.range_obj import RangeObj
     from ooodev.utils.data_type.col_obj import ColObj
     from ooodev.exceptions import ex as mEx
-    from .___lo_pip___.oxt_logger.oxt_logger import OxtLogger
-    from .___lo_pip___.config import Config
-    from .pythonpath.libre_pythonista_lib.dialog.py.dialog_python import DialogPython
-    from .pythonpath.libre_pythonista_lib.cell.cell_mgr import CellMgr
-    from .pythonpath.libre_pythonista_lib.cell.result_action.pyc.rules.pyc_rules import PycRules
+    from ..___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from ..___lo_pip___.config import Config
+    from ..pythonpath.libre_pythonista_lib.dialog.py.dialog_python import DialogPython
+    from ..pythonpath.libre_pythonista_lib.cell.cell_mgr import CellMgr
+    from ..pythonpath.libre_pythonista_lib.cell.result_action.pyc.rules.pyc_rules import PycRules
 
 else:
     _CONDITIONS_MET = _conditions_met()

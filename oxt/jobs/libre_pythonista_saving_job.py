@@ -21,8 +21,8 @@ def _conditions_met() -> bool:
 if TYPE_CHECKING:
     # just for design time
     _CONDITIONS_MET = True
-    from .___lo_pip___.oxt_logger import OxtLogger
-    from .___lo_pip___.config import Config
+    from ..___lo_pip___.oxt_logger import OxtLogger
+    from ..___lo_pip___.config import Config
 else:
     _CONDITIONS_MET = _conditions_met()
     if _CONDITIONS_MET:
