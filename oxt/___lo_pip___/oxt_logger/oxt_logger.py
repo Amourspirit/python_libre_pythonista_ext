@@ -113,12 +113,12 @@ class OxtLogger(Logger):
         self.debug("\t".join(data))
         return
 
+    # region Properties
     @property
     def log_file(self):
         """Log file path."""
         return self._log_file
 
-    # region Properties
     @property
     def is_debug(self) -> bool:
         """Check if is debug"""
