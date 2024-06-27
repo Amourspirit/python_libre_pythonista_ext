@@ -23,6 +23,6 @@ def show_win_mb(*args):
     log = LogInst()
     log.debug("show_win_mb debug")
     try:
-        mb = DialogMb()
+        mb = DialogMb(XSCRIPTCONTEXT)
     except Exception:
         log.error("show_win_mb: Error", exc_info=True)

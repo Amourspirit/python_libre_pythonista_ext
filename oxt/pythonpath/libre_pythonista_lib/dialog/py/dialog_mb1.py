@@ -1,38 +1,42 @@
 from __future__ import annotations
 import time
-from typing import Any, cast, TYPE_CHECKING
+from typing import Any, cast, TYPE_CHECKING, Tuple
 
 import uno
 import unohelper
-
 from com.sun.star.awt import XTopWindowListener
 from com.sun.star.awt import WindowDescriptor
 from com.sun.star.awt.WindowClass import TOP
-from com.sun.star.awt import Rectangle
-from com.sun.star.awt import MenuItemStyle
-from com.sun.star.awt import WindowAttribute
-from com.sun.star.awt import VclWindowPeerAttribute
-from com.sun.star.awt import XMenuBar
 from com.sun.star.frame import XFrame
-from ooodev.dialog.dl_control import CtlButton
-from ooodev.utils.partial.the_dictionary_partial import TheDictionaryPartial
-
-from ooodev.gui.menu.popup_menu import PopupMenu
-from ooodev.gui.menu.popup.popup_creator import PopupCreator
-from ooodev.events.args.event_args import EventArgs
-from ooodev.dialog import BorderKind
 
 from ooodev.loader import Lo
 
+# from ooo.dyn.awt.window_attribute import WindowAttributeEnum
+from ooo.dyn.awt.rectangle import Rectangle
+from ooodev.utils.partial.the_dictionary_partial import TheDictionaryPartial
+from ooodev.events.args.event_args import EventArgs
+from ooodev.gui.menu.popup_menu import PopupMenu
+from ooodev.dialog.dl_control import CtlButton
+from ooodev.dialog import BorderKind
+
+
 if TYPE_CHECKING:
-    from com.sun.star.script.provider import XScriptContext
-    from com.sun.star.awt import MenuBar  # service
-    from com.sun.star.awt import MenuEvent  # struct
-    from com.sun.star.lang import EventObject  # struct
-    from ..window_type import WindowType
+    from com.sun.star.awt import MenuBar
+    from com.sun.star.awt import MenuEvent
+    from com.sun.star.lang import EventObject
+    from ooodev.dialog.dl_control.ctl_base import DialogControlBase
     from .....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from ..window_type import WindowType
 else:
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+
+com_sun_star_awt_WindowAttribute_SHOW = uno.getConstantByName("com.sun.star.awt.WindowAttribute.SHOW")
+com_sun_star_awt_WindowAttribute_BORDER = uno.getConstantByName("com.sun.star.awt.WindowAttribute.BORDER")
+com_sun_star_awt_WindowAttribute_SIZEABLE = uno.getConstantByName("com.sun.star.awt.WindowAttribute.SIZEABLE")
+com_sun_star_awt_WindowAttribute_MOVEABLE = uno.getConstantByName("com.sun.star.awt.WindowAttribute.MOVEABLE")
+com_sun_star_awt_VclWindowPeerAttribute_CLIPCHILDREN = uno.getConstantByName(
+    "com.sun.star.awt.VclWindowPeerAttribute.CLIPCHILDREN"
+)
 
 
 class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
@@ -48,21 +52,21 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
     MIN_HEIGHT = HEADER + FOOTER + 30
     MIN_WIDTH = 225
 
-    def __init__(self, script_ctx: XScriptContext) -> None:
+    def __init__(self) -> None:
         TheDictionaryPartial.__init__(self)
         XTopWindowListener.__init__(self)
+        # XTerminateListener.__init__(self)
         unohelper.Base.__init__(self)
         self._log = OxtLogger(log_name=self.__class__.__name__)
         self._disposed = False
         self._width = DialogMb.WIDTH
         self._height = DialogMb.HEIGHT
         self._border_kind = BorderKind.BORDER_3D
+        self._current_tab_index = 1
         if self._border_kind != BorderKind.BORDER_3D:
             self._padding = 10
         else:
             self._padding = 14
-        self._current_tab_index = 1
-        self._padding = 14
         self._width = DialogMb.WIDTH
         self._height = DialogMb.HEIGHT
         self._btn_width = DialogMb.BUTTON_WIDTH
@@ -81,8 +85,13 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
             self._init_buttons()
             self._dialog.addTopWindowListener(self)
 
-        except Exception as e:
+        except Exception:
             self._log.exception(f"Error in DialogMb.__init__:")
+
+    def _init_handlers(self) -> None:
+
+        self._fn_on_btn_ok_click = self.on_btn_ok_click
+        self._fn_on_btn_cancel_click = self.on_btn_cancel_click
 
     def _init_dialog(self) -> None:
         """Create dialog and add controls."""
@@ -90,10 +99,7 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
         rect.Width = self._width
         rect.Height = self._height
 
-        # rect.X = 100
-        # rect.Y = 100
-
-        ps = self.parent.getPosSize()  # type: ignore
+        ps = self.parent.getPosSize()
         rect.X = int((ps.Width - self._width) / 2 - 50)
         rect.Y = int((ps.Height - self._height) / 2 - 100)
 
@@ -105,20 +111,31 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
         desc.Bounds = rect
 
         desc.WindowAttributes = (
-            WindowAttribute.SHOW
-            + WindowAttribute.BORDER
-            + WindowAttribute.SIZEABLE
-            + WindowAttribute.MOVEABLE
-            + VclWindowPeerAttribute.CLIPCHILDREN
+            com_sun_star_awt_WindowAttribute_SHOW
+            + com_sun_star_awt_WindowAttribute_BORDER
+            + com_sun_star_awt_WindowAttribute_SIZEABLE
+            # + WindowAttributeEnum.CLOSEABLE.value
+            + com_sun_star_awt_WindowAttribute_MOVEABLE
+            + com_sun_star_awt_VclWindowPeerAttribute_CLIPCHILDREN
         )
 
         dialog_peer = self.tk.createWindow(desc)
 
+        # create new empty frame and set window on it
+
         self._dialog = cast("WindowType", dialog_peer)
+
+    def _add_frame(self) -> None:
+        """Add frame to dialog"""
+        frame = Lo.create_instance_mcf(XFrame, "com.sun.star.frame.Frame", raise_err=True)
+        frame.setName("DialogMb_Frame")
+        frame.initialize(self._dialog)
+
+        self._frame = frame
 
     # region Misc Methods
 
-    def _set_tab_index(self, ctl: Any) -> None:
+    def _set_tab_index(self, ctl: DialogControlBase) -> None:
         ctl.tab_index = self._current_tab_index
         self._current_tab_index += 1
 
@@ -134,101 +151,6 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
             return None
 
     # endregion Misc Methods
-
-    def _init_handlers(self) -> None:
-
-        self._fn_on_btn_ok_click = self.on_btn_ok_click
-        self._fn_on_btn_cancel_click = self.on_btn_cancel_click
-
-    def _add_frame(self) -> None:
-        """Add frame to dialog"""
-        # create new empty frame and set window on it
-        frame = Lo.create_instance_mcf(XFrame, "com.sun.star.frame.Frame", raise_err=True)
-        frame.setName("DialogMb_Frame")
-        frame.initialize(self._dialog)
-
-        self._frame = frame
-
-    # region XTopWindowListener
-    def windowOpened(self, event: EventObject) -> None:
-        """is invoked when a window is activated."""
-        self._log.debug("Window Opened")
-
-    def windowActivated(self, event: EventObject) -> None:
-        """is invoked when a window is activated."""
-
-        self._log.debug("Window Activated")
-
-    def windowDeactivated(self, event: EventObject) -> None:
-        """is invoked when a window is deactivated."""
-        self._log.debug("Window De-activated")
-
-    def windowMinimized(self, event: EventObject) -> None:
-        """Is invoked when a window is iconified."""
-        self._log.debug("Window Minimized")
-
-    def windowNormalized(self, event: EventObject) -> None:
-        """is invoked when a window is deiconified."""
-        self._log.debug("Window Normalized")
-
-    def windowClosing(self, event: EventObject) -> None:
-        """
-        is invoked when a window is in the process of being closed.
-
-        The close operation can be overridden at this point.
-        """
-        self._log.debug("Window Closing")
-        self._is_shown = False
-
-    def windowClosed(self, event: EventObject) -> None:
-        """is invoked when a window has been closed."""
-        self._log.debug("Window Closed")
-
-    def disposing(self, event: EventObject) -> None:
-
-        print("Disposing")
-        if not self._disposed:
-            try:
-                self._disposed = True
-                self._dialog.removeTopWindowListener(self)
-                self._dialog.setMenuBar(None)  # type: ignore
-                self._mb = None
-                self._dialog.dispose()
-            except Exception as e:
-                self._log.error("Error in disposing", exc_info=True)
-
-    # endregion XTopWindowListener
-
-    # region Menubar
-    def _get_popup_menu(self):
-
-        # https://wiki.documentfoundation.org/Documentation/DevGuide/Graphical_User_Interfaces#The_Toolkit_Service
-        try:
-            creator = PopupCreator()
-            new_menu = [{"text": "About", "command": ".uno:About"}]
-            pm = creator.create(new_menu)
-            pm.add_event_item_selected(on_menu_select)
-            return pm
-
-        except Exception as e:
-            print(e)
-        return None
-
-    def _add_menu_bar(self) -> None:
-        pm = self._get_popup_menu()
-        if pm is None:
-            print("_add_menu_bar() No popup menu found. Exiting.")
-            return
-        # mb = cast("MenuBar", self._srv_mgr.createInstanceWithContext("com.sun.star.awt.MenuBar", self._ctx))
-        mb = Lo.create_instance_mcf(XMenuBar, "com.sun.star.awt.MenuBar", raise_err=True)
-        mb.insertItem(1, "~First MenuBar Item", MenuItemStyle.AUTOCHECK, 0)
-        mb.insertItem(2, "~Second MenuBar Item", MenuItemStyle.AUTOCHECK, 1)
-        # pm.component.addMenuListener(self)
-        mb.setPopupMenu(1, pm.component)  # type: ignore
-        self._mb = mb
-        self._dialog.setMenuBar(mb)
-
-    # endregion Menubar
 
     # region Controls
     def _init_buttons(self) -> None:
@@ -273,6 +195,80 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
             self._frame.dispose()
 
     # endregion Event Handlers
+
+    # region XTopWindowListener
+    def windowOpened(self, event: EventObject) -> None:
+        """is invoked when a window is activated."""
+        self._log.debug("Window Opened")
+
+    def windowActivated(self, event: EventObject) -> None:
+        """is invoked when a window is activated."""
+
+        self._log.debug("Window Activated")
+
+    def windowDeactivated(self, event: EventObject) -> None:
+        """is invoked when a window is deactivated."""
+        self._log.debug("Window De-activated")
+
+    def windowMinimized(self, event: EventObject) -> None:
+        """Is invoked when a window is iconified."""
+        self._log.debug("Window Minimized")
+
+    def windowNormalized(self, event: EventObject) -> None:
+        """is invoked when a window is deiconified."""
+        self._log.debug("Window Normalized")
+
+    def windowClosing(self, event: EventObject) -> None:
+        """
+        is invoked when a window is in the process of being closed.
+
+        The close operation can be overridden at this point.
+        """
+        self._log.debug("Window Closing")
+        self._is_shown = False
+
+    def windowClosed(self, event: EventObject) -> None:
+        """is invoked when a window has been closed."""
+        self._log.debug("Window Closed")
+
+    def disposing(self, event: EventObject) -> None:
+
+        self._log.debug("Disposing")
+        if not self._disposed:
+            try:
+                self._disposed = True
+                self._dialog.removeTopWindowListener(self)
+                self._dialog.setMenuBar(None)  # type: ignore
+                self._mb = None
+                self._dialog.dispose()
+            except Exception:
+                self._log.error("Error in disposing", exc_info=True)
+
+    # endregion XTopWindowListener
+
+    # region Menubar
+    def _get_popup_menu(self):
+        from ooodev.gui.menu.popup.popup_creator import PopupCreator
+
+        creator = PopupCreator()
+        new_menu = [{"text": "About", "command": ".uno:About"}]
+        pm = creator.create(new_menu)
+        pm.add_event_item_selected(on_menu_select)
+        return pm
+
+    def _add_menu_bar(self) -> None:
+        from com.sun.star.awt import XMenuBar
+        from com.sun.star.awt import MenuItemStyle
+
+        mb = Lo.create_instance_mcf(XMenuBar, "com.sun.star.awt.MenuBar", raise_err=True)
+        mb.insertItem(1, "~First MenuBar Item", MenuItemStyle.AUTOCHECK, 0)
+        mb.insertItem(2, "~Second MenuBar Item", MenuItemStyle.AUTOCHECK, 1)
+        pm = self._get_popup_menu()
+        mb.setPopupMenu(1, pm.component)
+        self._mb = mb
+        self._dialog.setMenuBar(mb)
+
+    # endregion Menubar
 
 
 def on_menu_select(src: Any, event: EventArgs, menu: PopupMenu) -> None:
