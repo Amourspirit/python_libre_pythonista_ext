@@ -1,5 +1,4 @@
 from __future__ import annotations
-import time
 from typing import Any, cast, TYPE_CHECKING
 
 import uno
@@ -10,13 +9,13 @@ from com.sun.star.awt import WindowDescriptor
 from com.sun.star.awt.WindowClass import TOP
 from com.sun.star.awt import Rectangle
 from com.sun.star.awt import MenuItemStyle
+from com.sun.star.awt import XMenuBar
 from com.sun.star.awt import WindowAttribute
 from com.sun.star.awt import VclWindowPeerAttribute
-from com.sun.star.awt import XMenuBar
 from com.sun.star.frame import XFrame
+
 from ooodev.dialog.dl_control import CtlButton
 from ooodev.utils.partial.the_dictionary_partial import TheDictionaryPartial
-
 from ooodev.gui.menu.popup_menu import PopupMenu
 from ooodev.gui.menu.popup.popup_creator import PopupCreator
 from ooodev.events.args.event_args import EventArgs
@@ -25,7 +24,6 @@ from ooodev.dialog import BorderKind
 from ooodev.loader import Lo
 
 if TYPE_CHECKING:
-    from com.sun.star.script.provider import XScriptContext
     from com.sun.star.awt import MenuBar  # service
     from com.sun.star.awt import MenuEvent  # struct
     from com.sun.star.lang import EventObject  # struct
@@ -33,6 +31,8 @@ if TYPE_CHECKING:
     from .....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
 else:
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+
+# see Also: https://ask.libreoffice.org/t/top-window-crashes-when-a-menubar-is-added/107282 This is not a issue here.
 
 
 class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
@@ -48,7 +48,7 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
     MIN_HEIGHT = HEADER + FOOTER + 30
     MIN_WIDTH = 225
 
-    def __init__(self, script_ctx: XScriptContext) -> None:
+    def __init__(self) -> None:
         TheDictionaryPartial.__init__(self)
         XTopWindowListener.__init__(self)
         unohelper.Base.__init__(self)
@@ -201,8 +201,6 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
 
     # region Menubar
     def _get_popup_menu(self):
-
-        # https://wiki.documentfoundation.org/Documentation/DevGuide/Graphical_User_Interfaces#The_Toolkit_Service
         try:
             creator = PopupCreator()
             new_menu = [{"text": "About", "command": ".uno:About"}]
@@ -215,15 +213,14 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
         return None
 
     def _add_menu_bar(self) -> None:
+
         pm = self._get_popup_menu()
         if pm is None:
-            print("_add_menu_bar() No popup menu found. Exiting.")
+            self._log.error("_add_menu_bar() No popup menu found. Exiting.")
             return
-        # mb = cast("MenuBar", self._srv_mgr.createInstanceWithContext("com.sun.star.awt.MenuBar", self._ctx))
         mb = Lo.create_instance_mcf(XMenuBar, "com.sun.star.awt.MenuBar", raise_err=True)
         mb.insertItem(1, "~First MenuBar Item", MenuItemStyle.AUTOCHECK, 0)
         mb.insertItem(2, "~Second MenuBar Item", MenuItemStyle.AUTOCHECK, 1)
-        # pm.component.addMenuListener(self)
         mb.setPopupMenu(1, pm.component)  # type: ignore
         self._mb = mb
         self._dialog.setMenuBar(mb)
