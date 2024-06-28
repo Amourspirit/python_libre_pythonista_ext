@@ -20,7 +20,7 @@ from .dispatch_provider_interceptor import DispatchProviderInterceptor
 from .cell_dispatch_state import CellDispatchState
 from ..log.log_inst import LogInst
 from ..res.res_resolver import ResResolver
-from ..const import UNO_DISPATCH_CODE_EDIT, UNO_DISPATCH_CODE_DEL
+from ..const import UNO_DISPATCH_CODE_EDIT_MB, UNO_DISPATCH_CODE_DEL
 from ..cell.props.key_maker import KeyMaker
 from ..cell.state.ctl_state import CtlState
 from ..cell.state.state_kind import StateKind
@@ -35,7 +35,7 @@ def on_menu_intercept(
     view: CalcSheetView,
 ) -> None:
     """Event Listener for the context menu intercept."""
-    global UNO_DISPATCH_CODE_EDIT
+    global UNO_DISPATCH_CODE_EDIT_MB
     with contextlib.suppress(Exception):
         # don't block other menus if there is an issue.
 
@@ -89,8 +89,8 @@ def on_menu_intercept(
                     menu_main_sub = ResResolver().resolve_string("mnuMainSub")  # Pythoninsta
                     cps = CellDispatchState(cell=cell)
                     item = None
-                    if cps.is_dispatch_enabled(UNO_DISPATCH_CODE_EDIT):
-                        items.append(ActionTriggerItem(f"{UNO_DISPATCH_CODE_EDIT}?sheet={sheet.name}&cell={cell_obj}", edit_mnu))  # type: ignore
+                    if cps.is_dispatch_enabled(UNO_DISPATCH_CODE_EDIT_MB):
+                        items.append(ActionTriggerItem(f"{UNO_DISPATCH_CODE_EDIT_MB}?sheet={sheet.name}&cell={cell_obj}&in_thread=0", edit_mnu))  # type: ignore
                         items.append(ActionTriggerItem(f"{UNO_DISPATCH_CODE_DEL}?sheet={sheet.name}&cell={cell_obj}", del_mnu))  # type: ignore
                         # container.insert_by_index(4, ActionTriggerItem(f".uno:libre_pythonista.calc.menu.reset.orig?sheet={sheet.name}&cell={cell_obj}", "Rest to Original"))  # type: ignore
                         items.append(ActionTriggerSep())  # type: ignore
@@ -147,9 +147,9 @@ def register_interceptor(doc_comp: Any):
         return
     inst = DispatchProviderInterceptor(doc)  # singleton
     frame = doc.get_frame()
-    frame.registerDispatchProviderInterceptor(inst)
+    frame.registerDispatchProviderInterceptor(inst)  # type: ignore
     view = doc.get_view()
-    view.add_event_notify_context_menu_execute(on_menu_intercept)
+    view.add_event_notify_context_menu_execute(on_menu_intercept)  # type: ignore
     if log:
         log.debug("Dispatch Provider Interceptor registered.")
 
@@ -182,9 +182,9 @@ def unregister_interceptor(doc_comp: Any):
         return
     inst = DispatchProviderInterceptor(doc)  # singleton
     frame = doc.get_frame()
-    frame.releaseDispatchProviderInterceptor(inst)
+    frame.releaseDispatchProviderInterceptor(inst)  # type: ignore
     view = doc.get_view()
-    view.remove_event_notify_context_menu_execute(on_menu_intercept)
+    view.remove_event_notify_context_menu_execute(on_menu_intercept) # type: ignore
     inst.dispose()
     if log:
         log.debug("Dispatch Provider Interceptor unregistered.")

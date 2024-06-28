@@ -2,6 +2,7 @@ from __future__ import annotations
 from ooodev.calc import CalcCell
 from ..const import (
     UNO_DISPATCH_CODE_EDIT,
+    UNO_DISPATCH_CODE_EDIT_MB,
     UNO_DISPATCH_DF_STATE,
     UNO_DISPATCH_DS_STATE,
     UNO_DISPATCH_DATA_TBL_STATE,
@@ -22,9 +23,9 @@ class CellDispatchState:
         self._key_maker = KeyMaker()
 
     def is_dispatch_enabled(self, cmd: str) -> bool:
-        global UNO_DISPATCH_CODE_EDIT
         if cmd in (
             UNO_DISPATCH_CODE_EDIT,
+            UNO_DISPATCH_CODE_EDIT_MB,
             UNO_DISPATCH_DF_STATE,
             UNO_DISPATCH_DS_STATE,
             UNO_DISPATCH_DATA_TBL_STATE,

@@ -10,6 +10,7 @@ from ...dispatch.cell_dispatch_state import CellDispatchState
 from ..props.key_maker import KeyMaker
 from ...const import (
     UNO_DISPATCH_CODE_EDIT,
+    UNO_DISPATCH_CODE_EDIT_MB,
     UNO_DISPATCH_CODE_DEL,
     UNO_DISPATCH_CELL_SELECT,
     UNO_DISPATCH_DF_CARD,
@@ -32,11 +33,20 @@ def on_menu_select(src: Any, event: EventArgs, menu: PopupMenu) -> None:
     command = menu.get_command(me.MenuId)
     if command:
         # check if command is a dispatch command
+        # is is very important that UNO_DISPATCH_CODE_EDIT_MB be executed in a thread or it wil block GUI
         if menu.is_dispatch_cmd(command):
-            if command in (UNO_DISPATCH_DF_CARD, UNO_DISPATCH_CODE_EDIT, UNO_DISPATCH_DATA_TBL_CARD):
-                menu.execute_cmd(command, in_thread=True)
-            else:
-                menu.execute_cmd(command)
+            if "?" in command:
+                command_main = command.split("?")[0]
+                if command_main in (
+                    UNO_DISPATCH_DF_CARD,
+                    UNO_DISPATCH_CODE_EDIT,
+                    UNO_DISPATCH_CODE_EDIT_MB,
+                    UNO_DISPATCH_DATA_TBL_CARD,
+                ):
+                    menu.execute_cmd(command, in_thread=True)
+                    return
+
+            menu.execute_cmd(command, in_thread=False)
 
 
 class CtlPopup:
@@ -86,13 +96,12 @@ class CtlPopup:
         return [{"text": card_name, "command": card_url, "enabled": True}]
 
     def _get_popup_menu(self) -> list:
-        global UNO_DISPATCH_CODE_EDIT
         edit_name = self._res.resolve_string("mnuEditCode")  # Edit Menu
         del_name = self._res.resolve_string("mnuDeletePyCell")  # Delete Python
         sel_name = self._res.resolve_string("mnuSelCell")  # Select Cell
 
         cmd_enabled = self._cps.is_dispatch_enabled(UNO_DISPATCH_CODE_EDIT)
-        edit_url = f"{UNO_DISPATCH_CODE_EDIT}?sheet={self._sheet_name}&cell={self._cell.cell_obj}"
+        edit_url = f"{UNO_DISPATCH_CODE_EDIT_MB}?sheet={self._sheet_name}&cell={self._cell.cell_obj}&in_thread=1"
         del_url = f"{UNO_DISPATCH_CODE_DEL}?sheet={self._sheet_name}&cell={self._cell.cell_obj}"
         sel_url = f"{UNO_DISPATCH_CELL_SELECT}?sheet={self._sheet_name}&cell={self._cell.cell_obj}"
         new_menu = [
