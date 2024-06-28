@@ -120,4 +120,18 @@ class CodeCfg:
         """
         self._cfg["y"] = value
 
+    @property
+    def menu_bar_height(self) -> int:
+        """
+        Gets the y coordinate of the dialog.
+        """
+        return self._cfg.get("mb_height", 26)
+
+    @menu_bar_height.setter
+    def menu_bar_height(self, value: int) -> None:
+        """
+        Sets the y coordinate of the dialog.
+        """
+        self._cfg["mb_height"] = value
+
     # endregion Properties

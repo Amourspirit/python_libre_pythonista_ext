@@ -7,7 +7,6 @@ import uno
 import unohelper
 
 from com.sun.star.awt import KeyModifier
-from com.sun.star.awt import MenuItemStyle
 from com.sun.star.awt import Rectangle
 from com.sun.star.awt import Selection
 from com.sun.star.awt import VclWindowPeerAttribute
@@ -21,6 +20,7 @@ from com.sun.star.frame import XFrame
 from com.sun.star.lang import XSingleServiceFactory
 from ooo.dyn.awt.font_descriptor import FontDescriptor
 from ooo.dyn.awt.pos_size import PosSize
+from ooo.dyn.awt.size import Size
 from ooo.dyn.style.vertical_alignment import VerticalAlignment
 
 from ooodev.dialog import BorderKind
@@ -34,6 +34,7 @@ from ooodev.gui.menu.popup_menu import PopupMenu
 from ooodev.gui.menu.popup.popup_creator import PopupCreator
 from ooodev.loader import Lo
 from ooodev.loader.inst.doc_type import DocType
+from ooodev.utils.color import StandardColor
 from ooodev.utils.partial.the_dictionary_partial import TheDictionaryPartial
 
 from ...const import UNO_DISPATCH_PY_CODE_VALIDATE, UNO_DISPATCH_SEL_RNG
@@ -48,6 +49,7 @@ if TYPE_CHECKING:
     from com.sun.star.awt import MenuEvent  # struct
     from com.sun.star.lang import EventObject  # struct
     from com.sun.star.frame import TaskCreator  # service
+    from com.sun.star.awt import AccessibleMenuBar # service
     from com.sun.star.accessibility import XAccessibleComponent
     from ooodev.calc import CalcDoc
     from ooodev.proto.office_document_t import OfficeDocumentT
@@ -61,7 +63,7 @@ else:
 # see Also: https://ask.libreoffice.org/t/top-window-crashes-when-a-menubar-is-added/107282 This is not a issue here.
 
 
-class DialogMb(TheDictionaryPartial, EventsPartial, XTopWindowListener, unohelper.Base):
+class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
     _instances = {}
 
     FONT = "DejaVu Sans Mono"
@@ -70,7 +72,7 @@ class DialogMb(TheDictionaryPartial, EventsPartial, XTopWindowListener, unohelpe
     BUTTON_HEIGHT = 26
     WIDTH = 600
     NB_TAB = 4
-    HEADER = 10  # can create space for label at the top
+    HEADER = 5  # can create space for label at the top
     FOOTER = 40
     HEIGHT = 310
     MIN_HEIGHT = HEADER + FOOTER + 30
@@ -86,7 +88,6 @@ class DialogMb(TheDictionaryPartial, EventsPartial, XTopWindowListener, unohelpe
         if getattr(self, "_is_init", True):
             return
         TheDictionaryPartial.__init__(self)
-        EventsPartial.__init__(self)
         XTopWindowListener.__init__(self)
         unohelper.Base.__init__(self)
         self._dialog_result = MessageBoxResultsEnum.CANCEL
@@ -150,12 +151,15 @@ class DialogMb(TheDictionaryPartial, EventsPartial, XTopWindowListener, unohelpe
         """Create dialog and add controls."""
         rect = Rectangle()
         rect.Width = self._width
-        rect.Height = self._height
+        if self._cfg.has_size():
+            rect.Height = self._height + self._cfg.menu_bar_height
+        else:
+            rect.Height = self._height
 
         if self._cfg.has_position():
             self._log.debug("_init_dialog() Config Has Position")
             rect.X = self._cfg.x
-            rect.Y = self._cfg.y
+            rect.Y = max(0, self._cfg.y - self._cfg.menu_bar_height)
         else:
             ps = self.parent.getPosSize()  # type: ignore
             rect.X = int((ps.Width - self._width) / 2 - 50)
@@ -167,7 +171,6 @@ class DialogMb(TheDictionaryPartial, EventsPartial, XTopWindowListener, unohelpe
         desc.ParentIndex = -1
         desc.Parent = None  # type: ignore
         desc.Bounds = rect
-
         desc.WindowAttributes = (
             # WindowAttribute.SHOW
             WindowAttribute.BORDER
@@ -180,11 +183,16 @@ class DialogMb(TheDictionaryPartial, EventsPartial, XTopWindowListener, unohelpe
 
         self._dialog = cast("WindowType", dialog_peer)
         self._dialog.setVisible(False)
+        self._dialog.setOutputSize(Size(rect.Width, rect.Height))
+
         # self._dialog.setBackground(get_bg_color(self._dialog, 0xFAFAFA))
 
     def _init_style(self) -> None:
-        if self._mb is not None:
-            self._dialog.setBackground(get_bg_color(self._mb, 0xFAFAFA))  # type: ignore
+        # setting code border and border color seems to have no effect.
+        self._code.border = BorderKind.BORDER_3D
+        self._code.border_color = StandardColor.TEAL_LIGHT1
+
+        # self._dialog.setBackground(get_bg_color(self._mb, 0xFAFAFA))  # type: ignore
 
     # region Misc Methods
 
@@ -232,41 +240,39 @@ class DialogMb(TheDictionaryPartial, EventsPartial, XTopWindowListener, unohelpe
     def _add_frame(self) -> None:
         """Add frame to dialog"""
         # create new empty frame and set window on it
-        tc = cast(
-            "TaskCreator",
-            Lo.create_instance_mcf(XSingleServiceFactory, "com.sun.star.frame.TaskCreator", raise_err=True),
-        )
-        rect = Rectangle()
-        rect.Width = self._width
-        rect.Height = self._height
 
-        # rect.X = 100
-        # rect.Y = 100
+        # When using TaskCreator a window is automatically added to the frame
+        # tc = cast(
+        #     "TaskCreator",
+        #     Lo.create_instance_mcf(XSingleServiceFactory, "com.sun.star.frame.TaskCreator", raise_err=True),
+        # )
+        # rect = Rectangle()
+        # rect.Width = self._width
+        # rect.Height = self._height
 
-        ps = self.parent.getPosSize()  # type: ignore
-        rect.X = int((ps.Width - self._width) / 2 - 50)
-        rect.Y = int((ps.Height - self._height) / 2 - 100)
+        # if self._cfg.has_position():
+        #     self._log.debug("_init_dialog() Config Has Position")
+        #     rect.X = self._cfg.x
+        #     rect.Y = self._cfg.y
+        # else:
+        #     ps = self.parent.getPosSize()  # type: ignore
+        #     rect.X = int((ps.Width - self._width) / 2 - 50)
+        #     rect.Y = int((ps.Height - self._height) / 2 - 100)
 
-        frame = cast(
-            XFrame,
-            tc.createInstanceWithArguments((NamedValue("FrameName", "DialogMb_Frame"), NamedValue("PosSize", rect))),
-        )
-        # frame = Lo.create_instance_mcf(XFrame, "com.sun.star.frame.Frame", raise_err=True)
+        # frame = cast(
+        #     XFrame,
+        #     tc.createInstanceWithArguments((NamedValue("FrameName", "DialogMb_Frame"), NamedValue("PosSize", rect))),
+        # )
+
+        # frame.setComponent(self._dialog, None)  # type: ignore
+        # frame.setCreator(Lo.desktop.component)
+        # Lo.desktop.get_frames().append(frame)
+        # self._frame = frame
+
+        # -- or --
+        frame = Lo.create_instance_mcf(XFrame, "com.sun.star.frame.Frame", raise_err=True)
         frame.setName("DialogMb_Frame")
-        try:
-            # Does not seem to do anything.
-            # It depends from the type of the frame container window. If it is a system task window all will be OK.
-            # https://api.libreoffice.org/docs/idl/ref/interfacecom_1_1sun_1_1star_1_1frame_1_1XFrame2.html#aa7b633091e7820b835d04d0d5fc197c7
-            frame.Title = self._title  # type: ignore
-        except Exception:
-            self._log.exception("Error setting title")
-        # frame.setTitle(create_window_name(self._title))
-        # frame.initialize(self._dialog)
-        # The following block the menu events. Does not seem to be needed.
-        frame.setComponent(self._dialog, None)  # type: ignore
-        frame.setCreator(Lo.desktop.component)
-        Lo.desktop.get_frames().append(frame)
-
+        frame.initialize(self._dialog)
         self._frame = frame
 
     # region XTopWindowListener
@@ -462,11 +468,6 @@ class DialogMb(TheDictionaryPartial, EventsPartial, XTopWindowListener, unohelpe
 
     # region button handlers
     def on_btn_ok_click(self, source: Any, event: EventArgs, control_src: CtlButton) -> None:
-        eargs = EventArgs(self)
-        dd = DotDict(text=self.text, doc=self._doc, inst_id=self._inst_id)
-        dd.update(self.extra_data.copy())
-        eargs.event_data = dd
-        self.trigger_event("dialog_mb_ok", eargs)
         self._update_config()
         self._dialog_result = MessageBoxResultsEnum.OK
         self._is_shown = False
@@ -636,13 +637,44 @@ class DialogMb(TheDictionaryPartial, EventsPartial, XTopWindowListener, unohelpe
         if self._config_updated == True:
             return
         try:
-            sz = self._dialog.getPosSize()
+            # win = self._frame.getContainerWindow() return 0,0,0,0
+
+            # next two lines are the same as self._dialog.getPosSize()
+            # win = self._frame.getComponentWindow()
+            # sz = win.getPosSize()
+
+            sz_pos = self._dialog.getPosSize()
+            sz = self._dialog.getOutputSize()
+            # if self._log.is_debug:
+            #     self._log.debug(f"Window Position: {sz_pos.X}, {sz_pos.Y}, Window Size: {sz_pos.Width}, {sz_pos.Height}")
+            #     self._log.debug(f"Output Size: {sz.Width}, {sz.Height}")
+
             self._cfg.width = sz.Width
             self._cfg.height = sz.Height
-            self._cfg.x = sz.X
-            self._cfg.y = sz.Y
+            self._cfg.x = sz_pos.X
+            self._cfg.y = sz_pos.Y
+            # try:
+            # child = cast("AccessibleMenuBar", self._dialog.getAccessibleContext().getAccessibleChild(0))
+            # if child.getImplementationName() == "com.sun.star.comp.toolkit.AccessibleMenuBar": # type: ignore
+            # child.getBounds() actually gets - DEBUG - MenuBar Position: 0, 0, MenuBar Size: 600, 0
+            # so height is reported as 0
+
+            # mb_sz = child.getBounds()
+            # self._log.debug(
+            #     f"MenuBar Position: {mb_sz.X}, {mb_sz.Y}, MenuBar Size: {mb_sz.Width}, {mb_sz.Height}"
+            # )
+            # self._cfg.height += mb_sz.Height
+            # else:
+            #     self._cfg.height += 24
+            # except Exception:
+            #     self._log.exception("Error getting menubar size")
+            #     self._cfg.height += 24
+            self._cfg.menu_bar_height = 30 # add for the menu bar. Does not seem possible to get the real height.
+
+            # get the menubar height and add it.
             self._cfg.save()
             self._config_updated = True
+            self._log.debug("Config Updated")
         except Exception:
             self._log.exception("Error updating config")
 
