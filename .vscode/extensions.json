@@ -6,6 +6,7 @@
         "oderwat.indent-rainbow",
         "redhat.vscode-xml",
         "yuenm18.ooxml-viewer",
-        "mgesbert.python-path"
+        "mgesbert.python-path",
+        "rossmassey.shortenurl"
     ]
 }

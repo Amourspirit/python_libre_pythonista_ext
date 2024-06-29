@@ -138,7 +138,7 @@ class DfCard:
             align="RLC",
             # widths=widths,
             has_row_headers=True,
-            has_colum_headers=True,
+            has_colum_headers=PandasUtil.has_headers(df),
             row_header_width=row_header_width,
         )
         self._ctl_table1.horizontal_scrollbar = True
