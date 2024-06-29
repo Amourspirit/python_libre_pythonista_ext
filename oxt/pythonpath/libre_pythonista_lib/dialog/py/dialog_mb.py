@@ -15,29 +15,28 @@ from com.sun.star.awt import WindowDescriptor
 from com.sun.star.awt import XMenuBar
 from com.sun.star.awt import XTopWindowListener
 from com.sun.star.awt.WindowClass import TOP
-from com.sun.star.beans import NamedValue
 from com.sun.star.frame import XFrame
-from com.sun.star.lang import XSingleServiceFactory
 from ooo.dyn.awt.font_descriptor import FontDescriptor
 from ooo.dyn.awt.pos_size import PosSize
 from ooo.dyn.awt.size import Size
 from ooo.dyn.style.vertical_alignment import VerticalAlignment
 
+# from com.sun.star.beans import NamedValue
+# from com.sun.star.lang import XSingleServiceFactory
+
+from ooodev.calc import CalcDoc, RangeObj
 from ooodev.dialog import BorderKind
 from ooodev.dialog.dl_control import CtlButton, CtlTextEdit, CtlFixedText
 from ooodev.dialog.msgbox import MessageBoxResultsEnum, MessageBoxType
 from ooodev.events.args.event_args import EventArgs
-from ooodev.events.partial.events_partial import EventsPartial
-from ooodev.utils.helper.dot_dict import DotDict
 from ooodev.globals import GblEvents
 from ooodev.gui.menu.popup_menu import PopupMenu
-from ooodev.gui.menu.popup.popup_creator import PopupCreator
 from ooodev.loader import Lo
 from ooodev.loader.inst.doc_type import DocType
 from ooodev.utils.color import StandardColor
 from ooodev.utils.partial.the_dictionary_partial import TheDictionaryPartial
 
-from ...const import UNO_DISPATCH_PY_CODE_VALIDATE, UNO_DISPATCH_SEL_RNG
+from ...const import UNO_DISPATCH_PY_CODE_VALIDATE, UNO_DISPATCH_SEL_RNG, UNO_DISPATCH_SEL_LP_FN
 from .dialog_mb_window_listener import DialogMbWindowListener
 from .key_handler import KeyHandler
 from ...config.dialog.code_cfg import CodeCfg
@@ -48,14 +47,14 @@ if TYPE_CHECKING:
     from com.sun.star.awt import MenuBar  # service
     from com.sun.star.awt import MenuEvent  # struct
     from com.sun.star.lang import EventObject  # struct
-    from com.sun.star.frame import TaskCreator  # service
-    from com.sun.star.awt import AccessibleMenuBar # service
     from com.sun.star.accessibility import XAccessibleComponent
     from ooodev.calc import CalcDoc
     from ooodev.proto.office_document_t import OfficeDocumentT
     from ..window_type import WindowType
     from .....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
     from .....___lo_pip___.lo_util.resource_resolver import ResourceResolver
+
+    # from com.sun.star.frame import TaskCreator  # service
 else:
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
     from ___lo_pip___.lo_util.resource_resolver import ResourceResolver
@@ -237,6 +236,7 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
         self._fn_on_btn_cancel_click = self.on_btn_cancel_click
         self._fn_on_menu_select = self._on_menu_select
         self._fn_on_menu_range_select_result = self._on_menu_range_select_result
+        self._fn_on_menu_insert_lp_fn = self._on_menu_insert_lp_fn
 
     def _add_frame(self) -> None:
         """Add frame to dialog"""
@@ -401,7 +401,7 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
             height=txt_height,
             Text="",
             Border=int(self._border_kind),
-            BorderColor= self._code_border_color,
+            BorderColor=self._code_border_color,
             VerticalAlign=VerticalAlignment.TOP,
             ReadOnly=False,
             MultiLine=True,
@@ -545,6 +545,11 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
                 self._write_range_sel()
                 # self._write_range_sel_popup(menu)
                 return
+            if command == UNO_DISPATCH_SEL_LP_FN:
+                self._dialog.setFocus()
+                self._write_auto_fn_sel()
+                # self._write_range_sel_popup(menu)
+                return
         return
 
     def _on_menu_range_select_result(self, src: Any, event: EventArgs) -> None:
@@ -570,6 +575,38 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
             self._write(str(event.event_data.rng_obj), (sel.Min, sel.Max))
         except Exception:
             log.error("_on_menu_range_select_result", exc_info=True)
+
+    def _on_menu_insert_lp_fn(self, src: Any, event: EventArgs) -> None:
+        from ...data.auto_fn import AutoFn
+
+        log = self._log
+        try:
+            glbs = GblEvents()
+            glbs.unsubscribe_event("GlobalCalcRangeSelector", self._fn_on_menu_insert_lp_fn)
+        except:
+            log.error("_on_menu_insert_lp_fn() unsubscribing from GlobalCalcRangeSelector", exc_info=True)
+        if event.event_data.state != "done":
+            log.debug("on_sel _on_menu_insert_lp_fn aborted")
+            return
+        log.debug(f"_on_menu_insert_lp_fn {event.event_data.rng_obj}")
+        try:
+            view = event.event_data.view
+            # doc = view.calc_doc
+            # doc.msgbox(f"Selection made {event.event_data.rng_obj}")
+            self._dialog.toFront()
+            self._dialog.setFocus()
+
+            sel = self._code.view.getSelection()
+            # self._write(, (sel.Min, sel.Max))
+            doc = CalcDoc.from_current_doc()
+            ro = cast(RangeObj, event.event_data.rng_obj)
+            sheet = doc.sheets[ro.sheet_idx]
+            calc_cell_rng = sheet.get_range(range_obj=ro)
+            af = AutoFn(calc_cell_rng)
+            fn_str = af.generate_fn()
+            self._write(fn_str, (sel.Min, sel.Max))
+        except Exception:
+            log.error("_on_menu_insert_lp_fn", exc_info=True)
 
     # endregion menu
 
@@ -614,6 +651,23 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
             _ = TopListenerRng(doc)
         except:
             self._log.error("_write_range_sel_popup() Error getting range selection", exc_info=True)
+        finally:
+            # For some reason this need to be here.
+            # If not self._dialog.setFocus() the the top window listener will not fire right away.
+            self._dialog.setFocus()
+
+    def _write_auto_fn_sel(self) -> None:
+
+        doc = cast("CalcDoc", self._doc)
+        self._log.debug("_write_auto_fn_sel() Write Range Selection Popup")
+        try:
+            glbs = GblEvents()
+            glbs.subscribe_event("GlobalCalcRangeSelector", self._fn_on_menu_insert_lp_fn)
+            self._log.debug("_write_auto_fn_sel() Hide Dialog")
+            doc.activate()
+            _ = TopListenerRng(doc)
+        except:
+            self._log.error("_write_auto_fn_sel() Error getting range selection", exc_info=True)
         finally:
             # For some reason this need to be here.
             # If not self._dialog.setFocus() the the top window listener will not fire right away.
@@ -674,7 +728,7 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
             # except Exception:
             #     self._log.exception("Error getting menubar size")
             #     self._cfg.height += 24
-            self._cfg.menu_bar_height = 30 # add for the menu bar. Does not seem possible to get the real height.
+            self._cfg.menu_bar_height = 30  # add for the menu bar. Does not seem possible to get the real height.
 
             # get the menubar height and add it.
             self._cfg.save()

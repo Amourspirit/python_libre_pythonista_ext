@@ -4,7 +4,7 @@ from ooodev.gui.menu.popup_menu import PopupMenu
 from ooodev.gui.menu.popup.popup_creator import PopupCreator
 from ooodev.loader.inst.doc_type import DocType
 
-from ...const import UNO_DISPATCH_PY_CODE_VALIDATE, UNO_DISPATCH_SEL_RNG
+from ...const import UNO_DISPATCH_PY_CODE_VALIDATE, UNO_DISPATCH_SEL_RNG, UNO_DISPATCH_SEL_LP_FN
 
 
 # if TYPE_CHECKING:
@@ -34,7 +34,11 @@ class DialogMbMenu:
 
         new_menu = [
             {
-                "text": "Select Range",
+                "text": rr("mnuAutoLpFn"),
+                "command": UNO_DISPATCH_SEL_LP_FN,
+            },
+            {
+                "text": rr("mnuSelectRng"),
                 "command": UNO_DISPATCH_SEL_RNG,
             },
         ]

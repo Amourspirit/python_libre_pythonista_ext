@@ -1,5 +1,6 @@
 UNO_DISPATCH_PY_CODE_VALIDATE = ".uno:libre_pythonista.calc.code.py.validate"
 UNO_DISPATCH_SEL_RNG = ".uno:libre_pythonista.calc.sel.rng"
+UNO_DISPATCH_SEL_LP_FN = ".uno:libre_pythonista.calc.sel.lp_fn"
 UNO_DISPATCH_CODE_DEL = ".uno:libre_pythonista.calc.code.del"
 UNO_DISPATCH_CODE_EDIT = ".uno:libre_pythonista.calc.code.edit"
 UNO_DISPATCH_CODE_EDIT_MB = ".uno:libre_pythonista.calc.code.edit.mb"
