@@ -36,8 +36,21 @@ class RuleNames:
 
     @property
     def cell_data_type_none(self) -> str:
-        """Rule name for cell data type of None."""
+        """
+        Rule name for cell data type of None.
+        
+        This rule is different then Empty because it represents a that did not generate a value.
+        """
         return "cell_data_type_none"
+
+    @property
+    def cell_data_type_empty(self) -> str:
+        """
+        Rule name for cell data type of Empty.
+        
+        This rule is different then None because is represents a cell that has no code entered.
+        """
+        return "cell_data_type_empty"
 
     @property
     def cell_data_type_error(self) -> str:

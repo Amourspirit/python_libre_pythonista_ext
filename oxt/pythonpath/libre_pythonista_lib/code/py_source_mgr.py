@@ -18,7 +18,7 @@ from ..event.shared_cell_event import SharedCellEvent
 # from libre_pythonista.oxt_logger.oxt_logger import OxtLogger
 from .py_module import PyModule
 from .cell_cache import CellCache
-
+from ..cell.props.key_maker import KeyMaker
 
 # from .cell_code_storage import CellCodeStorage
 
@@ -44,7 +44,7 @@ class PySource:
         self._col = cell.col_obj.index
         self._sheet_idx = cell.sheet_idx
         self._src_code = None
-        self._dd_data = DotDict(data=None)
+        self._dd_data = DotDict(data=None, py_src=self)
         self._unique_id = unique_id
         self._is_init = True
 
@@ -119,7 +119,7 @@ class PySource:
     @property
     def is_error(self) -> bool:
         key = "error"
-        if "error" in self._dd_data:
+        if key in self._dd_data:
             return self._dd_data.error
         return False
 
@@ -609,6 +609,7 @@ class PySourceManager(EventsPartial):
         """
         # when adding source is should update the whole module unless it is the last cell for the module.
         self._log.debug("PySourceManager - add_source() - Adding Source")
+        km = KeyMaker() # singleton
         code_cell = self.convert_cell_obj_to_tuple(cell)
         sheet_idx = code_cell[0]
         row = code_cell[1]
@@ -629,6 +630,11 @@ class PySourceManager(EventsPartial):
         str_id = "id_" + gUtil.Util.generate_random_alpha_numeric(14)
         self._log.debug(f"PySourceManager - add_source() - Adding Source ID: {str_id}")
         calc_cell.set_custom_property(cc.code_prop, str_id)
+
+        addr = f"sheet_index={sheet_idx}&cell_addr={cell}"
+        calc_cell.set_custom_property(km.cell_addr_key, addr)
+        self._log.debug(f"PySourceManager - add_source() - Setting custom property: {km.cell_addr_key} to {addr}")
+
         name = str_id + ".py"
         uri = f"{self._root_uri}/{sheet.unique_id}/{name}"
         py_src = PySource(uri, str_id, cell, self)
@@ -833,6 +839,7 @@ class PySourceManager(EventsPartial):
         self.py_mod.set_global_var("CURRENT_CELL_ID", py_src.unique_id)
         self.py_mod.set_global_var("CURRENT_CELL_OBJ", cell_obj)
         result = self.py_mod.update_with_result(py_src.source_code)
+        result.py_src = py_src
         py_src.dd_data = result
 
         eargs = EventArgs.from_args(cargs)

@@ -109,7 +109,8 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
             self._log.debug("Config does not have Size. Using Defaults.")
             self._width = DialogMb.WIDTH
             self._height = DialogMb.HEIGHT
-        self._border_kind = BorderKind.BORDER_3D
+        self._code_border_color = StandardColor.TEAL_LIGHT2
+        self._border_kind = BorderKind.BORDER_SIMPLE
         if self._border_kind != BorderKind.BORDER_3D:
             self._padding = 10
         else:
@@ -400,10 +401,14 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
             height=txt_height,
             Text="",
             Border=int(self._border_kind),
+            BorderColor= self._code_border_color,
             VerticalAlign=VerticalAlignment.TOP,
             ReadOnly=False,
             MultiLine=True,
+            AutoHScroll=True,
             AutoVScroll=True,
+            HScroll=True,
+            VScroll=True,
             FontDescriptor=self._fd,
             HideInactiveSelection=True,
             Tabstop=True,
