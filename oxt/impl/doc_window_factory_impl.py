@@ -3,18 +3,8 @@ from typing import Any, TYPE_CHECKING, Tuple
 
 import uno
 import unohelper
-from com.sun.star.awt import WindowDescriptor, Rectangle
-from com.sun.star.awt import XActionListener
-from com.sun.star.awt import XWindowListener
-from com.sun.star.awt.PosSize import POS, SIZE
-from com.sun.star.awt.VclWindowPeerAttribute import CLIPCHILDREN
-from com.sun.star.awt.WindowAttribute import SHOW, BORDER, SIZEABLE, MOVEABLE, CLOSEABLE
-from com.sun.star.awt.WindowClass import SIMPLE
-from com.sun.star.beans import NamedValue
 from com.sun.star.lang import XServiceInfo
 from com.sun.star.lang import XSingleComponentFactory
-from com.sun.star.awt import XContainerWindowEventHandler
-from com.sun.star.task import XJobExecutor
 
 if TYPE_CHECKING:
     from com.sun.star.uno import XInterface
@@ -83,7 +73,7 @@ class DockingWindowFactoryImpl(XServiceInfo, XSingleComponentFactory, unohelper.
 
     @classmethod
     def get_imple(cls):
-        return cls, cls.IMPLE_NAME, cls.SERVICE_NAMES
+        return (cls, cls.IMPLE_NAME, cls.SERVICE_NAMES)
 
 
 def createInstance(ctx):
@@ -91,7 +81,21 @@ def createInstance(ctx):
 
 
 g_ImplementationHelper = unohelper.ImplementationHelper()
-g_ImplementationHelper.addImplementation(*DockingWindowFactoryImpl.get_imple())
+g_ImplementationHelper.addImplementation(
+    createInstance, DockingWindowFactoryImpl.IMPLE_NAME, DockingWindowFactoryImpl.SERVICE_NAMES
+)
+
+
+from com.sun.star.awt import WindowDescriptor, Rectangle
+from com.sun.star.awt import XActionListener
+from com.sun.star.awt import XWindowListener
+from com.sun.star.awt.PosSize import POS, SIZE
+from com.sun.star.awt.VclWindowPeerAttribute import CLIPCHILDREN
+from com.sun.star.awt.WindowAttribute import SHOW, BORDER, SIZEABLE, MOVEABLE, CLOSEABLE
+from com.sun.star.awt.WindowClass import SIMPLE
+from com.sun.star.beans import NamedValue
+from com.sun.star.awt import XContainerWindowEventHandler
+from com.sun.star.task import XJobExecutor
 
 
 # Valid resource URL for docking window starts with
@@ -105,7 +109,7 @@ g_ImplementationHelper.addImplementation(*DockingWindowFactoryImpl.get_imple())
 
 RESOURCE_URL = "private:resource/dockingwindow/9809"
 
-EXT_ID = "___lo_identifier___"
+# EXT_ID = "___lo_identifier___"
 
 
 def create_window(ctx: Any, args: Tuple[Any, ...]) -> Any:
@@ -139,7 +143,7 @@ def create_window(ctx: Any, args: Tuple[Any, ...]) -> Any:
         return None  # ToDo: raise exception
 
     # this dialog has no title and placed at the top left corner.
-    dialog1 = "vnd.sun.star.extension://___lo_identifier___/dialogs/log_doc.xdl"
+    dialog1 = "vnd.sun.star.extension://___lo_identifier___/dialogs/log_dock.xdl"
     window = None
     if True:
         toolkit = create("com.sun.star.awt.Toolkit")

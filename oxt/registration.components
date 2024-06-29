@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<components xmlns="http://openoffice.org/2010/uno-components">
- <component loader="com.sun.star.loader.Python"
-  uri="factory.py">
-  <implementation name="___lo_identifier___.DockingWindowFactory">
-   <service name="___lo_identifier___.DockingWindowFactory"/>
-  </implementation>
- </component>
-</components>
