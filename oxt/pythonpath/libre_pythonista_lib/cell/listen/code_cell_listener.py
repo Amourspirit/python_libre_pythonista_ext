@@ -59,6 +59,7 @@ class CodeCellListener(unohelper.Base, XModifyListener, EventsPartial):
                 code_name=self._code_name,
                 calc_cell=calc_cell,
                 deleted=True,
+                cell_info=ci,
             )
             eargs.event_data = dd
             for key, value in dd.items():
@@ -90,6 +91,7 @@ class CodeCellListener(unohelper.Base, XModifyListener, EventsPartial):
                 code_name=self._code_name,
                 calc_cell=calc_cell,
                 deleted=False,
+                cell_info=ci,
             )
             eargs.event_data = dd
             try:
@@ -124,12 +126,15 @@ class CodeCellListener(unohelper.Base, XModifyListener, EventsPartial):
             # self._log.debug("CodeCellListener: modified: Cell is the same")
         else:
             eargs = EventArgs(self)
+            calc_cell = self._get_calc_cell(cell=event.Source)  # type: ignore
             eargs.event_data = DotDict(
                 absolute_name=self._absolute_name,
                 old_name=self._absolute_name,
                 event_obj=event,
                 code_name=self._code_name,
                 deleted=False,
+                calc_cell=calc_cell,
+                cell_info=ci,
             )
             self.trigger_event("cell_moved", eargs)
             self._absolute_name = name

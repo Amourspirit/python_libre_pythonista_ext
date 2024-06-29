@@ -196,6 +196,7 @@ class CellMgr:
         - code_name: str
         - calc_cell: CalcCell
         - deleted: True
+        - cell_info: CellInfo
 
 
         """
@@ -214,12 +215,20 @@ class CellMgr:
         - old_name: old cell absolute name.
         - event_obj: ``com.sun.star.lang.EventObject``
         - code_name: str
+        - cell_info: CellInfo
+        - calc_cell: CalcCell
         - deleted: False
 
         """
         dd = cast(DotDict, event.event_data)
         self.reset_cell_cache()
-        self._log.debug(f"Cell moved: {dd.absolute_name}")
+        calc_cell = cast(CalcCell, dd.calc_cell)
+        co = calc_cell.cell_obj
+        addr = f"sheet_index={co.sheet_idx}&cell_addr={co}"
+        calc_cell.set_custom_property(self._key_maker.cell_addr_key, addr)
+        if self._log.is_debug:
+            self._log.debug(f"Cell moved: {dd.absolute_name}")
+            self._log.debug(f"Update Custom Prop: {self._key_maker.cell_addr_key} to {addr}")
 
     def on_cell_pyc_formula_removed(self, src: Any, event: EventArgs) -> None:
         """
@@ -256,6 +265,7 @@ class CellMgr:
         - code_name: str
         - calc_cell: CalcCell
         - deleted: False
+        - cell_info: CellInfo
 
         """
         dd = cast(DotDict, event.event_data)

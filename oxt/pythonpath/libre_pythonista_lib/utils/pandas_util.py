@@ -280,14 +280,23 @@ class PandasUtil:
         Note:
             Does not make a copy of the DataFrame.
         """
+        has_headers = cls.has_headers(df)
+        # if there are no header then accessing cols via df[int] is valid
+        # if there are headers then the columns are accessed via df[str]
         for col in columns:
             if isinstance(col, int):
-                col_name = df.columns[col]
-                # df.iloc[:, col] = df.iloc[:, col].apply(cls.libreoffice_date_to_pandas)
+                if has_headers:
+                    col_name = str(df.columns[col])
+                else:
+                    col_name = col
+                    # df.iloc[:, col] = df.iloc[:, col].apply(cls.lo_date_to_pandas)
             else:
+                if not has_headers:
+                    raise ValueError("Column name must be a string if DataFrame has no headers.")
                 col_name = col
             if col_name in df.columns:
-                df[col_name] = df[col_name].apply(cls.lo_date_to_pandas)
+                if not cls.pandas_is_date_col(df, col_name):
+                    df[col_name] = df[col_name].apply(cls.lo_date_to_pandas)
         return df
 
     @classmethod
@@ -297,14 +306,26 @@ class PandasUtil:
 
         Note:
             Does not make a copy of the DataFrame.
+
+            Only applies to column that are not already date columns.
         """
+        has_headers = cls.has_headers(df)
+        # if there are no header then accessing cols via df[int] is valid
+        # if there are headers then the columns are accessed via df[str]
         for col in columns:
             if isinstance(col, int):
-                col_name = df.columns[col]
-                # df.iloc[:, col] = df.iloc[:, col].apply(cls.libreoffice_date_to_pandas)
+                if has_headers:
+                    col_name = str(df.columns[col])
+                else:
+                    col_name = col
+                    # df.iloc[:, col] = df.iloc[:, col].apply(cls.pandas_to_lo_date)
             else:
+                if not has_headers:
+                    raise ValueError("Column name must be a string if DataFrame has no headers.")
                 col_name = col
-            df[col_name] = df[col_name].apply(cls.pandas_to_lo_date)
+            if cls.pandas_is_date_col(df, col_name):
+                df[col_name] = df[col_name].apply(cls.pandas_to_lo_date)
+            # df[col] = df[col].apply(cls.pandas_to_lo_date)
         return df
 
     @classmethod
@@ -448,3 +469,18 @@ class PandasUtil:
                 if rule:
                     row[i] = rule.convert(cell)
         return None
+
+    @classmethod
+    def pandas_is_date_col(cls, df: pd.DataFrame, col: str | int) -> bool:
+        """
+        Gets if a column is a date column.
+
+        Args:
+            df (DataFrame): The DataFrame to check.
+            col (str | int): The column name or zero-based index to check.
+        """
+        # Test show that this work even if the df has no headers.
+        if isinstance(col, str):
+            return pd.api.types.is_datetime64_any_dtype(df[col])
+        else:
+            return pd.api.types.is_datetime64_any_dtype(df.iloc[:, col])

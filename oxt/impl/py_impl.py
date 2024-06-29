@@ -41,6 +41,7 @@ if TYPE_CHECKING:
     from ..pythonpath.libre_pythonista_lib.dialog.py.dialog_python import DialogPython
     from ..pythonpath.libre_pythonista_lib.cell.cell_mgr import CellMgr
     from ..pythonpath.libre_pythonista_lib.cell.result_action.pyc.rules.pyc_rules import PycRules
+    from ..pythonpath.libre_pythonista_lib.cell.lpl_cell import LplCell
 
 else:
     _CONDITIONS_MET = _conditions_met()
@@ -129,16 +130,34 @@ class PyImpl(unohelper.Base, XPy):
             if not cm.has_cell(cell_obj=cell.cell_obj):
 
                 # if not py_cell.has_code():
-                self._logger.debug("pyc - py cell has no code")
+                self._logger.debug(f"pyc - py {cell.cell_obj} cell has no code")
+
+                # this could be a result of rows or columns being inserted.
+                # if the cell is A5 and a row is inserted above then the cell is now A6.
+                # By the time this method is called it will see Cell A6 and not A5 when the row is inserted.
+                # This means the cell may indeed have code and just not be in the current cm cache.
+                code_handled = False
+                if not TYPE_CHECKING:
+                    from libre_pythonista_lib.cell.lpl_cell import LplCell
+                lp_cell = LplCell(cell)
+                if lp_cell.has_code_name_prop:
+                    self._logger.debug(f"pyc - py {cell.cell_obj} cell already has code. May be a row or column as been inserted.")
+                    code_handled = True
+                    lp_cell.reset_py_instance()
+                    CellMgr.reset_instance(doc)
+                    cm = CellMgr(doc)
+
                 # prompt for code
-                code = self._get_code()
-                if code:
-                    # When source code is added to CellMgr is will add CodeCellListener listener to this cell.
-                    cm.add_source_code(source_code=code, cell_obj=cell.cell_obj)
-                    # now the listener has been added to the cell, return a result and recalculate the cell.
-                else:
-                    self._logger.debug("pyc - No code entered")
-                    return None
+                if not code_handled:
+                    # code = self._get_code()
+                    # if code:
+                    #     # When source code is added to CellMgr is will add CodeCellListener listener to this cell.
+                    #     cm.add_source_code(source_code=code, cell_obj=cell.cell_obj)
+                    #     # now the listener has been added to the cell, return a result and recalculate the cell.
+                    # else:
+                    #     self._logger.debug("pyc - No code entered")
+                    #     return None
+                    cm.add_source_code(source_code="", cell_obj=cell.cell_obj)
             else:
                 self._logger.debug("pyc - py cell has code")
             # resetting is handled by the CodeSheetModifyListener

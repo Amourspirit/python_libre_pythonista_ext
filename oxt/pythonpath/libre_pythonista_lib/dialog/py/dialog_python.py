@@ -154,7 +154,6 @@ class DialogPython(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
         dialog_peer = self.tk.createWindow(desc)
 
         self._init_handlers()
-        glbs = GblEvents()
 
         self._dialog = cast("WindowType", dialog_peer)
 
@@ -492,7 +491,6 @@ class DialogPython(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
         # self._handle_results(result)
         self._dialog.dispose()
         return result
-        return 1
 
     # endregion Show Dialog
 

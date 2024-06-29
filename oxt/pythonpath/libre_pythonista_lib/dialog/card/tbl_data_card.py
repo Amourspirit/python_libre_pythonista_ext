@@ -6,11 +6,12 @@ from ooo.dyn.awt.push_button_type import PushButtonType
 from ooo.dyn.awt.pos_size import PosSize
 
 from ooodev.dialog import BorderKind
-from ooodev.calc import CalcCell
+from ooodev.calc import CalcCell, RangeObj
 from ooodev.loader import Lo
 
 from ...cell.lpl_cell import LplCell
 from ...utils.pandas_util import PandasUtil
+from ...data.tbl_data_obj import TblDataObj
 
 if TYPE_CHECKING:
     from .....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
@@ -117,10 +118,24 @@ class TblDataCard:
             data=tbl,
             align="RLC",
             # widths=widths,
-            has_row_headers=False,
+            has_row_headers=self._get_has_row_header(),
             has_colum_headers=False,
         )
         self._ctl_table1.horizontal_scrollbar = True
+
+    def _get_has_row_header(self) -> bool:
+        """Check if the range has headers. Considered to be a header if the first row is all string values."""
+        try:
+            py_src = self._lpl_cell.pyc_src
+            if not "range_obj" in py_src.dd_data:
+                return False
+            ro = cast(RangeObj, py_src.dd_data.range_obj)
+            cell_rng = self._cell.calc_sheet.get_range(range_obj=ro)
+            tdo = TblDataObj(cell_rng)
+            return tdo.has_headers
+        except Exception:
+            self._log.exception("Error getting range object")
+            return False
 
     def _get_table_data_head(self) -> list:
         """Convert the dataframe and display in dialog grid control."""

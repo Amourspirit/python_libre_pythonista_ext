@@ -16,6 +16,7 @@ from ooodev.calc import CalcDoc
 # from ooodev.calc import CalcDoc
 from ..const import (
     UNO_DISPATCH_CODE_EDIT,
+    UNO_DISPATCH_CODE_EDIT_MB,
     UNO_DISPATCH_DF_STATE,
     UNO_DISPATCH_DS_STATE,
     UNO_DISPATCH_DATA_TBL_STATE,
@@ -36,6 +37,7 @@ from .dispatch_cell_select import DispatchCellSelect
 from .dispatch_card_df import DispatchCardDf
 from .dispatch_card_tbl_data import DispatchCardTblData
 from .dispatch_rng_select_popup import DispatchRngSelectPopup
+from .dispatch_edit_py_cell_mb import DispatchEditPyCellMb
 
 # from .listen.edit_status_listener import EditStatusListener
 from ..log.log_inst import LogInst
@@ -133,9 +135,13 @@ class DispatchProviderInterceptor(unohelper.Base, XDispatchProviderInterceptor):
                 args = self._convert_query_to_dict(url.Arguments)
                 log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchEditPyCell")
                 result = DispatchEditPyCell(sheet=args["sheet"], cell=args["cell"])
-                # listener = EditStatusListener(sheet=args["sheet"], cell=args["cell"])
-                # result.addStatusListener(listener, url)
-                # result.removeStatusListener(listener, url)
+                return result
+        elif url.Main == UNO_DISPATCH_CODE_EDIT_MB:
+            with contextlib.suppress(Exception):
+                args = self._convert_query_to_dict(url.Arguments)
+                log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchEditPyCellMb")
+                in_thread = args.get("in_thread", "0") == "1"
+                result = DispatchEditPyCellMb(sheet=args["sheet"], cell=args["cell"], in_thread=in_thread)
                 return result
         elif url.Main == UNO_DISPATCH_DF_STATE:
             with contextlib.suppress(Exception):

@@ -5,6 +5,7 @@ from .simple_ctl import SimpleCtl
 from .float_ctl import FloatCtl
 from .str_ctl import StrCtl
 from .none_ctl import NoneCtl
+from .empty_ctl import EmptyCtl
 from .error_ctl import ErrorCtl
 from .data_frame_ctl import DataFrameCtl
 from .data_series_ctl import DataSeriesCtl
@@ -61,6 +62,8 @@ class CtlMgr:
             return ErrorCtl
         if rule_name == rules.cell_data_type_none:
             return NoneCtl
+        if rule_name == rules.cell_data_type_empty:
+            return EmptyCtl
         if rule_name == rules.cell_data_type_tbl_data:
             return DataTblCtl
         is_deleted = cell.extra_data.get("deleted", False)

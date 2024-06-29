@@ -4,14 +4,15 @@ from ooodev.calc import CalcCell
 from ooodev.utils.helper.dot_dict import DotDict
 
 from .rule_base import RuleBase
+from .rule_empty import RuleEmpty
+from .rule_error import RuleError
 from .rule_float import RuleFloat
 from .rule_int import RuleInt
-from .rule_str import RuleStr
 from .rule_none import RuleNone
-from .rule_error import RuleError
 from .rule_pd_df import RulePdDf
 from .rule_pd_df_headers import RulePdDfHeaders
 from .rule_pd_ds import RulePdDs
+from .rule_str import RuleStr
 from .rule_tbl_data import RuleTblData
 
 if TYPE_CHECKING:
@@ -135,6 +136,7 @@ class PycRules:
 
     def _register_known_rules(self):
         # re.compile(r"^(\w+)\s*=")
+        self._reg_rule(rule=RuleEmpty)
         self._reg_rule(rule=RulePdDfHeaders)
         self._reg_rule(rule=RulePdDf)
         self._reg_rule(rule=RulePdDs)
@@ -147,11 +149,13 @@ class PycRules:
 
     def get_matched_rule(self, cell: CalcCell, data: DotDict) -> PycRuleT | None:
         """
-        Get matched rules
+        Get matched rules.
+
+        The Data comes from the ``PySourceManager`` instance of ``PySource``.
 
         Args:
-            mod (types.ModuleType): Module
-            code (str): Code string.
+            cell (types.ModuleType): Calc Cell
+            data (str): DotDict containing keys ``data``, ``py_src`` and maybe ``error``.
 
         Returns:
             List[PycRuleT]: Matched rule. Defaults to ``default_rule`` value.
@@ -181,8 +185,8 @@ class PycRules:
         Find rule by name. ``default_rule`` is not used here.
 
         Args:
-            rule_name (str): Name of rule
-
+            cell (str): Calc Cell.
+            
         Returns:
             PycRuleT: Rule if found. The returned instance will have no data.
         """

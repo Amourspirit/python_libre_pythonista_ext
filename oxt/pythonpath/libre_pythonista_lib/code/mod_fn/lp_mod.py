@@ -2,13 +2,12 @@ from typing import Any, cast, List, TYPE_CHECKING
 import re
 from ooodev.utils.helper.dot_dict import DotDict
 from ...cell.cell_mgr import CellMgr
-from ...utils.pandas_util import PandasUtil
+from ...data.pandas_data_obj import PandasDataObj
 
 LAST_LP_RESULT = DotDict(data=None)
 
 if TYPE_CHECKING:
     from com.sun.star.sheet import SheetCellRange
-    import pandas as pd
     from ooodev.calc import CalcDoc
     from ooodev.utils.data_type.cell_obj import CellObj
     from ooodev.utils.data_type.range_obj import RangeObj
@@ -17,7 +16,6 @@ if TYPE_CHECKING:
     CURRENT_CELL_OBJ: CellObj
 else:
     CURRENT_CELL_OBJ = None
-    import pandas as pd
     from ooodev.calc import CalcDoc
     from ooodev.utils.data_type.cell_obj import CellObj
     from ooodev.utils.data_type.range_obj import RangeObj
@@ -35,12 +33,26 @@ def _set_last_lp_result(result: Any, **kwargs) -> Any:
     return LAST_LP_RESULT.data
 
 
+def _get_addr(addr: str) -> str:
+    if not addr:
+        return ""
+    if ":" in addr:
+        # check to see if this is a single cell or a range
+        parts = addr.split(":")
+        if parts[0].upper() == parts[1].upper():
+            return parts[0].upper()
+        else:
+            return f"{parts[0].upper()}:{parts[1].upper()}"
+    return addr.upper()
+
+
 def lp(addr: str, **Kwargs: Any) -> Any:
     global CURRENT_CELL_OBJ
     log = LogInst()
     log.debug(f"lp - Current Cell Obj Global: {CURRENT_CELL_OBJ}")
+    addr = _get_addr(addr)
     if not addr:
-        return None
+        return _set_last_lp_result(None)
     gbl_cell = cast(CellObj, CURRENT_CELL_OBJ)
     cell_obj = CellObj(col=gbl_cell.col, row=gbl_cell.row, sheet_idx=gbl_cell.sheet_idx)
     doc = CalcDoc.from_current_doc()
@@ -112,50 +124,11 @@ def lp(addr: str, **Kwargs: Any) -> Any:
         if addr_rng.sheet_idx >= 0:
             sheet_idx = addr_rng.sheet_idx
         sheet = doc.sheets[sheet_idx]
-        data = sheet.get_array(range_obj=addr_rng)
-        if headers:
-            data_len = len(data)
-            if data_len == 0:
-                df = pd.DataFrame()
-            elif data_len == 1:
-                df = pd.DataFrame([], columns=data[0])
-            else:
-                df = pd.DataFrame(data[1:], columns=data[0])
-        else:
-            df = pd.DataFrame(data)
+        cr = sheet.get_range(range_obj=addr_rng)
+        pdo = PandasDataObj(cell_rng=cr, col_types=column_types)
+        df = pdo.get_data_frame()
+        return _set_last_lp_result(df, headers=pdo.has_headers, range_obj=addr_rng)
 
-        if isinstance(column_types, dict):
-            log.debug(f"lp - Column Types: {column_types}")
-            _process_column_types(df, column_types, log)
-        else:
-            log.debug("lp - No Column Types")
-
-        return _set_last_lp_result(df, headers=headers)
     except Exception as e:
         log.error(f"lp - Exception: {e}", exc_info=True)
         return _set_last_lp_result(None)
-
-
-def _process_column_types(df: pd.DataFrame, column: dict, log: LogInst):
-    names = {}
-    indexes = {}
-    for key, value in column.items():
-        if isinstance(key, str):
-            names[key] = value
-        elif isinstance(key, int):
-            indexes[key] = value
-    date_cols: List[str | int] = []
-
-    for key, value in names.items():
-
-        if value == "date":
-            if key in df.columns:
-                date_cols.append(key)
-    for key, value in indexes.items():
-        if value == "date":
-            date_cols.append(key)
-    if date_cols:
-        log.debug(f"_process_column_types() - Date Columns: {date_cols}")
-        PandasUtil.convert_lo_to_pandas_date_columns(df, *date_cols)
-    else:
-        log.debug("_process_column_types() - No Date Columns")

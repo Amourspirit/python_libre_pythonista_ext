@@ -1,8 +1,10 @@
 from __future__ import annotations
-from typing import Any, TYPE_CHECKING
+from typing import cast, TYPE_CHECKING
+from urllib.parse import parse_qs
 from ooodev.calc import CalcCell, CalcSheet
 from ooodev.utils.helper.dot_dict import DotDict
 from ooodev.exceptions import ex as mEx
+from ooodev.calc import CellObj
 from .ctl.ctl_mgr import CtlMgr
 from .props.key_maker import KeyMaker
 from .state.ctl_state import CtlState
@@ -106,6 +108,10 @@ class LplCell:
         except Exception:
             self._log.error("get_control_rule() Error getting control rule", exc_info=True)
 
+    def _convert_query_to_dict(self, query: str):
+        query_dict = parse_qs(query)
+        return {k: v[0] for k, v in query_dict.items()}
+
     def _get_control_shape(self) -> DrawShape[SpreadsheetDrawPage[CalcSheet]] | None:
         """
         Gets the control shape of the cell.
@@ -140,6 +146,14 @@ class LplCell:
 
     # endregion Methods
 
+    # region Reset Methods
+    def reset_py_instance(self) -> None:
+        """Resets the PyInstance."""
+        PyInstance.reset_instance(doc=self.cell.calc_doc)
+        self.refresh()
+        
+    # endregion Reset Methods
+
     # region Properties
     @property
     def cell(self) -> CalcCell:
@@ -155,6 +169,8 @@ class LplCell:
         If the current state is ``ARRAY`` and the new state is unknown, the state is changed to ``PY_OBJ``.
 
         The cell control is not directly changed by this property but can by changed by other listeners as a result of dispatching a command.
+
+        This is a cached property.
         """
         key = "ctl_state"
         if key in self._cache:
@@ -213,7 +229,11 @@ class LplCell:
 
     @property
     def custom_properties(self) -> DotDict:
-        """Gets the custom properties of the cell."""
+        """
+        Gets the custom properties of the cell.
+
+        This is a cached property.
+        """
         key = "custom_properties"
         if key in self._cache:
             return self._cache[key]
@@ -263,6 +283,11 @@ class LplCell:
 
     @property
     def pyc_rule(self) -> PycRuleT | None:
+        """
+        Gets the pyc rule of the cell or None.
+        
+        This is a cached property.
+        """
         key = "pyc_rule"
         if key in self._cache:
             return self._cache[key]
@@ -282,6 +307,11 @@ class LplCell:
 
     @property
     def ctl_shape(self) -> DrawShape[SpreadsheetDrawPage[CalcSheet]] | None:
+        """
+        Gets the control shape or None.
+
+        This is a cached property.
+        """
         key = "control_shape"
         if key in self._cache:
             return self._cache[key]
@@ -317,6 +347,8 @@ class LplCell:
     def pyc_src(self) -> PySource:
         """
         Get the python source of the cell.
+
+        This is a cached property.
         """
         key = "pyc_src"
         if key in self._cache:
@@ -324,6 +356,51 @@ class LplCell:
         src = self._get_pyc_src()
         self._cache[key] = src
         return src
+
+    @property
+    def cell_prop_addr(self) -> CellObj:
+        """
+        Get the cell address of the cell from the custom property.
+        
+        This is a cached property.
+        """
+        key = "pyc_src"
+        if key in self._cache:
+            return self._cache[key]
+        addr_key = self._key_maker.cell_addr_key
+        if addr_key not in self.custom_properties:
+            self._log.warning("cell_prop_addr() Cell address not found in custom properties. Returning current cell.")
+            return self._cell.cell_obj
+        try:
+            addr = cast(str, self.custom_properties[addr_key])
+            d = self._convert_query_to_dict(addr)
+            idx = int(d.get("sheet_index", "-2"))
+            cell_obj = CellObj.from_cell(cast(str,d["cell_addr"]))
+            result =  CellObj(col=cell_obj.col, row=cell_obj.row, sheet_idx=idx)
+            self._cache[key] = result
+            return result
+        except Exception:
+            self._log.exception("cell_prop_addr() Error getting cell address from custom properties.")
+        return self._cell.cell_obj
+
+    @property
+    def has_pyc_src(self) -> bool:
+        """
+        Get if the cell has a python source.
+        """
+        try:
+            _ = self.pyc_src
+            return True
+        except Exception:
+            return False
+
+    @property
+    def has_code_name_prop(self) -> bool:
+        """
+        Get if the cell has a code name property.
+        """
+        key = self._key_maker.cell_code_name
+        return key in self.custom_properties
 
     @property
     def has_array_ability(self) -> bool:

@@ -20,8 +20,8 @@ class KeyMaker:
     def __init__(self) -> None:
         if getattr(self, "_is_init", False):
             return
-        cfg = Config()
-        self._cell_cp_prefix = cfg.cell_cp_prefix
+        self._cfg = Config()
+        self._cell_cp_prefix = self._cfg.cell_cp_prefix
         self._rule_names = RuleNames()
         self._is_init = True
 
@@ -41,6 +41,16 @@ class KeyMaker:
     def ctl_shape_key(self) -> str:
         """Gets the key for the control shape."""
         return f"{self.cell_cp_prefix}shape"
+
+    @property
+    def cell_addr_key(self) -> str:
+        """Gets the key for the control shape."""
+        return f"{self.cell_cp_prefix}addr"
+
+    @property
+    def cell_code_name(self) -> str:
+        """Gets the key for the control shape."""
+        return self._cfg.cell_cp_codename
 
     @property
     def ctl_orig_ctl_key(self) -> str:
