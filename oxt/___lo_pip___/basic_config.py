@@ -20,6 +20,7 @@ class ConfigMeta(type):
 
 class BasicConfig(metaclass=ConfigMeta):
     def __init__(self, **kwargs) -> None:
+        self._author_names = cast(List[str], kwargs.get("author_names", []))
         self._py_pkg_dir = str(kwargs["py_pkg_dir"])
         self._lo_identifier = str(kwargs["lo_identifier"])
         self._lo_implementation_name = str(kwargs["lo_implementation_name"])
@@ -31,7 +32,9 @@ class BasicConfig(metaclass=ConfigMeta):
         self._dialog_desktop_owned = bool(kwargs["dialog_desktop_owned"])
         self._default_locale = cast(List[str], (kwargs["default_locale"]))
         self._resource_dir_name = str(kwargs["resource_dir_name"])
+        self._extension_display_name = str(kwargs["extension_display_name"])
         self._extension_version = str(kwargs["extension_version"])
+        self._extension_license = str(kwargs["extension_license"])
         self._resource_properties_prefix = str(kwargs["resource_properties_prefix"])
         self._isolate_windows = set(kwargs["isolate_windows"])
         self._sym_link_cpython = bool(kwargs["sym_link_cpython"])
@@ -52,6 +55,17 @@ class BasicConfig(metaclass=ConfigMeta):
         self._requirements: Dict[str, str] = dict(**kwargs["requirements"])
 
     # region Properties
+    @property
+    def author_names(self) -> List[str]:
+        """
+        Gets the list of author names.
+
+        The value for this property can be set in pyproject.toml (tool.poetry.authors)
+
+        This is the list of author names for the extension.
+        """
+        return self._author_names
+
     @property
     def auto_install_in_site_packages(self) -> bool:
         """
@@ -89,6 +103,24 @@ class BasicConfig(metaclass=ConfigMeta):
         If this is set to ``True`` then the dialog is owned by the LibreOffice desktop window.
         """
         return self._dialog_desktop_owned
+
+    @property
+    def extension_display_name(self) -> str:
+        """
+        Gets extension display Name.
+
+        The value for this property can be set in pyproject.toml (tool.token.display_name)
+        """
+        return self._extension_display_name
+
+    @property
+    def extension_license(self) -> str:
+        """
+        Gets extension license.
+
+        The value for this property can be set in pyproject.toml (tool.poetry.license)
+        """
+        return self._extension_license
 
     @property
     def extension_version(self) -> str:

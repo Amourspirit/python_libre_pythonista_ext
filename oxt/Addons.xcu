@@ -5,14 +5,34 @@
 	oor:name="Addons"
 	oor:package="org.openoffice.Office">
 	<node oor:name="AddonUI">
-		<node oor:name="AddonMenu">
+		<node oor:name="OfficeHelp">
 			<node oor:name="com.github.amourspirit.extension.librepythonista.AddonMenu.m1"
+				oor:op="replace">
+				<prop oor:name="Context" oor:type="xs:string">
+					<value>com.sun.star.sheet.SpreadsheetDocument</value>
+				</prop>
+				<prop oor:name="URL" oor:type="xs:string">
+					<value>service:___lo_identifier___.impl?about</value>
+				</prop>
+				<!-- <prop oor:name="ImageIdentifier" oor:type="xs:string">
+					<value>%origin%/icons/someicon</value>
+				</prop> -->
+				<prop oor:name="Title" oor:type="xs:string">
+					<value>About ___display_name___</value>
+				</prop>
+				<prop oor:name="Target" oor:type="xs:string">
+					<value>_self</value>
+				</prop>
+			</node>
+		</node>
+		<node oor:name="AddonMenu">
+			<node oor:name="com.github.amourspirit.extension.librepythonista.AddonMenu.m2"
 				oor:op="replace">
 				<prop oor:name="URL" oor:type="xs:string">
 					<value>private:separator</value>
 				</prop>
 			</node>
-			<node oor:name="com.github.amourspirit.extension.librepythonista.AddonMenu.m2"
+			<node oor:name="com.github.amourspirit.extension.librepythonista.AddonMenu.m3"
 				oor:op="replace">
 				<prop oor:name="Context" oor:type="xs:string">
 					<value>com.sun.star.sheet.SpreadsheetDocument</value>
@@ -27,7 +47,7 @@
 					<value>_self</value>
 				</prop>
 			</node>
-			<node oor:name="com.github.amourspirit.extension.librepythonista.AddonMenu.m3"
+			<node oor:name="com.github.amourspirit.extension.librepythonista.AddonMenu.m4"
 				oor:op="replace">
 				<prop oor:name="Context" oor:type="xs:string">
 					<value>com.sun.star.sheet.SpreadsheetDocument</value>
@@ -42,7 +62,7 @@
 					<value>_self</value>
 				</prop>
 			</node>
-			<node oor:name="com.github.amourspirit.extension.librepythonista.AddonMenu.m4"
+			<node oor:name="com.github.amourspirit.extension.librepythonista.AddonMenu.m5"
 				oor:op="replace">
 				<prop oor:name="Context" oor:type="xs:string">
 					<value>com.sun.star.sheet.SpreadsheetDocument</value>
@@ -57,7 +77,7 @@
 					<value>_self</value>
 				</prop>
 			</node>
-			<node oor:name="com.github.amourspirit.extension.librepythonista.AddonMenu.m5"
+			<node oor:name="com.github.amourspirit.extension.librepythonista.AddonMenu.m6"
 				oor:op="replace">
 				<prop oor:name="Context" oor:type="xs:string">
 					<value>com.sun.star.sheet.SpreadsheetDocument</value>

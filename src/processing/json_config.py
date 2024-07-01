@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import cast, Dict, List
+from typing import Any, cast, Dict, List
 from pathlib import Path
 import json
 import toml
@@ -112,8 +112,28 @@ class JsonConfig(metaclass=Singleton):
             self._extension_version = cast(str, cfg["tool"]["poetry"]["version"])
         except Exception:
             self._extension_version = ""
+
+        try:
+            self._extension_license = cast(str, cfg["tool"]["poetry"]["license"])
+        except Exception:
+            self._extension_license = ""
+
+        try:
+            self._author_names = self._get_author_names(cfg)
+        except Exception:
+            self._author_names = []
         # endregion tool.libre_pythonista.config
         self._validate()
+
+    def _get_author_names(self, cfg: Dict[str, Any]) -> List[str]:
+        """Get the author names."""
+        authors = cast(List[str], cfg["tool"]["poetry"]["authors"])
+        # Author elements are in the format of: ":Barry-Thomas-Paul: Moss <4193389+Amourspirit@users.noreply.github.com>"
+        # get the names
+        author_names = []
+        for author in authors:
+            author_names.append(author.split("<")[0].strip())
+        return author_names
 
     def update_json_config(self, json_config_path: Path) -> None:
         """Read and updates the config.json file."""
@@ -123,6 +143,7 @@ class JsonConfig(metaclass=Singleton):
         json_config["py_pkg_dir"] = token.get_token_value("py_pkg_dir")
         json_config["lo_identifier"] = token.get_token_value("lo_identifier")
         json_config["lo_implementation_name"] = token.get_token_value("lo_implementation_name")
+        json_config["extension_display_name"] = token.get_token_value("display_name")
 
         json_config["zipped_preinstall_pure"] = self._zip_preinstall_pure
         json_config["auto_install_in_site_packages"] = self._auto_install_in_site_packages
@@ -149,6 +170,8 @@ class JsonConfig(metaclass=Singleton):
         json_config["general_code_name"] = self._general_codename
         json_config["lp_default_log_format"] = self._lp_default_log_format
         json_config["extension_version"] = self._extension_version
+        json_config["extension_license"] = self._extension_license
+        json_config["author_names"] = self._author_names
         # endregion tool.libre_pythonista.config
 
         # save the file

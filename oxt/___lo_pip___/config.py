@@ -207,6 +207,17 @@ class Config(metaclass=Singleton):
         return self._basic_config
 
     @property
+    def author_names(self) -> List[str]:
+        """
+        Gets the list of author names.
+
+        The value for this property can be set in pyproject.toml (tool.poetry.authors)
+
+        This is the list of author names for the extension.
+        """
+        return self.basic_config.author_names
+
+    @property
     def delay_startup(self) -> bool:
         """
         Gets the flag indicating if the startup should be delayed.
@@ -620,6 +631,24 @@ class Config(metaclass=Singleton):
         The value for this property can be set in pyproject.toml (tool.poetry.version)
         """
         return self._basic_config.extension_version
+
+    @property
+    def extension_license(self) -> str:
+        """
+        Gets extension license.
+
+        The value for this property can be set in pyproject.toml (tool.poetry.license)
+        """
+        return self._basic_config.extension_license
+
+    @property
+    def extension_display_name(self) -> str:
+        """
+        Gets extension display Name.
+
+        The value for this property can be set in pyproject.toml (tool.token.display_name)
+        """
+        return self._basic_config.extension_display_name
 
     # region tool.libre_pythonista.config
     @property

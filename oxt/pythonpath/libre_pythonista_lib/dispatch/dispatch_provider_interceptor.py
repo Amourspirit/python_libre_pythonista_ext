@@ -26,7 +26,10 @@ from ..const import (
     UNO_DISPATCH_DF_CARD,
     UNO_DISPATCH_DATA_TBL_CARD,
     UNO_DISPATCH_SEL_RNG,
+    UNO_DISPATCH_ABOUT,
 )
+
+from .dispatch_about import DispatchAbout
 from .dispatch_edit_py_cell import DispatchEditPyCell
 from .dispatch_toggle_df_state import DispatchToggleDfState
 from .dispatch_toggle_data_tbl_state import DispatchToggleDataTblState
@@ -191,6 +194,10 @@ class DispatchProviderInterceptor(unohelper.Base, XDispatchProviderInterceptor):
                     args = {}
                 log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchRngSelectPopup")
                 return DispatchRngSelectPopup(**args)
+        elif url.Main == UNO_DISPATCH_ABOUT:
+            with contextlib.suppress(Exception):
+                log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchAbout")
+                return DispatchAbout()
 
         return self._slave.queryDispatch(url, target_frame_name, search_flags)
 

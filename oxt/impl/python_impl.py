@@ -32,6 +32,8 @@ if TYPE_CHECKING:
     from ..___lo_pip___.lo_util.resource_resolver import ResourceResolver
     from ..pythonpath.libre_pythonista_lib.code.cell_cache import CellCache
     from ..pythonpath.libre_pythonista_lib.code.py_source_mgr import PyInstance
+
+    from ooodev.loader import Lo
     from ooodev.calc import CalcDoc
     from ooodev.exceptions.ex import CellError
     from ooo.dyn.awt.message_box_results import MessageBoxResultsEnum
@@ -39,9 +41,11 @@ if TYPE_CHECKING:
     from ooo.dyn.awt.message_box_type import MessageBoxType
     from ooodev.dialog.msgbox import MsgBox
     from ..___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from ..pythonpath.libre_pythonista_lib.const import UNO_DISPATCH_ABOUT
 else:
     _CONDITIONS_MET = _conditions_met()
     if _CONDITIONS_MET:
+        from ooodev.loader import Lo
         from ooodev.calc import CalcDoc
         from ooodev.exceptions.ex import CellError
         from ooo.dyn.awt.message_box_results import MessageBoxResultsEnum
@@ -50,6 +54,7 @@ else:
         from ooodev.dialog.msgbox import MsgBox
         from libre_pythonista_lib.code.cell_cache import CellCache
         from libre_pythonista_lib.code.py_source_mgr import PyInstance
+        from libre_pythonista_lib.const import UNO_DISPATCH_ABOUT
     from ___lo_pip___.lo_util.resource_resolver import ResourceResolver
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
 
@@ -60,11 +65,11 @@ implementation_name = "___lo_identifier___.impl"
 class PythonImpl(unohelper.Base, XJobExecutor):
     def __init__(self, ctx):
         self.ctx = ctx
-        self._logger = OxtLogger(log_name=self.__class__.__name__)
+        self._log = OxtLogger(log_name=self.__class__.__name__)
         self._res = ResourceResolver(self.ctx)
 
     def trigger(self, event: str):
-        print("PythonImpl: trigger: event", event)
+        self._log.debug(f"trigger() event: {event}")
         if not _CONDITIONS_MET:
             return
         if event == "testing":
@@ -73,6 +78,14 @@ class PythonImpl(unohelper.Base, XJobExecutor):
             self._do_pyc_formula_with_dependent()
         elif event == "debug_dump_module_to_log":
             self._debug_dump_module_to_log()
+        elif event == "about":
+            try:
+                self._log.debug(f"About, Dispatching {UNO_DISPATCH_ABOUT}")
+                _ = Lo.current_doc
+                Lo.dispatch_cmd(cmd=UNO_DISPATCH_ABOUT)
+                self._log.debug(f"About, Dispatched {UNO_DISPATCH_ABOUT}")
+            except Exception as e:
+                self._log.exception(f"Error dispatching")
         else:
             self._do_pyc_formula()
 
@@ -80,14 +93,14 @@ class PythonImpl(unohelper.Base, XJobExecutor):
         try:
 
             msg = self._res.resolve_string("title10")
-            self._logger.debug(msg)
+            self._log.debug(msg)
             doc = CalcDoc.from_current_doc()
             sheet = doc.get_active_sheet()
             sheet_locked = sheet.is_sheet_protected()
             try:
                 cell = sheet.get_selected_cell()
             except CellError:
-                self._logger.error(f"{self.__class__.__name__} - No cell selected")
+                self._log.error(f"{self.__class__.__name__} - No cell selected")
                 return
             # https://api.libreoffice.org/docs/idl/ref/namespacecom_1_1sun_1_1star_1_1awt_1_1MessageBoxButtons.html
             cell_locked = cell.cell_protection.is_locked
@@ -114,20 +127,20 @@ class PythonImpl(unohelper.Base, XJobExecutor):
             )
             _ = cell.value
         except Exception as e:
-            self._logger.error(f"{self.__class__.__name__} - Error: {e}")
+            self._log.error(f"{self.__class__.__name__} - Error: {e}")
 
     def _do_pyc_formula_with_dependent(self):
         try:
 
             msg = self._res.resolve_string("title10")
-            self._logger.debug(msg)
+            self._log.debug(msg)
             doc = CalcDoc.from_current_doc()
             sheet = doc.get_active_sheet()
             sheet_locked = sheet.is_sheet_protected()
             try:
                 cell = sheet.get_selected_cell()
             except CellError:
-                self._logger.error(f"{self.__class__.__name__} - No cell selected")
+                self._log.error(f"{self.__class__.__name__} - No cell selected")
                 return
             # https://api.libreoffice.org/docs/idl/ref/namespacecom_1_1sun_1_1star_1_1awt_1_1MessageBoxButtons.html
             cell_locked = cell.cell_protection.is_locked
@@ -166,7 +179,7 @@ class PythonImpl(unohelper.Base, XJobExecutor):
             cell.component.setFormula(formula)
             _ = cell.value
         except Exception as e:
-            self._logger.error(f"{self.__class__.__name__} - Error: {e}")
+            self._log.error(f"{self.__class__.__name__} - Error: {e}")
 
     def _debug_dump_module_to_log(self) -> None:
         doc = CalcDoc.from_current_doc()
@@ -176,13 +189,13 @@ class PythonImpl(unohelper.Base, XJobExecutor):
         try:
 
             msg = self._res.resolve_string("title10")
-            self._logger.debug(msg)
+            self._log.debug(msg)
             doc = CalcDoc.from_current_doc()
             sheet = doc.get_active_sheet()
             try:
                 cell = sheet.get_selected_cell()
             except CellError:
-                self._logger.error(f"{self.__class__.__name__} - No cell selected")
+                self._log.error(f"{self.__class__.__name__} - No cell selected")
                 return
             # https://api.libreoffice.org/docs/idl/ref/namespacecom_1_1sun_1_1star_1_1awt_1_1MessageBoxButtons.html
             if cell.value is not None:
@@ -199,7 +212,7 @@ class PythonImpl(unohelper.Base, XJobExecutor):
             )
             _ = cell.value
         except Exception as e:
-            self._logger.error(f"{self.__class__.__name__} - Error: {e}")
+            self._log.error(f"{self.__class__.__name__} - Error: {e}")
 
 
 g_ImplementationHelper = unohelper.ImplementationHelper()
