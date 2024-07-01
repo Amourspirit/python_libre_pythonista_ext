@@ -12,7 +12,7 @@ from ooodev.events.args.event_args import EventArgs
 from ooodev.utils.helper.dot_dict import DotDict
 
 from ..dialog.card.tbl_data_card import TblDataCard
-from ..event.shared_cell_event import SharedCellEvent
+from ..event.shared_event import SharedEvent
 
 if TYPE_CHECKING:
     from com.sun.star.frame import XStatusListener
@@ -29,7 +29,7 @@ class DispatchCardTblData(XDispatch, EventsPartial, unohelper.Base):
         self._sheet = sheet
         self._cell = cell
         self._log = OxtLogger(log_name=self.__class__.__name__)
-        self.add_event_observers(SharedCellEvent().event_observer)
+        self.add_event_observers(SharedEvent().event_observer)
         self._log.debug(f"init: sheet={sheet}, cell={cell}")
         self._status_listeners: Dict[str, XStatusListener] = {}
 

@@ -22,7 +22,7 @@ from ..code.py_source_mgr import PySource
 from ..cell.ctl.ctl_mgr import CtlMgr
 from ..cell.cell_info import CellInfo
 from ..cell.props.key_maker import KeyMaker
-from ..event.shared_cell_event import SharedCellEvent
+from ..event.shared_event import SharedEvent
 from .lpl_cell import LplCell
 from ..style.default_sytle import DefaultStyle
 from ..const import (
@@ -55,8 +55,7 @@ class CellMgr:
         return cls._instances[key]
 
     def __init__(self, doc: CalcDoc):
-        is_init = getattr(self, "_is_init", False)
-        if is_init:
+        if getattr(self, "_is_init", False):
             return
         self._cfg = Config()
         self._doc = doc
@@ -69,7 +68,7 @@ class CellMgr:
         self._key_maker = KeyMaker()
         self._style = DefaultStyle()
         self._init_events()
-        self._se = SharedCellEvent(doc)
+        self._se = SharedEvent(doc)
         self._se.trigger_event("CellMgrCreated", EventArgs(self))
         self._subscribe_to_shared_events()
         self._is_init = True
@@ -751,7 +750,7 @@ class CellMgr:
     @classmethod
     def reset_instance(cls, doc: CalcDoc | None = None) -> None:
         """
-        Reset the cached instance(s).
+        Reset the Singleton instance(s).
 
         Args:
             doc (CalcDoc | None, optional): Calc Doc or None. If None all cached instances are cleared. Defaults to None.
@@ -772,7 +771,7 @@ class CellMgr:
                 inst._cell_cache.reset_instance(doc)
             inst._log.debug(f"Resetting PyInstance for doc: {doc.runtime_uid}")
             del cls._instances[key]
-            se = SharedCellEvent(doc)
+            se = SharedEvent(doc)
             se.trigger_event("CellMgrReset", EventArgs(cls))
         PyInstance.reset_instance(doc)
         CellCache.reset_instance(doc)

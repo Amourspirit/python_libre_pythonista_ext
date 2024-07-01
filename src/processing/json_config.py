@@ -104,6 +104,11 @@ class JsonConfig(metaclass=Singleton):
             self._general_codename = "libre_pythonista"
 
         try:
+            self._lp_default_log_format = cast(str, cfg["tool"]["libre_pythonista"]["config"]["lp_default_log_format"])
+        except Exception:
+            self._lp_default_log_format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+
+        try:
             self._extension_version = cast(str, cfg["tool"]["poetry"]["version"])
         except Exception:
             self._extension_version = ""
@@ -142,6 +147,7 @@ class JsonConfig(metaclass=Singleton):
         json_config["cell_cp_prefix"] = self._cell_custom_prop_prefix
         json_config["cell_cp_codename"] = f"{self._cell_custom_prop_prefix}{self._cell_custom_prop_codename}"
         json_config["general_code_name"] = self._general_codename
+        json_config["lp_default_log_format"] = self._lp_default_log_format
         json_config["extension_version"] = self._extension_version
         # endregion tool.libre_pythonista.config
 
@@ -175,7 +181,9 @@ class JsonConfig(metaclass=Singleton):
         assert isinstance(self._cell_custom_prop_prefix, str), "cell_custom_prop_prefix must be a string"
         assert isinstance(self._cell_custom_prop_codename, str), "cell_custom_prop_codename must be a string"
         assert isinstance(self._general_codename, str), "general_codename must be a string"
-        assert isinstance(self._extension_version, str), "extension_version must be a string"
+        assert isinstance(self._general_codename, str), "general_codename must be a string"
+        assert isinstance(self._lp_default_log_format, str), "extension_version must be a string"
+        assert self._lp_default_log_format, "lp_default_log_format must not be an empty string"
         # validate the extension version is a valid python version
         assert self._extension_version.count(".") == 2, "extension_version must contain two periods"
         # endregion tool.libre_pythonista.config

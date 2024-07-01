@@ -5,7 +5,7 @@ from ooodev.utils.helper.dot_dict import DotDict
 from ..utils import str_util
 from .rules.code_rules import CodeRules
 
-from .mod_fn.lp_log import LpLog as LibrePythonistaLog
+from .mod_fn.lplog import LpLog as LibrePythonistaLog
 from ..cell.errors.general_error import GeneralError
 
 if TYPE_CHECKING:
@@ -26,7 +26,7 @@ from ___lo_pip___.oxt_logger import OxtLogger
 from libre_pythonista_lib.log.log_inst import LogInst
 from libre_pythonista_lib.code.mod_fn import lp_mod
 from libre_pythonista_lib.code.mod_fn.lp_mod import lp
-from libre_pythonista_lib.code.mod_fn.lp_log import lp_log, LpLog as LibrePythonistaLog
+from libre_pythonista_lib.code.mod_fn.lplog import StaticLpLog as lp_log, LpLog as LibrePythonistaLog
 import pandas as pd
 import numpy as np
 PY_ARGS = None
@@ -41,11 +41,6 @@ class PyModule:
     def __init__(self):
 
         self._log = OxtLogger(log_name=self.__class__.__name__)
-        try:
-            self._log_ps = LibrePythonistaLog().log  # OxtLogger(log_name=self.__class__.__name__)
-        except Exception:
-            self._log.error("Error initializing LibrePythonistaLog.", exc_info=True)
-            self._log_ps = None
 
         self.mod = types.ModuleType("PyMod")
         self._cr = CodeRules()
@@ -99,9 +94,19 @@ class PyModule:
         except Exception as e:
             # result will be assigned to the py_source.value Other rules for the cell will handle this.
             result = DotDict(data=GeneralError(e), error=True)
-            if self._log_ps:
-                self._log_ps.error(f"Error updating module.\n{code}\n", exc_info=True)
-            self._log.warning(f"Error updating module. Result set to {result}.\n{code}\n", exc_info=True)
+            try:
+                lp_log_inst = LibrePythonistaLog()
+                ps_log = lp_log_inst.log
+                if lp_log_inst.log_extra_info:
+                    ps_log.error(f"Error updating module.\n{code}\n", exc_info=True)
+                else:
+                    ps_log.error(f"{e}")
+            except Exception as e:
+                self._log.error(f"LibrePythonistaLog error", exc_info=True)
+            if self._log.is_debug:
+                self._log.warning(f"Error updating module. Result set to {result}.\n{code}\n", exc_info=True)
+            else:
+                self._log.warning(f"Error updating module. Result set to {result}.\n", exc_info=True)
         return result
 
     def set_global_var(self, var_name: str, value: Any) -> None:

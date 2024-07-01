@@ -649,6 +649,15 @@ class Config(metaclass=Singleton):
         """
         return self._basic_config.general_code_name
 
+    @property
+    def lp_default_log_format(self) -> str:
+        """
+        Gets the default log format for the extension.
+
+        The value for this property can be set in pyproject.toml (tool.libre_pythonista.config)
+        """
+        return self._basic_config.lp_default_log_format
+
     # endregion tool.libre_pythonista.config
     # endregion Properties
 

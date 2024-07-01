@@ -17,7 +17,7 @@ from ..dialog.py.dialog_python import DialogPython
 from ..code.cell_cache import CellCache
 from ..cell.cell_mgr import CellMgr
 from ..code.py_source_mgr import PyInstance
-from ..event.shared_cell_event import SharedCellEvent
+from ..event.shared_event import SharedEvent
 
 if TYPE_CHECKING:
     from com.sun.star.frame import XStatusListener
@@ -36,7 +36,7 @@ class DispatchEditPyCell(XDispatch, EventsPartial, unohelper.Base):
         self._sheet = sheet
         self._cell = cell
         self._log = OxtLogger(log_name=self.__class__.__name__)
-        self.add_event_observers(SharedCellEvent().event_observer)
+        self.add_event_observers(SharedEvent().event_observer)
         self._log.debug(f"init: sheet={sheet}, cell={cell}")
         self._status_listeners: Dict[str, XStatusListener] = {}
 

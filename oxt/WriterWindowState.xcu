@@ -7,7 +7,8 @@
     oor:package="org.openoffice.Office.UI">
     <node oor:name="UIElements">
         <node oor:name="States">
-            <node oor:name="private:resource/dockingwindow/9809" oor:op="replace">
+            <node oor:name="private:resource/dockingwindow/___float_dialog_error_num___"
+                oor:op="replace">
                 <prop oor:name="UIName" oor:type="xs:string">
                     <value xml:lang="en-US">Test</value>
                 </prop>

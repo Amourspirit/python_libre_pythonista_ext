@@ -18,7 +18,7 @@ from ..cell.cell_mgr import CellMgr
 from ..cell.state.ctl_state import CtlState
 from ..cell.state.state_kind import StateKind
 from ..code.py_source_mgr import PyInstance
-from ..event.shared_cell_event import SharedCellEvent
+from ..event.shared_event import SharedEvent
 from ..sheet.range.rng_util import RangeUtil
 from ..ex import CellFormulaExpandError
 
@@ -41,7 +41,7 @@ class DispatchToggleDataTblState(XDispatch, EventsPartial, unohelper.Base):
         self._sheet = sheet
         self._cell = cell
         self._log = OxtLogger(log_name=self.__class__.__name__)
-        self.add_event_observers(SharedCellEvent().event_observer)
+        self.add_event_observers(SharedEvent().event_observer)
         self._log.debug(f"init: sheet={sheet}, cell={cell}")
         self._status_listeners: Dict[str, XStatusListener] = {}
 

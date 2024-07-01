@@ -1,14 +1,32 @@
 from __future__ import annotations
-from typing import Any, TYPE_CHECKING, Tuple
+from typing import Any, cast, TYPE_CHECKING, Tuple
+import contextlib
 
 import uno
 import unohelper
 from com.sun.star.lang import XServiceInfo
 from com.sun.star.lang import XSingleComponentFactory
 
+
+def _conditions_met() -> bool:
+    with contextlib.suppress(Exception):
+        from ___lo_pip___.install.requirements_check import RequirementsCheck
+
+        return RequirementsCheck().run_imports_ready()
+    return False
+
+
 if TYPE_CHECKING:
+    _CONDITIONS_MET = True
     from com.sun.star.uno import XInterface
     from com.sun.star.uno import XComponentContext
+    from com.sun.star.awt import UnoControlDialog  # service
+    from ..pythonpath.libre_pythonista_lib.dialog.handlers.log_win_handler import LogWinHandler
+else:
+    _CONDITIONS_MET = _conditions_met()
+    if _CONDITIONS_MET:
+        from libre_pythonista_lib.dialog.handlers.log_win_handler import LogWinHandler
+
 
 # https://forum.openoffice.org/en/forum/viewtopic.php?p=295118
 
@@ -107,7 +125,7 @@ from com.sun.star.task import XJobExecutor
 # other extensions, strange result would be happen.
 # https://github.com/LibreOffice/core/blob/3c91fb758a429f51b89dfe9cea088691ced6d0c1/sfx2/source/dialog/dockwin.cxx#L292
 
-RESOURCE_URL = "private:resource/dockingwindow/9809"
+RESOURCE_URL = "private:resource/dockingwindow/___float_dialog_error_num___"
 
 # EXT_ID = "___lo_identifier___"
 
@@ -123,6 +141,7 @@ def create_window(ctx: Any, args: Tuple[Any, ...]) -> Any:
     Returns:
         new docking window
     """
+    global _CONDITIONS_MET
 
     def create(name):
         return ctx.getServiceManager().createInstanceWithContext(name, ctx)
@@ -143,7 +162,7 @@ def create_window(ctx: Any, args: Tuple[Any, ...]) -> Any:
         return None  # ToDo: raise exception
 
     # this dialog has no title and placed at the top left corner.
-    dialog1 = "vnd.sun.star.extension://___lo_identifier___/dialogs/log_dock.xdl"
+    dialog1 = "vnd.sun.star.extension://___lo_identifier___/___float_dialog_error___"
     window = None
     if True:
         toolkit = create("com.sun.star.awt.Toolkit")
@@ -163,57 +182,27 @@ def create_window(ctx: Any, args: Tuple[Any, ...]) -> Any:
 
         # Create inner window from dialog
         dp = create("com.sun.star.awt.ContainerWindowProvider")
-        child = dp.createContainerWindow(dialog1, "", window, None)
+        child = cast("UnoControlDialog", dp.createContainerWindow(dialog1, "", window, None))
+        if not _CONDITIONS_MET:
+            child.setVisible(True)
+            return window
+        handler = LogWinHandler(ctx, child)
         child.setVisible(True)
         # child.setPosSize(0, 0, 0, 0, POS)  # if the dialog is not placed at
         # top left corner
-        child.getControl("CommandButton1").addActionListener(ActionListener(ctx))
-        window.addWindowListener(WindowResizeListener(child))
-    else:
-        # shows tab control
-        tabs = create("com.sun.star.comp.framework.TabWindowService")
-        n = tabs.insertTab()  # Create new tab, return value is tab id
-        # Valid properties are:
-        # Title, ToolTip, PageURL, EventHdl, Image, Disabled.
-        v1 = NamedValue("PageURL", dialog1)
-        v2 = NamedValue("Title", "Test")
-        v3 = NamedValue("EventHdl", ContainerWindowHandler(ctx, frame))
-        tabs.setTabProps(n, (v1, v2, v3))
-        tabs.activateTab(n)  # each page should be activated after the creation
-
-        window = tabs.Window  # real window
+        window.addWindowListener(WindowResizeListener(handler))
     return window
 
 
 # for normal window based dockingwindow
 
 
-class ActionListener(XActionListener, unohelper.Base):
-
-    def __init__(self, ctx):
-        XActionListener.__init__(self)
-        unohelper.Base.__init__(self)
-        self.ctx = ctx
-
-    def disposing(self, ev):
-        pass
-
-    # XActionListener
-    def actionPerformed(self, ev):
-        dialog = ev.Source.getContext()
-        field = dialog.getControl("TextField1")
-        self.message(dialog.getPeer(), field.getText())
-
-    def message(self, parent, message):
-        show_message(self.ctx, parent, message)
-
-
 class WindowResizeListener(XWindowListener, unohelper.Base):
 
-    def __init__(self, dialog):
+    def __init__(self, handler: LogWinHandler):
         XWindowListener.__init__(self)
         unohelper.Base.__init__(self)
-        self.dialog = dialog
+        self.handler = handler
 
     def disposing(self, ev):
         pass
@@ -230,54 +219,10 @@ class WindowResizeListener(XWindowListener, unohelper.Base):
 
     def windowResized(self, ev):
         # extends inner window to match with the outer window
-        if self.dialog:
-            self.dialog.setPosSize(0, 0, ev.Width, ev.Height, SIZE)
+        if self.handler:
+            self.handler.dialog.setPosSize(0, 0, ev.Width, ev.Height, SIZE)
+            self.handler.resize(ev.Width, ev.Height)
             # ToDo: resize dialog elements
-
-
-# for com.sun.star.comp.framework.TabWindowService based dockingwindow
-
-
-class ContainerWindowHandler(XContainerWindowEventHandler, XActionListener, unohelper.Base):
-
-    def __init__(self, ctx, frame):
-        XContainerWindowEventHandler.__init__(self)
-        XActionListener.__init__(self)
-        unohelper.Base.__init__(self)
-        self.ctx = ctx
-        self.frame = frame
-        self.parent = None
-
-    def create(self, name):
-        return self.ctx.getServiceManager().createInstanceWithContext(name, self.ctx)
-
-    # XContainerWindowEventHandler
-    def callHandlerMethod(self, window, obj, name):
-        if name == "external_event":
-            if obj == "initialize":
-                self._initialize(window)
-
-    def getSupportedMethodNames(self):
-        return ("external_event",)
-
-    def _initialize(self, window):
-        btn = window.getControl("CommandButton1")
-        btn.setActionCommand("btn1")
-        btn.addActionListener(self)
-
-    def disposing(self, ev):
-        pass
-
-    # XActionListener
-    def actionPerformed(self, ev):
-        cmd = ev.ActionCommand
-        dialog = ev.Source.getContext()
-        if cmd == "btn1":
-            field = dialog.getControl("TextField1")
-            self.message(dialog.getPeer(), field.getText())
-
-    def message(self, parent, message):
-        show_message(self.ctx, parent, message)
 
 
 # Tool functions
@@ -373,7 +318,7 @@ class Switcher(XJobExecutor, XServiceInfo, unohelper.Base):
 
 """
 ' Switch through layout manager.
-const RESOURCE_URL = "private:resource/dockingwindow/9809"
+const RESOURCE_URL = "private:resource/dockingwindow/___float_dialog_error_num___"
 
 Sub SwitchDockingWindow
     layoutmgr = ThisComponent.getCurrentController().getFrame().LayoutManager

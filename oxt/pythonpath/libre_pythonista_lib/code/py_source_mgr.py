@@ -13,7 +13,7 @@ from ooodev.events.args.event_args import EventArgs
 # from ooodev.io.log.named_logger import NamedLogger
 from ooodev.utils.helper.dot_dict import DotDict
 from ooodev.utils.string.str_list import StrList
-from ..event.shared_cell_event import SharedCellEvent
+from ..event.shared_event import SharedEvent
 
 # from libre_pythonista.oxt_logger.oxt_logger import OxtLogger
 from .py_module import PyModule
@@ -157,7 +157,7 @@ class PySourceManager(EventsPartial):
             self._sfa.inst.create_folder(self._root_uri)
         self._mod = PyModule()
         self._data = self._get_sources()
-        self._se = SharedCellEvent(doc)
+        self._se = SharedEvent(doc)
         self._se.trigger_event("PySourceManagerCreated", EventArgs(self))
         self._is_init = True
 
@@ -609,7 +609,7 @@ class PySourceManager(EventsPartial):
         """
         # when adding source is should update the whole module unless it is the last cell for the module.
         self._log.debug("PySourceManager - add_source() - Adding Source")
-        km = KeyMaker() # singleton
+        km = KeyMaker()  # singleton
         code_cell = self.convert_cell_obj_to_tuple(cell)
         sheet_idx = code_cell[0]
         row = code_cell[1]

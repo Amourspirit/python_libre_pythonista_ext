@@ -1,19 +1,19 @@
 from __future__ import annotations
-from typing import Any, List, Dict, Tuple, TYPE_CHECKING
+from typing import Dict
 
 from ooodev.calc import CalcDoc
 from ooodev.events.partial.events_partial import EventsPartial
 
 
-class SharedCellEvent(EventsPartial):
-    _instances: Dict[str, SharedCellEvent] = {}
+class SharedEvent(EventsPartial):
+    _instances: Dict[str, SharedEvent] = {}
 
-    def __new__(cls, doc: CalcDoc | None = None) -> SharedCellEvent:
+    def __new__(cls, doc: CalcDoc | None = None) -> SharedEvent:
         if doc is None:
             doc = CalcDoc.from_current_doc()
         key = f"doc_{doc.runtime_uid}"
         if not key in cls._instances:
-            cls._instances[key] = super(SharedCellEvent, cls).__new__(cls)
+            cls._instances[key] = super(SharedEvent, cls).__new__(cls)
             cls._instances[key]._is_init = False
         return cls._instances[key]
 

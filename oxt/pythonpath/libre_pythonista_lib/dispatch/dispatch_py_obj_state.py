@@ -15,7 +15,7 @@ from ..code.cell_cache import CellCache
 from ..cell.cell_mgr import CellMgr
 from ..cell.state.ctl_state import CtlState
 from ..cell.state.state_kind import StateKind
-from ..event.shared_cell_event import SharedCellEvent
+from ..event.shared_event import SharedEvent
 
 if TYPE_CHECKING:
     from com.sun.star.frame import XStatusListener
@@ -36,7 +36,7 @@ class DispatchPyObjState(XDispatch, EventsPartial, unohelper.Base):
         self._sheet = sheet
         self._cell = cell
         self._log = OxtLogger(log_name=self.__class__.__name__)
-        self.add_event_observers(SharedCellEvent().event_observer)
+        self.add_event_observers(SharedEvent().event_observer)
         self._log.debug(f"init: sheet={sheet}, cell={cell}")
         self._status_listeners: Dict[str, XStatusListener] = {}
 

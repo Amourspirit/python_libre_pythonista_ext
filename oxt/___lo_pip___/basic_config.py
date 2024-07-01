@@ -44,6 +44,7 @@ class BasicConfig(metaclass=ConfigMeta):
         self._cell_cp_prefix = str(kwargs["cell_cp_prefix"])
         self._cell_cp_codename = str(kwargs["cell_cp_codename"])
         self._general_code_name = str(kwargs["general_code_name"])
+        self._lp_default_log_format = str(kwargs["lp_default_log_format"])
         # endregion tool.libre_pythonista.config
 
         if "requirements" not in kwargs:
@@ -272,6 +273,15 @@ class BasicConfig(metaclass=ConfigMeta):
         The value for this property can be set in pyproject.toml (tool.libre_pythonista.config)
         """
         return self._general_code_name
+
+    @property
+    def lp_default_log_format(self) -> str:
+        """
+        Gets the default log format for the extension.
+
+        The value for this property can be set in pyproject.toml (tool.libre_pythonista.config)
+        """
+        return self._lp_default_log_format
 
     # endregion tool.libre_pythonista.config
 
