@@ -48,4 +48,6 @@
         manifest:media-type="application/vnd.sun.star.configuration-data" />
     <manifest:file-entry manifest:full-path="View.xcu"
         manifest:media-type="application/vnd.sun.star.configuration-data" />
+    <manifest:file-entry manifest:full-path="Accelerators.xcu"
+        manifest:media-type="application/vnd.sun.star.configuration-data" />
 </manifest:manifest>
