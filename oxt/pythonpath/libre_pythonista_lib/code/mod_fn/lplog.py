@@ -6,22 +6,23 @@ from ooodev.events.args.event_args import EventArgs
 from ...log.py_logger import PyLogger
 from ...const.event_const import LOG_OPTIONS_CHANGED, LOG_PY_LOGGER_RESET
 from ...event.shared_event import SharedEvent
+from ...utils.singleton import SingletonMeta
 
 if TYPE_CHECKING:
     from ooodev.proto.office_document_t import OfficeDocumentT
 
 
-class LpLog:
-    _instances = {}
+class LpLog(metaclass=SingletonMeta):
+    # _instances = {}
 
-    def __new__(cls):
-        doc = Lo.current_doc
-        key = f"doc_{doc.runtime_uid}"
-        if not key in cls._instances:
-            inst = super(LpLog, cls).__new__(cls)
-            inst._is_init = False
-            cls._instances[key] = inst
-        return cls._instances[key]
+    # def __new__(cls):
+    #     doc = Lo.current_doc
+    #     key = f"doc_{doc.runtime_uid}"
+    #     if not key in cls._instances:
+    #         inst = super(LpLog, cls).__new__(cls)
+    #         inst._is_init = False
+    #         cls._instances[key] = inst
+    #     return cls._instances[key]
 
     def __init__(self) -> None:
         if getattr(self, "_is_init", False):
@@ -34,21 +35,11 @@ class LpLog:
 
     def _on_log_options_changed(self, src: Any, event_args: EventArgs) -> None:
         self._share_event.unsubscribe_event(LOG_OPTIONS_CHANGED, self._fn_on_log_options_changed)
-        LpLog.reset_instance()
+        LpLog.remove_this_instance(self)
 
     @property
     def log(self) -> PyLogger:
         return PyLogger(Lo.current_doc)
-
-    @classmethod
-    def reset_instance(cls) -> None:
-        doc = Lo.current_doc
-        PyLogger.reset_instance(doc)
-        key = f"doc_{doc.runtime_uid}"
-        if key in cls._instances:
-            inst = cls._instances[key]
-            inst._share_event.unsubscribe_event(LOG_OPTIONS_CHANGED, inst._fn_on_log_options_changed)
-            del cls._instances[key]
 
     @property
     def log_path(self) -> Path:

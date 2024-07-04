@@ -21,18 +21,30 @@ def _conditions_met() -> bool:
 if TYPE_CHECKING:
     # just for design time
     _CONDITIONS_MET = True
+    from ooodev.events.lo_events import LoEvents
+    from ooodev.events.args.event_args import EventArgs
+    from ooodev.utils.helper.dot_dict import DotDict
     from ..___lo_pip___.oxt_logger import OxtLogger
     from ..pythonpath.libre_pythonista_lib.sheet.listen.code_sheet_modify_listener import CodeSheetModifyListener
     from ..pythonpath.libre_pythonista_lib.sheet.listen.code_sheet_activation_listener import (
         CodeSheetActivationListener,
     )
-    from ..pythonpath.libre_pythonista_lib.code.mod_fn.lp_log import LpLog
+    from ..pythonpath.libre_pythonista_lib.code.mod_fn.lplog import LpLog
+    from ..pythonpath.libre_pythonista_lib.cell.cell_mgr import CellMgr
+    from ..pythonpath.libre_pythonista_lib.dispatch import dispatch_mgr  # type: ignore
+    from ..pythonpath.libre_pythonista_lib.const.event_const import GBL_DOC_CLOSING
 else:
     _CONDITIONS_MET = _conditions_met()
     if _CONDITIONS_MET:
+        from ooodev.events.lo_events import LoEvents
+        from ooodev.events.args.event_args import EventArgs
+        from ooodev.utils.helper.dot_dict import DotDict
         from libre_pythonista_lib.sheet.listen.code_sheet_modify_listener import CodeSheetModifyListener
         from libre_pythonista_lib.sheet.listen.code_sheet_activation_listener import CodeSheetActivationListener
-        from libre_pythonista_lib.code.mod_fn.lp_log import LpLog
+        from libre_pythonista_lib.code.mod_fn.lplog import LpLog
+        from libre_pythonista_lib.cell.cell_mgr import CellMgr
+        from libre_pythonista_lib.dispatch import dispatch_mgr  # type: ignore
+        from libre_pythonista_lib.const.event_const import GBL_DOC_CLOSING
 # endregion imports
 
 # region Constants
@@ -52,35 +64,34 @@ class LibrePythonistaUnLoadingJob(unohelper.Base, XJob):
     def __init__(self, ctx):
         self.ctx = ctx
         self.document = None
-        self._logger = self._get_local_logger()
+        self._log = self._get_local_logger()
 
     # endregion Init
 
     # region execute
     def execute(self, args: Any) -> None:
-        print("LibrePythonistaUnLoadingJob execute")
-        self._logger.debug("execute")
+        self._log.debug("execute")
         try:
             # loader = Lo.load_office()
-            self._logger.debug(f"Args Length: {len(args)}")
+            self._log.debug(f"Args Length: {len(args)}")
             arg1 = args[0]
 
             for struct in arg1.Value:
-                self._logger.debug(f"Struct: {struct.Name}")
+                self._log.debug(f"Struct: {struct.Name}")
                 if struct.Name == "Model":
                     self.document = struct.Value
-                    self._logger.debug("Document Found")
+                    self._log.debug("Document Found")
             if self.document is None:
-                self._logger.debug("Document is None")
+                self._log.debug("Document is None")
                 return
             if self.document.supportsService("com.sun.star.sheet.SpreadsheetDocument"):
-                self._logger.debug("Document UnLoading is a spreadsheet")
+                self._log.debug("Document UnLoading is a spreadsheet")
                 key = f"LIBRE_PYTHONISTA_DOC_{self.document.RuntimeUID}"
                 if key in os.environ:
-                    self._logger.debug(f"Removing {key} from os.environ")
+                    self._log.debug(f"Removing {key} from os.environ")
                     del os.environ[key]
                 else:
-                    self._logger.debug(f"{key} not found in os.environ")
+                    self._log.debug(f"{key} not found in os.environ")
                 if _CONDITIONS_MET:
                     run_time_id = self.document.RuntimeUID
                     try:
@@ -88,9 +99,6 @@ class LibrePythonistaUnLoadingJob(unohelper.Base, XJob):
 
                         # doc = CalcDoc.from_current_doc()
                         doc = CalcDoc.get_doc_from_component(self.document)
-                        from libre_pythonista_lib.dispatch import dispatch_mgr  # type: ignore
-                        from libre_pythonista_lib.cell.cell_mgr import CellMgr  # type: ignore
-
                         dispatch_mgr.unregister_interceptor(doc)
                         CellMgr.reset_instance(doc)
                         view = doc.get_view()
@@ -100,22 +108,33 @@ class LibrePythonistaUnLoadingJob(unohelper.Base, XJob):
                             if CodeSheetModifyListener.has_listener(unique_id):
                                 listener = CodeSheetModifyListener(unique_id)  # singleton
                                 sheet.component.removeModifyListener(listener)
-                    except Exception as e:
-                        self._logger.error("Error unregistering dispatch manager", exc_info=True)
+                    except Exception:
+                        self._log.error("Error dispatch manager not unregistered", exc_info=True)
                     try:
-                        self._logger.debug("Cleaning up LpLog file")
-                        lp_log = LpLog(run_time_id)
-                        if lp_log.log_path.exists():
-                            self._logger.debug(f"Removing LpLog file: {lp_log.log_path}")
-                            lp_log.log_path.unlink()
-                        LpLog.reset_instance(run_time_id)
+                        self._log.debug("Cleaning up LpLog file")
+                        if LpLog.has_singleton_instance():
+                            lp_log = LpLog()
+                            if lp_log.log_path.exists():
+                                self._log.debug(f"Removing LpLog file: {lp_log.log_path}")
+                                lp_log.log_path.unlink()
+                        else:
+                            self._log.debug("LpLog instance not found")
                     except Exception as e:
-                        self._logger.error("Error removing log file", exc_info=True)
+                        self._log.error("Error removing log file", exc_info=True)
+
+                    # many singletons are created and need to be removed
+                    # The code.py_source_mgr.PyInstance and many other modules listen for this
+                    # event to clean up singletons.
+                    event_args = EventArgs(self)
+                    event_args.event_data = DotDict(uid=run_time_id, doc=self.document)
+                    LoEvents().trigger(GBL_DOC_CLOSING, event_args)
+                    # any class the has the SingletonMeta can be used to clear the instance for the uid
+                    CellMgr.remove_instance_by_uid(run_time_id)
             else:
-                self._logger.debug("Document UnLoading not a spreadsheet")
+                self._log.debug("Document UnLoading not a spreadsheet")
 
         except Exception as e:
-            self._logger.error("Error getting current document", exc_info=True)
+            self._log.error("Error getting current document", exc_info=True)
             return
 
     # endregion execute

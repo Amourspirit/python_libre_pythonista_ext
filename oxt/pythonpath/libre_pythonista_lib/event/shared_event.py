@@ -1,8 +1,11 @@
 from __future__ import annotations
-from typing import Dict
+from typing import Any, Dict
 
 from ooodev.calc import CalcDoc
 from ooodev.events.partial.events_partial import EventsPartial
+from ooodev.events.lo_events import LoEvents
+from ooodev.events.args.event_args import EventArgs
+from ..const.event_const import GBL_DOC_CLOSING
 
 
 class SharedEvent(EventsPartial):
@@ -23,3 +26,14 @@ class SharedEvent(EventsPartial):
         EventsPartial.__init__(self)
         # self._doc = doc
         self._is_init = True
+
+
+def _on_doc_closing(src: Any, event: EventArgs) -> None:
+    # clean up singleton
+    uid = str(event.event_data.uid)
+    key = f"doc_{uid}"
+    if key in SharedEvent._instances:
+        del SharedEvent._instances[key]
+
+
+LoEvents().on(GBL_DOC_CLOSING, _on_doc_closing)

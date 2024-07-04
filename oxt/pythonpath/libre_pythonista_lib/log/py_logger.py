@@ -7,10 +7,11 @@ from typing import Any, Dict, Callable, TYPE_CHECKING
 from logging import Logger
 from logging.handlers import TimedRotatingFileHandler
 from ooodev.loader import Lo
+from ooodev.events.lo_events import LoEvents
 from ooodev.events.args.event_args import EventArgs
 from ooodev.utils.helper.dot_dict import DotDict
 
-from ..const.event_const import LOG_PY_LOGGER_RESET
+from ..const.event_const import LOG_PY_LOGGER_RESET, GBL_DOC_CLOSING
 from ..event.shared_event import SharedEvent
 
 
@@ -210,3 +211,14 @@ class PyLogger(Logger):
             eargs = EventArgs(cls)
             eargs.event_data = DotDict(reset_all=False, runtime_id=doc.runtime_uid)
             se.trigger_event(LOG_PY_LOGGER_RESET, eargs)
+
+
+def _on_doc_closing(src: Any, event: EventArgs) -> None:
+    # clean up singleton
+    uid = str(event.event_data.uid)
+    key = f"doc_{uid}"
+    if key in PyLogger._instances:
+        del PyLogger._instances[key]
+
+
+LoEvents().on(GBL_DOC_CLOSING, _on_doc_closing)

@@ -1,11 +1,15 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import Any, TYPE_CHECKING
 
 import uno
 import unohelper
 from com.sun.star.util import XModifyListener
+from ooodev.loader import Lo
 from ooodev.calc import CalcDoc
+from ooodev.events.lo_events import LoEvents
+from ooodev.events.args.event_args import EventArgs
 from ...cell.cell_mgr import CellMgr
+from ...const.event_const import GBL_DOC_CLOSING
 
 if TYPE_CHECKING:
     from com.sun.star.lang import EventObject
@@ -14,17 +18,23 @@ else:
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
 
 
-class CodeSheetModifyListener(unohelper.Base, XModifyListener):
+class CodeSheetModifyListener(XModifyListener, unohelper.Base):
     """Singleton class for Code Sheet Modify Listener."""
 
     _instances = {}
 
     def __new__(cls, inst_name: str) -> CodeSheetModifyListener:
-        if inst_name not in cls._instances:
+        key = cls._get_key(inst_name)
+        if key not in cls._instances:
             inst = super().__new__(cls)
             inst._is_init = False
-            cls._instances[inst_name] = inst
-        return cls._instances[inst_name]
+            inst._inst_name = key
+            cls._instances[key] = inst
+        return cls._instances[key]
+
+    @classmethod
+    def _get_key(cls, inst_name: str) -> str:
+        return f"{Lo.current_doc.runtime_uid}_uid_{inst_name}"
 
     def __init__(
         self,
@@ -32,8 +42,9 @@ class CodeSheetModifyListener(unohelper.Base, XModifyListener):
     ) -> None:
         if getattr(self, "_is_init", False):
             return
-        super().__init__()
-        self._inst_name = inst_name
+        XModifyListener.__init__(self)
+        unohelper.Base.__init__(self)
+        self._inst_name: str  # = inst_name
         self._log = OxtLogger(log_name=self.__class__.__name__)
         self._is_init = True
 
@@ -81,17 +92,33 @@ class CodeSheetModifyListener(unohelper.Base, XModifyListener):
 
     @classmethod
     def reset_instance(cls, inst_name: str = "") -> None:
+        key_inst = cls._get_key(inst_name)
         if not inst_name:
-            cls._instances.clear()
+            for key in list(cls._instances.keys()):
+                if key.startswith(key_inst):
+                    del cls._instances[key]
             return
-        if inst_name in cls._instances:
+        if key_inst in cls._instances:
             del cls._instances[inst_name]
         return None
 
     @classmethod
     def has_listener(cls, inst_name: str) -> bool:
-        return inst_name in cls._instances
+        key_inst = cls._get_key(inst_name)
+        return key_inst in cls._instances
 
     @classmethod
     def get_listener(cls, inst_name: str) -> CodeSheetModifyListener:
-        return cls._instances.get(inst_name, None)
+        key_inst = cls._get_key(inst_name)
+        return cls._instances.get(key_inst, None)
+
+
+def _on_doc_closing(src: Any, event: EventArgs) -> None:
+    uid = str(event.event_data.uid)
+    key_start = f"{uid}_uid_"
+    for key in list(CodeSheetModifyListener._instances.keys()):
+        if key.startswith(key_start):
+            del CodeSheetModifyListener._instances[key]
+
+
+LoEvents().on(GBL_DOC_CLOSING, _on_doc_closing)

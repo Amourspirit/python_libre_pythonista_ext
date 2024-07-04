@@ -1,11 +1,15 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import Any, TYPE_CHECKING
 
 import uno
 import unohelper
 from com.sun.star.sheet import XActivationEventListener
+from ooodev.loader import Lo
 from ooodev.calc import CalcDoc
+from ooodev.events.lo_events import LoEvents
+from ooodev.events.args.event_args import EventArgs
 from .code_sheet_modify_listener import CodeSheetModifyListener
+from ...const.event_const import GBL_DOC_CLOSING
 
 if TYPE_CHECKING:
     from com.sun.star.lang import EventObject
@@ -18,13 +22,19 @@ else:
 class CodeSheetActivationListener(unohelper.Base, XActivationEventListener):
     """Singleton Class for Sheet Activation Listener."""
 
-    _instance = None
+    _instances = {}
 
     def __new__(cls) -> CodeSheetActivationListener:
-        if cls._instance is None:
-            cls._instance = super().__new__(cls)
-            cls._instance._is_init = False
-        return cls._instance
+        key = cls._get_key()
+        if key not in cls._instances:
+            inst = super().__new__(cls)
+            inst._is_init = False
+            cls._instances[key] = inst
+        return cls._instances[key]
+
+    @classmethod
+    def _get_key(cls) -> str:
+        return f"{Lo.current_doc.runtime_uid}_uid"
 
     def __init__(self) -> None:
         if getattr(self, "_is_init", False):
@@ -73,3 +83,14 @@ class CodeSheetActivationListener(unohelper.Base, XActivationEventListener):
         if self._log is not None:
             self._log.debug("Deleted")
         setattr(self, "_log", None)
+
+
+def _on_doc_closing(src: Any, event: EventArgs) -> None:
+    # clean up singleton
+    uid = str(event.event_data.uid)
+    key = f"{uid}_uid"
+    if key in CodeSheetActivationListener._instances:
+        del CodeSheetActivationListener._instances[key]
+
+
+LoEvents().on(GBL_DOC_CLOSING, _on_doc_closing)

@@ -1,5 +1,6 @@
 from __future__ import annotations
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING
+from ..utils.singleton import SingletonMeta
 
 if TYPE_CHECKING:
     from ....___lo_pip___.lo_util.resource_resolver import ResourceResolver
@@ -7,15 +8,7 @@ else:
     from ___lo_pip___.lo_util.resource_resolver import ResourceResolver
 
 
-class ResResolver(ResourceResolver):
-
-    _instance = None
-
-    def __new__(cls, *args, **kwargs):
-        if cls._instance is None:
-            cls._instance = super(ResResolver, cls).__new__(cls, *args, **kwargs)
-            cls._instance._is_init = False
-        return cls._instance
+class ResResolver(metaclass=SingletonMeta):
 
     def __init__(self):
         if getattr(self, "_is_init", False):
@@ -23,5 +16,16 @@ class ResResolver(ResourceResolver):
         from ooodev.loader import Lo
 
         ctx = Lo.get_context()
-        super().__init__(ctx)
+        self._rr = ResourceResolver(ctx)
         self._is_init = True
+
+    def resolve_string(self, id: str) -> str:
+        """Resolve localized string
+
+        Args:
+            id (str): resource id
+
+        Returns:
+            str: localized string
+        """
+        return self._rr.resolve_string(id)

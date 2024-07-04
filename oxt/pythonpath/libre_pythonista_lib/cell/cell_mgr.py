@@ -25,6 +25,7 @@ from ..cell.props.key_maker import KeyMaker
 from ..event.shared_event import SharedEvent
 from .lpl_cell import LplCell
 from ..style.default_sytle import DefaultStyle
+from ..utils.singleton import SingletonMeta
 from ..const import (
     UNO_DISPATCH_CODE_DEL,
     UNO_DISPATCH_CODE_EDIT,
@@ -44,15 +45,15 @@ else:
     from ___lo_pip___.config import Config
 
 
-class CellMgr:
-    _instances: Dict[str, CellMgr] = {}
+class CellMgr(metaclass=SingletonMeta):
+    # _instances: Dict[str, CellMgr] = {}
 
-    def __new__(cls, doc: CalcDoc):
-        key = f"doc_{doc.runtime_uid}"
-        if not key in cls._instances:
-            cls._instances[key] = super(CellMgr, cls).__new__(cls)
-            cls._instances[key]._is_init = False
-        return cls._instances[key]
+    # def __new__(cls, doc: CalcDoc):
+    #     key = f"doc_{doc.runtime_uid}"
+    #     if not key in cls._instances:
+    #         cls._instances[key] = super(CellMgr, cls).__new__(cls)
+    #         cls._instances[key]._is_init = False
+    #     return cls._instances[key]
 
     def __init__(self, doc: CalcDoc):
         if getattr(self, "_is_init", False):

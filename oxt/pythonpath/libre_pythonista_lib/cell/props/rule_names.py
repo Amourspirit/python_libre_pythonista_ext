@@ -1,20 +1,22 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
+from ...utils.singleton import SingletonMeta
+
 if TYPE_CHECKING:
     from .....___lo_pip___.config import Config
 else:
     from ___lo_pip___.config import Config
 
 
-class RuleNames:
-    _instance = None
+class RuleNames(metaclass=SingletonMeta):
+    # _instance = None
 
-    def __new__(cls) -> RuleNames:
-        if cls._instance is None:
-            cls._instance = super().__new__(cls)
-            cls._instance._is_init = False
-        return cls._instance
+    # def __new__(cls) -> RuleNames:
+    #     if cls._instance is None:
+    #         cls._instance = super().__new__(cls)
+    #         cls._instance._is_init = False
+    #     return cls._instance
 
     def __init__(self) -> None:
         if getattr(self, "_is_init", False):
@@ -38,7 +40,7 @@ class RuleNames:
     def cell_data_type_none(self) -> str:
         """
         Rule name for cell data type of None.
-        
+
         This rule is different then Empty because it represents a that did not generate a value.
         """
         return "cell_data_type_none"
@@ -47,7 +49,7 @@ class RuleNames:
     def cell_data_type_empty(self) -> str:
         """
         Rule name for cell data type of Empty.
-        
+
         This rule is different then None because is represents a cell that has no code entered.
         """
         return "cell_data_type_empty"

@@ -10,6 +10,7 @@ from dataclasses import dataclass, field
 import uno
 from ooodev.calc import CalcDoc
 from ooodev.utils.data_type.cell_obj import CellObj
+from ..utils.singleton import SingletonMeta
 
 if TYPE_CHECKING:
     from ....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
@@ -29,19 +30,18 @@ class IndexCellProps:
         return hash((self.index, self.props))
 
 
-class CellCache:
-    _instances = {}
+class CellCache(metaclass=SingletonMeta):
+    # _instances = {}
 
-    def __new__(cls, doc: CalcDoc):
-        key = f"doc_{doc.runtime_uid}"
-        if not key in cls._instances:
-            cls._instances[key] = super(CellCache, cls).__new__(cls)
-            cls._instances[key]._is_init = False
-        return cls._instances[key]
+    # def __new__(cls, doc: CalcDoc):
+    #     key = f"doc_{doc.runtime_uid}"
+    #     if not key in cls._instances:
+    #         cls._instances[key] = super(CellCache, cls).__new__(cls)
+    #         cls._instances[key]._is_init = False
+    #     return cls._instances[key]
 
     def __init__(self, doc: CalcDoc):
-        is_init = getattr(self, "_is_init", False)
-        if is_init:
+        if getattr(self, "_is_init", False):
             return
         self._cfg = Config()
         self._log = OxtLogger(log_name=self.__class__.__name__)

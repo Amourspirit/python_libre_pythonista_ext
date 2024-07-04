@@ -13,8 +13,6 @@ else:
 
 class CalcProps(CustomPropsBase):
     """
-    Singleton Class.
-
     Class to add custom properties to a Calc document for LibrePythonista. The properties are stored in a json file embedded in the document.
     """
 

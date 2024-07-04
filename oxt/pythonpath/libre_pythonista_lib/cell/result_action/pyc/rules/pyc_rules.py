@@ -14,6 +14,7 @@ from .rule_pd_df_headers import RulePdDfHeaders
 from .rule_pd_ds import RulePdDs
 from .rule_str import RuleStr
 from .rule_tbl_data import RuleTblData
+from .....utils.singleton import SingletonMeta
 
 if TYPE_CHECKING:
     from .pyc_rule_t import PycRuleT
@@ -24,16 +25,16 @@ else:
     from ___lo_pip___.oxt_logger import OxtLogger
 
 
-class PycRules:
+class PycRules(metaclass=SingletonMeta):
     """Singleton Class. Manages rules for Versions"""
 
-    _instance = None
+    # _instance = None
 
-    def __new__(cls) -> PycRules:
-        if cls._instance is None:
-            cls._instance = super().__new__(cls)
-            cls._instance._is_init = False
-        return cls._instance
+    # def __new__(cls) -> PycRules:
+    #     if cls._instance is None:
+    #         cls._instance = super().__new__(cls)
+    #         cls._instance._is_init = False
+    #     return cls._instance
 
     def __init__(self) -> None:
         """
@@ -45,9 +46,9 @@ class PycRules:
         self._log.debug(f"{self.__class__.__name__}.__init__() Initializing.")
         self._rules: List[Type[PycRuleT]] = []
         self._register_known_rules()
-        self._is_init = True
         self._default_rule = RuleNone
         self._log.debug(f"{self.__class__.__name__}.__init__() Initialized.")
+        self._is_init = True
 
     def __len__(self) -> int:
         return len(self._rules)
@@ -186,7 +187,7 @@ class PycRules:
 
         Args:
             cell (str): Calc Cell.
-            
+
         Returns:
             PycRuleT: Rule if found. The returned instance will have no data.
         """

@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import cast, Tuple
+from typing import Any, cast, Tuple
 from urllib.parse import parse_qs
 import contextlib
 import uno
@@ -12,6 +12,8 @@ from com.sun.star.frame import DispatchDescriptor
 
 from ooodev.loader import Lo
 from ooodev.calc import CalcDoc
+from ooodev.events.lo_events import LoEvents
+from ooodev.events.args.event_args import EventArgs
 
 # from ooodev.calc import CalcDoc
 from ..const import (
@@ -28,6 +30,7 @@ from ..const import (
     UNO_DISPATCH_SEL_RNG,
     UNO_DISPATCH_ABOUT,
 )
+from ..const.event_const import GBL_DOC_CLOSING
 
 from .dispatch_about import DispatchAbout
 from .dispatch_edit_py_cell import DispatchEditPyCell
@@ -220,3 +223,14 @@ class DispatchProviderInterceptor(unohelper.Base, XDispatchProviderInterceptor):
         doc.runtime_uid
         key = f"dpi_{doc.runtime_uid}"
         return key in cls._instances
+
+
+def _on_doc_closing(src: Any, event: EventArgs) -> None:
+    # clean up singleton
+    uid = str(event.event_data.uid)
+    key = f"dpi_{uid}"
+    if key in DispatchProviderInterceptor._instances:
+        del DispatchProviderInterceptor._instances[key]
+
+
+LoEvents().on(GBL_DOC_CLOSING, _on_doc_closing)

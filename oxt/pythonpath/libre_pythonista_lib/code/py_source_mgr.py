@@ -6,6 +6,7 @@ from ooodev.calc import CalcDoc, CalcCell
 from ooodev.utils.data_type.cell_obj import CellObj
 from ooodev.utils import gen_util as gUtil
 from ooodev.io.sfa import Sfa
+from ooodev.events.lo_events import LoEvents
 from ooodev.events.partial.events_partial import EventsPartial
 from ooodev.events.args.cancel_event_args import CancelEventArgs
 from ooodev.events.args.event_args import EventArgs
@@ -19,6 +20,7 @@ from ..event.shared_event import SharedEvent
 from .py_module import PyModule
 from .cell_cache import CellCache
 from ..cell.props.key_maker import KeyMaker
+from ..const.event_const import GBL_DOC_CLOSING
 
 # from .cell_code_storage import CellCodeStorage
 
@@ -950,3 +952,14 @@ class PyInstance:
             inst.dispose()
             inst = None
             del cls._instances[key]
+
+
+def _on_doc_closing(src: Any, event: EventArgs) -> None:
+    # clean up singleton
+    uid = str(event.event_data.uid)
+    key = f"doc_{uid}"
+    if key in PyInstance._instances:
+        del PyInstance._instances[key]
+
+
+LoEvents().on(GBL_DOC_CLOSING, _on_doc_closing)

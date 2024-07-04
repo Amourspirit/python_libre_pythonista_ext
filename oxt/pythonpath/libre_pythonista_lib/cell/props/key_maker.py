@@ -1,6 +1,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 from .rule_names import RuleNames
+from ...utils.singleton import SingletonMeta
 
 if TYPE_CHECKING:
     from .....___lo_pip___.config import Config
@@ -8,14 +9,14 @@ else:
     from ___lo_pip___.config import Config
 
 
-class KeyMaker:
-    _instance = None
+class KeyMaker(metaclass=SingletonMeta):
+    # _instance = None
 
-    def __new__(cls) -> KeyMaker:
-        if cls._instance is None:
-            cls._instance = super().__new__(cls)
-            cls._instance._is_init = False
-        return cls._instance
+    # def __new__(cls) -> KeyMaker:
+    #     if cls._instance is None:
+    #         cls._instance = super().__new__(cls)
+    #         cls._instance._is_init = False
+    #     return cls._instance
 
     def __init__(self) -> None:
         if getattr(self, "_is_init", False):
