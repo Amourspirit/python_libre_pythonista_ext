@@ -40,17 +40,17 @@ else:
         from libre_pythonista_lib.sheet.listen.code_sheet_activation_listener import CodeSheetActivationListener
 # endregion imports
 
-# region Constants
-
-implementation_name = "com.github.amourspirit.extensions.librepythonista.LibrePythonistaViewJob"
-implementation_services = ("com.sun.star.task.Job",)
-
-# endregion Constants
-
 
 # region XJob
 class LibrePythonistaViewJob(unohelper.Base, XJob):
     """Python UNO Component that implements the com.sun.star.task.Job interface."""
+
+    IMPLE_NAME = "___lo_identifier___.LibrePythonistaViewJob"
+    SERVICE_NAMES = ("com.sun.star.task.Job",)
+
+    @classmethod
+    def get_imple(cls):
+        return (cls, cls.IMPLE_NAME, cls.SERVICE_NAMES)
 
     # region Init
 
@@ -183,6 +183,6 @@ class LibrePythonistaViewJob(unohelper.Base, XJob):
 
 g_TypeTable = {}
 g_ImplementationHelper = unohelper.ImplementationHelper()
-g_ImplementationHelper.addImplementation(LibrePythonistaViewJob, implementation_name, implementation_services)
+g_ImplementationHelper.addImplementation(*LibrePythonistaViewJob.get_imple())
 
 # endregion Implementation

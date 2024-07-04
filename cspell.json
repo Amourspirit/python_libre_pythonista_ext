@@ -21,6 +21,7 @@
         "flatpak",
         "getpgid",
         "iloc",
+        "IMPLE",
         "Killable",
         "killpg",
         "levelname",

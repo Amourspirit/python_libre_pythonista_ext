@@ -29,17 +29,17 @@ else:
         from ___lo_pip___.config import Config
 # endregion imports
 
-# region Constants
-
-implementation_name = "com.github.amourspirit.extensions.librepythonista.LibrePythonistaSavingJob"
-implementation_services = ("com.sun.star.task.Job",)
-
-# endregion Constants
-
 
 # region XJob
 class LibrePythonistaSavingJob(unohelper.Base, XJob):
     """Python UNO Component that implements the com.sun.star.task.Job interface."""
+
+    IMPLE_NAME = "___lo_identifier___.LibrePythonistaSavingJob"
+    SERVICE_NAMES = ("com.sun.star.task.Job",)
+
+    @classmethod
+    def get_imple(cls):
+        return (cls, cls.IMPLE_NAME, cls.SERVICE_NAMES)
 
     # region Init
 
@@ -93,7 +93,7 @@ class LibrePythonistaSavingJob(unohelper.Base, XJob):
     # region Logging
 
     def _get_local_logger(self) -> OxtLogger:
-        from libre_pythonista.oxt_logger import OxtLogger
+        from ___lo_pip___.oxt_logger import OxtLogger
 
         return OxtLogger(log_name="LibrePythonistaSavingJob")
 
@@ -106,7 +106,6 @@ class LibrePythonistaSavingJob(unohelper.Base, XJob):
 
 g_TypeTable = {}
 g_ImplementationHelper = unohelper.ImplementationHelper()
-
-g_ImplementationHelper.addImplementation(LibrePythonistaSavingJob, implementation_name, implementation_services)
+g_ImplementationHelper.addImplementation(*LibrePythonistaSavingJob.get_imple())
 
 # endregion Implementation

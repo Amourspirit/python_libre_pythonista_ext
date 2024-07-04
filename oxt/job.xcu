@@ -11,27 +11,27 @@
     </node>
     <node oor:name="LibrePythonistaViewJob" oor:op="fuse">
       <prop oor:name="Service">
-        <value>com.github.amourspirit.extensions.librepythonista.LibrePythonistaViewJob</value>
+        <value>___lo_identifier___.LibrePythonistaViewJob</value>
       </prop>
     </node>
     <node oor:name="LibrePythonistaLoadingJob" oor:op="fuse">
       <prop oor:name="Service">
-        <value>com.github.amourspirit.extensions.librepythonista.LibrePythonistaLoadingJob</value>
+        <value>___lo_identifier___.LibrePythonistaLoadingJob</value>
       </prop>
     </node>
     <node oor:name="LibrePythonistaUnLoadingJob" oor:op="fuse">
       <prop oor:name="Service">
-        <value>com.github.amourspirit.extensions.librepythonista.LibrePythonistaUnLoadingJob</value>
+        <value>___lo_identifier___.LibrePythonistaUnLoadingJob</value>
       </prop>
     </node>
     <node oor:name="LibrePythonistaViewCloseJob" oor:op="fuse">
       <prop oor:name="Service">
-        <value>com.github.amourspirit.extensions.librepythonista.LibrePythonistaViewCloseJob</value>
+        <value>___lo_identifier___.LibrePythonistaViewCloseJob</value>
       </prop>
     </node>
     <node oor:name="LibrePythonistaSavingJob" oor:op="fuse">
       <prop oor:name="Service">
-        <value>com.github.amourspirit.extensions.librepythonista.LibrePythonistaSavingJob</value>
+        <value>___lo_identifier___.LibrePythonistaSavingJob</value>
       </prop>
     </node>
   </node>
