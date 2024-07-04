@@ -60,11 +60,14 @@ else:
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
 
 
-implementation_name = "com.github.amourspirit.extension.librepythonista.PyImpl"
-implementation_services = ("com.sun.star.sheet.AddIn",)
-
-
 class PyImpl(unohelper.Base, XPy):
+    IMPLE_NAME = "com.github.amourspirit.extension.librepythonista.PyImpl"
+    SERVICE_NAMES = ("com.sun.star.sheet.AddIn",)
+
+    @classmethod
+    def get_imple(cls):
+        return (cls, cls.IMPLE_NAME, cls.SERVICE_NAMES)
+
     def __init__(self, ctx: Any):
         # this is only init one time per session. When a new document is loaded, it is not called.
         self.ctx = ctx
@@ -230,9 +233,9 @@ class PyImpl(unohelper.Base, XPy):
         return result
 
 
-def createInstance(ctx):
-    return PyImpl(ctx)
+# def createInstance(ctx):
+#     return PyImpl(ctx)
 
 
 g_ImplementationHelper = unohelper.ImplementationHelper()
-g_ImplementationHelper.addImplementation(createInstance, implementation_name, implementation_services)
+g_ImplementationHelper.addImplementation(*PyImpl.get_imple())

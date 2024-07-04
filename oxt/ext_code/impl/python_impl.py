@@ -63,6 +63,13 @@ implementation_name = "___lo_identifier___.impl"
 
 
 class PythonImpl(unohelper.Base, XJobExecutor):
+    IMPLE_NAME = "___lo_identifier___.impl"
+    SERVICE_NAMES = ("com.sun.star.task.Job",)
+
+    @classmethod
+    def get_imple(cls):
+        return (cls, cls.IMPLE_NAME, cls.SERVICE_NAMES)
+
     def __init__(self, ctx):
         self.ctx = ctx
         self._log = OxtLogger(log_name=self.__class__.__name__)
@@ -216,5 +223,4 @@ class PythonImpl(unohelper.Base, XJobExecutor):
 
 
 g_ImplementationHelper = unohelper.ImplementationHelper()
-
-g_ImplementationHelper.addImplementation(PythonImpl, implementation_name, ("com.sun.star.task.Job",))
+g_ImplementationHelper.addImplementation(*PythonImpl.get_imple())
