@@ -24,15 +24,15 @@ if TYPE_CHECKING:
     from ooodev.events.lo_events import LoEvents
     from ooodev.events.args.event_args import EventArgs
     from ooodev.utils.helper.dot_dict import DotDict
-    from ..___lo_pip___.oxt_logger import OxtLogger
-    from ..pythonpath.libre_pythonista_lib.sheet.listen.code_sheet_modify_listener import CodeSheetModifyListener
-    from ..pythonpath.libre_pythonista_lib.sheet.listen.code_sheet_activation_listener import (
+    from ...___lo_pip___.oxt_logger import OxtLogger
+    from ...pythonpath.libre_pythonista_lib.sheet.listen.code_sheet_modify_listener import CodeSheetModifyListener
+    from ...pythonpath.libre_pythonista_lib.sheet.listen.code_sheet_activation_listener import (
         CodeSheetActivationListener,
     )
-    from ..pythonpath.libre_pythonista_lib.code.mod_fn.lplog import LpLog
-    from ..pythonpath.libre_pythonista_lib.cell.cell_mgr import CellMgr
-    from ..pythonpath.libre_pythonista_lib.dispatch import dispatch_mgr  # type: ignore
-    from ..pythonpath.libre_pythonista_lib.const.event_const import GBL_DOC_CLOSING
+    from ...pythonpath.libre_pythonista_lib.code.mod_fn.lplog import LpLog
+    from ...pythonpath.libre_pythonista_lib.cell.cell_mgr import CellMgr
+    from ...pythonpath.libre_pythonista_lib.dispatch import dispatch_mgr  # type: ignore
+    from ...pythonpath.libre_pythonista_lib.const.event_const import GBL_DOC_CLOSING
 else:
     _CONDITIONS_MET = _conditions_met()
     if _CONDITIONS_MET:

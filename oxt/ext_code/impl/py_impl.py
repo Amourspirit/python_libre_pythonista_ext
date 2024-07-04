@@ -20,7 +20,7 @@ def _conditions_met() -> bool:
 def add_local_path_to_sys_path() -> None:
     # add the path of this module to the sys.path
     # this_pth = os.path.dirname(__file__)
-    this_pth = str(Path(__file__).parent.parent)
+    this_pth = str(Path(__file__).parent.parent.parent)
     if this_pth not in sys.path:
         sys.path.append(this_pth)
 
@@ -36,12 +36,12 @@ if TYPE_CHECKING:
     from ooodev.utils.data_type.range_obj import RangeObj
     from ooodev.utils.data_type.col_obj import ColObj
     from ooodev.exceptions import ex as mEx
-    from ..___lo_pip___.oxt_logger.oxt_logger import OxtLogger
-    from ..___lo_pip___.config import Config
-    from ..pythonpath.libre_pythonista_lib.dialog.py.dialog_python import DialogPython
-    from ..pythonpath.libre_pythonista_lib.cell.cell_mgr import CellMgr
-    from ..pythonpath.libre_pythonista_lib.cell.result_action.pyc.rules.pyc_rules import PycRules
-    from ..pythonpath.libre_pythonista_lib.cell.lpl_cell import LplCell
+    from ...___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from ...___lo_pip___.config import Config
+    from ...pythonpath.libre_pythonista_lib.dialog.py.dialog_python import DialogPython
+    from ...pythonpath.libre_pythonista_lib.cell.cell_mgr import CellMgr
+    from ...pythonpath.libre_pythonista_lib.cell.result_action.pyc.rules.pyc_rules import PycRules
+    from ...pythonpath.libre_pythonista_lib.cell.lpl_cell import LplCell
 
 else:
     _CONDITIONS_MET = _conditions_met()
@@ -141,7 +141,9 @@ class PyImpl(unohelper.Base, XPy):
                     from libre_pythonista_lib.cell.lpl_cell import LplCell
                 lp_cell = LplCell(cell)
                 if lp_cell.has_code_name_prop:
-                    self._logger.debug(f"pyc - py {cell.cell_obj} cell already has code. May be a row or column as been inserted.")
+                    self._logger.debug(
+                        f"pyc - py {cell.cell_obj} cell already has code. May be a row or column as been inserted."
+                    )
                     code_handled = True
                     lp_cell.reset_py_instance()
                     CellMgr.reset_instance(doc)

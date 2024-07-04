@@ -11,7 +11,7 @@ from com.sun.star.task import XJobExecutor
 
 def add_local_path_to_sys_path() -> None:
     # add the path of this module to the sys.path
-    this_pth = str(Path(__file__).parent.parent)
+    this_pth = str(Path(__file__).parent.parent.parent)
     if this_pth not in sys.path:
         sys.path.append(this_pth)
 
@@ -29,9 +29,9 @@ def _conditions_met() -> bool:
 
 if TYPE_CHECKING:
     _CONDITIONS_MET = True
-    from ..___lo_pip___.lo_util.resource_resolver import ResourceResolver
-    from ..pythonpath.libre_pythonista_lib.code.cell_cache import CellCache
-    from ..pythonpath.libre_pythonista_lib.code.py_source_mgr import PyInstance
+    from ...___lo_pip___.lo_util.resource_resolver import ResourceResolver
+    from ...pythonpath.libre_pythonista_lib.code.cell_cache import CellCache
+    from ...pythonpath.libre_pythonista_lib.code.py_source_mgr import PyInstance
 
     from ooodev.loader import Lo
     from ooodev.calc import CalcDoc
@@ -40,8 +40,8 @@ if TYPE_CHECKING:
     from ooo.dyn.awt.message_box_buttons import MessageBoxButtonsEnum
     from ooo.dyn.awt.message_box_type import MessageBoxType
     from ooodev.dialog.msgbox import MsgBox
-    from ..___lo_pip___.oxt_logger.oxt_logger import OxtLogger
-    from ..pythonpath.libre_pythonista_lib.const import UNO_DISPATCH_ABOUT
+    from ...___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from ...pythonpath.libre_pythonista_lib.const import UNO_DISPATCH_ABOUT
 else:
     _CONDITIONS_MET = _conditions_met()
     if _CONDITIONS_MET:

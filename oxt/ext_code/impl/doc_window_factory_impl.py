@@ -21,7 +21,7 @@ if TYPE_CHECKING:
     from com.sun.star.uno import XInterface
     from com.sun.star.uno import XComponentContext
     from com.sun.star.awt import UnoControlDialog  # service
-    from ..pythonpath.libre_pythonista_lib.dialog.handlers.log_win_handler import LogWinHandler
+    from ...pythonpath.libre_pythonista_lib.dialog.handlers.log_win_handler import LogWinHandler
 else:
     _CONDITIONS_MET = _conditions_met()
     if _CONDITIONS_MET:
