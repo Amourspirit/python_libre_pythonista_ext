@@ -6,7 +6,7 @@
 	oor:package="org.openoffice.Office">
 	<node oor:name="AddonUI">
 		<node oor:name="OfficeMenuBar">
-			<node oor:name="com.github.amourspirit.extension.librepythonista.calc.menu"
+			<node oor:name="___lo_identifier___.calc.menu"
 				oor:op="replace">
 				<prop oor:name="Title" oor:type="xs:string">
 					<value />
@@ -55,7 +55,7 @@
 			</node>
 		</node>
 		<node oor:name="OfficeHelp">
-			<node oor:name="com.github.amourspirit.extension.librepythonista.AddonMenu.m1"
+			<node oor:name="___lo_identifier___.AddonMenu.m1"
 				oor:op="replace">
 				<prop oor:name="Context" oor:type="xs:string">
 					<value>com.sun.star.sheet.SpreadsheetDocument</value>
@@ -75,13 +75,13 @@
 			</node>
 		</node>
 		<node oor:name="AddonMenu">
-			<node oor:name="com.github.amourspirit.extension.librepythonista.AddonMenu.m2"
+			<node oor:name="___lo_identifier___.AddonMenu.m2"
 				oor:op="replace">
 				<prop oor:name="URL" oor:type="xs:string">
 					<value>private:separator</value>
 				</prop>
 			</node>
-			<node oor:name="com.github.amourspirit.extension.librepythonista.AddonMenu.m3"
+			<node oor:name="___lo_identifier___.AddonMenu.m3"
 				oor:op="replace">
 				<prop oor:name="Context" oor:type="xs:string">
 					<value>com.sun.star.sheet.SpreadsheetDocument</value>
@@ -96,7 +96,7 @@
 					<value>_self</value>
 				</prop>
 			</node>
-			<node oor:name="com.github.amourspirit.extension.librepythonista.AddonMenu.m4"
+			<node oor:name="___lo_identifier___.AddonMenu.m4"
 				oor:op="replace">
 				<prop oor:name="Context" oor:type="xs:string">
 					<value>com.sun.star.sheet.SpreadsheetDocument</value>
@@ -111,7 +111,7 @@
 					<value>_self</value>
 				</prop>
 			</node>
-			<node oor:name="com.github.amourspirit.extension.librepythonista.AddonMenu.m5"
+			<node oor:name="___lo_identifier___.AddonMenu.m5"
 				oor:op="replace">
 				<prop oor:name="Context" oor:type="xs:string">
 					<value>com.sun.star.sheet.SpreadsheetDocument</value>
@@ -126,7 +126,7 @@
 					<value>_self</value>
 				</prop>
 			</node>
-			<node oor:name="com.github.amourspirit.extension.librepythonista.AddonMenu.m6"
+			<node oor:name="___lo_identifier___.AddonMenu.m6"
 				oor:op="replace">
 				<prop oor:name="Context" oor:type="xs:string">
 					<value>com.sun.star.sheet.SpreadsheetDocument</value>

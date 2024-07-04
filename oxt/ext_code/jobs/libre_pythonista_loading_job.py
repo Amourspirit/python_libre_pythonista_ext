@@ -36,7 +36,6 @@ class LibrePythonistaLoadingJob(unohelper.Base, XJob):
 
     # region execute
     def execute(self, args: Any) -> None:
-        print("LibrePythonistaLoadingJob execute")
         self._logger.debug("execute")
         try:
             # loader = Lo.load_office()
