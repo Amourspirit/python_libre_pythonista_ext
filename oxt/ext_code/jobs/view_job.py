@@ -42,10 +42,10 @@ else:
 
 
 # region XJob
-class LibrePythonistaViewJob(unohelper.Base, XJob):
+class ViewJob(unohelper.Base, XJob):
     """Python UNO Component that implements the com.sun.star.task.Job interface."""
 
-    IMPLE_NAME = "___lo_identifier___.LibrePythonistaViewJob"
+    IMPLE_NAME = "___lo_identifier___.ViewJob"
     SERVICE_NAMES = ("com.sun.star.task.Job",)
 
     @classmethod
@@ -66,8 +66,8 @@ class LibrePythonistaViewJob(unohelper.Base, XJob):
         # This job may be executed more then once.
         # When a spreadsheet is put into print preview this is fired.
         # When the print preview is closed this is fired again.
-        # print("LibrePythonistaViewJob execute")
-        self._logger.debug("LibrePythonistaViewJob execute")
+        # print("ViewJob execute")
+        self._logger.debug("ViewJob execute")
         try:
             # loader = Lo.load_office()
             self._logger.debug(f"Args Length: {len(args)}")
@@ -80,7 +80,7 @@ class LibrePythonistaViewJob(unohelper.Base, XJob):
                     self._logger.debug("Document Found")
 
             if self.document is None:
-                self._logger.debug("LibrePythonistaViewJob - Document is None")
+                self._logger.debug("ViewJob - Document is None")
                 return
             if self.document.supportsService("com.sun.star.sheet.SpreadsheetDocument"):
                 key = f"LIBRE_PYTHONISTA_DOC_{self.document.RuntimeUID}"
@@ -172,7 +172,7 @@ class LibrePythonistaViewJob(unohelper.Base, XJob):
     def _get_local_logger(self) -> OxtLogger:
         from ___lo_pip___.oxt_logger import OxtLogger
 
-        return OxtLogger(log_name="LibrePythonistaViewJob")
+        return OxtLogger(log_name="ViewJob")
 
     # endregion Logging
 
@@ -183,6 +183,6 @@ class LibrePythonistaViewJob(unohelper.Base, XJob):
 
 g_TypeTable = {}
 g_ImplementationHelper = unohelper.ImplementationHelper()
-g_ImplementationHelper.addImplementation(*LibrePythonistaViewJob.get_imple())
+g_ImplementationHelper.addImplementation(*ViewJob.get_imple())
 
 # endregion Implementation

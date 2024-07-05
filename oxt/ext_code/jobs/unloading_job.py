@@ -49,10 +49,10 @@ else:
 
 
 # region XJob
-class LibrePythonistaUnLoadingJob(unohelper.Base, XJob):
+class UnLoadingJob(unohelper.Base, XJob):
     """Python UNO Component that implements the com.sun.star.task.Job interface."""
 
-    IMPLE_NAME = "___lo_identifier___.LibrePythonistaUnLoadingJob"
+    IMPLE_NAME = "___lo_identifier___.UnLoadingJob"
     SERVICE_NAMES = ("com.sun.star.task.Job",)
 
     @classmethod
@@ -144,7 +144,7 @@ class LibrePythonistaUnLoadingJob(unohelper.Base, XJob):
     def _get_local_logger(self) -> OxtLogger:
         from ___lo_pip___.oxt_logger import OxtLogger
 
-        return OxtLogger(log_name="LibrePythonistaUnLoadingJob")
+        return OxtLogger(log_name="UnLoadingJob")
 
     # endregion Logging
 
@@ -155,6 +155,6 @@ class LibrePythonistaUnLoadingJob(unohelper.Base, XJob):
 
 g_TypeTable = {}
 g_ImplementationHelper = unohelper.ImplementationHelper()
-g_ImplementationHelper.addImplementation(*LibrePythonistaUnLoadingJob.get_imple())
+g_ImplementationHelper.addImplementation(*UnLoadingJob.get_imple())
 
 # endregion Implementation

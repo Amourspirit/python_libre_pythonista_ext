@@ -1,40 +1,24 @@
 # region imports
 from __future__ import unicode_literals, annotations
 from typing import Any, TYPE_CHECKING
-import os
-import contextlib
 import uno
 import unohelper
 
 
 from com.sun.star.task import XJob
 
-
-def _conditions_met() -> bool:
-    with contextlib.suppress(Exception):
-        from ___lo_pip___.install.requirements_check import RequirementsCheck  # type: ignore
-
-        return RequirementsCheck().run_imports_ready()
-    return False
-
-
 if TYPE_CHECKING:
     # just for design time
-    _CONDITIONS_MET = True
     from ...___lo_pip___.oxt_logger import OxtLogger
-    from ...___lo_pip___.config import Config
-else:
-    _CONDITIONS_MET = _conditions_met()
-    if _CONDITIONS_MET:
-        from ___lo_pip___.config import Config
+
 # endregion imports
 
 
 # region XJob
-class LibrePythonistaSavingJob(unohelper.Base, XJob):
+class LoadingJob(unohelper.Base, XJob):
     """Python UNO Component that implements the com.sun.star.task.Job interface."""
 
-    IMPLE_NAME = "___lo_identifier___.LibrePythonistaSavingJob"
+    IMPLE_NAME = "___lo_identifier___.LoadingJob"
     SERVICE_NAMES = ("com.sun.star.task.Job",)
 
     @classmethod
@@ -67,21 +51,9 @@ class LibrePythonistaSavingJob(unohelper.Base, XJob):
                 self._logger.debug("Document is None")
                 return
             if self.document.supportsService("com.sun.star.sheet.SpreadsheetDocument"):
-                self._logger.debug("Document Saving is a spreadsheet")
-                if _CONDITIONS_MET:
-                    try:
-                        from ooodev.calc import CalcDoc
-
-                        doc = CalcDoc.get_doc_from_component(self.document)
-                        cfg = Config()
-                        ver = doc.get_custom_property("LIBRE_PYTHONISTA_VERSION", "")
-                        if ver != cfg.extension_version:
-                            doc.set_custom_property("LIBRE_PYTHONISTA_VERSION", cfg.extension_version)
-
-                    except Exception as e:
-                        self._logger.error("Error Setting Custom Properties", exc_info=True)
+                self._logger.debug("Document Loading is a spreadsheet")
             else:
-                self._logger.debug("Document UnLoading not a spreadsheet")
+                self._logger.debug("Document Loading not a spreadsheet")
 
         except Exception as e:
             self._logger.error("Error getting current document", exc_info=True)
@@ -94,7 +66,7 @@ class LibrePythonistaSavingJob(unohelper.Base, XJob):
     def _get_local_logger(self) -> OxtLogger:
         from ___lo_pip___.oxt_logger import OxtLogger
 
-        return OxtLogger(log_name="LibrePythonistaSavingJob")
+        return OxtLogger(log_name="LoadingJob")
 
     # endregion Logging
 
@@ -105,6 +77,6 @@ class LibrePythonistaSavingJob(unohelper.Base, XJob):
 
 g_TypeTable = {}
 g_ImplementationHelper = unohelper.ImplementationHelper()
-g_ImplementationHelper.addImplementation(*LibrePythonistaSavingJob.get_imple())
+g_ImplementationHelper.addImplementation(*LoadingJob.get_imple())
 
 # endregion Implementation

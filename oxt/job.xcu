@@ -9,19 +9,19 @@
         <value>___lo_identifier___.___lo_implementation_name___</value>
       </prop>
     </node>
-    <node oor:name="LibrePythonistaViewJob" oor:op="fuse">
+    <node oor:name="ViewJob" oor:op="fuse">
       <prop oor:name="Service">
-        <value>___lo_identifier___.LibrePythonistaViewJob</value>
+        <value>___lo_identifier___.ViewJob</value>
       </prop>
     </node>
-    <node oor:name="LibrePythonistaLoadingJob" oor:op="fuse">
+    <node oor:name="LoadingJob" oor:op="fuse">
       <prop oor:name="Service">
-        <value>___lo_identifier___.LibrePythonistaLoadingJob</value>
+        <value>___lo_identifier___.LoadingJob</value>
       </prop>
     </node>
-    <node oor:name="LibrePythonistaUnLoadingJob" oor:op="fuse">
+    <node oor:name="UnLoadingJob" oor:op="fuse">
       <prop oor:name="Service">
-        <value>___lo_identifier___.LibrePythonistaUnLoadingJob</value>
+        <value>___lo_identifier___.UnLoadingJob</value>
       </prop>
     </node>
     <node oor:name="LibrePythonistaViewCloseJob" oor:op="fuse">
@@ -29,9 +29,9 @@
         <value>___lo_identifier___.LibrePythonistaViewCloseJob</value>
       </prop>
     </node>
-    <node oor:name="LibrePythonistaSavingJob" oor:op="fuse">
+    <node oor:name="SavingJob" oor:op="fuse">
       <prop oor:name="Service">
-        <value>___lo_identifier___.LibrePythonistaSavingJob</value>
+        <value>___lo_identifier___.SavingJob</value>
       </prop>
     </node>
   </node>
@@ -43,27 +43,27 @@
     </node>
     <node oor:name="OnLoad" oor:op="fuse">
       <node oor:name="JobList">
-        <node oor:name="LibrePythonistaLoadingJob" oor:op="fuse" />
+        <node oor:name="LoadingJob" oor:op="fuse" />
       </node>
     </node>
     <node oor:name="OnPrepareUnload" oor:op="fuse">
       <node oor:name="JobList">
-        <node oor:name="LibrePythonistaUnLoadingJob" oor:op="fuse" />
+        <node oor:name="UnLoadingJob" oor:op="fuse" />
       </node>
     </node>
     <node oor:name="OnViewCreated" oor:op="fuse">
       <node oor:name="JobList">
-        <node oor:name="LibrePythonistaViewJob" oor:op="fuse" />
+        <node oor:name="ViewJob" oor:op="fuse" />
       </node>
     </node>
     <node oor:name="OnSave" oor:op="fuse">
       <node oor:name="JobList">
-        <node oor:name="LibrePythonistaSavingJob" oor:op="fuse" />
+        <node oor:name="SavingJob" oor:op="fuse" />
       </node>
     </node>
     <node oor:name="OnCopyTo" oor:op="fuse">
       <node oor:name="JobList">
-        <node oor:name="LibrePythonistaSavingJob" oor:op="fuse" />
+        <node oor:name="SavingJob" oor:op="fuse" />
       </node>
     </node>
   </node>
