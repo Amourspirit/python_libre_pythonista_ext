@@ -17,7 +17,7 @@ from ...log.py_logger import PyLogger
 from ...dialog.options.log_opt import LogOpt
 from ...log.py_logger import PyLogger
 from ...const.event_const import LOG_PY_LOGGER_RESET
-from ...event.shared_event import SharedEvent
+from ...event.shared_calc_doc_event import SharedCalcDocEvent
 
 if TYPE_CHECKING:
     from com.sun.star.awt import UnoControlEdit  # service
@@ -71,6 +71,8 @@ class LogWinHandler(XWindowListener, unohelper.Base):
     """LogWinHandler Class"""
 
     def __init__(self, ctx: Any, dialog: UnoControlDialog):
+        XWindowListener.__init__(self)
+        unohelper.Base.__init__(self)
         self._log = OxtLogger(log_name=self.__class__.__name__)
         self._log.debug("init")
         try:
@@ -86,11 +88,11 @@ class LogWinHandler(XWindowListener, unohelper.Base):
             self._fn_on_log_py_inst_reset = self._on_log_py_inst_reset
             self._py_logger = PyLogger(doc=doc)
             self._py_logger.subscribe_log_event(self._fn_on_log_event)
-            self._share_event = SharedEvent()  # singleton
+            self._share_event = SharedCalcDocEvent(doc)  # type: ignore
             self._share_event.subscribe_event(LOG_PY_LOGGER_RESET, self._fn_on_log_py_inst_reset)
             PyLogger.reset_instance(doc=doc)
 
-            self._log.debug("init Done")
+            self._log.debug(f"init Done for Doc with RuntimeID {doc.runtime_uid}")
         except Exception as err:
             self._log.error(f"LogWinHandler.__init__ {err}", exc_info=True)
             raise err
@@ -119,6 +121,7 @@ class LogWinHandler(XWindowListener, unohelper.Base):
         self._log.debug("_on_log_py_inst_reset")
         try:
             self._py_logger = PyLogger(doc=Lo.current_doc)
+            self._py_logger.unsubscribe_log_event(self._fn_on_log_event)
             self._py_logger.subscribe_log_event(self._fn_on_log_event)
         except Exception:
             self._log.exception("_on_log_py_inst_reset")

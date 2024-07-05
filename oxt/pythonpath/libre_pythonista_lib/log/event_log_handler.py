@@ -7,7 +7,8 @@ import logging
 
 
 class EventLogHandler(logging.Handler, EventsPartial):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, uid: str, **kwargs):
+        self._uid = uid
         logging.Handler.__init__(self, *args, **kwargs)
         EventsPartial.__init__(self)
         # Initialization code for your handler (e.g., open a file, establish a network connection)
@@ -16,7 +17,7 @@ class EventLogHandler(logging.Handler, EventsPartial):
         # This method will be called for every log message
         # You can format the record as you wish using self.format(record)
         log_message = self.format(record)
-        dd = DotDict(log_msg=log_message, record=record, log_level=self.level)
+        dd = DotDict(log_msg=log_message, record=record, log_level=self.level, uid=self._uid)
         eargs = EventArgs(self)
         eargs.event_data = dd
         self.trigger_event("log_emit", eargs)

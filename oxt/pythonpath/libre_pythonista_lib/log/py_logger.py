@@ -26,15 +26,20 @@ else:
 
 
 class PyLogger(Logger):
-    """Custom Logger Class"""
+    """
+    Custom Logger Class.
+
+    This class will only log to the Document that created the logger.
+    """
 
     _instances: Dict[str, PyLogger] = {}
 
     def __new__(cls, doc: OfficeDocumentT):
         key = f"doc_{doc.runtime_uid}"
         if not key in cls._instances:
-            cls._instances[key] = super(PyLogger, cls).__new__(cls)
-            cls._instances[key]._is_init = False
+            inst = super(PyLogger, cls).__new__(cls)
+            inst._is_init = False
+            cls._instances[key] = inst
         return cls._instances[key]
 
     def __init__(self, doc: OfficeDocumentT):
@@ -50,16 +55,16 @@ class PyLogger(Logger):
         """
         if getattr(self, "_is_init", False):
             return
+        self._uid = doc.runtime_uid
         self._otx_log = OxtLogger(log_name=self.__class__.__name__)
         self._otx_log.debug("Initializing PyLogger")
         calc_props = CalcProps(doc=doc)
-        run_id = doc.runtime_uid
 
         self._log_name = self.__class__.__name__
         self._formatter = logging.Formatter(calc_props.log_format)
         self._add_console_logger = calc_props.log_to_console
         self._log_level = calc_props.log_level
-        self._log_file = Lo.tmp_dir / f"{self._log_name}_{run_id}.log"
+        self._log_file = Lo.tmp_dir / f"{self._log_name}_{self._uid}.log"
         self._log_extra_info = calc_props.include_extra_err_info
 
         logging.addLevelName(logging.ERROR, "ERROR")
@@ -74,7 +79,7 @@ class PyLogger(Logger):
         has_handler = False
         has_console_handler = False
 
-        self._event_log_handler = EventLogHandler()
+        self._event_log_handler = EventLogHandler(uid=self._uid)
         self._event_log_handler.setFormatter(self._formatter)
         self._otx_log.debug("Adding Event Log Handler")
         self.addHandler(self._event_log_handler)
@@ -157,26 +162,114 @@ class PyLogger(Logger):
 
     # endregion Events
 
+    def _is_doc_match(self) -> bool:
+        try:
+            return self._uid == Lo.current_doc.runtime_uid
+        except Exception as e:
+            self._otx_log.error(f"_is_doc_match() Doc not available: {e}")
+            return False
+
+    # region Log Overrides:
+    def debug(self, msg, *args, **kwargs):
+        """
+        Log 'msg % args' with severity 'DEBUG'.
+
+        To pass exception information, use the keyword argument exc_info with
+        a true value, e.g.
+
+        logger.debug("Houston, we have a %s", "thorny problem", exc_info=True)
+        """
+        if self.isEnabledFor(logging.DEBUG) and self._is_doc_match():
+            super().debug(msg, *args, **kwargs)
+
+    def info(self, msg, *args, **kwargs):
+        """
+        Log 'msg % args' with severity 'INFO'.
+
+        To pass exception information, use the keyword argument exc_info with
+        a true value, e.g.
+
+        logger.info("Houston, we have a %s", "interesting problem", exc_info=True)
+        """
+        if self.isEnabledFor(logging.INFO) and self._is_doc_match():
+            super().info(msg, *args, **kwargs)
+
+    def warning(self, msg, *args, **kwargs):
+        """
+        Log 'msg % args' with severity 'WARNING'.
+
+        To pass exception information, use the keyword argument exc_info with
+        a true value, e.g.
+
+        logger.warning("Houston, we have a %s", "bit of a problem", exc_info=True)
+        """
+        if self.isEnabledFor(logging.WARNING) and self._is_doc_match():
+            super().warning(msg, *args, **kwargs)
+
+    def error(self, msg, *args, **kwargs):
+        """
+        Log 'msg % args' with severity 'ERROR'.
+
+        To pass exception information, use the keyword argument exc_info with
+        a true value, e.g.
+
+        logger.error("Houston, we have a %s", "major problem", exc_info=True)
+        """
+        if self.isEnabledFor(logging.ERROR) and self._is_doc_match():
+            super().error(msg, *args, **kwargs)
+
+    def exception(self, msg, *args, exc_info=True, **kwargs):
+        """
+        Convenience method for logging an ERROR with exception information.
+        """
+        self.error(msg, *args, exc_info=exc_info, **kwargs)
+
+    def critical(self, msg, *args, **kwargs):
+        """
+        Log 'msg % args' with severity 'CRITICAL'.
+
+        To pass exception information, use the keyword argument exc_info with
+        a true value, e.g.
+
+        logger.critical("Houston, we have a %s", "major disaster", exc_info=True)
+        """
+        if self.isEnabledFor(logging.CRITICAL) and self._is_doc_match():
+            super().critical(msg, *args, **kwargs)
+
+    def log(self, level, msg, *args, **kwargs):
+        """
+        Log 'msg % args' with the integer severity 'level'.
+
+        To pass exception information, use the keyword argument exc_info with
+        a true value, e.g.
+
+        logger.log(level, "We have a %s", "mysterious problem", exc_info=True)
+        """
+        if self._is_doc_match():
+            super().log(level, msg, *args, **kwargs)
+
+    # endregion Log Overrides
+
     # region Properties
     @property
     def is_debug(self) -> bool:
         """Check if is debug"""
-        return self._log_level <= logging.DEBUG
+        return self.isEnabledFor(logging.DEBUG)
 
     @property
     def is_info(self) -> bool:
         """Check if is info"""
-        return self._log_level <= logging.INFO
+        return self.isEnabledFor(logging.INFO)
 
     @property
     def is_warning(self) -> bool:
         """Check if is warning"""
-        return self._log_level <= logging.WARNING
+        return self.isEnabledFor(logging.WARNING)
 
     @property
     def is_error(self) -> bool:
         """Check if is error"""
-        return self._log_level <= logging.ERROR
+        return self.isEnabledFor(logging.ERROR)
 
     @property
     def log_file(self) -> Path:
