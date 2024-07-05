@@ -6,6 +6,7 @@ from ooodev.utils.data_type.cell_obj import CellObj
 from com.sun.star.uno import RuntimeException
 
 from ..ex import CellDeletedError
+from ..const import FORMULA_PYC
 
 if TYPE_CHECKING:
     from com.sun.star.sheet import SheetCell  # service
@@ -28,6 +29,7 @@ class CellInfo:
         Returns:
             bool: True if the cell contains a pyc formula.
         """
+        global FORMULA_PYC  # COM.GITHUB.AMOURSPIRIT.EXTENSION.LIBREPYTHONISTA.PYIMPL.PYC
         if self.is_cell_deleted():
             raise CellDeletedError("Cell is deleted.")
         formula = self.cell.getFormula()
@@ -35,7 +37,7 @@ class CellInfo:
             return False
         s = formula.lstrip("{")  # could be a array formula
         s = s.lstrip("=")  # formula may start with one or two equal signs
-        return s.startswith("COM.GITHUB.AMOURSPIRIT.EXTENSION.LIBREPYTHONISTA.PYIMPL.PYC")
+        return s.startswith(FORMULA_PYC)
 
     def is_cell_deleted(self) -> bool:
         """Returns True if the cell has been deleted."""

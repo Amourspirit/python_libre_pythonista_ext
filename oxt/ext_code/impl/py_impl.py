@@ -30,12 +30,8 @@ add_local_path_to_sys_path()
 if TYPE_CHECKING:
     _CONDITIONS_MET = True
     from com.sun.star.frame import Desktop
-    from ooodev.loader import Lo
     from ooodev.calc import CalcDoc
-    from ooodev.utils.data_type.cell_obj import CellObj
-    from ooodev.utils.data_type.range_obj import RangeObj
     from ooodev.utils.data_type.col_obj import ColObj
-    from ooodev.exceptions import ex as mEx
     from ...___lo_pip___.oxt_logger.oxt_logger import OxtLogger
     from ...___lo_pip___.config import Config
     from ...pythonpath.libre_pythonista_lib.dialog.py.dialog_python import DialogPython
@@ -47,12 +43,8 @@ else:
     _CONDITIONS_MET = _conditions_met()
 
     if _CONDITIONS_MET:
-        from ooodev.loader import Lo
         from ooodev.calc import CalcDoc
-        from ooodev.utils.data_type.cell_obj import CellObj
-        from ooodev.utils.data_type.range_obj import RangeObj
         from ooodev.utils.data_type.col_obj import ColObj
-        from ooodev.exceptions import ex as mEx
         from libre_pythonista_lib.dialog.py.dialog_python import DialogPython
         from libre_pythonista_lib.cell.cell_mgr import CellMgr
         from libre_pythonista_lib.cell.result_action.pyc.rules.pyc_rules import PycRules
@@ -233,9 +225,5 @@ class PyImpl(unohelper.Base, XPy):
         return result
 
 
-def createInstance(ctx):
-    return PyImpl(ctx)
-
-
 g_ImplementationHelper = unohelper.ImplementationHelper()
-g_ImplementationHelper.addImplementation(createInstance, PyImpl.IMPLE_NAME, PyImpl.SERVICE_NAMES)
+g_ImplementationHelper.addImplementation(*PyImpl.get_imple())

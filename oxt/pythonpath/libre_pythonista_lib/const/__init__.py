@@ -19,3 +19,4 @@ def _get_formula_pyimpl():
 
 
 FORMULA_PYIMPL = _get_formula_pyimpl()
+FORMULA_PYC = FORMULA_PYIMPL + ".PYC"

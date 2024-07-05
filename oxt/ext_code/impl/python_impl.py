@@ -59,9 +59,6 @@ else:
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
 
 
-implementation_name = "___lo_identifier___.impl"
-
-
 class PythonImpl(unohelper.Base, XJobExecutor):
     IMPLE_NAME = "___lo_identifier___.impl"
     SERVICE_NAMES = ("com.sun.star.task.Job",)
