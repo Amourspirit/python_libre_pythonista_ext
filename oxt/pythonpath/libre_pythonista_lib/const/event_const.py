@@ -1,3 +1,7 @@
+CB_DOC_FOCUS_GAINED = "cb_doc_focus_gain"
+CB_DOC_FOCUS_LOST = "cb_doc_focus_lost"
+DOCUMENT_FOCUS_GAINED = "document_focus_gain"
+DOCUMENT_FOCUS_LOST = "document_focus_lost"
+GBL_DOC_CLOSING = "librepythonista_doc_closing"
 LOG_OPTIONS_CHANGED = "log_options_changed"
 LOG_PY_LOGGER_RESET = "py_logger_reset"
-GBL_DOC_CLOSING = "librepythonista_doc_closing"

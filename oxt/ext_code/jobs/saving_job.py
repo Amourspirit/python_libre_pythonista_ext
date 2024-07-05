@@ -31,7 +31,7 @@ else:
 
 
 # region XJob
-class SavingJob(unohelper.Base, XJob):
+class SavingJob(XJob, unohelper.Base):
     """Python UNO Component that implements the com.sun.star.task.Job interface."""
 
     IMPLE_NAME = "___lo_identifier___.SavingJob"
@@ -44,6 +44,8 @@ class SavingJob(unohelper.Base, XJob):
     # region Init
 
     def __init__(self, ctx):
+        XJob.__init__(self)
+        unohelper.Base.__init__(self)
         self.ctx = ctx
         self.document = None
         self._logger = self._get_local_logger()

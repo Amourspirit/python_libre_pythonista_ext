@@ -1,11 +1,23 @@
 from __future__ import annotations
 from typing import Any, cast, TYPE_CHECKING, Tuple
 import contextlib
-
+from pathlib import Path
+import sys
 import uno
 import unohelper
 from com.sun.star.lang import XServiceInfo
 from com.sun.star.lang import XSingleComponentFactory
+
+
+def add_local_path_to_sys_path() -> None:
+    # add the path of this module to the sys.path
+    # this_pth = os.path.dirname(__file__)
+    this_pth = str(Path(__file__).parent.parent.parent)
+    if this_pth not in sys.path:
+        sys.path.append(this_pth)
+
+
+add_local_path_to_sys_path()
 
 
 def _conditions_met() -> bool:
@@ -18,14 +30,32 @@ def _conditions_met() -> bool:
 
 if TYPE_CHECKING:
     _CONDITIONS_MET = True
+    from ...___lo_pip___.oxt_logger import OxtLogger
     from com.sun.star.uno import XInterface
     from com.sun.star.uno import XComponentContext
     from com.sun.star.awt import UnoControlDialog  # service
+    from ooodev.loader import Lo
+    from ooodev.events.args.event_args import EventArgs
+    from ooodev.dialog.msgbox import MessageBoxType, MsgBox
     from ...pythonpath.libre_pythonista_lib.dialog.handlers.log_win_handler import LogWinHandler
+    from ...pythonpath.libre_pythonista_lib.log.log_inst import LogInst
+    from ...pythonpath.libre_pythonista_lib.event.shared_event import SharedEvent
+    from ...pythonpath.libre_pythonista_lib.const.event_const import DOCUMENT_FOCUS_GAINED, DOCUMENT_FOCUS_LOST
+    from ...pythonpath.libre_pythonista_lib.const.res_const import RES_LOG_WIN_URL
 else:
+    from ___lo_pip___.oxt_logger import OxtLogger
+
     _CONDITIONS_MET = _conditions_met()
     if _CONDITIONS_MET:
+        from ooodev.loader import Lo
+        from ooodev.dialog.msgbox import MessageBoxType, MsgBox
         from libre_pythonista_lib.dialog.handlers.log_win_handler import LogWinHandler
+        from libre_pythonista_lib.log.log_inst import LogInst
+        from libre_pythonista_lib.event.shared_event import SharedEvent
+        from libre_pythonista_lib.const.event_const import DOCUMENT_FOCUS_GAINED, DOCUMENT_FOCUS_LOST
+        from libre_pythonista_lib.const.res_const import RES_LOG_WIN_URL
+    else:
+        RES_LOG_WIN_URL = ""
 
 
 # https://forum.openoffice.org/en/forum/viewtopic.php?p=295118
@@ -36,10 +66,35 @@ class DockingWindowFactoryImpl(XServiceInfo, XSingleComponentFactory, unohelper.
     SERVICE_NAMES = (IMPLE_NAME,)
 
     def __init__(self, ctx, *args):
+        global _CONDITIONS_MET
         XServiceInfo.__init__(self)
         XSingleComponentFactory.__init__(self)
         unohelper.Base.__init__(self)
         self.ctx = ctx
+        self._log = OxtLogger(log_name=self.__class__.__name__)
+        if _CONDITIONS_MET:
+            self._log.debug("Conditions are met. Subscribing to focus events.")
+            self._fn_on_focus_gained = self._on_focus_gained
+            self._fn_on_focus_lost = self._on_focus_lost
+            _ = Lo.current_doc
+            self._se = SharedEvent()
+            self._se.subscribe_event(DOCUMENT_FOCUS_GAINED, self._fn_on_focus_gained)
+            self._se.subscribe_event(DOCUMENT_FOCUS_LOST, self._fn_on_focus_lost)
+        else:
+            self._log.debug("Conditions not met")
+
+    def _on_focus_gained(self, src: Any, event: EventArgs):
+        self._log.debug(f"Focus gained for {event.event_data.run_id}")
+
+    def _on_focus_lost(self, src: Any, event: EventArgs):
+        self._log.debug(f"Focus Lost for {event.event_data.run_id}")
+
+    def _display_error(self, msg: str):
+        """Display error message."""
+        global _CONDITIONS_MET
+        if not _CONDITIONS_MET:
+            return
+        _ = MsgBox.msgbox(msg=msg, title="Error", boxtype=MessageBoxType.ERRORBOX)
 
     # region XSingleComponentFactory
 
@@ -51,9 +106,15 @@ class DockingWindowFactoryImpl(XServiceInfo, XSingleComponentFactory, unohelper.
             com.sun.star.uno.Exception: ``Exception``
         """
         try:
+            self._log.debug(f"Creating instance Log Docking window")
+            # desktop = create_service(ctx, "com.sun.star.frame.Desktop")
+            # doc = desktop.getCurrentComponent()
+            # key = f"doc_{doc.RuntimeUID}"
+            # self._log.debug(f"Key: {key}")
             return create_window(ctx, args)
         except Exception as e:
-            print(e)
+            self._log.exception("createInstanceWithArgumentsAndContext() Error creating instance")
+            # self._display_error(f"Error creating instance:\n{e}")
 
     def createInstanceWithContext(self, ctx: XComponentContext) -> XInterface:
         """
@@ -105,14 +166,11 @@ g_ImplementationHelper.addImplementation(
 
 
 from com.sun.star.awt import WindowDescriptor, Rectangle
-from com.sun.star.awt import XActionListener
 from com.sun.star.awt import XWindowListener
-from com.sun.star.awt.PosSize import POS, SIZE
-from com.sun.star.awt.VclWindowPeerAttribute import CLIPCHILDREN
-from com.sun.star.awt.WindowAttribute import SHOW, BORDER, SIZEABLE, MOVEABLE, CLOSEABLE
+from com.sun.star.awt import PosSize
+from com.sun.star.awt import VclWindowPeerAttribute
+from com.sun.star.awt import WindowAttribute
 from com.sun.star.awt.WindowClass import SIMPLE
-from com.sun.star.beans import NamedValue
-from com.sun.star.awt import XContainerWindowEventHandler
 from com.sun.star.task import XJobExecutor
 
 
@@ -125,7 +183,6 @@ from com.sun.star.task import XJobExecutor
 # other extensions, strange result would be happen.
 # https://github.com/LibreOffice/core/blob/3c91fb758a429f51b89dfe9cea088691ced6d0c1/sfx2/source/dialog/dockwin.cxx#L292
 
-RESOURCE_URL = "private:resource/dockingwindow/___float_dialog_error_num___"
 
 # EXT_ID = "___lo_identifier___"
 
@@ -153,7 +210,7 @@ def create_window(ctx: Any, args: Tuple[Any, ...]) -> Any:
     for arg in args:
         name = arg.Name
         if name == "ResourceURL":
-            if arg.Value != RESOURCE_URL:
+            if arg.Value != RES_LOG_WIN_URL:
                 return None
         elif name == "Frame":
             frame = arg.Value
@@ -176,7 +233,11 @@ def create_window(ctx: Any, args: Tuple[Any, ...]) -> Any:
             parent,
             0,
             Rectangle(0, 0, 100, 100),
-            SHOW | SIZEABLE | MOVEABLE | CLOSEABLE | CLIPCHILDREN,
+            WindowAttribute.SHOW
+            | WindowAttribute.SIZEABLE
+            | WindowAttribute.MOVEABLE
+            | WindowAttribute.CLOSEABLE
+            | VclWindowPeerAttribute.CLIPCHILDREN,
         )
         window = toolkit.createWindow(desc)
 
@@ -186,9 +247,15 @@ def create_window(ctx: Any, args: Tuple[Any, ...]) -> Any:
         if not _CONDITIONS_MET:
             child.setVisible(True)
             return window
+
+        # need to listen to window here.
+        # If the focus changes then also need to switch the switched to log handler for that specif window
+        # log = LogInst()
+        # if log.is_debug:
+        #     log.debug(dir(window))
         handler = LogWinHandler(ctx, child)
         child.setVisible(True)
-        # child.setPosSize(0, 0, 0, 0, POS)  # if the dialog is not placed at
+        # child.setPosSize(0, 0, 0, 0, PosSize.POS)  # if the dialog is not placed at
         # top left corner
         window.addWindowListener(WindowResizeListener(handler))
     return window
@@ -220,7 +287,7 @@ class WindowResizeListener(XWindowListener, unohelper.Base):
     def windowResized(self, ev):
         # extends inner window to match with the outer window
         if self.handler:
-            self.handler.dialog.setPosSize(0, 0, ev.Width, ev.Height, SIZE)
+            self.handler.dialog.setPosSize(0, 0, ev.Width, ev.Height, PosSize.SIZE)
             self.handler.resize(ev.Width, ev.Height)
             # ToDo: resize dialog elements
 
@@ -228,7 +295,7 @@ class WindowResizeListener(XWindowListener, unohelper.Base):
 # Tool functions
 
 
-def create_service(ctx, name, args=None):
+def create_service(ctx, name: str, args: Any = None) -> Any:
     """Create service with args if required."""
     smgr = ctx.getServiceManager()
     if args:
@@ -237,55 +304,14 @@ def create_service(ctx, name, args=None):
         return smgr.createInstanceWithContext(name, ctx)
 
 
-from com.sun.star.awt import Rectangle
-
-
-def show_message(ctx, peer, message, title="", type="messbox", buttons=1):
-    """Show text in message box."""
-    older_imple = check_method_parameter(
-        ctx, "com.sun.star.awt.XMessageBoxFactory", "createMessageBox", 1, "com.sun.star.awt.Rectangle"
-    )
-
-    if older_imple:
-        box = peer.getToolkit().createMessageBox(peer, Rectangle(), type, buttons, title, message)
-    else:
-        name = {
-            "messbox": "MESSAGEBOX",
-            "infobox": "INFOBOX",
-            "warningbox": "WARNINGBOX",
-            "errorbox": "ERRORBOX",
-            "querybox": "QUERYBOX",
-        }[type]
-        _type = uno.getConstantByName("com.sun.star.awt.MessageBoxType." + name)
-        box = peer.getToolkit().createMessageBox(peer, _type, buttons, title, message)
-    n = box.execute()
-    box.dispose()
-    return n
-
-
-def check_method_parameter(ctx, interface_name, method_name, param_index, param_type):
-    """Check the method has specific type parameter at the specific position."""
-    cr = create_service(ctx, "com.sun.star.reflection.CoreReflection")
-    try:
-        idl = cr.forName(interface_name)
-        m = idl.getMethod(method_name)
-        if m:
-            info = m.getParameterInfos()[param_index]
-            return info.aType.getName() == param_type
-    except:
-        pass
-    return False
-
-
 class Switcher(XJobExecutor, XServiceInfo, unohelper.Base):
-    # Not used
 
     IMPLE_NAME = "___lo_identifier___.Switcher"
     SERVICE_NAMES = (IMPLE_NAME,)
 
-    @staticmethod
-    def get_imple(clazz):
-        return clazz, clazz.IMPLE_NAME, clazz.SERVICE_NAMES
+    @classmethod
+    def get_imple(cls):
+        return cls, cls.IMPLE_NAME, cls.SERVICE_NAMES
 
     def __init__(self, ctx, *args):
         XJobExecutor.__init__(self)
@@ -294,14 +320,15 @@ class Switcher(XJobExecutor, XServiceInfo, unohelper.Base):
         self.ctx = ctx
 
     def trigger(self, arg):
+        global RES_LOG_WIN_URL
         desktop = create_service(self.ctx, "com.sun.star.frame.Desktop")
         doc = desktop.getCurrentComponent()
         layoutmgr = doc.getCurrentController().getFrame().LayoutManager
 
-        if layoutmgr.isElementVisible(RESOURCE_URL):
-            layoutmgr.hideElement(RESOURCE_URL)
+        if layoutmgr.isElementVisible(RES_LOG_WIN_URL):
+            layoutmgr.hideElement(RES_LOG_WIN_URL)
         else:
-            layoutmgr.requestElement(RESOURCE_URL)
+            layoutmgr.requestElement(RES_LOG_WIN_URL)
 
     # XServiceInfo
     def supportedServiceNames(self):
@@ -314,7 +341,54 @@ class Switcher(XJobExecutor, XServiceInfo, unohelper.Base):
         return self.IMPLE_NAME
 
 
-# g_ImplementationHelper.addImplementation(*Switcher.get_imple())
+g_ImplementationHelper.addImplementation(*Switcher.get_imple())
+
+
+class LogViewLoader(XJobExecutor, XServiceInfo, unohelper.Base):
+    # not used
+    # https://api.libreoffice.org/docs/idl/ref/interfacecom_1_1sun_1_1star_1_1frame_1_1XLayoutManager.html
+    IMPLE_NAME = "___lo_identifier___.LogViewLoader"
+    SERVICE_NAMES = (IMPLE_NAME,)
+
+    @classmethod
+    def get_imple(cls):
+        return cls, cls.IMPLE_NAME, cls.SERVICE_NAMES
+
+    def __init__(self, ctx, *args):
+        XJobExecutor.__init__(self)
+        XServiceInfo.__init__(self)
+        unohelper.Base.__init__(self)
+        self.ctx = ctx
+
+    def trigger(self, arg):
+        global RES_LOG_WIN_URL
+        desktop = create_service(self.ctx, "com.sun.star.frame.Desktop")
+        doc = desktop.getCurrentComponent()
+        if doc is None:
+            return
+        layoutmgr = doc.getCurrentController().getFrame().LayoutManager
+
+        if layoutmgr.isElementVisible(RES_LOG_WIN_URL):
+            # layoutmgr.destroyElement(RESOURCE_URL)
+            # layoutmgr.createElement(RESOURCE_URL)
+            layoutmgr.hideElement(RES_LOG_WIN_URL)
+            layoutmgr.requestElement(RES_LOG_WIN_URL)
+        # else:
+        #     layoutmgr.requestElement(RESOURCE_URL)
+
+    # XServiceInfo
+    def supportedServiceNames(self):
+        return self.SERVICE_NAMES
+
+    def supportsService(self, name):
+        return name in self.SERVICE_NAMES
+
+    def getImplementationName(self):
+        return self.IMPLE_NAME
+
+
+# g_ImplementationHelper.addImplementation(*LogViewLoader.get_imple())
+
 
 """
 ' Switch through layout manager.

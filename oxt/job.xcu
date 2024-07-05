@@ -34,6 +34,16 @@
         <value>___lo_identifier___.SavingJob</value>
       </prop>
     </node>
+    <node oor:name="CalcDocFocusJob" oor:op="fuse">
+      <prop oor:name="Service">
+        <value>___lo_identifier___.CalcDocFocusJob</value>
+      </prop>
+    </node>
+    <node oor:name="CalcDocUnFocusJob" oor:op="fuse">
+      <prop oor:name="Service">
+        <value>___lo_identifier___.CalcDocUnFocusJob</value>
+      </prop>
+    </node>
   </node>
   <node oor:name="Events">
     <node oor:name="___startup_event___" oor:op="fuse">
@@ -64,6 +74,16 @@
     <node oor:name="OnCopyTo" oor:op="fuse">
       <node oor:name="JobList">
         <node oor:name="SavingJob" oor:op="fuse" />
+      </node>
+    </node>
+    <node oor:name="OnFocus" oor:op="fuse">
+      <node oor:name="JobList">
+        <node oor:name="CalcDocFocusJob" oor:op="fuse" />
+      </node>
+    </node>
+    <node oor:name="OnUnfocus" oor:op="fuse">
+      <node oor:name="JobList">
+        <node oor:name="CalcDocUnFocusJob" oor:op="fuse" />
       </node>
     </node>
   </node>

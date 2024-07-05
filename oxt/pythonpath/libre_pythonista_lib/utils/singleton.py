@@ -24,10 +24,11 @@ class SingletonMeta(type):
         if key not in cls._instances:
             inst = super().__call__(*args, **kwargs)
             inst.singleton_key = key
+            inst.runtime_uid = key.split("_", maxsplit=1)[0]
             cls._instances[key] = inst
         return cls._instances[key]
 
-    def _get_single_key(cls) -> Any:
+    def _get_single_key(cls) -> str:
         from ooodev.loader import Lo
 
         return f"{Lo.current_doc.runtime_uid}_uid_{cls.__name__}"

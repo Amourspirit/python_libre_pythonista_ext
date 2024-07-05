@@ -40,3 +40,15 @@ class CellFormulaExpandError(CellError):
     """Cell Formula Expand Error."""
 
     pass
+
+
+class DocumentError(Exception):
+    """Document Error."""
+
+    pass
+
+
+class RuntimeUidError(DocumentError):
+    """Runtime Uid Error."""
+
+    pass

@@ -49,7 +49,7 @@ else:
 
 
 # region XJob
-class UnLoadingJob(unohelper.Base, XJob):
+class UnLoadingJob(XJob, unohelper.Base):
     """Python UNO Component that implements the com.sun.star.task.Job interface."""
 
     IMPLE_NAME = "___lo_identifier___.UnLoadingJob"
@@ -62,6 +62,8 @@ class UnLoadingJob(unohelper.Base, XJob):
     # region Init
 
     def __init__(self, ctx):
+        XJob.__init__(self)
+        unohelper.Base.__init__(self)
         self.ctx = ctx
         self.document = None
         self._log = self._get_local_logger()

@@ -27,6 +27,7 @@
         "levelname",
         "librepythonista",
         "lxml",
+        "maxsplit",
         "mkdirp",
         "msgbox",
         "nodepath",
