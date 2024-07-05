@@ -61,7 +61,7 @@ else:
 
 
 class PyImpl(unohelper.Base, XPy):
-    IMPLE_NAME = "com.github.amourspirit.extension.librepythonista.PyImpl"
+    IMPLE_NAME = "___lo_identifier___.PyImpl"
     SERVICE_NAMES = ("com.sun.star.sheet.AddIn",)
 
     @classmethod
@@ -233,9 +233,9 @@ class PyImpl(unohelper.Base, XPy):
         return result
 
 
-# def createInstance(ctx):
-#     return PyImpl(ctx)
+def createInstance(ctx):
+    return PyImpl(ctx)
 
 
 g_ImplementationHelper = unohelper.ImplementationHelper()
-g_ImplementationHelper.addImplementation(*PyImpl.get_imple())
+g_ImplementationHelper.addImplementation(createInstance, PyImpl.IMPLE_NAME, PyImpl.SERVICE_NAMES)

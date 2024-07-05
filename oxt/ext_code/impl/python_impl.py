@@ -129,9 +129,8 @@ class PythonImpl(unohelper.Base, XJobExecutor):
                 if msg_result != MessageBoxResultsEnum.YES:
                     return
             # cell.component.setFormula("=" + res.resolve_string("fml001"))
-            cell.component.setFormula(
-                '=COM.GITHUB.AMOURSPIRIT.EXTENSION.LIBREPYTHONISTA.PYIMPL.PYC(SHEET();CELL("ADDRESS"))'
-            )
+            formula = '=___lo_identifier___.PYIMPL.PYC(SHEET();CELL("ADDRESS"))'
+            cell.component.setFormula(formula.upper())
             _ = cell.value
         except Exception as e:
             self._log.error(f"{self.__class__.__name__} - Error: {e}")
@@ -169,7 +168,8 @@ class PythonImpl(unohelper.Base, XJobExecutor):
                 if msg_result != MessageBoxResultsEnum.YES:
                     return
             cc = CellCache(doc)
-            formula = '=COM.GITHUB.AMOURSPIRIT.EXTENSION.LIBREPYTHONISTA.PYIMPL.PYC(SHEET();CELL("ADDRESS")'
+
+            formula = '=___lo_identifier___.PyImpl.PYC(SHEET();CELL("ADDRESS")'.upper()
             with cc.set_context(cell=cell.cell_obj, sheet_idx=sheet.sheet_index):
                 found = cc.get_cell_before()
                 if found:
@@ -214,9 +214,7 @@ class PythonImpl(unohelper.Base, XJobExecutor):
                 )
                 if msg_result != MessageBoxResultsEnum.YES:
                     return
-            cell.component.setFormula(
-                '=COM.GITHUB.AMOURSPIRIT.EXTENSION.LIBREPYTHONISTA.TESTINGIMPL.TESTING(1;"$A1$1")'
-            )
+            cell.component.setFormula('=___lo_identifier___.TESTINGIMPL.TESTING(1;"$A1$1")'.upper())
             _ = cell.value
         except Exception as e:
             self._log.error(f"{self.__class__.__name__} - Error: {e}")
