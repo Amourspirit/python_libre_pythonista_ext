@@ -23,9 +23,13 @@ if TYPE_CHECKING:
     from ...___lo_pip___.oxt_logger import OxtLogger
     from ooodev.loader import Lo
     from ooodev.exceptions import ex as mEx
+    from ooodev.events.args.event_args import EventArgs
+    from ooodev.utils.helper.dot_dict import DotDict
+    from ...pythonpath.libre_pythonista_lib.event.shared_event import SharedEvent
     from ...pythonpath.libre_pythonista_lib.dispatch import dispatch_mgr  # type: ignore
     from ...pythonpath.libre_pythonista_lib.cell.cell_mgr import CellMgr  # type: ignore
     from ...pythonpath.libre_pythonista_lib.sheet.listen.code_sheet_modify_listener import CodeSheetModifyListener
+    from ...pythonpath.libre_pythonista_lib.const.event_const import CB_DOC_FOCUS_GAINED, DOCUMENT_NEW_VIEW
     from ...pythonpath.libre_pythonista_lib.sheet.listen.code_sheet_activation_listener import (
         CodeSheetActivationListener,
     )
@@ -34,10 +38,14 @@ else:
     if _CONDITIONS_MET:
         from ooodev.loader import Lo
         from ooodev.exceptions import ex as mEx
+        from ooodev.events.args.event_args import EventArgs
+        from ooodev.utils.helper.dot_dict import DotDict
+        from libre_pythonista_lib.event.shared_event import SharedEvent
         from libre_pythonista_lib.dispatch import dispatch_mgr  # type: ignore
         from libre_pythonista_lib.cell.cell_mgr import CellMgr  # type: ignore
         from libre_pythonista_lib.sheet.listen.code_sheet_modify_listener import CodeSheetModifyListener
         from libre_pythonista_lib.sheet.listen.code_sheet_activation_listener import CodeSheetActivationListener
+        from libre_pythonista_lib.const.event_const import CB_DOC_FOCUS_GAINED, DOCUMENT_NEW_VIEW
 # endregion imports
 
 
@@ -83,7 +91,8 @@ class ViewJob(unohelper.Base, XJob):
                 self._logger.debug("ViewJob - Document is None")
                 return
             if self.document.supportsService("com.sun.star.sheet.SpreadsheetDocument"):
-                key = f"LIBRE_PYTHONISTA_DOC_{self.document.RuntimeUID}"
+                run_id = self.document.RuntimeUID
+                key = f"LIBRE_PYTHONISTA_DOC_{run_id}"
                 os.environ[key] = "1"
                 self._logger.debug(f"Added {key} to environment variables")
                 if _CONDITIONS_MET:
@@ -153,6 +162,10 @@ class ViewJob(unohelper.Base, XJob):
                         cm.add_all_listeners()
 
                         self.document.calculateAll()
+                        se = SharedEvent()
+                        eargs = EventArgs(self)
+                        eargs.event_data = DotDict(run_id=run_id, doc=doc, event="new_view", doc_type=doc.DOC_TYPE)
+                        se.trigger_event(DOCUMENT_NEW_VIEW, eargs)
                     except Exception:
                         self._logger.error("Error setting components on view.", exc_info=True)
                 else:

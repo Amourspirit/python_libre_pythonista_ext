@@ -24,11 +24,6 @@
         <value>___lo_identifier___.UnLoadingJob</value>
       </prop>
     </node>
-    <node oor:name="LibrePythonistaViewCloseJob" oor:op="fuse">
-      <prop oor:name="Service">
-        <value>___lo_identifier___.LibrePythonistaViewCloseJob</value>
-      </prop>
-    </node>
     <node oor:name="SavingJob" oor:op="fuse">
       <prop oor:name="Service">
         <value>___lo_identifier___.SavingJob</value>
@@ -42,6 +37,11 @@
     <node oor:name="CalcDocUnFocusJob" oor:op="fuse">
       <prop oor:name="Service">
         <value>___lo_identifier___.CalcDocUnFocusJob</value>
+      </prop>
+    </node>
+    <node oor:name="LogWindowJob" oor:op="fuse">
+      <prop oor:name="Service">
+        <value>___lo_identifier___.LogWindowJob</value>
       </prop>
     </node>
   </node>

@@ -17,7 +17,7 @@ from ...log.py_logger import PyLogger
 from ...dialog.options.log_opt import LogOpt
 from ...log.py_logger import PyLogger
 from ...const.event_const import LOG_PY_LOGGER_RESET
-from ...event.shared_calc_doc_event import SharedCalcDocEvent
+from ...event.shared_event import SharedEvent
 
 if TYPE_CHECKING:
     from com.sun.star.awt import UnoControlEdit  # service
@@ -31,8 +31,10 @@ else:
     from ___lo_pip___.lo_util.resource_resolver import ResourceResolver
 
 
-class ButtonListener(unohelper.Base, XActionListener):
+class ButtonListener(XActionListener, unohelper.Base):
     def __init__(self, handler: "LogWinHandler"):
+        XActionListener.__init__(self)
+        unohelper.Base.__init__(self)
         self._log = OxtLogger(log_name=self.__class__.__name__)
         self._log.debug("ButtonListener.__init__")
         self.handler = handler
@@ -88,7 +90,7 @@ class LogWinHandler(XWindowListener, unohelper.Base):
             self._fn_on_log_py_inst_reset = self._on_log_py_inst_reset
             self._py_logger = PyLogger(doc=doc)
             self._py_logger.subscribe_log_event(self._fn_on_log_event)
-            self._share_event = SharedCalcDocEvent(doc)  # type: ignore
+            self._share_event = SharedEvent(doc)  # type: ignore
             self._share_event.subscribe_event(LOG_PY_LOGGER_RESET, self._fn_on_log_py_inst_reset)
             PyLogger.reset_instance(doc=doc)
 

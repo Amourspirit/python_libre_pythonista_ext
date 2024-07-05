@@ -22,7 +22,7 @@ add_local_path_to_sys_path()
 
 def _conditions_met() -> bool:
     with contextlib.suppress(Exception):
-        from ___lo_pip___.install.requirements_check import RequirementsCheck
+        from ___lo_pip___.install.requirements_check import RequirementsCheck  # type: ignore
 
         return RequirementsCheck().run_imports_ready()
     return False
@@ -76,8 +76,8 @@ class DockingWindowFactoryImpl(XServiceInfo, XSingleComponentFactory, unohelper.
             self._log.debug("Conditions are met. Subscribing to focus events.")
             self._fn_on_focus_gained = self._on_focus_gained
             self._fn_on_focus_lost = self._on_focus_lost
-            _ = Lo.current_doc
-            self._se = SharedEvent()
+            doc = Lo.current_doc
+            self._se = SharedEvent(doc)
             self._se.subscribe_event(DOCUMENT_FOCUS_GAINED, self._fn_on_focus_gained)
             self._se.subscribe_event(DOCUMENT_FOCUS_LOST, self._fn_on_focus_lost)
         else:
@@ -345,7 +345,6 @@ g_ImplementationHelper.addImplementation(*Switcher.get_imple())
 
 
 class LogViewLoader(XJobExecutor, XServiceInfo, unohelper.Base):
-    # not used
     # https://api.libreoffice.org/docs/idl/ref/interfacecom_1_1sun_1_1star_1_1frame_1_1XLayoutManager.html
     IMPLE_NAME = "___lo_identifier___.LogViewLoader"
     SERVICE_NAMES = (IMPLE_NAME,)
@@ -387,7 +386,7 @@ class LogViewLoader(XJobExecutor, XServiceInfo, unohelper.Base):
         return self.IMPLE_NAME
 
 
-# g_ImplementationHelper.addImplementation(*LogViewLoader.get_imple())
+g_ImplementationHelper.addImplementation(*LogViewLoader.get_imple())
 
 
 """

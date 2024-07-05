@@ -94,7 +94,7 @@ class SavingJob(XJob, unohelper.Base):
     # region Logging
 
     def _get_local_logger(self) -> OxtLogger:
-        from ___lo_pip___.oxt_logger import OxtLogger
+        from ___lo_pip___.oxt_logger import OxtLogger  # type: ignore
 
         return OxtLogger(log_name="SavingJob")
 

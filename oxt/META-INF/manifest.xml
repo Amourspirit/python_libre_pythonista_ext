@@ -43,6 +43,9 @@
     <manifest:file-entry
         manifest:media-type="application/vnd.sun.star.uno-component;type=Python"
         manifest:full-path="ext_code/jobs/focus_job.py" />
+    <manifest:file-entry
+        manifest:media-type="application/vnd.sun.star.uno-component;type=Python"
+        manifest:full-path="ext_code/jobs/log_window_job.py" />
     <manifest:file-entry manifest:media-type="application/vnd.sun.star.framework-script"
         manifest:full-path="python/scripts" />
     <manifest:file-entry manifest:full-path="WindowContentFactories.xcu"

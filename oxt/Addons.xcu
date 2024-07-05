@@ -35,6 +35,36 @@
 							<value>private:separator</value>
 						</prop>
 					</node>
+					<node oor:name="m003"
+						oor:op="replace">
+						<prop oor:name="URL" oor:type="xs:string">
+							<value>service:___lo_identifier___.Switcher</value>
+						</prop>
+						<prop oor:name="Title" oor:type="xs:string">
+							<value>Toggle Log</value>
+						</prop>
+						<prop oor:name="Target" oor:type="xs:string">
+							<value>_self</value>
+						</prop>
+					</node>
+					<node oor:name="m004"
+						oor:op="replace">
+						<prop oor:name="URL" oor:type="xs:string">
+							<value>service:___lo_identifier___.LogViewLoader</value>
+						</prop>
+						<prop oor:name="Title" oor:type="xs:string">
+							<value>LogViewLoader</value>
+						</prop>
+						<prop oor:name="Target" oor:type="xs:string">
+							<value>_self</value>
+						</prop>
+					</node>
+					<node oor:name="m098"
+						oor:op="replace">
+						<prop oor:name="URL" oor:type="xs:string">
+							<value>private:separator</value>
+						</prop>
+					</node>
 					<node oor:name="m099" oor:op="replace">
 						<prop oor:name="URL" oor:type="xs:string">
 							<value>service:___lo_identifier___.impl?about</value>
