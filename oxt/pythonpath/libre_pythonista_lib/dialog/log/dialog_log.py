@@ -12,6 +12,8 @@ from com.sun.star.awt import XMenuBar
 from com.sun.star.awt import XTopWindowListener
 from com.sun.star.awt.WindowClass import TOP
 from com.sun.star.frame import XFrame
+from com.sun.star.beans import NamedValue
+from com.sun.star.lang import XSingleServiceFactory
 from ooo.dyn.awt.font_descriptor import FontDescriptor
 from ooo.dyn.awt.pos_size import PosSize
 from ooo.dyn.awt.size import Size
@@ -41,6 +43,7 @@ if TYPE_CHECKING:
     from com.sun.star.awt import MenuBar  # service
     from com.sun.star.awt import MenuEvent  # struct
     from com.sun.star.lang import EventObject  # struct
+    from com.sun.star.frame import TaskCreator  # service
     from ooodev.proto.office_document_t import OfficeDocumentT
     from ..window_type import WindowType
     from .....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
@@ -87,7 +90,7 @@ class DialogLog(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
         XTopWindowListener.__init__(self)
         unohelper.Base.__init__(self)
         self.runtime_uid: str
-        self._is_shown = False
+        self._ctx = ctx
         self._is_visible = True
         self._closing_triggered = False
         self._config_updated = False
@@ -171,14 +174,19 @@ class DialogLog(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
         desc.Parent = None  # type: ignore
         desc.Bounds = rect
         desc.WindowAttributes = (
-            # WindowAttribute.SHOW
-            WindowAttribute.BORDER
-            + WindowAttribute.SIZEABLE
-            + WindowAttribute.MOVEABLE
-            + VclWindowPeerAttribute.CLIPCHILDREN
+            WindowAttribute.SHOW
+            | WindowAttribute.BORDER
+            | WindowAttribute.CLOSEABLE
+            | WindowAttribute.SIZEABLE
+            | WindowAttribute.MOVEABLE
+            # | VclWindowPeerAttribute.CLIPCHILDREN
         )
 
         dialog_peer = self.tk.createWindow(desc)
+        try:
+            dialog_peer.setTitle(self._title)
+        except Exception:
+            self._log.debug("Error setting dialog title")
 
         self._dialog = cast("WindowType", dialog_peer)
         self._dialog.setVisible(False)
@@ -196,14 +204,51 @@ class DialogLog(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
 
     def _add_frame(self) -> None:
         """Add frame to dialog"""
-        frame = Lo.create_instance_mcf(XFrame, "com.sun.star.frame.Frame", raise_err=True)
-        frame.setName(f"DialogLog_{self.runtime_uid}")
-        frame.initialize(self._dialog)
+        # When using TaskCreator a window is automatically added to the frame
+        # Also closing window must be implemented manually in the windowClosing event.
+        tc = cast(
+            "TaskCreator",
+            Lo.create_instance_mcf(XSingleServiceFactory, "com.sun.star.frame.TaskCreator", raise_err=True),
+        )
+        rect = Rectangle()
+        rect.Width = self._width
+        rect.Height = self._height
+
+        if self._cfg.has_position():
+            self._log.debug("_init_dialog() Config Has Position")
+            rect.X = self._cfg.x
+            rect.Y = self._cfg.y
+        else:
+            ps = self.parent.getPosSize()  # type: ignore
+            rect.X = int((ps.Width - self._width) / 2 - 50)
+            rect.Y = int((ps.Height - self._height) / 2 - 100)
+
+        frame = cast(
+            XFrame,
+            tc.createInstanceWithArguments(
+                (NamedValue("FrameName", f"DialogLog_{self.runtime_uid}"), NamedValue("PosSize", rect))
+            ),
+        )
         try:
             frame.Title = self._title  # type: ignore
         except Exception:
             self._log.debug("Error setting frame title")
+
+        frame.setComponent(self._dialog, None)  # type: ignore
+        frame.setCreator(Lo.desktop.component)
+        Lo.desktop.get_frames().append(frame)
         self._frame = frame
+
+        # -- or --
+
+        # frame = Lo.create_instance_mcf(XFrame, "com.sun.star.frame.Frame", raise_err=True)
+        # frame.setName(f"DialogLog_{self.runtime_uid}")
+        # frame.initialize(self._dialog)
+        # try:
+        #     frame.Title = self._title  # type: ignore
+        # except Exception:
+        #     self._log.debug("Error setting frame title")
+        # self._frame = frame
 
     # region Misc Methods
 
@@ -307,7 +352,6 @@ class DialogLog(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
             )
             if result == MessageBoxResultsEnum.YES:
                 self._update_config()
-                self._is_shown = False
                 self.dispose()
         elif command == ".uno:lp.hide_window":
             self.visible = False
@@ -384,7 +428,6 @@ class DialogLog(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
     # region Dialog Methods
 
     def show(self) -> None:
-        self._is_shown = True
         self.visible = True
         self.set_focus()
 
@@ -394,7 +437,10 @@ class DialogLog(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
             self._is_visible = True  # make sure set flag to true so windowClosed can process.
             self._dialog.dispose()
             if self._frame is not None:
+                Lo.desktop.get_frames().remove(self._frame)
                 self._frame.dispose()
+                self._frame = None
+                self._log.debug("Frame Removed and Disposed.")
         except Exception as e:
             self._log.error("Error in disposing", exc_info=True)
 
@@ -461,7 +507,14 @@ class DialogLog(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
         The close operation can be overridden at this point.
         """
         self._log.debug("Window Closing")
-        self._is_shown = False
+        result = MsgBox.msgbox(
+            title=self._rr.resolve_string("mbtitle007"),
+            msg=self._rr.resolve_string("mbmsg007"),
+            boxtype=MessageBoxType.QUERYBOX,
+            buttons=MessageBoxButtonsEnum.BUTTONS_YES_NO,
+        )
+        if result != MessageBoxResultsEnum.YES:
+            return
 
         if not self._closing_triggered:
             self._closing_triggered = True
@@ -469,6 +522,7 @@ class DialogLog(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
                 self._update_config()
             except Exception as e:
                 self._log.exception(f"Error saving configuration: {e}")
+            self.dispose()
 
     def windowClosed(self, event: EventObject) -> None:
         """is invoked when a window has been closed."""
@@ -484,7 +538,6 @@ class DialogLog(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
         if not self._disposed:
             try:
                 DialogLog.reset_inst(self.runtime_uid)
-                self._is_shown = False
                 self._disposed = True
                 self._dialog.removeTopWindowListener(self)
                 self._dialog.setMenuBar(None)  # type: ignore

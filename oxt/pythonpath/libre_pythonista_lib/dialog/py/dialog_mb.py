@@ -144,7 +144,7 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
             self._init_style()
             self._log.debug("Init Complete")
             self._is_init = True
-        except Exception as e:
+        except Exception:
             self._log.exception(f"Error in DialogMb.__init__:")
 
     def _init_dialog(self) -> None:

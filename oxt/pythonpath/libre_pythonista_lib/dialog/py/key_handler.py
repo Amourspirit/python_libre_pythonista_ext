@@ -6,11 +6,11 @@ from ..listener.listener_base import ListenerBase
 
 if TYPE_CHECKING:
     from com.sun.star.awt import KeyEvent
-    from .dialog_python import DialogPython
+    from .dialog_mb import DialogMb
 
 
-class KeyHandler(ListenerBase["DialogPython"], XKeyHandler):
-    """KeyHandler for DialogPython."""
+class KeyHandler(ListenerBase["DialogMb"], XKeyHandler):
+    """KeyHandler for DialogMb."""
 
     def keyPressed(self, event: KeyEvent) -> bool:
         try:
