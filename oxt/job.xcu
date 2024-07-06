@@ -64,6 +64,7 @@
     <node oor:name="OnViewCreated" oor:op="fuse">
       <node oor:name="JobList">
         <node oor:name="ViewJob" oor:op="fuse" />
+        <!-- <node oor:name="LogWindowJob" oor:op="fuse" /> -->
       </node>
     </node>
     <node oor:name="OnSave" oor:op="fuse">

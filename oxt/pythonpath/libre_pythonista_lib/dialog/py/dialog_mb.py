@@ -84,7 +84,7 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
         return cls._instances[inst_id]
 
     def __init__(self, ctx: Any, inst_id: str) -> None:
-        if getattr(self, "_is_init", True):
+        if getattr(self, "_is_init", False):
             return
         TheDictionaryPartial.__init__(self)
         XTopWindowListener.__init__(self)
@@ -321,7 +321,7 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
 
     def disposing(self, event: EventObject) -> None:
 
-        print("Disposing")
+        self._log.debug("Disposing")
         if not self._disposed:
             try:
                 DialogMb.reset_inst(self._inst_id)

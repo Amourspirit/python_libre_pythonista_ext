@@ -345,6 +345,7 @@ g_ImplementationHelper.addImplementation(*Switcher.get_imple())
 
 
 class LogViewLoader(XJobExecutor, XServiceInfo, unohelper.Base):
+    # Not Used
     # https://api.libreoffice.org/docs/idl/ref/interfacecom_1_1sun_1_1star_1_1frame_1_1XLayoutManager.html
     IMPLE_NAME = "___lo_identifier___.LogViewLoader"
     SERVICE_NAMES = (IMPLE_NAME,)
@@ -386,7 +387,7 @@ class LogViewLoader(XJobExecutor, XServiceInfo, unohelper.Base):
         return self.IMPLE_NAME
 
 
-g_ImplementationHelper.addImplementation(*LogViewLoader.get_imple())
+# g_ImplementationHelper.addImplementation(*LogViewLoader.get_imple())
 
 
 """

@@ -29,6 +29,7 @@ from ..const import (
     UNO_DISPATCH_DATA_TBL_CARD,
     UNO_DISPATCH_SEL_RNG,
     UNO_DISPATCH_ABOUT,
+    UNO_DISPATCH_LOG_WIN,
 )
 from ..const.event_const import GBL_DOC_CLOSING
 
@@ -44,6 +45,7 @@ from .dispatch_card_df import DispatchCardDf
 from .dispatch_card_tbl_data import DispatchCardTblData
 from .dispatch_rng_select_popup import DispatchRngSelectPopup
 from .dispatch_edit_py_cell_mb import DispatchEditPyCellMb
+from .dispatch_log_window import DispatchLogWindow
 
 # from .listen.edit_status_listener import EditStatusListener
 from ..log.log_inst import LogInst
@@ -148,6 +150,13 @@ class DispatchProviderInterceptor(unohelper.Base, XDispatchProviderInterceptor):
                 log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchEditPyCellMb")
                 in_thread = args.get("in_thread", "0") == "1"
                 result = DispatchEditPyCellMb(sheet=args["sheet"], cell=args["cell"], in_thread=in_thread)
+                return result
+        elif url.Main == UNO_DISPATCH_LOG_WIN:
+            with contextlib.suppress(Exception):
+                args = self._convert_query_to_dict(url.Arguments)
+                log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchLogWindow")
+                in_thread = args.get("in_thread", "0") == "1"
+                result = DispatchLogWindow(in_thread=in_thread)
                 return result
         elif url.Main == UNO_DISPATCH_DF_STATE:
             with contextlib.suppress(Exception):

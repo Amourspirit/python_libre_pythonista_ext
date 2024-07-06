@@ -291,7 +291,7 @@ class PyLogger(Logger):
         Args:
             doc (CalcDoc | None, optional): Calc Doc or None. If None all cached instances are cleared. Defaults to None.
         """
-        se = SharedEvent()
+        se = SharedEvent(doc=doc)
         if doc is None:
             cls._instances = {}
             eargs = EventArgs(cls)

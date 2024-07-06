@@ -130,6 +130,11 @@
                     <desc>Code Edit Window Edit Data</desc>
                 </info>
             </prop>
+            <prop oor:name="LogWindowJson" oor:type="xs:string">
+                <info>
+                    <desc>Log Window Data</desc>
+                </info>
+            </prop>
         </group>
     </component>
 </oor:component-schema>

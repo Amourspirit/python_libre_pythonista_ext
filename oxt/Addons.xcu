@@ -59,6 +59,19 @@
 							<value>_self</value>
 						</prop>
 					</node>
+					<node oor:name="m005"
+						oor:op="replace">
+						<prop oor:name="URL" oor:type="xs:string">
+							<!-- <value>.uno:libre_pythonista.calc.log_window&amp;in_thread=0</value> -->
+							<value>service:___lo_identifier___.impl?log_window</value>
+						</prop>
+						<prop oor:name="Title" oor:type="xs:string">
+							<value>Log Window</value>
+						</prop>
+						<prop oor:name="Target" oor:type="xs:string">
+							<value>_self</value>
+						</prop>
+					</node>
 					<node oor:name="m098"
 						oor:op="replace">
 						<prop oor:name="URL" oor:type="xs:string">

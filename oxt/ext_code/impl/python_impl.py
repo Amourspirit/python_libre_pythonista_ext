@@ -41,7 +41,7 @@ if TYPE_CHECKING:
     from ooo.dyn.awt.message_box_type import MessageBoxType
     from ooodev.dialog.msgbox import MsgBox
     from ...___lo_pip___.oxt_logger.oxt_logger import OxtLogger
-    from ...pythonpath.libre_pythonista_lib.const import UNO_DISPATCH_ABOUT
+    from ...pythonpath.libre_pythonista_lib.const import UNO_DISPATCH_ABOUT, UNO_DISPATCH_LOG_WIN
 else:
     _CONDITIONS_MET = _conditions_met()
     if _CONDITIONS_MET:
@@ -54,7 +54,7 @@ else:
         from ooodev.dialog.msgbox import MsgBox
         from libre_pythonista_lib.code.cell_cache import CellCache
         from libre_pythonista_lib.code.py_source_mgr import PyInstance
-        from libre_pythonista_lib.const import UNO_DISPATCH_ABOUT
+        from libre_pythonista_lib.const import UNO_DISPATCH_ABOUT, UNO_DISPATCH_LOG_WIN
     from ___lo_pip___.lo_util.resource_resolver import ResourceResolver
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
 
@@ -89,6 +89,15 @@ class PythonImpl(unohelper.Base, XJobExecutor):
                 Lo.dispatch_cmd(cmd=UNO_DISPATCH_ABOUT)
                 self._log.debug(f"About, Dispatched {UNO_DISPATCH_ABOUT}")
             except Exception as e:
+                self._log.exception(f"Error dispatching")
+        elif event == "log_window":
+            try:
+                self._log.debug(f"Log Window, Dispatching {UNO_DISPATCH_LOG_WIN}")
+                _ = Lo.current_doc
+                # in_thread=1 to wait for thread to join else thread is not joined.
+                Lo.dispatch_cmd(cmd=UNO_DISPATCH_LOG_WIN + "?in_thread=0", in_thread=True)
+                self._log.debug(f"Log Window, Dispatched {UNO_DISPATCH_LOG_WIN}")
+            except Exception:
                 self._log.exception(f"Error dispatching")
         else:
             self._do_pyc_formula()

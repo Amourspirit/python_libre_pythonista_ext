@@ -86,14 +86,10 @@ class LogWindowJob(XJob, unohelper.Base):
                 return
             if _CONDITIONS_MET:
                 try:
-                    # Lo.dispatch_cmd(cmd="service:___lo_identifier___.LogViewLoader", in_thread=True)
-
+                    # Lo.dispatch_cmd(cmd="service:___lo_identifier___.Switcher", in_thread=True)
                     layout_mgr = document.getCurrentController().getFrame().LayoutManager
                     if layout_mgr.isElementVisible(RES_LOG_WIN_URL):
-                        #  layout_mgr.destroyElement(RES_LOG_WIN_URL)
-                        # layout_mgr.createElement(RES_LOG_WIN_URL)
                         layout_mgr.hideElement(RES_LOG_WIN_URL)
-                        # layout_mgr.requestElement(RES_LOG_WIN_URL)
                     # SharedEvent().trigger_event(LOG_OPTIONS_CHANGED, EventArgs(self))
                     self._logger.debug("Log Window Job Done")
 
@@ -117,6 +113,7 @@ class LogWindowJob(XJob, unohelper.Base):
 
 
 # endregion XJob
+
 
 # region Implementation
 
