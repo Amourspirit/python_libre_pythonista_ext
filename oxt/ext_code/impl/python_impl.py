@@ -32,6 +32,7 @@ if TYPE_CHECKING:
     from ...___lo_pip___.lo_util.resource_resolver import ResourceResolver
     from ...pythonpath.libre_pythonista_lib.code.cell_cache import CellCache
     from ...pythonpath.libre_pythonista_lib.code.py_source_mgr import PyInstance
+    from ...pythonpath.libre_pythonista_lib.log.py_logger import PyLogger
 
     from ooodev.loader import Lo
     from ooodev.calc import CalcDoc
@@ -54,6 +55,7 @@ else:
         from ooodev.dialog.msgbox import MsgBox
         from libre_pythonista_lib.code.cell_cache import CellCache
         from libre_pythonista_lib.code.py_source_mgr import PyInstance
+        from libre_pythonista_lib.log.py_logger import PyLogger
         from libre_pythonista_lib.const import UNO_DISPATCH_ABOUT, UNO_DISPATCH_LOG_WIN
     from ___lo_pip___.lo_util.resource_resolver import ResourceResolver
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
@@ -196,7 +198,9 @@ class PythonImpl(unohelper.Base, XJobExecutor):
 
     def _debug_dump_module_to_log(self) -> None:
         doc = CalcDoc.from_current_doc()
-        PyInstance(doc).dump_module_source_code_to_log()
+        src = PyInstance(doc).dump_module_source_code_to_log()
+        if src:
+            PyLogger(doc).info(f" Source Code \n# Start Dump\n{src}\nEnd Dump\n")
 
     def _do_testing(self):
         try:

@@ -32,6 +32,9 @@ class DialogLogMenu:
                 "command": ".uno:lp.rest_data",
             },
             {
+                "text": "-",
+            },
+            {
                 "text": rr("mnuClose"),
                 "command": ".uno:lp.close",
             },
@@ -51,6 +54,23 @@ class DialogLogMenu:
             {
                 "text": rr("mnuHideWindow"),
                 "command": ".uno:lp.hide_window",
+            },
+        ]
+        return new_menu
+
+    def get_settings_menu(self) -> PopupMenu:
+        menu_data = self._get_settings_data()
+        popup_creator = PopupCreator()
+        popup_menu = popup_creator.create(menu_data)
+        return popup_menu
+
+    def _get_settings_data(self) -> List[dict]:
+        rr = self._dlg.res_resolver.resolve_string
+
+        new_menu = [
+            {
+                "text": rr("mnuLogSettings"),
+                "command": ".uno:lp.log_settings",
             },
         ]
         return new_menu

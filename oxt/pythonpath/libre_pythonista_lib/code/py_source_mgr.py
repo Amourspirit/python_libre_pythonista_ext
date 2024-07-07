@@ -217,21 +217,27 @@ class PySourceManager(EventsPartial):
             sb.append()
         return str(sb)
 
-    def dump_module_source_code_to_log(self) -> None:
-        """Dumps the module source code to the log."""
+    def dump_module_source_code_to_log(self) -> str:
+        """
+        Dumps the module source code to the log.
+
+        Returns the current source code.
+        """
         src_code = self.get_module_source_code()
         self._log.debug(
             f"PySourceManager - dump_module_source_code_to_log() - Module Source Code:\n# Start Dump\n{src_code}\n\n# End Dump"
         )
-        try:
-            from .mod_fn.lp_log import LpLog
+        # try:
+        #     from .mod_fn.lp_log import LpLog
 
-            log = LpLog().log
-            log.debug(
-                f"PySourceManager - dump_module_source_code_to_log() - Module Source Code:\n# Start Dump\n{src_code}\n\n# End Dump"
-            )
-        except Exception:
-            self._log.error("PySourceManager - dump_module_source_code_to_log() - Error dumping to LpLog log.")
+        #     log = LpLog().log
+        #     log.debug(
+        #         f"PySourceManager - dump_module_source_code_to_log() - Module Source Code:\n# Start Dump\n{src_code}\n\n# End Dump"
+        #     )
+        #     return src_code
+        # except Exception:
+        #     self._log.error("PySourceManager - dump_module_source_code_to_log() - Error dumping to LpLog log.")
+        return src_code
 
     # region Event Subscriptions
 

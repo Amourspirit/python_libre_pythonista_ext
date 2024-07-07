@@ -1,5 +1,6 @@
 from __future__ import annotations
-from typing import Any, cast, TYPE_CHECKING
+from typing import Any, cast, Dict, TYPE_CHECKING
+import contextlib
 import uno
 import unohelper
 
@@ -31,6 +32,7 @@ from ooodev.loader import Lo
 from ooodev.utils.color import StandardColor
 from ooodev.utils.partial.the_dictionary_partial import TheDictionaryPartial
 
+from ...dialog.options.log_opt import LogOpt
 from ...config.dialog.log_cfg import LogCfg
 from ...const.event_const import GBL_DOC_CLOSING, LOG_PY_LOGGER_RESET
 from ...event.shared_event import SharedEvent
@@ -58,7 +60,7 @@ else:
 
 
 class DialogLog(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
-    _instances = {}
+    _instances: Dict[str, DialogLog] = {}
 
     FONT = "DejaVu Sans Mono"
     MARGIN = 3
@@ -67,7 +69,7 @@ class DialogLog(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
     WIDTH = 600
     NB_TAB = 4
     HEADER = 1  # can create space for label at the top
-    FOOTER = 1
+    FOOTER = 0
     HEIGHT = 310
     MIN_HEIGHT = HEADER + FOOTER + 30
     MIN_WIDTH = 225
@@ -256,12 +258,13 @@ class DialogLog(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
     def _init_log_txt(self) -> None:
         txt_y = DialogLog.HEADER + self._margin
 
-        txt_height = DialogLog.HEIGHT - DialogLog.FOOTER - (self._margin * 2) - txt_y  # - DialogMb.HEADER
+        # txt_height = DialogLog.HEIGHT - DialogLog.FOOTER - (self._margin * 2) - txt_y
+        txt_height = DialogLog.HEIGHT - DialogLog.FOOTER - txt_y
         self._log_txt = CtlTextEdit.create(
             self._dialog,
             x=self._margin,
             y=txt_y,
-            width=self._width - (self._margin * 2),
+            width=self._width - (self._margin * 1),
             height=txt_height,
             Text="",
             Border=int(self._border_kind),
@@ -311,12 +314,17 @@ class DialogLog(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
             mb = Lo.create_instance_mcf(XMenuBar, "com.sun.star.awt.MenuBar", raise_err=True)
             mb.insertItem(1, self._rr.resolve_string("mnuFile"), 0, 0)
             mb.insertItem(2, self._rr.resolve_string("mnuView"), 0, 1)
+            mb.insertItem(3, self._rr.resolve_string("mnuSettings"), 0, 2)
             file_mnu = menu_provider.get_file_menu()
             file_mnu.subscribe_all_item_selected(self._fn_on_menu_select)
             mb.setPopupMenu(1, file_mnu.component)  # type: ignore
             view_mnu = menu_provider.get_view_menu()
             view_mnu.subscribe_all_item_selected(self._fn_on_menu_select)
             mb.setPopupMenu(2, view_mnu.component)  # type: ignore
+
+            setting_mnu = menu_provider.get_settings_menu()
+            setting_mnu.subscribe_all_item_selected(self._fn_on_menu_select)
+            mb.setPopupMenu(3, setting_mnu.component)  # type: ignore
 
             self._mb = mb
             self._dialog.setMenuBar(mb)
@@ -355,6 +363,9 @@ class DialogLog(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
                 self.dispose()
         elif command == ".uno:lp.hide_window":
             self.visible = False
+        elif command == ".uno:lp.log_settings":
+            LogOpt().show()
+            return
         return
 
     def _on_log_event(self, src: Any, event: EventArgs) -> None:
@@ -449,8 +460,9 @@ class DialogLog(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
     # region resize
     def _resize_log_txt(self, sz: Rectangle) -> None:
         txt_sz = self._log_txt.view.getPosSize()
-        width = sz.Width - (self._margin * 2)
-        txt_height = sz.Height - DialogLog.FOOTER - (self._margin * 2) - txt_sz.Y
+        width = sz.Width - (self._margin * 1)
+        # txt_height = sz.Height - DialogLog.FOOTER - (self._margin * 2) - txt_sz.Y
+        txt_height = sz.Height - DialogLog.FOOTER - txt_sz.Y
         self._log_txt.view.setPosSize(txt_sz.X, txt_sz.Y, width, txt_height, PosSize.POSSIZE)
 
     def resize(self) -> None:
@@ -640,10 +652,9 @@ def on_menu_select(src: Any, event: EventArgs, menu: PopupMenu) -> None:
 
 def _close_dialog(key: str) -> None:
     if key in DialogLog._instances:
-        # with contextlib.suppress(Exception):
-        # inst = DialogLog._instances[key]
-        # inst.close()
-        # inst.dispose()
+        with contextlib.suppress(Exception):
+            inst = DialogLog._instances[key]
+            inst.dispose()
         del DialogLog._instances[key]
 
 

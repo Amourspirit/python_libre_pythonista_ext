@@ -23,10 +23,13 @@
 							<value>service:___lo_identifier___.impl?pyc_formula_with_dependent</value>
 						</prop>
 						<prop oor:name="Title" oor:type="xs:string">
-							<value>Insert Python Dependent</value>
+							<value>Insert Python</value>
 						</prop>
 						<prop oor:name="Target" oor:type="xs:string">
 							<value>_self</value>
+						</prop>
+						<prop oor:name="ImageIdentifier" oor:type="xs:string">
+							<value>%origin%/images/code</value>
 						</prop>
 					</node>
 					<node oor:name="m003"
@@ -35,7 +38,7 @@
 							<value>private:separator</value>
 						</prop>
 					</node>
-					<node oor:name="m003"
+					<!-- <node oor:name="m003"
 						oor:op="replace">
 						<prop oor:name="URL" oor:type="xs:string">
 							<value>service:___lo_identifier___.Switcher</value>
@@ -58,8 +61,8 @@
 						<prop oor:name="Target" oor:type="xs:string">
 							<value>_self</value>
 						</prop>
-					</node>
-					<node oor:name="m005"
+					</node> -->
+					<node oor:name="m003"
 						oor:op="replace">
 						<prop oor:name="URL" oor:type="xs:string">
 							<!-- <value>.uno:libre_pythonista.calc.log_window&amp;in_thread=0</value> -->
@@ -67,6 +70,26 @@
 						</prop>
 						<prop oor:name="Title" oor:type="xs:string">
 							<value>Log Window</value>
+							<value xml:lang="en-US">Log Window</value>
+							<value xml:lang="fr">Fenêtre de journalisation</value>
+						</prop>
+						<prop oor:name="Target" oor:type="xs:string">
+							<value>_self</value>
+						</prop>
+						<prop oor:name="ImageIdentifier" oor:type="xs:string">
+							<value>%origin%/images/log</value>
+						</prop>
+					</node>
+					<node oor:name="m004"
+						oor:op="replace">
+						<prop oor:name="Context" oor:type="xs:string">
+							<value>com.sun.star.sheet.SpreadsheetDocument</value>
+						</prop>
+						<prop oor:name="URL" oor:type="xs:string">
+							<value>service:___lo_identifier___.impl?debug_dump_module_to_log</value>
+						</prop>
+						<prop oor:name="Title" oor:type="xs:string">
+							<value>Debug - Log Module</value>
 						</prop>
 						<prop oor:name="Target" oor:type="xs:string">
 							<value>_self</value>
@@ -95,94 +118,6 @@
 						</prop>
 					</node>
 				</node>
-			</node>
-		</node>
-		<node oor:name="OfficeHelp">
-			<node oor:name="___lo_identifier___.AddonMenu.m1"
-				oor:op="replace">
-				<prop oor:name="Context" oor:type="xs:string">
-					<value>com.sun.star.sheet.SpreadsheetDocument</value>
-				</prop>
-				<prop oor:name="URL" oor:type="xs:string">
-					<value>service:___lo_identifier___.impl?about</value>
-				</prop>
-				<prop oor:name="ImageIdentifier" oor:type="xs:string">
-					<value>%origin%/icons/icon</value>
-				</prop>
-				<prop oor:name="Title" oor:type="xs:string">
-					<value>About ___display_name___</value>
-				</prop>
-				<prop oor:name="Target" oor:type="xs:string">
-					<value>_self</value>
-				</prop>
-			</node>
-		</node>
-		<node oor:name="AddonMenu">
-			<node oor:name="___lo_identifier___.AddonMenu.m2"
-				oor:op="replace">
-				<prop oor:name="URL" oor:type="xs:string">
-					<value>private:separator</value>
-				</prop>
-			</node>
-			<node oor:name="___lo_identifier___.AddonMenu.m3"
-				oor:op="replace">
-				<prop oor:name="Context" oor:type="xs:string">
-					<value>com.sun.star.sheet.SpreadsheetDocument</value>
-				</prop>
-				<prop oor:name="URL" oor:type="xs:string">
-					<value>service:___lo_identifier___.impl?someservice</value>
-				</prop>
-				<prop oor:name="Title" oor:type="xs:string">
-					<value>Insert Python</value>
-				</prop>
-				<prop oor:name="Target" oor:type="xs:string">
-					<value>_self</value>
-				</prop>
-			</node>
-			<node oor:name="___lo_identifier___.AddonMenu.m4"
-				oor:op="replace">
-				<prop oor:name="Context" oor:type="xs:string">
-					<value>com.sun.star.sheet.SpreadsheetDocument</value>
-				</prop>
-				<prop oor:name="URL" oor:type="xs:string">
-					<value>service:___lo_identifier___.impl?pyc_formula_with_dependent</value>
-				</prop>
-				<prop oor:name="Title" oor:type="xs:string">
-					<value>Insert Python Dependent</value>
-				</prop>
-				<prop oor:name="Target" oor:type="xs:string">
-					<value>_self</value>
-				</prop>
-			</node>
-			<node oor:name="___lo_identifier___.AddonMenu.m5"
-				oor:op="replace">
-				<prop oor:name="Context" oor:type="xs:string">
-					<value>com.sun.star.sheet.SpreadsheetDocument</value>
-				</prop>
-				<prop oor:name="URL" oor:type="xs:string">
-					<value>service:___lo_identifier___.impl?debug_dump_module_to_log</value>
-				</prop>
-				<prop oor:name="Title" oor:type="xs:string">
-					<value>Debug - Log Module</value>
-				</prop>
-				<prop oor:name="Target" oor:type="xs:string">
-					<value>_self</value>
-				</prop>
-			</node>
-			<node oor:name="___lo_identifier___.AddonMenu.m6"
-				oor:op="replace">
-				<prop oor:name="Context" oor:type="xs:string">
-					<value>com.sun.star.sheet.SpreadsheetDocument</value>
-				</prop>
-				<prop oor:name="URL" oor:type="xs:string">
-					<value>service:___lo_identifier___.impl?testing</value>
-				</prop>
-				<prop oor:name="Title" oor:type="xs:string">
-					<value>Testing Python</value>
-				</prop>
-				<prop oor:name="Target" oor:type="xs:string">
-					<value>_self</value>
-				</prop>
 			</node>
 		</node>
 	</node>
