@@ -11,7 +11,7 @@ from com.github.amourspirit.extensions.librepythonista import XPy  # type: ignor
 
 def _conditions_met() -> bool:
     with contextlib.suppress(Exception):
-        from ___lo_pip___.install.requirements_check import RequirementsCheck
+        from ___lo_pip___.install.requirements_check import RequirementsCheck  # type: ignore
 
         return RequirementsCheck().run_imports_ready()
     return False
@@ -139,10 +139,23 @@ class PyImpl(unohelper.Base, XPy):
                     self._logger.debug(
                         f"pyc - py {cell.cell_obj} cell already has code. May be a row or column as been inserted."
                     )
+                    # If the cell is move this is not the place to update the cell properties.
+                    # If done here only the current cell would be updated.
+                    # Once this block runs it update the CellMgr and therefore all
+                    # subsequent moved cells will be in and cm so this next part would not run.
+                    #
+                    # if lp_cell.has_cell_moved:
+                    #     self._logger.debug(f"pyc - py {cell.cell_obj} cell has Moved.")
+                    #     lp_cell.cell_prop_addr = cell.cell_obj
+                    #     self._logger.debug(f"pyc - py {cell.cell_obj} Update Cell address property.")
+
                     code_handled = True
                     lp_cell.reset_py_instance()
                     CellMgr.reset_instance(doc)
                     cm = CellMgr(doc)
+                    if lp_cell.has_cell_moved:
+                        self._logger.debug(f"pyc - py {cell.cell_obj} cell has Moved.")
+                        cm.update_sheet_cell_addr_prop(sheet_idx)
 
                 # prompt for code
                 if not code_handled:

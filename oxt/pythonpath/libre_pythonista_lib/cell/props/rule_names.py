@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
-from ...utils.singleton import SingletonMeta
+from ...utils.singleton_base import SingletonBase
 
 if TYPE_CHECKING:
     from .....___lo_pip___.config import Config
@@ -9,7 +9,7 @@ else:
     from ___lo_pip___.config import Config
 
 
-class RuleNames(metaclass=SingletonMeta):
+class RuleNames(SingletonBase):
     # _instance = None
 
     # def __new__(cls) -> RuleNames:

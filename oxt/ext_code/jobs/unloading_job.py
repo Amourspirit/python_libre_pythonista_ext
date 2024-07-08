@@ -130,7 +130,7 @@ class UnLoadingJob(XJob, unohelper.Base):
                     event_args = EventArgs(self)
                     event_args.event_data = DotDict(uid=run_time_id, doc=self.document)
                     LoEvents().trigger(GBL_DOC_CLOSING, event_args)
-                    # any class the has the SingletonMeta can be used to clear the instance for the uid
+                    # any class the has the SingletonBase can be used to clear the instance for the uid
                     CellMgr.remove_instance_by_uid(run_time_id)
             else:
                 self._log.debug("Document UnLoading not a spreadsheet")

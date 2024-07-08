@@ -270,7 +270,7 @@ class DialogLog(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
             Border=int(self._border_kind),
             BorderColor=self._code_border_color,
             VerticalAlign=VerticalAlignment.TOP,
-            ReadOnly=True,
+            ReadOnly=False,
             MultiLine=True,
             AutoHScroll=True,
             AutoVScroll=True,

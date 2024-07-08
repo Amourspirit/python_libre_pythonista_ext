@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing import Dict, TYPE_CHECKING
 from ooodev.loader import Lo
 from .callback_holder import CallbackHolder
-from ..utils.singleton import SingletonMeta
+from ..utils.singleton_base import SingletonBase
 from ..ex import RuntimeUidError
 
 if TYPE_CHECKING:
@@ -12,7 +12,7 @@ else:
     from ___lo_pip___.oxt_logger import OxtLogger
 
 
-class SharedCb(metaclass=SingletonMeta):
+class SharedCb(SingletonBase):
     """
     A singleton class that holds a dictionary of CallbackHolder objects.
 

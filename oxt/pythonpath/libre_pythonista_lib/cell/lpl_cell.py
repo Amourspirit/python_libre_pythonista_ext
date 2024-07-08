@@ -151,7 +151,7 @@ class LplCell:
         """Resets the PyInstance."""
         PyInstance.reset_instance(doc=self.cell.calc_doc)
         self.refresh()
-        
+
     # endregion Reset Methods
 
     # region Properties
@@ -285,7 +285,7 @@ class LplCell:
     def pyc_rule(self) -> PycRuleT | None:
         """
         Gets the pyc rule of the cell or None.
-        
+
         This is a cached property.
         """
         key = "pyc_rule"
@@ -360,8 +360,11 @@ class LplCell:
     @property
     def cell_prop_addr(self) -> CellObj:
         """
-        Get the cell address of the cell from the custom property.
-        
+        Get/Set the cell address of the cell from the custom property.
+
+        If there is no custom property for the cell then the current cell is returned.
+        If needed use with ``has_address_prop`` to check if the cell has an address property.
+
         This is a cached property.
         """
         key = "pyc_src"
@@ -373,15 +376,41 @@ class LplCell:
             return self._cell.cell_obj
         try:
             addr = cast(str, self.custom_properties[addr_key])
+            # addr is in format of sheet_index=0&cell_addr=A1
             d = self._convert_query_to_dict(addr)
             idx = int(d.get("sheet_index", "-2"))
-            cell_obj = CellObj.from_cell(cast(str,d["cell_addr"]))
-            result =  CellObj(col=cell_obj.col, row=cell_obj.row, sheet_idx=idx)
+            cell_obj = CellObj.from_cell(cast(str, d["cell_addr"]))
+            result = CellObj(col=cell_obj.col, row=cell_obj.row, sheet_idx=idx)
             self._cache[key] = result
             return result
         except Exception:
             self._log.exception("cell_prop_addr() Error getting cell address from custom properties.")
         return self._cell.cell_obj
+
+    @cell_prop_addr.setter
+    def cell_prop_addr(self, value: CellObj) -> None:
+        key = self._key_maker.cell_addr_key
+        addr = f"sheet_index={value.sheet_idx}&cell_addr={value}"
+        self.cell.set_custom_property(key, addr)
+        if "custom_properties" in self._cache:
+            del self._cache["custom_properties"]
+
+    @property
+    def has_address_prop(self) -> bool:
+        """
+        Get if the cell has an address property.
+        """
+        key = self._key_maker.cell_addr_key
+        return key in self.custom_properties
+
+    @property
+    def has_cell_moved(self) -> bool:
+        """
+        Get if the cell has moved.
+        """
+        if not self.has_address_prop:
+            return False
+        return self.cell.cell_obj != self.cell_prop_addr
 
     @property
     def has_pyc_src(self) -> bool:

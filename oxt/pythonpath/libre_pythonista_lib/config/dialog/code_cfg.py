@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing import Any, cast, TYPE_CHECKING
 import json
 
-from ...utils.singleton import SingletonMeta
+from ...utils.singleton_base import SingletonBase
 
 if TYPE_CHECKING:
     from .....___lo_pip___.lo_util.configuration import Configuration, SettingsT
@@ -14,14 +14,7 @@ else:
     SettingsT = Any
 
 
-class CodeCfg(metaclass=SingletonMeta):
-    # _instance: CodeCfg = None  # type: ignore
-
-    # def __new__(cls):
-    #     if cls._instance is None:
-    #         cls._instance = super().__new__(cls)
-    #         cls._instance._is_init = False
-    #     return cls._instance
+class CodeCfg(SingletonBase):
 
     def __init__(self) -> None:
         if getattr(self, "_is_init", False):

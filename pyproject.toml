@@ -67,7 +67,7 @@ typing-extensions = ">=4.11.0"
 verr = ">=1.1.2"
 pandas = ">=2"
 odfpy = ">=1.4"
-ooo-dev-tools = ">=0.47.4"
+ooo-dev-tools = ">=0.47.5"
 matplotlib = ">=3.7.5"
 seaborn = ">=0.13"
 sortedcontainers = ">=2.4.0"
@@ -104,7 +104,7 @@ es = "Plantilla para crear extensiones basadas en pip para LibreOffice"
 
 [tool.poetry]
 name = "LibrePythonista"
-version = "0.0.3"
+version = "0.0.4"
 description = "Python For LibreOffice Calc"
 authors = [":Barry-Thomas-Paul: Moss <4193389+Amourspirit@users.noreply.github.com>"]
 license = "MIT"
@@ -116,7 +116,7 @@ python = "^3.8"
 ooouno = "^2.1.2"
 toml = "^0.10.2"
 typing-extensions = ">=4.11.0"
-ooo-dev-tools = ">=0.47.4"
+ooo-dev-tools = ">=0.47.5"
 sortedcontainers = ">=2.4.0"
 
 

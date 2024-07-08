@@ -15,6 +15,7 @@ from ooodev.utils.data_type.cell_obj import CellObj
 from ooodev.events.args.event_args import EventArgs
 from ooodev.utils.helper.dot_dict import DotDict
 from .listen.code_cell_listener import CodeCellListener
+from .listen.code_cell_listeners import CodeCellListeners
 from .state.state_kind import StateKind
 from ..code.cell_cache import CellCache
 from ..code.py_source_mgr import PyInstance, PySourceManager
@@ -25,7 +26,7 @@ from ..cell.props.key_maker import KeyMaker
 from ..event.shared_event import SharedEvent
 from .lpl_cell import LplCell
 from ..style.default_sytle import DefaultStyle
-from ..utils.singleton import SingletonMeta
+from ..utils.singleton_base import SingletonBase
 from ..const import (
     UNO_DISPATCH_CODE_DEL,
     UNO_DISPATCH_CODE_EDIT,
@@ -34,6 +35,7 @@ from ..const import (
     UNO_DISPATCH_PY_OBJ_STATE,
     UNO_DISPATCH_CELL_SELECT,
 )
+from ..log.log_inst import LogInst
 
 if TYPE_CHECKING:
     from com.sun.star.sheet import SheetCell  # service
@@ -45,7 +47,7 @@ else:
     from ___lo_pip___.config import Config
 
 
-class CellMgr(metaclass=SingletonMeta):
+class CellMgr(SingletonBase):
     # _instances: Dict[str, CellMgr] = {}
 
     # def __new__(cls, doc: CalcDoc):
@@ -62,7 +64,8 @@ class CellMgr(metaclass=SingletonMeta):
         self._doc = doc
         self._log = OxtLogger(log_name=self.__class__.__name__)
         self._log.debug(f"init for doc: {doc.runtime_uid}")
-        self._listeners = {}  # type: dict[str, CodeCellListener]
+        self._is_db = self._log.is_debug
+        self._listeners = CodeCellListeners()  # will automatically add listeners to all cells
         self._cell_cache = CellCache(doc)  # singleton
         self._py_inst = None  # PyInstance(doc)  # singleton
         self._ctl_mgr = CtlMgr()
@@ -72,11 +75,41 @@ class CellMgr(metaclass=SingletonMeta):
         self._se = SharedEvent(doc)
         self._se.trigger_event("CellMgrCreated", EventArgs(self))
         self._subscribe_to_shared_events()
+        self._cell_cache.subscribe_cell_addr_prop_update(self._fn_on_cell_cache_update_sheet_cell_addr_prop)
+        # self.remove_all_listeners()
+        # self.add_all_listeners()
+
         self._is_init = True
 
     def dispose(self) -> None:
         if self._se is not None:
             self._se.trigger_event("CellMgrDisposed", EventArgs(self))
+
+    # region Events Cell Cache
+    def _on_cell_cache_update_sheet_cell_addr_prop(self, src: Any, event: EventArgs) -> None:
+        """
+        When the CellCache updates the cell's sheet address property this event is fired.
+
+        When this event is fired the code listener for the cell gets is Absolute Name updated.
+        """
+        is_db = self._log.is_debug
+        if is_db:
+            self._log.debug(f"_on_cell_cache_update_sheet_cell_addr_prop() Entering.")
+        icp = event.event_data.icp
+        code_name = cast(str, icp.code_name)
+        if code_name in self._listeners:
+            if is_db:
+                self._log.debug(f"Listener exists for code name: {code_name}")
+            calc_cell = cast(CalcCell, event.event_data.calc_cell)
+            listener = self._listeners[code_name]
+            listener.update_absolute_name(name=calc_cell.component.AbsoluteName, cell_obj=calc_cell.cell_obj)
+        else:
+            if is_db:
+                self._log.debug(f"Listener does not exist for code name: {code_name}")
+        if is_db:
+            self._log.debug(f"_on_cell_cache_update_sheet_cell_addr_prop() Done.")
+
+    # endregion Events Cell Cache
 
     # region Control Update Methods
     def _update_lp_cell_control(self, cell: CalcCell) -> None:
@@ -182,6 +215,9 @@ class CellMgr(metaclass=SingletonMeta):
             self.on_shared_dispatch_dispatch_remove_array_formula
         )
         # endregion shared events
+        # region Cell Cache Events
+        self._fn_on_cell_cache_update_sheet_cell_addr_prop = self._on_cell_cache_update_sheet_cell_addr_prop
+        # endregion Cell Cache Events
 
     def on_cell_deleted(self, src: Any, event: EventArgs) -> None:
         """
@@ -415,7 +451,7 @@ class CellMgr(metaclass=SingletonMeta):
             code_name = icp.code_name
         try:
             self._log.debug(f"Removing listener from cell: {cell_obj}")
-            self._remove_listener_from_cell(calc_cell.component, code_name)
+            self._remove_listener_from_cell(calc_cell, code_name)
         except:
             self._log.error(f"Error removing listener from cell: {cell_obj}", exc_info=True)
 
@@ -474,27 +510,25 @@ class CellMgr(metaclass=SingletonMeta):
             raise ValueError("Cell cache is None")
         return self._cell_cache.has_cell(cell_obj, cell_obj.sheet_idx)
 
-    def trigger_cell_modify_event(self, cell: SheetCell, code_name: str) -> None:
-        """
-        Triggers the Modifier event for a cell.
+    # def trigger_cell_modify_event(self, cell: SheetCell, code_name: str) -> None:
+    #     """
+    #     Triggers the Modifier event for a cell.
 
-        Args:
-            cell (SheetCell): UNO Cell.
-            code_name (str): Cell unique id.
-        """
-        try:
-            # cell_addr = cell.getCellAddress()
-            # cell_obj = CellObj.from_idx(col_idx=cell_addr.Column, row_idx=cell_addr.Row, sheet_idx=cell_addr.Sheet)
-            if not self.has_listener(code_name):
-                self._log.debug(
-                    f"Cell '{code_name}' does not have listener. Adding listener to cell: {cell.AbsoluteName}"
-                )
-                self._add_listener_to_cell(cell, code_name)
-            listener = self.get_listener(code_name)
-            event_obj = EventObject(cell)
-            listener.modified(event_obj)
-        except Exception:
-            self._log.error(f"Error triggering cell modify event for cell: {cell.AbsoluteName}", exc_info=True)
+    #     Args:
+    #         cell (SheetCell): UNO Cell.
+    #         code_name (str): Cell unique id.
+    #     """
+    #     try:
+    #         if not self.has_listener(code_name):
+    #             self._log.debug(
+    #                 f"Cell '{code_name}' does not have listener. Adding listener to cell: {cell.AbsoluteName}"
+    #             )
+    #             self._add_listener_to_cell(cell, code_name)
+    #         listener = self.get_listener(code_name)
+    #         event_obj = EventObject(cell)
+    #         listener.modified(event_obj)
+    #     except Exception:
+    #         self._log.error(f"Error triggering cell modify event for cell: {cell.AbsoluteName}", exc_info=True)
 
     def add_source_code(self, cell_obj: CellObj, source_code: str) -> None:
         """
@@ -517,43 +551,50 @@ class CellMgr(metaclass=SingletonMeta):
         self.reset_py_inst()
         sheet = self._doc.sheets[cell_obj.sheet_idx]
         cell = sheet[cell_obj]
-        self._add_listener_to_cell(cell.component, idp.code_name)
+        self._add_listener_to_cell(cell, idp.code_name)
 
-    def _add_listener_to_cell(self, cell: SheetCell, name: str) -> None:
+    def _add_listener_to_cell(self, cell: CalcCell, name: str) -> None:
         try:
             if name not in self._listeners:
-                listener = CodeCellListener(cell.AbsoluteName, name)
-                self._listeners[name] = listener
-                listener.subscribe_cell_deleted(self._fn_on_cell_deleted)
-                listener.subscribe_cell_modified(self._fn_on_cell_modified)
-                listener.subscribe_cell_moved(self._fn_on_cell_moved)
-                listener.subscribe_cell_custom_prop_modify(self._fn_on_cell_custom_prop_modify)
-                listener.subscribe_cell_pyc_formula_removed(self._fn_on_cell_pyc_formula_removed)
-                cell.addModifyListener(listener)
-                self._log.debug(f"Added listener to cell: {cell.AbsoluteName} with codename {name}.")
+                # listener = CodeCellListener(cell.AbsoluteName, name)
+                listener = self._listeners.add_listener(cell, name)
+                if listener is None:
+                    if self._is_db:
+                        self._log.error(f"Error creating listener for cell: {cell.cell_obj} with codename {name}.")
+                    return
+                self._listener_subscribe(listener)
+                if self._is_db:
+                    self._log.debug(f"Added listener to cell: {cell.cell_obj} with codename {name}.")
             else:
-                self._log.error(f"Listener already exists for cell: {cell.AbsoluteName} with codename {name}.")
-        except Exception:
-            self._log.error(f"Error adding listener to cell: {cell.AbsoluteName} with codename {name}.", exc_info=True)
 
-    def _remove_listener_from_cell(self, cell: SheetCell, name: str) -> None:
+                self._log.error(f"Listener already exists for cell: {cell.cell_obj} with codename {name}.")
+        except Exception:
+            self._log.error(f"Error adding listener to cell: {cell.cell_obj} with codename {name}.", exc_info=True)
+
+    def _remove_listener_from_cell(self, cell: CalcCell, name: str) -> None:
         try:
             if name in self._listeners:
                 listener = self._listeners[name]
-                listener.unsubscribe_cell_deleted(self._fn_on_cell_deleted)
-                listener.unsubscribe_cell_modified(self._fn_on_cell_modified)
-                listener.unsubscribe_cell_moved(self._fn_on_cell_moved)
-                listener.unsubscribe_cell_custom_prop_modify(self._fn_on_cell_custom_prop_modify)
-                listener.unsubscribe_cell_pyc_formula_removed(self._fn_on_cell_pyc_formula_removed)
-                if not self.is_cell_deleted(cell):
-                    cell.removeModifyListener(listener)
-                    self._log.debug(f"Removed listener from cell with codename {name}.")
-                else:
-                    self._log.debug(f"Cell with codename {name} has been deleted. Not removing listener.")
+                self._listener_unsubscribe(listener)
+                self._listeners.remove_listener(cell, name)
             else:
                 self._log.error(f"Listener does not exists for cell with codename {name}.")
         except Exception:
             self._log.error(f"Error removing listener from cell with codename {name}.", exc_info=True)
+
+    def _listener_subscribe(self, listener: CodeCellListener) -> None:
+        listener.subscribe_cell_deleted(self._fn_on_cell_deleted)
+        listener.subscribe_cell_modified(self._fn_on_cell_modified)
+        listener.subscribe_cell_moved(self._fn_on_cell_moved)
+        listener.subscribe_cell_custom_prop_modify(self._fn_on_cell_custom_prop_modify)
+        listener.subscribe_cell_pyc_formula_removed(self._fn_on_cell_pyc_formula_removed)
+
+    def _listener_unsubscribe(self, listener: CodeCellListener) -> None:
+        listener.unsubscribe_cell_deleted(self._fn_on_cell_deleted)
+        listener.unsubscribe_cell_modified(self._fn_on_cell_modified)
+        listener.unsubscribe_cell_moved(self._fn_on_cell_moved)
+        listener.unsubscribe_cell_custom_prop_modify(self._fn_on_cell_custom_prop_modify)
+        listener.unsubscribe_cell_pyc_formula_removed(self._fn_on_cell_pyc_formula_removed)
 
     def is_cell_deleted(self, cell: SheetCell) -> bool:
         """Gets if a sheet cell has been deleted."""
@@ -563,49 +604,29 @@ class CellMgr(metaclass=SingletonMeta):
     def add_all_listeners(self) -> None:
         """
         Add all listeners for the current cells.
+
+        Note:
+            This method only add listeners managed by the ``CellMgr`` Class.
+            This method will not add or remove actual Listeners from the cells, use ``CodeCellListeners`` for that.
         """
-        self._log.debug("Adding all listeners")
-        if self._listeners:
-            self._log.warning("Listeners already exist. Not adding listeners.")
-            return
-        assert self._cell_cache is not None, "Cell cache is None"
-        cc = self._cell_cache.code_cells
-        i = 0
-        for sheet_idx, obj in cc.items():
-            sheet = self._doc.sheets[sheet_idx]
-            for cell_obj, cell_prop_idx in obj.items():
-                cell = sheet[cell_obj]
-                self._add_listener_to_cell(cell.component, cell_prop_idx.code_name)
-                i += 1
-        self._log.debug(f"Added {i} listeners")
+        for listener in self._listeners.values():
+            self._listener_unsubscribe(listener)
+            self._listener_subscribe(listener)
+        self._log.debug(f"Added {len(self._listeners)} listeners")
 
     def remove_all_listeners(self) -> None:
         """
         Remove all listeners.
 
         For all current listeners they are removed from the cells.
+
+        Note:
+            This method only removes listeners managed by the ``CellMgr`` Class.
+            This method will not add or remove actual Listeners from the cells, use ``CodeCellListeners`` for that.
         """
         self._log.debug("Removing all listeners")
-        sheet_cells = {}
-        # gather cells by sheet
-        for name in self._listeners.keys():
-            assert self._cell_cache is not None, "Cell cache is None"
-            cell_obj = self._cell_cache.code_name_cell_map.get(name, None)
-            if cell_obj is None:
-                self._log.error(f"Cell object does not exist for code name: {name}")
-                continue
-            if cell_obj.sheet_idx not in sheet_cells:
-                sheet_cells[cell_obj.sheet_idx] = []
-
-            sheet_cells[cell_obj.sheet_idx].append((name, cell_obj))
-
-        for sheet_idx, obj in sheet_cells.items():
-            sheet = self._doc.sheets[sheet_idx]
-            for name, cell_obj in obj:
-                cell = sheet[cell_obj]
-                self._remove_listener_from_cell(cell.component, name)
-
-        self._listeners.clear()
+        for listener in self._listeners.values():
+            self._listener_unsubscribe(listener)
         self._log.debug("Removed all listeners")
 
     def get_listener(self, code_name: str) -> CodeCellListener:
@@ -615,7 +636,7 @@ class CellMgr(metaclass=SingletonMeta):
         Args:
             code_name (str): code name of cell.
         """
-        listener = self._listeners.get(code_name, None)
+        listener = self._listeners.get(code_name)
         if listener is None:
             self._log.error(f"Listener does not exist for code name: {code_name}")
             raise KeyError(f"Listener does not exist for code name: {code_name}")
@@ -630,11 +651,11 @@ class CellMgr(metaclass=SingletonMeta):
         """
         return code_name in self._listeners
 
-    def get_all_listeners(self) -> dict[str, CodeCellListener]:
-        """
-        Get all listeners.
-        """
-        return self._listeners
+    # def get_all_listeners(self) -> dict[str, CodeCellListener]:
+    #     """
+    #     Get all listeners.
+    #     """
+    #     return self._listeners
 
     def is_first_cell(self, cell_obj: CellObj) -> bool:
         """
@@ -699,6 +720,25 @@ class CellMgr(metaclass=SingletonMeta):
         self._log.debug(f"set_global_var() - Setting Global Variable: {name}")
         self.py_inst.set_global_var(name, value)
 
+    def update_sheet_cell_addr_prop(self, sheet_idx: int) -> None:
+        """
+        Updates the cell address custom property for the cells in the sheet.
+
+        Args:
+            sheet_idx (int, optional): Sheet Index. Defaults to ``current_sheet_index``.
+
+        Warning:
+            This method need to be run on a up to date cell cache.
+            Usually ``reset_instance`` is call before running this method.
+
+            See ``CellCache.update_sheet_cell_addr_prop()`` for more.
+        """
+        if not self._cell_cache:
+            self._log.error("Cell cache is None")
+            return None
+
+        self._cell_cache.update_sheet_cell_addr_prop(sheet_idx)
+
     @contextmanager
     def listener_context(self, cell: SheetCell):
         """
@@ -720,7 +760,7 @@ class CellMgr(metaclass=SingletonMeta):
             listener = None
             if code_name in self._listeners:
                 self._log.debug(f"Un-subscribing listeners for cell: {cell.AbsoluteName}")
-                listener = self._listeners.pop(code_name)
+                listener = self._listeners[code_name]
                 listener.unsubscribe_cell_deleted(self._fn_on_cell_deleted)
                 listener.unsubscribe_cell_modified(self._fn_on_cell_modified)
                 listener.unsubscribe_cell_moved(self._fn_on_cell_moved)
@@ -749,30 +789,20 @@ class CellMgr(metaclass=SingletonMeta):
         return self._py_inst
 
     @classmethod
-    def reset_instance(cls, doc: CalcDoc | None = None) -> None:
+    def reset_instance(cls, doc: CalcDoc) -> None:
         """
         Reset the Singleton instance(s).
 
         Args:
-            doc (CalcDoc | None, optional): Calc Doc or None. If None all cached instances are cleared. Defaults to None.
+            doc (CalcDoc): Calc Doc or None. If None all cached instances are cleared. Defaults to None.
         """
-        if doc is None:
-            cls._instances = {}
-            return
-        key = f"doc_{doc.runtime_uid}"
-        if key in cls._instances:
-            inst = cls._instances[key]
-            try:
-                inst.remove_all_listeners()
-            except Exception:
-                inst._log.error(f"Error removing listeners for doc: {doc.runtime_uid}", exc_info=True)
-            inst._log.debug(f"Resetting instance for doc: {doc.runtime_uid}")
-            inst._log.debug(f"Resetting cell cache for doc: {doc.runtime_uid}")
-            if inst._cell_cache:
-                inst._cell_cache.reset_instance(doc)
-            inst._log.debug(f"Resetting PyInstance for doc: {doc.runtime_uid}")
-            del cls._instances[key]
-            se = SharedEvent(doc)
-            se.trigger_event("CellMgrReset", EventArgs(cls))
+        log = LogInst()
+        if cls.has_singleton_instance:
+            log.debug(f"CellMgr.reset_instance() - Resetting instance for doc: {doc.runtime_uid}")
+            inst = cls(doc)
+            cls.remove_this_instance(inst)
+        else:
+            log.debug(f"CellMgr.reset_instance() - No instance to reset for doc: {doc.runtime_uid}")
+
         PyInstance.reset_instance(doc)
         CellCache.reset_instance(doc)

@@ -8,7 +8,7 @@ from ooo.dyn.beans.property_attribute import PropertyAttributeEnum
 from ooodev.calc import CalcDoc
 from ooodev.form.controls.form_ctl_hidden import FormCtlHidden
 from ooodev.utils import gen_util as gUtil
-from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+
 
 if TYPE_CHECKING:
     from com.sun.star.sheet import SheetCell
@@ -24,7 +24,10 @@ if TYPE_CHECKING:
         SheetCell, Cell, CellProperties, CharacterProperties, ParagraphProperties, SheetCellRange, CellRange
     ]
     ScCellRangeObj = Union[SheetCellRange, CellRange, CellProperties, CharacterProperties, ParagraphProperties]
+    from ....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
 else:
+    from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+
     ScCellObj = Any
     ScCellRangeObj = Any
 

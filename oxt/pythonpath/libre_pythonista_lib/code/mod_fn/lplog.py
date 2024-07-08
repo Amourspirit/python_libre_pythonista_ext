@@ -6,13 +6,13 @@ from ooodev.events.args.event_args import EventArgs
 from ...log.py_logger import PyLogger
 from ...const.event_const import LOG_OPTIONS_CHANGED, LOG_PY_LOGGER_RESET
 from ...event.shared_event import SharedEvent
-from ...utils.singleton import SingletonMeta
+from ...utils.singleton_base import SingletonBase
 
 if TYPE_CHECKING:
     from ooodev.proto.office_document_t import OfficeDocumentT
 
 
-class LpLog(metaclass=SingletonMeta):
+class LpLog(SingletonBase):
     # _instances = {}
 
     # def __new__(cls):

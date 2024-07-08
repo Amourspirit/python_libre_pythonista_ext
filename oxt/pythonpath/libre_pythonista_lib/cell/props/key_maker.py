@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 from .rule_names import RuleNames
-from ...utils.singleton import SingletonMeta
+from ...utils.singleton_base import SingletonBase
 
 if TYPE_CHECKING:
     from .....___lo_pip___.config import Config
@@ -9,7 +9,7 @@ else:
     from ___lo_pip___.config import Config
 
 
-class KeyMaker(metaclass=SingletonMeta):
+class KeyMaker(SingletonBase):
     # _instance = None
 
     # def __new__(cls) -> KeyMaker:
@@ -45,7 +45,7 @@ class KeyMaker(metaclass=SingletonMeta):
 
     @property
     def cell_addr_key(self) -> str:
-        """Gets the key for the control shape."""
+        """Gets the address property."""
         return f"{self.cell_cp_prefix}addr"
 
     @property

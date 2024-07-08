@@ -158,7 +158,8 @@ class ViewJob(unohelper.Base, XJob):
                         dispatch_mgr.register_interceptor(doc)
                         cm = CellMgr(doc)
                         cm.reset_py_inst()
-                        cm.remove_all_listeners()
+                        # cm.remove_all_listeners()
+                        # adding listeners will remove first.
                         cm.add_all_listeners()
 
                         self.document.calculateAll()

@@ -14,7 +14,7 @@ from .rule_pd_df_headers import RulePdDfHeaders
 from .rule_pd_ds import RulePdDs
 from .rule_str import RuleStr
 from .rule_tbl_data import RuleTblData
-from .....utils.singleton import SingletonMeta
+from .....utils.singleton_base import SingletonBase
 
 if TYPE_CHECKING:
     from .pyc_rule_t import PycRuleT
@@ -25,7 +25,7 @@ else:
     from ___lo_pip___.oxt_logger import OxtLogger
 
 
-class PycRules(metaclass=SingletonMeta):
+class PycRules(SingletonBase):
     """Singleton Class. Manages rules for Versions"""
 
     # _instance = None

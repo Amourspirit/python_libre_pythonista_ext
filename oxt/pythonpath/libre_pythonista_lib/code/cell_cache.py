@@ -10,9 +10,16 @@ from dataclasses import dataclass, field
 import uno
 from ooodev.calc import CalcDoc
 from ooodev.utils.data_type.cell_obj import CellObj
-from ..utils.singleton import SingletonMeta
+from ooodev.events.events import Events
+from ooodev.events.args.event_args import EventArgs
+from ooodev.utils.helper.dot_dict import DotDict
+from ..cell.props.key_maker import KeyMaker
+from ..utils.singleton_base import SingletonBase
+from ..log.log_inst import LogInst
+from ..utils.gen_util import GenUtil
 
 if TYPE_CHECKING:
+    from ooodev.utils.type_var import EventCallback
     from ....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
     from ....___lo_pip___.config import Config
 else:
@@ -30,19 +37,13 @@ class IndexCellProps:
         return hash((self.index, self.props))
 
 
-class CellCache(metaclass=SingletonMeta):
-    # _instances = {}
-
-    # def __new__(cls, doc: CalcDoc):
-    #     key = f"doc_{doc.runtime_uid}"
-    #     if not key in cls._instances:
-    #         cls._instances[key] = super(CellCache, cls).__new__(cls)
-    #         cls._instances[key]._is_init = False
-    #     return cls._instances[key]
+class CellCache(SingletonBase):
+    """Cell Cache"""
 
     def __init__(self, doc: CalcDoc):
         if getattr(self, "_is_init", False):
             return
+        self._events = Events(source=self)
         self._cfg = Config()
         self._log = OxtLogger(log_name=self.__class__.__name__)
         self._code_prop = self._cfg.cell_cp_codename
@@ -64,6 +65,48 @@ class CellCache(metaclass=SingletonMeta):
 
     def __len__(self) -> int:
         return len(self._code)
+
+    def __iter__(self):
+        return iter(self._code)
+
+    def update_sheet_cell_addr_prop(self, sheet_idx: int = -1) -> None:
+        """
+        Updates the cell address custom property for the cells in the sheet.
+
+        Args:
+            sheet_idx (int, optional): Sheet Index. Defaults to ``current_sheet_index``.
+
+        Warning:
+            This method need to be run on a up to date cell cache.
+            Usually ``reset_instance`` is call before running this method.
+        """
+        is_db = self._log.is_debug
+        if is_db:
+            self._log.debug(f"update_sheet_cell_addr_prop() for Sheet Index: {sheet_idx}")
+        if sheet_idx < 0:
+            sheet_idx = self.current_sheet_index
+        if sheet_idx < 0:
+            self._log.error("insert() Sheet index not set")
+            raise ValueError("Sheet index not set")
+
+        km = KeyMaker()
+        sheet = self._doc.sheets[sheet_idx]
+        for cell, icp in self._code[sheet_idx].items():
+            calc_cell = sheet[cell]
+            if is_db:
+                self._log.debug(f"update_sheet_cell_addr_prop() for Cell: {cell}")
+            addr = GenUtil.create_cell_addr_query_str(sheet_idx, str(calc_cell.cell_obj))
+            current = calc_cell.get_custom_property(km.cell_addr_key, addr)
+            if current != addr:
+                calc_cell.set_custom_property(km.cell_addr_key, addr)
+                args = EventArgs(self)
+                args.event_data = DotDict(
+                    calc_cell=calc_cell, sheet_idx=sheet_idx, old_addr=current, addr=addr, icp=icp
+                )
+                self._events.trigger_event("update_sheet_cell_addr_prop", args)
+        if is_db:
+            self._log.debug("update_sheet_cell_addr_prop() Done")
+        return None
 
     def get_cell_complete_count(self) -> int:
         """
@@ -513,6 +556,27 @@ class CellCache(metaclass=SingletonMeta):
             self.previous_cell = prev_cell
             self.previous_sheet_index = prev_sheet_idx
 
+    # region Events
+    def subscribe_cell_addr_prop_update(self, cb: EventCallback) -> None:
+        """
+        Subscribe to the update_sheet_cell_addr_prop event.
+
+        Args:
+            cb (EventCallback): Event Callback.
+        """
+        self._events.subscribe_event("update_sheet_cell_addr_prop", cb)
+
+    def unsubscribe_cell_addr_prop_update(self, cb: EventCallback) -> None:
+        """
+        Un-subscribe from the update_sheet_cell_addr_prop event.
+
+        Args:
+            cb (EventCallback): Event Callback.
+        """
+        self._events.unsubscribe_event("update_sheet_cell_addr_prop", cb)
+
+    # endregion Events
+
     # region Properties
 
     @property
@@ -586,16 +650,17 @@ class CellCache(metaclass=SingletonMeta):
     # endregion Properties
 
     @classmethod
-    def reset_instance(cls, doc: CalcDoc | None = None) -> None:
+    def reset_instance(cls, doc: CalcDoc) -> None:
         """
         Reset the cached instance(s).
 
         Args:
             doc (CalcDoc | None, optional): Calc Doc or None. If None all cached instances are cleared. Defaults to None.
         """
-        if doc is None:
-            cls._instances = {}
-            return
-        key = f"doc_{doc.runtime_uid}"
-        if key in cls._instances:
-            del cls._instances[key]
+        log = LogInst()
+        if cls.has_singleton_instance:
+            log.debug(f"CellCache.reset_instance() - Resetting instance for doc: {doc.runtime_uid}")
+            inst = cls(doc)
+            cls.remove_this_instance(inst)
+        else:
+            log.debug(f"CellCache.reset_instance() - No instance to reset for doc: {doc.runtime_uid}")
