@@ -525,6 +525,15 @@ class Config(metaclass=Singleton):
         return self._log_pip_installs
 
     @property
+    def log_indent(self) -> int:
+        """
+        Gets the amount of logging indent. ``0`` is no indent.
+
+        The value for this property can be set in pyproject.toml (tool.oxt.config.log_indent)
+        """
+        return self._basic_config.log_indent
+
+    @property
     def has_locals(self) -> bool:
         """
         Gets the flag indicating if the extension has local pip files to install.
