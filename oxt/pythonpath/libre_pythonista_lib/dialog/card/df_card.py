@@ -97,115 +97,121 @@ class DfCard:
 
     # region Data
     def _get_message(self) -> str:
-        """Get the message to display in the dialog."""
-        py_src = self._lpl_cell.pyc_src
-        df = cast(pd.DataFrame, py_src.dd_data.data)
-        msg_str = self._rr.resolve_string("strDataFrame")
-        if not PandasUtil.is_dataframe(df):
-            self._log.error("Data is not a DataFrame")
-            return ""
+        with self._log.indent(True):
+            """Get the message to display in the dialog."""
+            py_src = self._lpl_cell.pyc_src
+            df = cast(pd.DataFrame, py_src.dd_data.data)
+            msg_str = self._rr.resolve_string("strDataFrame")
+            if not PandasUtil.is_dataframe(df):
+                self._log.error("Data is not a DataFrame")
+                return ""
 
-        shape = df.shape
-        shape_len = len(shape)
-        if shape_len == 0:
-            return msg_str
-        if shape_len == 1:
-            rows = shape[0]
-            return f"{rows} x 0 {msg_str}"
-        return f"{shape[0]} x {shape[1]} {msg_str}"
+            shape = df.shape
+            shape_len = len(shape)
+            if shape_len == 0:
+                return msg_str
+            if shape_len == 1:
+                rows = shape[0]
+                return f"{rows} x 0 {msg_str}"
+            return f"{shape[0]} x {shape[1]} {msg_str}"
 
     def _set_table_data(self) -> None:
-        py_src = self._lpl_cell.pyc_src
-        df = cast(pd.DataFrame, py_src.dd_data.data)
+        with self._log.indent(True):
+            py_src = self._lpl_cell.pyc_src
+            df = cast(pd.DataFrame, py_src.dd_data.data)
 
-        if not PandasUtil.is_dataframe(df):
-            self._log.error("Data is not a DataFrame")
-            return
-        rows = df.shape[0]
-        if PandasUtil.is_describe_output(df):
-            self._log.debug("DataFrame is a describe output")
-            tbl, max_len = self._get_table_data_describe()
-        else:
-            if rows <= 5:
-                tbl, max_len = self._get_table_data_head()
+            if not PandasUtil.is_dataframe(df):
+                self._log.error("Data is not a DataFrame")
+                return
+            rows = df.shape[0]
+            if PandasUtil.is_describe_output(df):
+                self._log.debug("DataFrame is a describe output")
+                tbl, max_len = self._get_table_data_describe()
             else:
-                tbl, max_len = self._get_table_data_head_tail()
+                if rows <= 5:
+                    tbl, max_len = self._get_table_data_head()
+                else:
+                    tbl, max_len = self._get_table_data_head_tail()
 
-        row_header_width = int(UnitAppFontWidth(max_len * 6))
-        self._log.debug(f"_set_table_data() Row header width: {row_header_width}")
-        self._ctl_table1.set_table_data(
-            data=tbl,
-            align="RLC",
-            # widths=widths,
-            has_row_headers=True,
-            has_colum_headers=PandasUtil.has_headers(df),
-            row_header_width=row_header_width,
-        )
-        self._ctl_table1.horizontal_scrollbar = True
+            row_header_width = int(UnitAppFontWidth(max_len * 6))
+            self._log.debug(f"_set_table_data() Row header width: {row_header_width}")
+            self._ctl_table1.set_table_data(
+                data=tbl,
+                align="RLC",
+                # widths=widths,
+                has_row_headers=True,
+                has_colum_headers=PandasUtil.has_headers(df),
+                row_header_width=row_header_width,
+            )
+            self._ctl_table1.horizontal_scrollbar = True
 
     def _get_table_data_describe(self) -> Tuple[list, int]:
         """Convert the dataframe and display in dialog grid control."""
-        py_src = self._lpl_cell.pyc_src
-        df = cast(pd.DataFrame, py_src.dd_data.data)
+        with self._log.indent(True):
+            py_src = self._lpl_cell.pyc_src
+            df = cast(pd.DataFrame, py_src.dd_data.data)
 
-        tbl = PandasUtil.pandas_to_array(df)
-        max_len = PandasUtil.get_df_index_max_len(df.describe())
-        self._log.debug(f"_set_table_data() Max length: {max_len}")
-        PandasUtil.convert_array_to_lo(tbl)
-        return tbl, max_len
+            tbl = PandasUtil.pandas_to_array(df)
+            max_len = PandasUtil.get_df_index_max_len(df.describe())
+            self._log.debug(f"_set_table_data() Max length: {max_len}")
+            PandasUtil.convert_array_to_lo(tbl)
+            return tbl, max_len
 
     def _get_table_data_head(self) -> Tuple[list, int]:
         """Convert the dataframe and display in dialog grid control."""
-        py_src = self._lpl_cell.pyc_src
-        df = cast(pd.DataFrame, py_src.dd_data.data)
+        with self._log.indent(True):
+            py_src = self._lpl_cell.pyc_src
+            df = cast(pd.DataFrame, py_src.dd_data.data)
 
-        head_data = df.head()
-        max_len = PandasUtil.get_df_index_max_len(head_data)
-        self._log.debug(f"_set_table_data() Max length: {max_len}")
-        tbl = PandasUtil.pandas_to_array(df.head(), index_opt=1)
-        PandasUtil.convert_array_to_lo(tbl)
-        return tbl, max_len
+            head_data = df.head()
+            max_len = PandasUtil.get_df_index_max_len(head_data)
+            self._log.debug(f"_set_table_data() Max length: {max_len}")
+            tbl = PandasUtil.pandas_to_array(df.head(), index_opt=1)
+            PandasUtil.convert_array_to_lo(tbl)
+            return tbl, max_len
 
     def _get_table_data_head_tail(self) -> Tuple[list, int]:
         """Convert the dataframe and display in dialog grid control."""
-        py_src = self._lpl_cell.pyc_src
-        df = cast(pd.DataFrame, py_src.dd_data.data)
+        with self._log.indent(True):
+            py_src = self._lpl_cell.pyc_src
+            df = cast(pd.DataFrame, py_src.dd_data.data)
 
-        _, cols = PandasUtil.get_df_rows_columns(df)
-        head_data = df.head()
-        tail_data = df.tail()
-        head_max = PandasUtil.get_df_index_max_len(head_data)
-        tail_max = PandasUtil.get_df_index_max_len(tail_data)
-        max_len = max(head_max, tail_max)
-        self._log.debug(f"_set_table_data() Max length: {max_len}")
-        head = PandasUtil.pandas_to_array(df.head(), index_opt=1, convert=False)
-        tail = PandasUtil.pandas_to_array(df.tail(), header_opt=2, index_opt=1, convert=False)
+            _, cols = PandasUtil.get_df_rows_columns(df)
+            head_data = df.head()
+            tail_data = df.tail()
+            head_max = PandasUtil.get_df_index_max_len(head_data)
+            tail_max = PandasUtil.get_df_index_max_len(tail_data)
+            max_len = max(head_max, tail_max)
+            self._log.debug(f"_set_table_data() Max length: {max_len}")
+            head = PandasUtil.pandas_to_array(df.head(), index_opt=1, convert=False)
+            tail = PandasUtil.pandas_to_array(df.tail(), header_opt=2, index_opt=1, convert=False)
 
-        PandasUtil.convert_array_to_lo(head)
-        PandasUtil.convert_array_to_lo(tail)
-        # create a row of ellipse to insert before tail.
-        ellipse = ["..." for _ in range(cols + 1)]  # one extra column for row index
-        tbl = head + [ellipse] + tail
-        return tbl, max_len
+            PandasUtil.convert_array_to_lo(head)
+            PandasUtil.convert_array_to_lo(tail)
+            # create a row of ellipse to insert before tail.
+            ellipse = ["..." for _ in range(cols + 1)]  # one extra column for row index
+            tbl = head + [ellipse] + tail
+            return tbl, max_len
 
     # endregion Data
 
     # region Show Dialog
     def show(self) -> int:
         # window = Lo.get_frame().getContainerWindow()
-        self._doc.activate()
-        try:
-            self._ctl_main_lbl.label = self._get_message()
-        except Exception as ex:
-            self._log.error(f"Error setting message: {ex}")
-        window = self._doc.get_frame().getContainerWindow()
-        ps = window.getPosSize()
-        x = round(ps.Width / 2 - self._width / 2)
-        y = round(ps.Height / 2 - self._height / 2)
-        self._dialog.set_pos_size(x, y, self._width, self._height, PosSize.POSSIZE)
-        self._dialog.set_visible(True)
-        result = self._dialog.execute()
-        self._dialog.dispose()
-        return result
+        with self._log.indent(True):
+            self._doc.activate()
+            try:
+                self._ctl_main_lbl.label = self._get_message()
+            except Exception as ex:
+                self._log.error(f"Error setting message: {ex}")
+            window = self._doc.get_frame().getContainerWindow()
+            ps = window.getPosSize()
+            x = round(ps.Width / 2 - self._width / 2)
+            y = round(ps.Height / 2 - self._height / 2)
+            self._dialog.set_pos_size(x, y, self._width, self._height, PosSize.POSSIZE)
+            self._dialog.set_visible(True)
+            result = self._dialog.execute()
+            self._dialog.dispose()
+            return result
 
     # endregion Show Dialog

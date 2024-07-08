@@ -32,13 +32,14 @@ class CellControl(SheetControlBase):
         super().__init__(calc_obj, lo_inst)
         self._cfg = Config()
         self.__log = LogInst()
-        self.__log.debug(f"CellControl: __init__(): Entered")
+        with self.__log.indent(True):
+            self.__log.debug(f"CellControl: __init__(): Entered")
 
-        self._form_name = f"Form_{self._cfg.general_code_name}"
-        if not self.calc_obj.has_custom_property(self._cfg.cell_cp_codename):
-            raise CustomPropertyMissingError(f"Custom Property not found: {self._cfg.cell_cp_codename}")
-        self.namer = CtlNamer(self.calc_obj)
-        self.__log.debug(f"CellControl: __init__(): Exit")
+            self._form_name = f"Form_{self._cfg.general_code_name}"
+            if not self.calc_obj.has_custom_property(self._cfg.cell_cp_codename):
+                raise CustomPropertyMissingError(f"Custom Property not found: {self._cfg.cell_cp_codename}")
+            self.namer = CtlNamer(self.calc_obj)
+            self.__log.debug(f"CellControl: __init__(): Exit")
 
     def _init_calc_sheet_prop(self) -> None:
         CalcSheetPropPartial.__init__(self, self.calc_obj.calc_sheet)
@@ -58,52 +59,55 @@ class CellControl(SheetControlBase):
         return sheet.draw_page.forms.get_by_name(self._form_name)
 
     def _find_current_control(self) -> Any:
-        self.__log.debug(f"CellControl: _find_current_control(): Entered")
-        # pylint: disable=import-outside-toplevel
-        cargs = CancelEventArgs(source=self)
-        cargs.event_data = DotDict(
-            control_name=self.namer.ctl_name, shape_name=self.namer.ctl_shape_name, cell=self.calc_obj
-        )
-        self.on_finding_control(cargs)
-        if cargs.cancel:
-            return None
-
-        sheet = self.calc_sheet
-        if not sheet.draw_page.forms.has_by_name(self._form_name):
-            return None
-
-        shape = None
-        with contextlib.suppress(mEx.ShapeMissingError):
-            shape = sheet.draw_page.find_shape_by_name(self.namer.ctl_shape_name)
-
-        if shape is None:
-            self.__log.debug(f"CellControl - _find_current_control(): Shape not found: {self.namer.ctl_shape_name}")
-            return None
-
-        x_shape = Lo.qi(XControlShape, shape.component)
-        if x_shape is None:
-            self.__log.debug(
-                f"CellControl - _find_current_control(): XControlShape not found: {self.namer.ctl_shape_name}"
+        with self.__log.indent(True):
+            self.__log.debug(f"CellControl: _find_current_control(): Entered")
+            # pylint: disable=import-outside-toplevel
+            cargs = CancelEventArgs(source=self)
+            cargs.event_data = DotDict(
+                control_name=self.namer.ctl_name, shape_name=self.namer.ctl_shape_name, cell=self.calc_obj
             )
-            return None
+            self.on_finding_control(cargs)
+            if cargs.cancel:
+                return None
 
-        ctl = x_shape.getControl()
-        if ctl is None:
-            return None
-        from ooodev.form.controls.from_control_factory import FormControlFactory
+            sheet = self.calc_sheet
+            if not sheet.draw_page.forms.has_by_name(self._form_name):
+                return None
 
-        factory = FormControlFactory(draw_page=sheet.draw_page.component, lo_inst=self.lo_inst)
-        try:
-            factory_ctl = factory.get_control_from_model(ctl)
-            self.__log.debug(
-                f"CellControl - _find_current_control(): Found Control from factory: {self.namer.ctl_name}"
-            )
-            return factory_ctl
-        except NoSuchElementException:
-            self.__log.warning(
-                f"CellControl - _find_current_control() NoSuchElementException error from FormControlFactory Control not found: {self.namer.ctl_name}"
-            )
-            return None
+            shape = None
+            with contextlib.suppress(mEx.ShapeMissingError):
+                shape = sheet.draw_page.find_shape_by_name(self.namer.ctl_shape_name)
+
+            if shape is None:
+                self.__log.debug(
+                    f"CellControl - _find_current_control(): Shape not found: {self.namer.ctl_shape_name}"
+                )
+                return None
+
+            x_shape = Lo.qi(XControlShape, shape.component)
+            if x_shape is None:
+                self.__log.debug(
+                    f"CellControl - _find_current_control(): XControlShape not found: {self.namer.ctl_shape_name}"
+                )
+                return None
+
+            ctl = x_shape.getControl()
+            if ctl is None:
+                return None
+            from ooodev.form.controls.from_control_factory import FormControlFactory
+
+            factory = FormControlFactory(draw_page=sheet.draw_page.component, lo_inst=self.lo_inst)
+            try:
+                factory_ctl = factory.get_control_from_model(ctl)
+                self.__log.debug(
+                    f"CellControl - _find_current_control(): Found Control from factory: {self.namer.ctl_name}"
+                )
+                return factory_ctl
+            except NoSuchElementException:
+                self.__log.warning(
+                    f"CellControl - _find_current_control() NoSuchElementException error from FormControlFactory Control not found: {self.namer.ctl_name}"
+                )
+                return None
 
     def _set_shape_props(self, shape: Shape) -> None:
         event_data = DotDict(

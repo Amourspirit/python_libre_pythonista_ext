@@ -58,11 +58,12 @@ class CodeRules:
         Args:
             rule (CodeRuleT): Rule to register
         """
-        if rule in self._rules:
-            self._log.debug(f"CodeRules - add_rule() Rule Already added: {rule}")
-            return
-        self._log.debug(f"CodeRules - add_rule() Adding Rule {rule}")
-        self._reg_rule(rule=rule)
+        with self._log.indent(True):
+            if rule in self._rules:
+                self._log.debug(f"CodeRules - add_rule() Rule Already added: {rule}")
+                return
+            self._log.debug(f"CodeRules - add_rule() Adding Rule {rule}")
+            self._reg_rule(rule=rule)
 
     def add_rule_at(self, index: int, rule: CodeRuleT) -> None:
         """
@@ -72,11 +73,12 @@ class CodeRules:
             index (int): Index to insert rule
             rule (CodeRuleT): Rule to register
         """
-        if rule in self._rules:
-            self._log.debug(f"CodeRules - add_rule_at() Rule Already added: {rule}")
-            return
-        self._log.debug(f"CodeRules - add_rule_at() Inserting : {rule} at index: {index}")
-        self._rules.insert(index, rule)
+        with self._log.indent(True):
+            if rule in self._rules:
+                self._log.debug(f"CodeRules - add_rule_at() Rule Already added: {rule}")
+                return
+            self._log.debug(f"CodeRules - add_rule_at() Inserting : {rule} at index: {index}")
+            self._rules.insert(index, rule)
 
     def remove_rule(self, rule: CodeRuleT):
         """
@@ -88,13 +90,14 @@ class CodeRules:
         Raises:
             ValueError: If an error occurs
         """
-        try:
-            self._rules.remove(rule)
-            self._log.debug(f"CodeRules - remove_rule() Removed rule: {rule}")
-        except ValueError as e:
-            msg = f"{self.__class__.__name__}.unregister_rule() Unable to unregister rule."
-            self._log.error(msg)
-            raise ValueError(msg) from e
+        with self._log.indent(True):
+            try:
+                self._rules.remove(rule)
+                self._log.debug(f"CodeRules - remove_rule() Removed rule: {rule}")
+            except ValueError as e:
+                msg = f"{self.__class__.__name__}.unregister_rule() Unable to unregister rule."
+                self._log.error(msg)
+                raise ValueError(msg) from e
 
     def remove_rule_at(self, index: int):
         """
@@ -106,13 +109,14 @@ class CodeRules:
         Raises:
             ValueError: If an error occurs
         """
-        try:
-            del self._rules[index]
-            self._log.debug(f"CodeRules - remove_rule() Removed rule at index: {index}")
-        except IndexError as e:
-            msg = f"{self.__class__.__name__}.unregister_rule() Unable to unregister rule."
-            self._log.error(msg)
-            raise ValueError(msg) from e
+        with self._log.indent(True):
+            try:
+                del self._rules[index]
+                self._log.debug(f"CodeRules - remove_rule() Removed rule at index: {index}")
+            except IndexError as e:
+                msg = f"{self.__class__.__name__}.unregister_rule() Unable to unregister rule."
+                self._log.error(msg)
+                raise ValueError(msg) from e
 
     def _reg_rule(self, rule: CodeRuleT):
         self._rules.append(rule)
@@ -139,32 +143,33 @@ class CodeRules:
         Returns:
             List[CodeRuleT]: List of matched rules
         """
-        found_rule = None
-        for rule in self._rules:
-            rule.set_values(mod, code)
-            if rule.get_is_match():
-                self._log.debug(f"CodeRules - get_matched_rule() found match rule: {rule}")
-                found_rule = rule
-                break
-            rule.reset()
-        if found_rule:
-            # rules LpFn and LpFnObj already contain the correct DotDict
-            if not isinstance(found_rule, (LpFn, LpFnObj, CodeEmpty)):
-                self._log.debug(
-                    f"CodeRules - get_matched_rule() Rule: {found_rule} is not LpFn or LpFnObj. Checking for LpFnValue match."
-                )
-                lp_fn_val = LpFnValue()
-                lp_fn_val.data = found_rule.get_value()
-                lp_fn_val.set_values(mod, code)
-                if lp_fn_val.get_is_match():
-                    self._log.debug(f"CodeRules - get_matched_rule() Swapping rule: {found_rule} for {lp_fn_val}")
-                    found_rule = lp_fn_val
-                else:
-                    lp_fn_val.reset()
-                self._log.debug(f"CodeRules - get_matched_rule() Found rule: {found_rule}")
-            return found_rule
-        # this should never happen LastDict is always a match
-        raise ValueError(f"No rule matched for code: {code}")
+        with self._log.indent(True):
+            found_rule = None
+            for rule in self._rules:
+                rule.set_values(mod, code)
+                if rule.get_is_match():
+                    self._log.debug(f"CodeRules - get_matched_rule() found match rule: {rule}")
+                    found_rule = rule
+                    break
+                rule.reset()
+            if found_rule:
+                # rules LpFn and LpFnObj already contain the correct DotDict
+                if not isinstance(found_rule, (LpFn, LpFnObj, CodeEmpty)):
+                    self._log.debug(
+                        f"CodeRules - get_matched_rule() Rule: {found_rule} is not LpFn or LpFnObj. Checking for LpFnValue match."
+                    )
+                    lp_fn_val = LpFnValue()
+                    lp_fn_val.data = found_rule.get_value()  # type: ignore
+                    lp_fn_val.set_values(mod, code)
+                    if lp_fn_val.get_is_match():
+                        self._log.debug(f"CodeRules - get_matched_rule() Swapping rule: {found_rule} for {lp_fn_val}")
+                        found_rule = lp_fn_val
+                    else:
+                        lp_fn_val.reset()
+                    self._log.debug(f"CodeRules - get_matched_rule() Found rule: {found_rule}")
+                return found_rule
+            # this should never happen LastDict is always a match
+            raise ValueError(f"No rule matched for code: {code}")
 
     def __repr__(self) -> str:
         return f"<CodeRules()>"

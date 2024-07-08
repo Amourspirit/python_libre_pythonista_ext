@@ -33,7 +33,8 @@ class SharedCb(SingletonBase):
             return
         self.runtime_uid: str
         self._log = OxtLogger(log_name=self.__class__.__name__)
-        self._log.debug("Init")
+        with self._log.indent(True):
+            self._log.debug("Init")
         self._held: Dict[str, CallbackHolder] = {}
         # self._doc = doc
         self._is_init = True
@@ -54,38 +55,41 @@ class SharedCb(SingletonBase):
         return iter(self._held)
 
     def _check_runtime_uid(self) -> bool:
-        try:
-            if Lo.current_doc.runtime_uid == self.runtime_uid:
-                return True
-            else:
-                self._log.error(
-                    f"Runtime UID mismatch. Current: {Lo.current_doc.runtime_uid}, SharedCb: {self.runtime_uid}"
-                )
+        with self._log.indent(True):
+            try:
+                if Lo.current_doc.runtime_uid == self.runtime_uid:
+                    return True
+                else:
+                    self._log.error(
+                        f"Runtime UID mismatch. Current: {Lo.current_doc.runtime_uid}, SharedCb: {self.runtime_uid}"
+                    )
+                    return False
+            except Exception:
+                self._log.exception("_check_runtime_uid() Error getting current document")
                 return False
-        except Exception:
-            self._log.exception("_check_runtime_uid() Error getting current document")
-            return False
 
     def add(self, name: str, cbh: CallbackHolder) -> None:
         """Add a CallbackHolder with the given name. If the name already exists, raise a ValueError."""
-        if not self._check_runtime_uid():
-            return None
-        if name in self._held:
-            self._log.error(f"CallbackHolder with name '{name}' already exists")
-            raise ValueError(f"CallbackHolder with name '{name}' already exists")
+        with self._log.indent(True):
+            if not self._check_runtime_uid():
+                return None
+            if name in self._held:
+                self._log.error(f"CallbackHolder with name '{name}' already exists")
+                raise ValueError(f"CallbackHolder with name '{name}' already exists")
 
-        self._held[name] = cbh
-        self._log.debug(f"Added CallbackHolder with name '{name}'")
+            self._held[name] = cbh
+            self._log.debug(f"Added CallbackHolder with name '{name}'")
 
     def update(self, name: str, cbh: CallbackHolder) -> None:
         """Update the CallbackHolder with the given name. If the name does not exist, add it."""
-        if not self._check_runtime_uid():
-            return None
-        if name in self._held:
-            self._log.debug(f"Updating CallbackHolder with name '{name}'")
-            self._held[name] = cbh
-        else:
-            self.add(name, cbh)
+        with self._log.indent(True):
+            if not self._check_runtime_uid():
+                return None
+            if name in self._held:
+                self._log.debug(f"Updating CallbackHolder with name '{name}'")
+                self._held[name] = cbh
+            else:
+                self.add(name, cbh)
 
     def add_callback(self, name: str, callback, *args, **kwargs) -> CallbackHolder:
         """
@@ -101,23 +105,25 @@ class SharedCb(SingletonBase):
         Returns:
             CallbackHolder: CallbackHolder object
         """
-        if not self._check_runtime_uid():
-            raise RuntimeUidError("Runtime UID mismatch")
-        cbh = CallbackHolder()
-        cbh.add(callback, *args, **kwargs)
-        self.add(name, cbh)
-        return cbh
+        with self._log.indent(True):
+            if not self._check_runtime_uid():
+                raise RuntimeUidError("Runtime UID mismatch")
+            cbh = CallbackHolder()
+            cbh.add(callback, *args, **kwargs)
+            self.add(name, cbh)
+            return cbh
 
     def remove(self, name: str) -> None:
         """Remove the CallbackHolder with the given name. If the name does not exist, raise a KeyError."""
-        if not self._check_runtime_uid():
-            return None
-        try:
-            del self[name]
-            self._log.debug(f"Removed CallbackHolder with name '{name}'")
-        except KeyError:
-            self._log.error(f"CallbackHolder with name '{name}' does not exist")
-            raise KeyError(f"CallbackHolder with name '{name}' does not exist")
+        with self._log.indent(True):
+            if not self._check_runtime_uid():
+                return None
+            try:
+                del self[name]
+                self._log.debug(f"Removed CallbackHolder with name '{name}'")
+            except KeyError:
+                self._log.error(f"CallbackHolder with name '{name}' does not exist")
+                raise KeyError(f"CallbackHolder with name '{name}' does not exist")
 
     def execute(self, name: str, remove: bool = True) -> None:
         """
@@ -130,19 +136,20 @@ class SharedCb(SingletonBase):
         Returns:
             None:
         """
-        if not name in self._held:
-            self._log.error(f"CallbackHolder with name '{name}' does not exist")
-            return None
-        if not self._check_runtime_uid():
-            return None
-        try:
-            self._log.debug(f"Executing CallbackHolder with name '{name}'")
-            cbh = self._held[name]
-            cbh.execute()
+        with self._log.indent(True):
+            if not name in self._held:
+                self._log.error(f"CallbackHolder with name '{name}' does not exist")
+                return None
+            if not self._check_runtime_uid():
+                return None
+            try:
+                self._log.debug(f"Executing CallbackHolder with name '{name}'")
+                cbh = self._held[name]
+                cbh.execute()
+                self._log.debug(f"Executed CallbackHolder with name '{name}'")
+            except Exception:
+                self._log.exception(f"Error executing CallbackHolder with name '{name}'")
             self._log.debug(f"Executed CallbackHolder with name '{name}'")
-        except Exception:
-            self._log.exception(f"Error executing CallbackHolder with name '{name}'")
-        self._log.debug(f"Executed CallbackHolder with name '{name}'")
-        if remove:
-            self.remove(name)
-        return None
+            if remove:
+                self.remove(name)
+            return None

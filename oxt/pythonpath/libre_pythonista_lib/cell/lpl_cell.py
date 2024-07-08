@@ -36,7 +36,8 @@ class LplCell:
 
     def __init__(self, cell: CalcCell) -> None:
         self._log = OxtLogger(log_name=self.__class__.__name__)
-        self._log.debug(f"Creating LplCell({cell.cell_obj})")
+        with self._log.indent(True):
+            self._log.debug(f"Creating LplCell({cell.cell_obj})")
         self._cell = cell
         self._key_maker = KeyMaker()
         self._ctl_mgr = CtlMgr()
@@ -52,15 +53,16 @@ class LplCell:
 
     # region Methods
     def remove_control(self) -> None:
-        """Removes the control from the cell if it exist."""
-        self._log.debug("remove_control() Entered")
-        if not self.ctl_shape_name:
-            self._log.debug("remove_control() No control shape name found. Returning")
-            return
-        self._ctl_mgr.remove_ctl(self.cell)
-        self._log.debug("remove_control() Control removed")
-        self.refresh()
-        self._log.debug("remove_control() Done.")
+        with self._log.indent(True):
+            """Removes the control from the cell if it exist."""
+            self._log.debug("remove_control() Entered")
+            if not self.ctl_shape_name:
+                self._log.debug("remove_control() No control shape name found. Returning")
+                return
+            self._ctl_mgr.remove_ctl(self.cell)
+            self._log.debug("remove_control() Control removed")
+            self.refresh()
+            self._log.debug("remove_control() Done.")
 
     def update_control(self) -> None:
         """
@@ -69,22 +71,23 @@ class LplCell:
 
         There is not need to call ``RemoveControl()`` before calling this method.
         """
-        self._log.debug("update_control() Entered")
-        matched_rule = self._pyc_rules.get_matched_rule(cell=self.cell, data=self.pyc_src.dd_data)
+        with self._log.indent(True):
+            self._log.debug("update_control() Entered")
+            matched_rule = self._pyc_rules.get_matched_rule(cell=self.cell, data=self.pyc_src.dd_data)
 
-        if matched_rule is None:
-            self._log.debug("update_control() No matched rule found. Removing any existing control")
-            self.remove_control()
+            if matched_rule is None:
+                self._log.debug("update_control() No matched rule found. Removing any existing control")
+                self.remove_control()
+                self._log.debug("update_control() Done")
+                return
+            self._log.debug(f"_update_py_event_control() Matched rule: {matched_rule.name}")
+            # matched_rule.name is a cell.props.rule_names.RuleNames value.
+            # set the pyc rule key custom property for the cell.
+            # let update handle removing and adding new control
+            self.cell.set_custom_property(self._key_maker.pyc_rule_key, matched_rule.name)
+            self._ctl_mgr.update_ctl(self.cell)
+            self.refresh()
             self._log.debug("update_control() Done")
-            return
-        self._log.debug(f"_update_py_event_control() Matched rule: {matched_rule.name}")
-        # matched_rule.name is a cell.props.rule_names.RuleNames value.
-        # set the pyc rule key custom property for the cell.
-        # let update handle removing and adding new control
-        self.cell.set_custom_property(self._key_maker.pyc_rule_key, matched_rule.name)
-        self._ctl_mgr.update_ctl(self.cell)
-        self.refresh()
-        self._log.debug("update_control() Done")
 
     def get_dispatch_command(self, url_main: str) -> str:
         """
@@ -100,13 +103,14 @@ class LplCell:
 
     def get_control_rule(self) -> CtlRuleT | None:
         """Get a control rule instance for the cell"""
-        try:
-            ct = self._ctl_mgr.get_current_ctl_type_from_cell(self.cell)
-            if ct is None:
-                return None
-            return ct(self.cell)
-        except Exception:
-            self._log.error("get_control_rule() Error getting control rule", exc_info=True)
+        with self._log.indent(True):
+            try:
+                ct = self._ctl_mgr.get_current_ctl_type_from_cell(self.cell)
+                if ct is None:
+                    return None
+                return ct(self.cell)
+            except Exception:
+                self._log.error("get_control_rule() Error getting control rule", exc_info=True)
 
     def _convert_query_to_dict(self, query: str):
         query_dict = parse_qs(query)
@@ -119,27 +123,29 @@ class LplCell:
         Returns:
             XControlShape | None: The control shape or None if not found.
         """
-        try:
-            shape_name = self.ctl_shape_name
-            if not shape_name:
-                return None
-            dp = self.cell.calc_sheet.draw_page
+        with self._log.indent(True):
             try:
-                shape = dp.find_shape_by_name(shape_name)
-            except mEx.ShapeMissingError:
-                shape = None
-            return shape  # type: ignore
-        except Exception:
-            self._log.error("get_control_shape() Error getting control shape", exc_info=True)
-            return None
+                shape_name = self.ctl_shape_name
+                if not shape_name:
+                    return None
+                dp = self.cell.calc_sheet.draw_page
+                try:
+                    shape = dp.find_shape_by_name(shape_name)
+                except mEx.ShapeMissingError:
+                    shape = None
+                return shape  # type: ignore
+            except Exception:
+                self._log.error("get_control_shape() Error getting control shape", exc_info=True)
+                return None
 
     def _get_pyc_src(self) -> PySource:
-        """Gets the python source of the cell."""
-        try:
-            return self._pyc_src_mgr[self.cell.cell_obj]
-        except Exception:
-            self._log.error("get_pyc_src() Error getting python source", exc_info=True)
-            raise
+        with self._log.indent(True):
+            """Gets the python source of the cell."""
+            try:
+                return self._pyc_src_mgr[self.cell.cell_obj]
+            except Exception:
+                self._log.error("get_pyc_src() Error getting python source", exc_info=True)
+                raise
 
     def refresh(self) -> None:
         self._cache.clear()
@@ -184,48 +190,49 @@ class LplCell:
 
     @ctl_state.setter
     def ctl_state(self, value: StateKind) -> None:
-        self._log.debug(f"ctl_state Setting state to {value}")
-        current_state = self.ctl_state
-        self._log.debug(f"ctl_state Current state is {current_state}")
-        if current_state == value:
-            return
-        key = "ctl_state"
-        self._cache[key] = value
-        if value == StateKind.UNKNOWN:
-            self._log.debug("ctl_state State is unknown.")
-            if current_state == StateKind.ARRAY:
-                self._log.debug("ctl_state Current state is ARRAY. Dispatching command to change to PY_OBJ")
-                # if the new value is unknown and the current state is array, then dispatch the command
-                # that converts it back to PY_OBJ.
-                pyc_rule = self.pyc_rule
-                if pyc_rule is None:
-                    return
-                # url_main = pyc_rule.get_dispatch_state()
-                url_main = UNO_DISPATCH_PY_OBJ_STATE
-                cmd = self.get_dispatch_command(url_main)
-                self.cell.calc_doc.dispatch_cmd(cmd)
-            self._ctl_mgr.remove_ctl(self.cell)
-            return
-        # a known value
-        # if there is a rule and a dispatch the toggle the state with a dispatch.
-        pyc_rule = self.pyc_rule
-        if pyc_rule is None:
-            self._log.debug("ctl_state No rule found. Returning")
-            return
-        # url_main = pyc_rule.get_dispatch_state()
-        url_main = UNO_DISPATCH_PY_OBJ_STATE
-        if not url_main:
-            self._log.debug("ctl_state No dispatch command found. Returning")
-            return
-        cmd = self.get_dispatch_command(url_main)
-        self._log.debug(f"ctl_state Dispatching command: {cmd}")
-        # dispatch will change the state to StateKind.PY_OBJ if it is not already.
-        self.cell.calc_doc.dispatch_cmd(cmd)
-        ctl_state_obj = CtlState(self.cell)
-        ctl_state = ctl_state_obj.get_state()
-        if ctl_state == value:
-            return
-        ctl_state_obj.set_state(value)
+        with self._log.indent(True):
+            self._log.debug(f"ctl_state Setting state to {value}")
+            current_state = self.ctl_state
+            self._log.debug(f"ctl_state Current state is {current_state}")
+            if current_state == value:
+                return
+            key = "ctl_state"
+            self._cache[key] = value
+            if value == StateKind.UNKNOWN:
+                self._log.debug("ctl_state State is unknown.")
+                if current_state == StateKind.ARRAY:
+                    self._log.debug("ctl_state Current state is ARRAY. Dispatching command to change to PY_OBJ")
+                    # if the new value is unknown and the current state is array, then dispatch the command
+                    # that converts it back to PY_OBJ.
+                    pyc_rule = self.pyc_rule
+                    if pyc_rule is None:
+                        return
+                    # url_main = pyc_rule.get_dispatch_state()
+                    url_main = UNO_DISPATCH_PY_OBJ_STATE
+                    cmd = self.get_dispatch_command(url_main)
+                    self.cell.calc_doc.dispatch_cmd(cmd)
+                self._ctl_mgr.remove_ctl(self.cell)
+                return
+            # a known value
+            # if there is a rule and a dispatch the toggle the state with a dispatch.
+            pyc_rule = self.pyc_rule
+            if pyc_rule is None:
+                self._log.debug("ctl_state No rule found. Returning")
+                return
+            # url_main = pyc_rule.get_dispatch_state()
+            url_main = UNO_DISPATCH_PY_OBJ_STATE
+            if not url_main:
+                self._log.debug("ctl_state No dispatch command found. Returning")
+                return
+            cmd = self.get_dispatch_command(url_main)
+            self._log.debug(f"ctl_state Dispatching command: {cmd}")
+            # dispatch will change the state to StateKind.PY_OBJ if it is not already.
+            self.cell.calc_doc.dispatch_cmd(cmd)
+            ctl_state_obj = CtlState(self.cell)
+            ctl_state = ctl_state_obj.get_state()
+            if ctl_state == value:
+                return
+            ctl_state_obj.set_state(value)
 
     @property
     def custom_properties(self) -> DotDict:
@@ -234,16 +241,17 @@ class LplCell:
 
         This is a cached property.
         """
-        key = "custom_properties"
-        if key in self._cache:
-            return self._cache[key]
-        try:
-            cp = self.cell.get_custom_properties()
-            self._cache[key] = cp
-            return cp
-        except Exception:
-            self._log.error("custom_properties() Error getting custom properties", exc_info=True)
-            return DotDict()
+        with self._log.indent(True):
+            key = "custom_properties"
+            if key in self._cache:
+                return self._cache[key]
+            try:
+                cp = self.cell.get_custom_properties()
+                self._cache[key] = cp
+                return cp
+            except Exception:
+                self._log.error("custom_properties() Error getting custom properties", exc_info=True)
+                return DotDict()
 
     @property
     def is_dataframe(self) -> bool:
@@ -324,24 +332,26 @@ class LplCell:
         """
         Get/Sets the visibility of the control shape. If the shape is not found, return False.
         """
-        shape = self.ctl_shape
-        if shape is None:
-            return False
-        try:
-            return shape.component.Visible  # type: ignore
-        except Exception:
-            self._log.error("ctl_shape_visible() Error getting control shape visibility", exc_info=True)
-            return False
+        with self._log.indent(True):
+            shape = self.ctl_shape
+            if shape is None:
+                return False
+            try:
+                return shape.component.Visible  # type: ignore
+            except Exception:
+                self._log.error("ctl_shape_visible() Error getting control shape visibility", exc_info=True)
+                return False
 
     @ctl_shape_visible.setter
     def ctl_shape_visible(self, value: bool) -> None:
-        shape = self.ctl_shape
-        if shape is None:
-            return
-        try:
-            shape.set_visible(value)
-        except Exception:
-            self._log.error("ctl_shape_visible() Error setting control shape visibility", exc_info=True)
+        with self._log.indent(True):
+            shape = self.ctl_shape
+            if shape is None:
+                return
+            try:
+                shape.set_visible(value)
+            except Exception:
+                self._log.error("ctl_shape_visible() Error setting control shape visibility", exc_info=True)
 
     @property
     def pyc_src(self) -> PySource:
@@ -367,25 +377,28 @@ class LplCell:
 
         This is a cached property.
         """
-        key = "pyc_src"
-        if key in self._cache:
-            return self._cache[key]
-        addr_key = self._key_maker.cell_addr_key
-        if addr_key not in self.custom_properties:
-            self._log.warning("cell_prop_addr() Cell address not found in custom properties. Returning current cell.")
+        with self._log.indent(True):
+            key = "pyc_src"
+            if key in self._cache:
+                return self._cache[key]
+            addr_key = self._key_maker.cell_addr_key
+            if addr_key not in self.custom_properties:
+                self._log.warning(
+                    "cell_prop_addr() Cell address not found in custom properties. Returning current cell."
+                )
+                return self._cell.cell_obj
+            try:
+                addr = cast(str, self.custom_properties[addr_key])
+                # addr is in format of sheet_index=0&cell_addr=A1
+                d = self._convert_query_to_dict(addr)
+                idx = int(d.get("sheet_index", "-2"))
+                cell_obj = CellObj.from_cell(cast(str, d["cell_addr"]))
+                result = CellObj(col=cell_obj.col, row=cell_obj.row, sheet_idx=idx)
+                self._cache[key] = result
+                return result
+            except Exception:
+                self._log.exception("cell_prop_addr() Error getting cell address from custom properties.")
             return self._cell.cell_obj
-        try:
-            addr = cast(str, self.custom_properties[addr_key])
-            # addr is in format of sheet_index=0&cell_addr=A1
-            d = self._convert_query_to_dict(addr)
-            idx = int(d.get("sheet_index", "-2"))
-            cell_obj = CellObj.from_cell(cast(str, d["cell_addr"]))
-            result = CellObj(col=cell_obj.col, row=cell_obj.row, sheet_idx=idx)
-            self._cache[key] = result
-            return result
-        except Exception:
-            self._log.exception("cell_prop_addr() Error getting cell address from custom properties.")
-        return self._cell.cell_obj
 
     @cell_prop_addr.setter
     def cell_prop_addr(self, value: CellObj) -> None:

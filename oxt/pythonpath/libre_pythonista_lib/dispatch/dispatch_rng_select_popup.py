@@ -59,10 +59,11 @@ class DispatchRngSelectPopup(XDispatch, unohelper.Base):
 
         Note: Notifications can't be guaranteed! This will be a part of interface XNotifyingDispatch.
         """
-        if url.Complete in self._status_listeners:
-            self._log.debug(f"addStatusListener(): url={url.Main} already exists.")
-        else:
-            self._status_listeners[url.Complete] = control
+        with self._log.indent(True):
+            if url.Complete in self._status_listeners:
+                self._log.debug(f"addStatusListener(): url={url.Main} already exists.")
+            else:
+                self._status_listeners[url.Complete] = control
 
     def dispatch(self, url: URL, args: Tuple[PropertyValue, ...]) -> None:
         """
@@ -75,24 +76,25 @@ class DispatchRngSelectPopup(XDispatch, unohelper.Base):
         By default, and absent any arguments, ``SynchronMode`` is considered ``False`` and the execution is performed asynchronously (i.e. dispatch() returns immediately, and the action is performed in the background).
         But when set to ``True``, dispatch() processes the request synchronously.
         """
-        try:
-            self._log.debug(f"dispatch(): url={url.Main}")
-            doc = CalcDoc.from_current_doc()
-            # no need to run in a thread as it already runs in a thread.
-            title = self._rr.resolve_string("strRngSelTitle")
-            doc.invoke_range_selection(
-                title=title,
-                close_on_mouse_release=self._close_on_mouse_release,
-                single_cell_mode=self._single_cell_mode,
-                initial_value=self._initial_value,
-            )
-            return
+        with self._log.indent(True):
+            try:
+                self._log.debug(f"dispatch(): url={url.Main}")
+                doc = CalcDoc.from_current_doc()
+                # no need to run in a thread as it already runs in a thread.
+                title = self._rr.resolve_string("strRngSelTitle")
+                doc.invoke_range_selection(
+                    title=title,
+                    close_on_mouse_release=self._close_on_mouse_release,
+                    single_cell_mode=self._single_cell_mode,
+                    initial_value=self._initial_value,
+                )
+                return
 
-        except Exception as e:
-            # log the error and do not re-raise it.
-            # re-raising the error may crash the entire LibreOffice app.
-            self._log.error(f"Error: {e}", exc_info=True)
-            return
+            except Exception as e:
+                # log the error and do not re-raise it.
+                # re-raising the error may crash the entire LibreOffice app.
+                self._log.error(f"Error: {e}", exc_info=True)
+                return
 
     def removeStatusListener(self, control: XStatusListener, url: URL) -> None:
         """

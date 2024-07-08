@@ -325,22 +325,23 @@ class LogOpt:
     # region Handle Results
     def _handle_results(self, result: int) -> None:
         """Display a message if the OK button has been clicked"""
-        try:
-            if result == MessageBoxResultsEnum.OK.value:
-                if self._group1_opt:
-                    if self._log.is_debug:
-                        self._log.debug(f"Group 1 Tag: {self._group1_opt.tag}")
-                    self._calc_props.log_level = int(self._group1_opt.tag)
-                else:
-                    self._log.debug("Group 1 Option is None")
-                    self._calc_props.log_level = logging.INFO
-                fmt = self._ctl_format_text.text
-                self._log.debug(f"Log Format: {fmt}")
-                self._calc_props.log_format = fmt
-                self._calc_props.include_extra_err_info = self._include_extra_info == TriStateKind.CHECKED
-                SharedEvent().trigger_event(LOG_OPTIONS_CHANGED, EventArgs(self))
-        except Exception:
-            self._log.exception("Error in _handle_results")
+        with self._log.indent(True):
+            try:
+                if result == MessageBoxResultsEnum.OK.value:
+                    if self._group1_opt:
+                        if self._log.is_debug:
+                            self._log.debug(f"Group 1 Tag: {self._group1_opt.tag}")
+                        self._calc_props.log_level = int(self._group1_opt.tag)
+                    else:
+                        self._log.debug("Group 1 Option is None")
+                        self._calc_props.log_level = logging.INFO
+                    fmt = self._ctl_format_text.text
+                    self._log.debug(f"Log Format: {fmt}")
+                    self._calc_props.log_format = fmt
+                    self._calc_props.include_extra_err_info = self._include_extra_info == TriStateKind.CHECKED
+                    SharedEvent().trigger_event(LOG_OPTIONS_CHANGED, EventArgs(self))
+            except Exception:
+                self._log.exception("Error in _handle_results")
 
     def _reset_options(self) -> None:
         result = self._doc.msgbox(
@@ -361,10 +362,11 @@ class LogOpt:
     # region Event Handlers
     def on_group1_changed(self, src: Any, event: EventArgs, control_src: CtlRadioButton, *args, **kwargs) -> None:
         itm_event = cast("ItemEvent", event.event_data)
-        if self._log.is_debug:
-            self._log.debug(f"Group 1 Item ID: {itm_event.ItemId}")
-            self._log.debug(f"Group 1 Tab Index: {control_src.tab_index}")
-            self._log.debug(f"Group 1 Tab Name: {control_src.model.Name}")
+        with self._log.indent(True):
+            if self._log.is_debug:
+                self._log.debug(f"Group 1 Item ID: {itm_event.ItemId}")
+                self._log.debug(f"Group 1 Tab Index: {control_src.tab_index}")
+                self._log.debug(f"Group 1 Tab Name: {control_src.model.Name}")
         self._group1_opt = control_src
 
     def on_check_changed(self, src: Any, event: EventArgs, control_src: CtlCheckBox, *args, **kwargs) -> None:
@@ -374,7 +376,8 @@ class LogOpt:
     def on_button_action_preformed(self, src: Any, event: EventArgs, control_src: Any, *args, **kwargs) -> None:
         """Method that is fired when Info button is clicked."""
         itm_event = cast("ActionEvent", event.event_data)
-        self._log.debug(f"Button Action Command: {itm_event.ActionCommand}")
+        with self._log.indent(True):
+            self._log.debug(f"Button Action Command: {itm_event.ActionCommand}")
         if itm_event.ActionCommand == "RESET":
             self._reset_options()
 

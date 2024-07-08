@@ -34,30 +34,31 @@ class DataSeriesCtl(SimpleCtl):
         shape.setPosition(Point(x, y))
 
     def update_ctl(self) -> None:
-        self.log.debug(f"{self.__class__.__name__}: update_ctl(): Entered")
-        try:
-            sheet = self.calc_cell.calc_sheet
-            dp = sheet.draw_page
-            shape_name = self.namer.ctl_shape_name
-
+        with self.log.indent(True):
+            self.log.debug(f"{self.__class__.__name__}: update_ctl(): Entered")
             try:
-                shape = dp.find_shape_by_name(shape_name)
-                self.log.debug(f"{self.__class__.__name__}: update_ctl(): Found Shape: {shape_name}")
-                ctl_state = CtlState(cell=self.calc_cell)
-                state = ctl_state.get_state()
-                if state == StateKind.ARRAY:
-                    self.log.debug(f"{self.__class__.__name__}: update_ctl(): State is ARRAY. Hiding Control.")
-                    shape.set_visible(False)
-                else:
-                    self.log.debug(f"{self.__class__.__name__}: update_ctl(): State is PY_OBJ. Showing control.")
-                    shape.set_visible(True)
+                sheet = self.calc_cell.calc_sheet
+                dp = sheet.draw_page
+                shape_name = self.namer.ctl_shape_name
 
-                    self._set_size(shape.component)  # type: ignore
-                self.log.debug(f"{self.__class__.__name__}: update_ctl(): Leaving")
-            except mEx.ShapeMissingError:
-                self.log.debug(f"{self.__class__.__name__}: update_ctl(): Shape not found: {shape_name}")
-                self.log.debug(f"{self.__class__.__name__}: update_ctl(): Leaving")
+                try:
+                    shape = dp.find_shape_by_name(shape_name)
+                    self.log.debug(f"{self.__class__.__name__}: update_ctl(): Found Shape: {shape_name}")
+                    ctl_state = CtlState(cell=self.calc_cell)
+                    state = ctl_state.get_state()
+                    if state == StateKind.ARRAY:
+                        self.log.debug(f"{self.__class__.__name__}: update_ctl(): State is ARRAY. Hiding Control.")
+                        shape.set_visible(False)
+                    else:
+                        self.log.debug(f"{self.__class__.__name__}: update_ctl(): State is PY_OBJ. Showing control.")
+                        shape.set_visible(True)
 
-        except Exception as e:
-            self.log.error(f"{self.__class__.__name__}: update_ctl error: {e}", exc_info=True)
-            return None
+                        self._set_size(shape.component)  # type: ignore
+                    self.log.debug(f"{self.__class__.__name__}: update_ctl(): Leaving")
+                except mEx.ShapeMissingError:
+                    self.log.debug(f"{self.__class__.__name__}: update_ctl(): Shape not found: {shape_name}")
+                    self.log.debug(f"{self.__class__.__name__}: update_ctl(): Leaving")
+
+            except Exception as e:
+                self.log.error(f"{self.__class__.__name__}: update_ctl error: {e}", exc_info=True)
+                return None

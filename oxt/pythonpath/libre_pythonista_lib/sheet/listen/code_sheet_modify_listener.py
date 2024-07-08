@@ -60,14 +60,15 @@ class CodeSheetModifyListener(XModifyListener, unohelper.Base):
         The source of the event may be the content of the object to which the listener
         is registered.
         """
-        # event.Source: implementationName=ScTableSheetObj
-        # event.Source: com.sun.star.sheet.Spreadsheet
-        self._log.debug("Sheet Modified. Raising SHEET_MODIFIED event.")
-        # if self._log.is_debug:
-        #     self._log.debug(str(event.Source))
-        event_args = EventArgs(self)
-        event_args.event_data = DotDict(src=self, event=event)
-        SharedEvent().trigger_event(SHEET_MODIFIED, event_args)
+        with self._log.indent(True):
+            # event.Source: implementationName=ScTableSheetObj
+            # event.Source: com.sun.star.sheet.Spreadsheet
+            self._log.debug("Sheet Modified. Raising SHEET_MODIFIED event.")
+            # if self._log.is_debug:
+            #     self._log.debug(str(event.Source))
+            event_args = EventArgs(self)
+            event_args.event_data = DotDict(src=self, event=event)
+            SharedEvent().trigger_event(SHEET_MODIFIED, event_args)
 
     def disposing(self, event: EventObject) -> None:
         """
@@ -80,8 +81,10 @@ class CodeSheetModifyListener(XModifyListener, unohelper.Base):
         This method is called for every listener registration of derived listener
         interfaced, not only for registrations at XComponent.
         """
+
         if self._log is not None:
-            self._log.debug("Disposing")
+            with self._log.indent(True):
+                self._log.debug("Disposing")
         if self._inst_name in CodeSheetModifyListener._instances:
             del CodeSheetModifyListener._instances[self._inst_name]
         setattr(self, "_log", None)  # avoid type checker complaining about log being none.

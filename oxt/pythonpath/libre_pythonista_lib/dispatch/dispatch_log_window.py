@@ -30,11 +30,13 @@ def thread_wrapper(uid: str, url: URL, original_func):
     """
     global _THREADS_DICT, _ACTIVE_WINDOWS
     log = LogInst()
-    log.debug(f"thread_wrapper uid: {uid}")
+    with log.indent(True):
+        log.debug(f"thread_wrapper uid: {uid}")
     try:
         original_func(uid, url)
     finally:
-        log.debug(f"thread_wrapper finally uid: {uid}")
+        with log.indent(True):
+            log.debug(f"thread_wrapper finally uid: {uid}")
         # Remove the thread from the dictionary
         del _THREADS_DICT[uid]
         if uid in _ACTIVE_WINDOWS:
@@ -47,15 +49,20 @@ def dispatch_in_thread(uid: str, url: URL):
     """
     global _ACTIVE_WINDOWS
     log = LogInst()
-    log.debug(f"dispatch_in_thread uid: {uid}")
+    with log.indent(True):
+        log.debug(f"dispatch_in_thread uid: {uid}")
     if uid in _ACTIVE_WINDOWS:
-        log.debug(f"dispatch_in_thread uid: {uid} is in active windows. Deleting it.")
+        with log.indent(True):
+            log.debug(f"dispatch_in_thread uid: {uid} is in active windows. Deleting it.")
         del _ACTIVE_WINDOWS[uid]
-    log.debug("dispatch_in_thread creating DispatchWorker")
+    with log.indent(True):
+        log.debug("dispatch_in_thread creating DispatchWorker")
     worker = DispatchWorker(uid, url)
-    log.debug("dispatch_in_thread dispatching DispatchWorker")
+    with log.indent(True):
+        log.debug("dispatch_in_thread dispatching DispatchWorker")
     worker.dispatch()
-    log.debug("dispatch_in_thread done")
+    with log.indent(True):
+        log.debug("dispatch_in_thread done")
 
 
 class DispatchLogWindow(XDispatch, EventsPartial, unohelper.Base):
@@ -79,11 +86,12 @@ class DispatchLogWindow(XDispatch, EventsPartial, unohelper.Base):
 
         Note: Notifications can't be guaranteed! This will be a part of interface XNotifyingDispatch.
         """
-        self._log.debug(f"addStatusListener(): url={url.Main}")
-        if url.Complete in self._status_listeners:
-            self._log.debug(f"addStatusListener(): url={url.Main} already exists.")
-        else:
-            self._status_listeners[url.Complete] = control
+        with self._log.indent(True):
+            self._log.debug(f"addStatusListener(): url={url.Main}")
+            if url.Complete in self._status_listeners:
+                self._log.debug(f"addStatusListener(): url={url.Main} already exists.")
+            else:
+                self._status_listeners[url.Complete] = control
 
     def dispatch(self, url: URL, args: Tuple[PropertyValue, ...]) -> None:
         """
@@ -109,13 +117,15 @@ class DispatchLogWindow(XDispatch, EventsPartial, unohelper.Base):
             doc = Lo.current_doc
             self._uid = doc.runtime_uid
             if DialogLog.has_instance(self._uid):
-                self._log.debug(f"DialogLog has instance with uid '{self._uid}'. Setting Visible")
+                with self._log.indent(True):
+                    self._log.debug(f"DialogLog has instance with uid '{self._uid}'. Setting Visible")
                 inst = DialogLog.get_instance(self._uid)
                 inst.show()
                 return
 
             if self._uid in _ACTIVE_WINDOWS:
-                self._log.debug(f"Thread with uid '{self._uid}' is already running. Setting Focus")
+                with self._log.indent(True):
+                    self._log.debug(f"Thread with uid '{self._uid}' is already running. Setting Focus")
                 _ACTIVE_WINDOWS[self._uid].set_focus()
                 return
             if self._uid not in _THREADS_DICT:
@@ -128,25 +138,31 @@ class DispatchLogWindow(XDispatch, EventsPartial, unohelper.Base):
 
                 t.start()
                 if self._in_thread:
-                    self._log.debug(f"Thread with uid '{self._uid}' is running. Waiting for join.")
+                    with self._log.indent(True):
+                        self._log.debug(f"Thread with uid '{self._uid}' is running. Waiting for join.")
                     t.join()
-                    self._log.debug(f"Thread with uid '{self._uid}' has joined.")
+                    with self._log.indent(True):
+                        self._log.debug(f"Thread with uid '{self._uid}' has joined.")
                 else:
-                    self._log.debug(f"Thread with uid '{self._uid}' is running. Did not wait for join.")
+                    with self._log.indent(True):
+                        self._log.debug(f"Thread with uid '{self._uid}' is running. Did not wait for join.")
             else:
-                self._log.debug(f"Thread with uid '{self._uid}' is already running.")
+                with self._log.indent(True):
+                    self._log.debug(f"Thread with uid '{self._uid}' is already running.")
 
         except Exception:
-            self._log.error("Error getting cell information", exc_info=True)
+            with self._log.indent(True):
+                self._log.error("Error getting cell information", exc_info=True)
             return
 
     def removeStatusListener(self, control: XStatusListener, url: URL) -> None:
         """
         Un-registers a listener from a control.
         """
-        self._log.debug(f"removeStatusListener(): url={url.Main}")
-        if url.Complete in self._status_listeners:
-            del self._status_listeners[url.Complete]
+        with self._log.indent(True):
+            self._log.debug(f"removeStatusListener(): url={url.Main}")
+            if url.Complete in self._status_listeners:
+                del self._status_listeners[url.Complete]
 
 
 class DispatchWorker:
@@ -157,14 +173,15 @@ class DispatchWorker:
         self._uid = uid
 
     def dispatch(self) -> None:
-        try:
-            self._log.debug("dispatch")
-            self._show_dialog()
-        except Exception as e:
-            # log the error and do not re-raise it.
-            # re-raising the error may crash the entire LibreOffice app.
-            self._log.error(f"Error: {e}", exc_info=True)
-            return
+        with self._log.indent(True):
+            try:
+                self._log.debug("dispatch")
+                self._show_dialog()
+            except Exception as e:
+                # log the error and do not re-raise it.
+                # re-raising the error may crash the entire LibreOffice app.
+                self._log.error(f"Error: {e}", exc_info=True)
+                return
 
     def _show_dialog(self) -> None:
         global _ACTIVE_WINDOWS
@@ -174,10 +191,11 @@ class DispatchWorker:
         else:
             mb = DialogLog(ctx)
         _ACTIVE_WINDOWS[self._uid] = mb
-
-        self._log.debug("Displaying dialog")
+        with self._log.indent(True):
+            self._log.debug("Displaying dialog")
         mb.show()
         return
         if mb.show():
-            self._log.debug("Log Dialog is Closed.")
+            with self._log.indent(True):
+                self._log.debug("Log Dialog is Closed.")
         mb.dispose()

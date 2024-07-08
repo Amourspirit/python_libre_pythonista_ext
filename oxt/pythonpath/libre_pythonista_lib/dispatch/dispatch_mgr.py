@@ -72,7 +72,8 @@ def on_menu_intercept(
                 cell = sheet[cell_obj]
                 if not cell.has_custom_property("libre_pythonista_codename"):
                     if not log is None:
-                        log.debug(f"Cell {cell_obj} does not have libre_pythonista_codename custom property.")
+                        with log.indent(True):
+                            log.debug(f"Cell {cell_obj} does not have libre_pythonista_codename custom property.")
                     return
 
                 # insert a new menu item.
@@ -81,7 +82,8 @@ def on_menu_intercept(
                 # A custom dispatch interceptor will be used to handle the command.
                 try:
                     if not log is None:
-                        log.debug("Getting Resource for mnuEditCode")
+                        with log.indent(True):
+                            log.debug("Getting Resource for mnuEditCode")
                     items = ActionTriggerContainer()
                     rr = ResResolver()
                     edit_mnu = rr.resolve_string("mnuEditCode")
@@ -139,11 +141,13 @@ def register_interceptor(doc_comp: Any):
     log = None
     with contextlib.suppress(Exception):
         log = LogInst()
-        log.debug("Registering Dispatch Provider Interceptor")
+        with log.indent(True):
+            log.debug("Registering Dispatch Provider Interceptor")
 
     if DispatchProviderInterceptor.has_instance(doc):
         if log:
-            log.debug("Dispatch Provider Interceptor already registered.")
+            with log.indent(True):
+                log.debug("Dispatch Provider Interceptor already registered.")
         return
     inst = DispatchProviderInterceptor(doc)  # singleton
     frame = doc.get_frame()
@@ -151,7 +155,8 @@ def register_interceptor(doc_comp: Any):
     view = doc.get_view()
     view.add_event_notify_context_menu_execute(on_menu_intercept)  # type: ignore
     if log:
-        log.debug("Dispatch Provider Interceptor registered.")
+        with log.indent(True):
+            log.debug("Dispatch Provider Interceptor registered.")
 
 
 def unregister_interceptor(doc_comp: Any):
@@ -174,17 +179,20 @@ def unregister_interceptor(doc_comp: Any):
     log = None
     with contextlib.suppress(Exception):
         log = LogInst()
-        log.debug("UnRegistering Dispatch Provider Interceptor")
+        with log.indent(True):
+            log.debug("UnRegistering Dispatch Provider Interceptor")
 
     if not DispatchProviderInterceptor.has_instance(doc):
         if log:
-            log.debug("Dispatch Provider Interceptor was not registered.")
+            with log.indent(True):
+                log.debug("Dispatch Provider Interceptor was not registered.")
         return
     inst = DispatchProviderInterceptor(doc)  # singleton
     frame = doc.get_frame()
     frame.releaseDispatchProviderInterceptor(inst)  # type: ignore
     view = doc.get_view()
-    view.remove_event_notify_context_menu_execute(on_menu_intercept) # type: ignore
+    view.remove_event_notify_context_menu_execute(on_menu_intercept)  # type: ignore
     inst.dispose()
     if log:
-        log.debug("Dispatch Provider Interceptor unregistered.")
+        with log.indent(True):
+            log.debug("Dispatch Provider Interceptor unregistered.")

@@ -30,10 +30,11 @@ class CalcProps(CustomPropsBase):
         file_name = f"{cfg.general_code_name}_calc_props.json"
         CustomPropsBase.__init__(self, doc=doc, file_name=file_name, props_id="calc_custom_props")
         if self._log.is_debug:
-            self._log.debug(f"Setting log_level: {self.log_level}")
-            self._log.debug(f"Setting log_format: {self.log_format}")
-            self._log.debug(f"Setting log_to_console: {self.log_to_console}")
-            self._log.debug(f"Setting include_extra_err_info: {self.include_extra_err_info}")
+            with self._log.indent(True):
+                self._log.debug(f"Setting log_level: {self.log_level}")
+                self._log.debug(f"Setting log_format: {self.log_format}")
+                self._log.debug(f"Setting log_to_console: {self.log_to_console}")
+                self._log.debug(f"Setting include_extra_err_info: {self.include_extra_err_info}")
         self._is_init = True
         # please the type checker
 

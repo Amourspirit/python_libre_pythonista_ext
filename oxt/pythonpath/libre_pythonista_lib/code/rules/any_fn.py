@@ -3,7 +3,6 @@ import contextlib
 import types
 from ooodev.utils.helper.dot_dict import DotDict
 from ...utils import str_util
-from ...log.log_inst import LogInst
 
 
 class AnyFn:

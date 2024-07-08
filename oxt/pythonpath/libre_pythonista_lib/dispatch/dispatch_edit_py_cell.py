@@ -48,11 +48,12 @@ class DispatchEditPyCell(XDispatch, EventsPartial, unohelper.Base):
 
         Note: Notifications can't be guaranteed! This will be a part of interface XNotifyingDispatch.
         """
-        self._log.debug(f"addStatusListener(): url={url.Main}")
-        if url.Complete in self._status_listeners:
-            self._log.debug(f"addStatusListener(): url={url.Main} already exists.")
-        else:
-            self._status_listeners[url.Complete] = control
+        with self._log.indent(True):
+            self._log.debug(f"addStatusListener(): url={url.Main}")
+            if url.Complete in self._status_listeners:
+                self._log.debug(f"addStatusListener(): url={url.Main} already exists.")
+            else:
+                self._status_listeners[url.Complete] = control
 
     def dispatch(self, url: URL, args: Tuple[PropertyValue, ...]) -> None:
         """
@@ -65,118 +66,121 @@ class DispatchEditPyCell(XDispatch, EventsPartial, unohelper.Base):
         By default, and absent any arguments, ``SynchronMode`` is considered ``False`` and the execution is performed asynchronously (i.e. dispatch() returns immediately, and the action is performed in the background).
         But when set to ``True``, dispatch() processes the request synchronously.
         """
-        try:
-            self._log.debug(f"dispatch(): url={url.Main}")
-            doc = CalcDoc.from_current_doc()
-            sheet = doc.sheets[self._sheet]
-            cell = sheet[self._cell]
-            cargs = CancelEventArgs(self)
-            cargs.event_data = DotDict(
-                url=url,
-                args=args,
-                doc=doc,
-                sheet=sheet,
-                cell=cell,
-            )
-            self.trigger_event(f"{url.Main}_before_dispatch", cargs)
-            if cargs.cancel:
-                self._log.debug(f"Event {url.Main}_before_dispatch was cancelled.")
-                return
+        with self._log.indent(True):
+            try:
+                self._log.debug(f"dispatch(): url={url.Main}")
+                doc = CalcDoc.from_current_doc()
+                sheet = doc.sheets[self._sheet]
+                cell = sheet[self._cell]
+                cargs = CancelEventArgs(self)
+                cargs.event_data = DotDict(
+                    url=url,
+                    args=args,
+                    doc=doc,
+                    sheet=sheet,
+                    cell=cell,
+                )
+                self.trigger_event(f"{url.Main}_before_dispatch", cargs)
+                if cargs.cancel:
+                    self._log.debug(f"Event {url.Main}_before_dispatch was cancelled.")
+                    return
 
-            cc = CellCache(doc)  # singleton
-            cell_obj = cell.cell_obj
-            sheet_idx = sheet.sheet_index
-            if not cc.has_cell(cell=cell_obj, sheet_idx=sheet_idx):
-                self._log.error(f"Cell {self._cell} is not in the cache.")
-                return
-            with cc.set_context(cell=cell_obj, sheet_idx=sheet_idx):
-                result = self._edit_code(doc=doc, cell_obj=cell_obj)
-                if result:
-                    if doc.component.isAutomaticCalculationEnabled():
-                        # the purpose of writing the formulas back to the cell(s) is to trigger the recalculation
-                        cm = CellMgr(doc)  # singleton. Tracks all Code cells
-                        # https://ask.libreoffice.org/t/mark-a-calc-sheet-cell-as-dirty/106659
-                        with cm.listener_context(cell.component):
-                            # suspend the listeners for this cell
-                            formula = cell.component.getFormula()
-                            if not formula:
-                                self._log.error(f"Cell {self._cell} has no formula.")
-                                eargs = EventArgs.from_args(cargs)
-                                eargs.event_data.success = False
-                                self.trigger_event(f"{url.Main}_after_dispatch", eargs)
-                                return
-                            # s = s.lstrip("=")  # just in case there are multiple equal signs
-                            is_formula_array = False
-                            if formula.startswith("{"):
-                                is_formula_array = True
-                                formula = formula.lstrip("{")
-                                formula = formula.rstrip("}")
+                cc = CellCache(doc)  # singleton
+                cell_obj = cell.cell_obj
+                sheet_idx = sheet.sheet_index
+                if not cc.has_cell(cell=cell_obj, sheet_idx=sheet_idx):
+                    self._log.error(f"Cell {self._cell} is not in the cache.")
+                    return
+                with cc.set_context(cell=cell_obj, sheet_idx=sheet_idx):
+                    result = self._edit_code(doc=doc, cell_obj=cell_obj)
+                    if result:
+                        if doc.component.isAutomaticCalculationEnabled():
+                            # the purpose of writing the formulas back to the cell(s) is to trigger the recalculation
+                            cm = CellMgr(doc)  # singleton. Tracks all Code cells
+                            # https://ask.libreoffice.org/t/mark-a-calc-sheet-cell-as-dirty/106659
+                            with cm.listener_context(cell.component):
+                                # suspend the listeners for this cell
+                                formula = cell.component.getFormula()
+                                if not formula:
+                                    self._log.error(f"Cell {self._cell} has no formula.")
+                                    eargs = EventArgs.from_args(cargs)
+                                    eargs.event_data.success = False
+                                    self.trigger_event(f"{url.Main}_after_dispatch", eargs)
+                                    return
+                                # s = s.lstrip("=")  # just in case there are multiple equal signs
+                                is_formula_array = False
+                                if formula.startswith("{"):
+                                    is_formula_array = True
+                                    formula = formula.lstrip("{")
+                                    formula = formula.rstrip("}")
 
-                            dd = DotDict()
-                            for key, value in cargs.event_data.items():
-                                dd[key] = value
-                            eargs = EventArgs(self)
-                            if is_formula_array:
-                                # The try block is important. If there is a error without the block then the entire LibreOffice app can crash.
-                                self._log.debug("Resetting array formula")
-                                # get the cell that are involved in the array formula.
-                                cursor = cast("SheetCellCursor", sheet.component.createCursorByRange(cell.component))  # type: ignore
-                                # this next line also works.
-                                # cursor = cast("SheetCellCursor", cell.component.getSpreadsheet().createCursorByRange(cell.component))  # type: ignore
-                                cursor.collapseToCurrentArray()
-                                # reset the array formula
-                                cursor.setArrayFormula(formula)
-                                rng_addr = cursor.getRangeAddress()
-                                dd.range_obj = RangeObj.from_range(rng_addr)
-                                eargs.event_data = dd
-                                self.trigger_event("dispatch_remove_array_formula", eargs)
-                            else:
-                                self._log.debug("Resetting formula")
-                                cell.component.setFormula(formula)
-                                self.trigger_event("dispatch_added_cell_formula", eargs)
-                            doc.component.calculate()
-            eargs = EventArgs.from_args(cargs)
-            eargs.event_data.success = True
-            self.trigger_event(f"{url.Main}_after_dispatch", eargs)
-        except Exception as e:
-            # log the error and do not re-raise it.
-            # re-raising the error may crash the entire LibreOffice app.
-            self._log.error(f"Error: {e}", exc_info=True)
-            return
+                                dd = DotDict()
+                                for key, value in cargs.event_data.items():
+                                    dd[key] = value
+                                eargs = EventArgs(self)
+                                if is_formula_array:
+                                    # The try block is important. If there is a error without the block then the entire LibreOffice app can crash.
+                                    self._log.debug("Resetting array formula")
+                                    # get the cell that are involved in the array formula.
+                                    cursor = cast("SheetCellCursor", sheet.component.createCursorByRange(cell.component))  # type: ignore
+                                    # this next line also works.
+                                    # cursor = cast("SheetCellCursor", cell.component.getSpreadsheet().createCursorByRange(cell.component))  # type: ignore
+                                    cursor.collapseToCurrentArray()
+                                    # reset the array formula
+                                    cursor.setArrayFormula(formula)
+                                    rng_addr = cursor.getRangeAddress()
+                                    dd.range_obj = RangeObj.from_range(rng_addr)
+                                    eargs.event_data = dd
+                                    self.trigger_event("dispatch_remove_array_formula", eargs)
+                                else:
+                                    self._log.debug("Resetting formula")
+                                    cell.component.setFormula(formula)
+                                    self.trigger_event("dispatch_added_cell_formula", eargs)
+                                doc.component.calculate()
+                eargs = EventArgs.from_args(cargs)
+                eargs.event_data.success = True
+                self.trigger_event(f"{url.Main}_after_dispatch", eargs)
+            except Exception as e:
+                # log the error and do not re-raise it.
+                # re-raising the error may crash the entire LibreOffice app.
+                self._log.error(f"Error: {e}", exc_info=True)
+                return
 
     def removeStatusListener(self, control: XStatusListener, url: URL) -> None:
         """
         Un-registers a listener from a control.
         """
-        self._log.debug(f"removeStatusListener(): url={url.Main}")
-        if url.Complete in self._status_listeners:
-            del self._status_listeners[url.Complete]
+        with self._log.indent(True):
+            self._log.debug(f"removeStatusListener(): url={url.Main}")
+            if url.Complete in self._status_listeners:
+                del self._status_listeners[url.Complete]
 
     def _edit_code(self, doc: CalcDoc, cell_obj: CellObj) -> bool:
-        ctx = Lo.get_context()
-        dlg = DialogPython(ctx)
-        py_inst = PyInstance(doc)  # singleton
-        py_src = py_inst[cell_obj]
-        code = py_src.source_code
-        py_src = None
-        self._log.debug("Displaying dialog")
-        dlg.text = code
-        result = False
-        if dlg.show():
-            self._log.debug("Dialog returned with OK")
-            txt = dlg.text.strip()
-            if txt != code:
-                try:
-                    self._log.debug("Code has changed, updating ...")
-                    py_inst.update_source(code=txt, cell=cell_obj)
-                    self._log.debug(f"Cell Code updated for {cell_obj}")
-                    py_inst.update_all()
-                    self._log.debug("Code updated")
-                    result = True
-                except Exception as e:
-                    self._log.error("Error updating code", exc_info=True)
+        with self._log.indent(True):
+            ctx = Lo.get_context()
+            dlg = DialogPython(ctx)
+            py_inst = PyInstance(doc)  # singleton
+            py_src = py_inst[cell_obj]
+            code = py_src.source_code
+            py_src = None
+            self._log.debug("Displaying dialog")
+            dlg.text = code
+            result = False
+            if dlg.show():
+                self._log.debug("Dialog returned with OK")
+                txt = dlg.text.strip()
+                if txt != code:
+                    try:
+                        self._log.debug("Code has changed, updating ...")
+                        py_inst.update_source(code=txt, cell=cell_obj)
+                        self._log.debug(f"Cell Code updated for {cell_obj}")
+                        py_inst.update_all()
+                        self._log.debug("Code updated")
+                        result = True
+                    except Exception as e:
+                        self._log.error("Error updating code", exc_info=True)
+                else:
+                    self._log.debug("Code has not changed")
             else:
-                self._log.debug("Code has not changed")
-        else:
-            self._log.debug("Dialog returned with Cancel")
-        return result
+                self._log.debug("Dialog returned with Cancel")
+            return result

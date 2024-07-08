@@ -61,10 +61,12 @@ class PyModule:
         # setattr(self.mod, "CalcDoc", CalcDoc)
 
     def reset_module(self):
-        self._log.debug("reset_module()")
+        with self._log.indent(True):
+            self._log.debug("reset_module()")
         self.mod.__dict__.clear()
         self.mod.__dict__.update(self._init_dict)
-        self._log.debug("reset_module() done.")
+        with self._log.indent(True):
+            self._log.debug("reset_module() done.")
 
     def update_with_result(self, code: str = "") -> DotDict:
         """
@@ -79,7 +81,8 @@ class PyModule:
         Note:
             If there is an error the result will be a DotDict with ``data=GeneralError(e)`` and ``error=True`` the error.
         """
-        self._log.debug("update_with_result()")
+        with self._log.indent(True):
+            self._log.debug("update_with_result()")
         code = str_util.remove_comments(code)
         code = str_util.clean_string(code)
         result = None
@@ -92,21 +95,22 @@ class PyModule:
             return result
         # other exceptions can be caught and new error classes can be created.
         except Exception as e:
-            # result will be assigned to the py_source.value Other rules for the cell will handle this.
-            result = DotDict(data=GeneralError(e), error=True)
-            try:
-                lp_log_inst = LibrePythonistaLog()
-                ps_log = lp_log_inst.log
-                if lp_log_inst.log_extra_info:
-                    ps_log.error(f"Error updating module.\n{code}\n", exc_info=True)
+            with self._log.indent(True):
+                # result will be assigned to the py_source.value Other rules for the cell will handle this.
+                result = DotDict(data=GeneralError(e), error=True)
+                try:
+                    lp_log_inst = LibrePythonistaLog()
+                    ps_log = lp_log_inst.log
+                    if lp_log_inst.log_extra_info:
+                        ps_log.error(f"Error updating module.\n{code}\n", exc_info=True)
+                    else:
+                        ps_log.error(f"{e}")
+                except Exception as e:
+                    self._log.error(f"LibrePythonistaLog error", exc_info=True)
+                if self._log.is_debug:
+                    self._log.warning(f"Error updating module. Result set to {result}.\n{code}\n", exc_info=True)
                 else:
-                    ps_log.error(f"{e}")
-            except Exception as e:
-                self._log.error(f"LibrePythonistaLog error", exc_info=True)
-            if self._log.is_debug:
-                self._log.warning(f"Error updating module. Result set to {result}.\n{code}\n", exc_info=True)
-            else:
-                self._log.warning(f"Error updating module. Result set to {result}.\n", exc_info=True)
+                    self._log.warning(f"Error updating module. Result set to {result}.\n", exc_info=True)
         return result
 
     def set_global_var(self, var_name: str, value: Any) -> None:
@@ -118,7 +122,8 @@ class PyModule:
             value (Any): The value of the variable
         """
         if self._log.is_debug:
-            self._log.debug(f"set_global_var({var_name}, {value})")
+            with self._log.indent(True):
+                self._log.debug(f"set_global_var({var_name}, {value})")
         if var_name == "CURRENT_CELL_OBJ":
             self.mod.__dict__["lp_mod"].CURRENT_CELL_OBJ = value
         self.mod.__dict__[var_name] = value
@@ -134,7 +139,8 @@ class PyModule:
         Returns:
             Any: If there is code the last variable in the module if any; Otherwise, None.
         """
-        self._log.debug("reset_to_dict()")
+        with self._log.indent(True):
+            self._log.debug("reset_to_dict()")
         self.mod.__dict__.clear()
         self.mod.__dict__.update(mod_dict)
         if not code:
@@ -148,5 +154,6 @@ class PyModule:
         rule = self._cr.get_matched_rule(self.mod, code)
         result = rule.get_value()
         rule.reset()
-        self._log.debug("reset_to_dict() done.")
+        with self._log.indent(True):
+            self._log.debug("reset_to_dict() done.")
         return result

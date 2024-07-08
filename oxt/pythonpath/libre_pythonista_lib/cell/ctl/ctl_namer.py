@@ -36,7 +36,8 @@ class CtlNamer:
             if calc_cell.has_custom_property(self._cfg.cell_cp_codename):
                 self._code_name = calc_cell.get_custom_property(self._cfg.cell_cp_codename)
             else:
-                self.log.error(f"CtlNamer: __init__(): Custom Property not found: {self._cfg.cell_cp_codename}")
+                with self.log.indent(True):
+                    self.log.error(f"CtlNamer: __init__(): Custom Property not found: {self._cfg.cell_cp_codename}")
                 raise CustomPropertyMissingError(f"Custom Property not found: {self._cfg.cell_cp_codename}")
 
     def _get_control_name(self) -> str:

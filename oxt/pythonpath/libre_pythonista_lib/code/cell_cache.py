@@ -55,12 +55,13 @@ class CellCache(SingletonBase):
         self._previous_sheet_index = -1
         self._current_sheet_index = -1
         if self._log.is_debug:
-            self._log.debug(f"__init__() for doc: {doc.runtime_uid}")
-            for sheet_idx, items in self._code.items():
-                self._log.debug(f"Sheet Index: {sheet_idx}")
-                for cell, props in items.items():
-                    self._log.debug(f"Cell: {cell} - Props: {props.props}")
-            self._log.debug(f"__init__() Code Property: {self._code_prop}")
+            with self._log.indent(True):
+                self._log.debug(f"__init__() for doc: {doc.runtime_uid}")
+                for sheet_idx, items in self._code.items():
+                    self._log.debug(f"Sheet Index: {sheet_idx}")
+                    for cell, props in items.items():
+                        self._log.debug(f"Cell: {cell} - Props: {props.props}")
+                self._log.debug(f"__init__() Code Property: {self._code_prop}")
         self._is_init = True
 
     def __len__(self) -> int:
@@ -80,35 +81,34 @@ class CellCache(SingletonBase):
             This method need to be run on a up to date cell cache.
             Usually ``reset_instance`` is call before running this method.
         """
-        self._log.indent()
-        is_db = self._log.is_debug
-        if is_db:
-            self._log.debug(f"update_sheet_cell_addr_prop() for Sheet Index: {sheet_idx}")
-        if sheet_idx < 0:
-            sheet_idx = self.current_sheet_index
-        if sheet_idx < 0:
-            self._log.error("insert() Sheet index not set")
-            raise ValueError("Sheet index not set")
-
-        km = KeyMaker()
-        sheet = self._doc.sheets[sheet_idx]
-        for cell, icp in self._code[sheet_idx].items():
-            calc_cell = sheet[cell]
+        with self._log.indent(True):
+            is_db = self._log.is_debug
             if is_db:
-                self._log.debug(f"update_sheet_cell_addr_prop() for Cell: {cell}")
-            addr = GenUtil.create_cell_addr_query_str(sheet_idx, str(calc_cell.cell_obj))
-            current = calc_cell.get_custom_property(km.cell_addr_key, addr)
-            if current != addr:
-                calc_cell.set_custom_property(km.cell_addr_key, addr)
-                args = EventArgs(self)
-                args.event_data = DotDict(
-                    calc_cell=calc_cell, sheet_idx=sheet_idx, old_addr=current, addr=addr, icp=icp
-                )
-                self._events.trigger_event("update_sheet_cell_addr_prop", args)
-        if is_db:
-            self._log.debug("update_sheet_cell_addr_prop() Done")
-        self._log.outdent()
-        return None
+                self._log.debug(f"update_sheet_cell_addr_prop() for Sheet Index: {sheet_idx}")
+            if sheet_idx < 0:
+                sheet_idx = self.current_sheet_index
+            if sheet_idx < 0:
+                self._log.error("insert() Sheet index not set")
+                raise ValueError("Sheet index not set")
+
+            km = KeyMaker()
+            sheet = self._doc.sheets[sheet_idx]
+            for cell, icp in self._code[sheet_idx].items():
+                calc_cell = sheet[cell]
+                if is_db:
+                    self._log.debug(f"update_sheet_cell_addr_prop() for Cell: {cell}")
+                addr = GenUtil.create_cell_addr_query_str(sheet_idx, str(calc_cell.cell_obj))
+                current = calc_cell.get_custom_property(km.cell_addr_key, addr)
+                if current != addr:
+                    calc_cell.set_custom_property(km.cell_addr_key, addr)
+                    args = EventArgs(self)
+                    args.event_data = DotDict(
+                        calc_cell=calc_cell, sheet_idx=sheet_idx, old_addr=current, addr=addr, icp=icp
+                    )
+                    self._events.trigger_event("update_sheet_cell_addr_prop", args)
+            if is_db:
+                self._log.debug("update_sheet_cell_addr_prop() Done")
+            return None
 
     def get_cell_complete_count(self) -> int:
         """
@@ -125,27 +125,26 @@ class CellCache(SingletonBase):
         return count
 
     def _get_cells(self) -> Dict[int, Dict[CellObj, IndexCellProps]]:
-        self._log.indent()
-        filter_key = self._code_prop
-        code_cells = {}
-        for sheet in self._doc.sheets:
-            code_index = {}
-            index = sheet.sheet_index
-            # deleted cells will not be in the custom properties
+        with self._log.indent(True):
+            filter_key = self._code_prop
+            code_cells = {}
+            for sheet in self._doc.sheets:
+                code_index = {}
+                index = sheet.sheet_index
+                # deleted cells will not be in the custom properties
 
-            code_cell = sheet.custom_cell_properties.get_cell_properties(filter_key)
-            i = -1
-            for key, value in code_cell.items():
-                i += 1
-                cell = sheet[key]
-                code_name = cell.get_custom_property(filter_key, "")
-                if not code_name:
-                    self._log.error(f"_get_cells() Code Name not found for cell: {cell}. Skipping?")
-                    continue
-                code_index[key] = IndexCellProps(code_name, value, i)
-            code_cells[index] = code_index
-        self._log.outdent()
-        return code_cells
+                code_cell = sheet.custom_cell_properties.get_cell_properties(filter_key)
+                i = -1
+                for key, value in code_cell.items():
+                    i += 1
+                    cell = sheet[key]
+                    code_name = cell.get_custom_property(filter_key, "")
+                    if not code_name:
+                        self._log.error(f"_get_cells() Code Name not found for cell: {cell}. Skipping?")
+                        continue
+                    code_index[key] = IndexCellProps(code_name, value, i)
+                code_cells[index] = code_index
+            return code_cells
 
     def _ensure_sheet_index(self, sheet_idx: int) -> None:
         with self._log.indent(True):

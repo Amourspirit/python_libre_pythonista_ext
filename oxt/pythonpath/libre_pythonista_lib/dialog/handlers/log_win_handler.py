@@ -45,28 +45,29 @@ class ButtonListener(XActionListener, unohelper.Base):
 
     def actionPerformed(self, ev: Any):
         # sourcery skip: extract-method
-        self._log.debug("ButtonListener.actionPerformed")
-        try:
-            cmd = str(ev.ActionCommand)
-            self._log.debug(f"ButtonListener.actionPerformed cmd: {cmd}")
-            if cmd == "LogSettings":
+        with self._log.indent(True):
+            self._log.debug("ButtonListener.actionPerformed")
+            try:
+                cmd = str(ev.ActionCommand)
+                self._log.debug(f"ButtonListener.actionPerformed cmd: {cmd}")
+                if cmd == "LogSettings":
 
-                LogOpt().show()
-                return
-            if cmd == "ClearLog":
-                result = MsgBox.msgbox(
-                    title=self.handler.resource_resolver.resolve_string("mbtitle006"),
-                    msg=self.handler.resource_resolver.resolve_string("mbmsg006"),
-                    boxtype=MessageBoxType.QUERYBOX,
-                    buttons=MessageBoxButtonsEnum.BUTTONS_YES_NO,
-                )
-                if result == MessageBoxResultsEnum.YES:
-                    self.handler.clear()
-                return
+                    LogOpt().show()
+                    return
+                if cmd == "ClearLog":
+                    result = MsgBox.msgbox(
+                        title=self.handler.resource_resolver.resolve_string("mbtitle006"),
+                        msg=self.handler.resource_resolver.resolve_string("mbmsg006"),
+                        boxtype=MessageBoxType.QUERYBOX,
+                        buttons=MessageBoxButtonsEnum.BUTTONS_YES_NO,
+                    )
+                    if result == MessageBoxResultsEnum.YES:
+                        self.handler.clear()
+                    return
 
-        except Exception as err:
-            self._log.error(f"ButtonListener.actionPerformed: {err}", exc_info=True)
-            raise err
+            except Exception as err:
+                self._log.error(f"ButtonListener.actionPerformed: {err}", exc_info=True)
+                raise err
 
 
 class LogWinHandler(XWindowListener, unohelper.Base):
@@ -120,18 +121,20 @@ class LogWinHandler(XWindowListener, unohelper.Base):
         self._log_txt = CtlTextEdit(cast("UnoControlEdit", self._dialog.getControl("txtLog")))
 
     def _on_log_py_inst_reset(self, src: Any, event_args: EventArgs) -> None:
-        self._log.debug("_on_log_py_inst_reset")
-        try:
-            self._py_logger = PyLogger(doc=Lo.current_doc)
-            self._py_logger.unsubscribe_log_event(self._fn_on_log_event)
-            self._py_logger.subscribe_log_event(self._fn_on_log_event)
-        except Exception:
-            self._log.exception("_on_log_py_inst_reset")
+        with self._log.indent(True):
+            self._log.debug("_on_log_py_inst_reset")
+            try:
+                self._py_logger = PyLogger(doc=Lo.current_doc)
+                self._py_logger.unsubscribe_log_event(self._fn_on_log_event)
+                self._py_logger.subscribe_log_event(self._fn_on_log_event)
+            except Exception:
+                self._log.exception("_on_log_py_inst_reset")
 
     def _on_log_event(self, src: Any, event: EventArgs) -> None:
-        if self._log.is_debug:
-            self._log.debug("_on_log_event, Writing Line")
-        self._write_line(event.event_data.log_msg)
+        with self._log.indent(True):
+            if self._log.is_debug:
+                self._log.debug("_on_log_event, Writing Line")
+            self._write_line(event.event_data.log_msg)
 
     def _write_line(self, text: str) -> None:
         self._log_txt.write_line(text)

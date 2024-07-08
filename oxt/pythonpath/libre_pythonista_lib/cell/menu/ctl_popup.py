@@ -59,6 +59,8 @@ class CtlPopup:
         self._ctl_state = CtlState(self._cell)
         self._cps = CellDispatchState(cell=self._cell)
         self._log = LogInst()
+        with self._log.indent(True):
+            self._log.debug("Init")
         self._lpl_cell = LplCell(self._cell)
 
     def _get_state_menu(self) -> list:
@@ -66,24 +68,25 @@ class CtlPopup:
         # if not self._cell.has_custom_property(key):
         #     return []
         # state = self._cell.get_custom_property(key)
-        state = self._ctl_state.get_state()
-        cmd = self._cps.get_rule_dispatch_cmd()
-        if not cmd:
-            self._log.error("CtlPopup - _get_state_menu() No dispatch command found.")
-            return []
-        cmd_uno = f"{cmd}?sheet={self._sheet_name}&cell={self._cell.cell_obj}"
-        py_obj = self._res.resolve_string("mnuViewPyObj")  # Python Object
-        array = self._res.resolve_string("mnuViewArray")  # Array
-        return [
-            {
-                "text": "State",
-                "command": "",
-                "submenu": [
-                    {"text": py_obj, "command": cmd_uno, "enabled": state == StateKind.ARRAY},
-                    {"text": array, "command": cmd_uno, "enabled": state == StateKind.PY_OBJ},
-                ],
-            },
-        ]
+        with self._log.indent(True):
+            state = self._ctl_state.get_state()
+            cmd = self._cps.get_rule_dispatch_cmd()
+            if not cmd:
+                self._log.error("CtlPopup - _get_state_menu() No dispatch command found.")
+                return []
+            cmd_uno = f"{cmd}?sheet={self._sheet_name}&cell={self._cell.cell_obj}"
+            py_obj = self._res.resolve_string("mnuViewPyObj")  # Python Object
+            array = self._res.resolve_string("mnuViewArray")  # Array
+            return [
+                {
+                    "text": "State",
+                    "command": "",
+                    "submenu": [
+                        {"text": py_obj, "command": cmd_uno, "enabled": state == StateKind.ARRAY},
+                        {"text": array, "command": cmd_uno, "enabled": state == StateKind.PY_OBJ},
+                    ],
+                },
+            ]
 
     def _get_card_df_menu(self) -> list:
         card_name = self._res.resolve_string("mnuViewCard")

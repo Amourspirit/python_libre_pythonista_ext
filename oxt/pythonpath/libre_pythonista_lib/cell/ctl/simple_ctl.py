@@ -67,78 +67,80 @@ class SimpleCtl:
         # Controls can lose there models when switched to a different sheet and back.
         # For this reason we only return the shape from them method.
         # Shape.getControl() can be used if necessary.,
-        self.log.debug(f"{self.__class__.__name__}: add_ctl(): Entered")
-        try:
-            if self.is_deleted_cell:
-                raise CellDeletedError(f"Cell is deleted: {self.calc_cell.cell_obj}")
+        with self.log.indent(True):
+            self.log.debug(f"{self.__class__.__name__}: add_ctl(): Entered")
+            try:
+                if self.is_deleted_cell:
+                    raise CellDeletedError(f"Cell is deleted: {self.calc_cell.cell_obj}")
 
-            # check for the shape on the draw page.
-            # If for some reason the control in not found it is possible a shape was there.
-            # In this case we need to remove the shape.
-            with contextlib.suppress(mEx.ShapeMissingError):
+                # check for the shape on the draw page.
+                # If for some reason the control in not found it is possible a shape was there.
+                # In this case we need to remove the shape.
+                with contextlib.suppress(mEx.ShapeMissingError):
+                    sheet = self.calc_cell.calc_sheet
+                    dp = sheet.draw_page
+                    shape_name = self.namer.ctl_shape_name
+                    shape = dp.find_shape_by_name(shape_name)
+                    self.log.debug(
+                        f"{self.__class__.__name__}: add_ctl(): Found Shape: {shape_name}. Assuming control is in tact."
+                    )
+
+                    return shape.component
+
+                name = self.namer.ctl_name
+                cell_ctl = CellControl(self.calc_cell, self.calc_cell.lo_inst)
+                # current_control = cell_ctl.current_control
+                # if current_control is not None:
+                #     self.log.debug(f"SimpleCtl: add_ctl(): Current Control Found: {name}")
+                #     return current_control
+
+                # self.log.debug(f"SimpleCtl: add_ctl(): Current Control Not Found: {name}")
+
+                btn = cell_ctl.insert_control_button(label=self._get_label(), name=name)
+                self.log.debug(f"{self.__class__.__name__}: add_ctl(): Inserted Button: {name}")
+                shape = btn.control_shape
+
+                self._set_size(shape)
+                btn.printable = False
+                btn.model.BackgroundColor = self._get_button_bg_color()  # type: ignore
+                btn.tab_stop = False
+                # btn.apply_styles()
+                btn.assign_script(
+                    interface_name=XActionListener,  # type: ignore
+                    method_name="actionPerformed",
+                    script_name=self._script_loc,
+                    loc="user:uno_packages",
+                    language=LanguageKind.PYTHON,
+                )
+                # self.calc_cell.set_custom_property("CTL", "1")
+                self.log.debug(f"{self.__class__.__name__}: add_ctl(): Leaving")
+                self.calc_cell.set_custom_property(self.key_maker.ctl_shape_key, self.namer.ctl_shape_name)
+                self.calc_cell.set_custom_property(self.key_maker.ctl_orig_ctl_key, self.get_rule_name())
+
+                return shape
+            except Exception as e:
+                self.log.error(f"{self.__class__.__name__}: add_ctl error: {e}", exc_info=True)
+                return None
+
+    def update_ctl(self) -> None:
+        with self.log.indent(True):
+            self.log.debug(f"{self.__class__.__name__}: update_ctl(): Entered")
+            try:
                 sheet = self.calc_cell.calc_sheet
                 dp = sheet.draw_page
                 shape_name = self.namer.ctl_shape_name
-                shape = dp.find_shape_by_name(shape_name)
-                self.log.debug(
-                    f"{self.__class__.__name__}: add_ctl(): Found Shape: {shape_name}. Assuming control is in tact."
-                )
+                try:
+                    shape = dp.find_shape_by_name(shape_name)
+                    self.log.debug(f"{self.__class__.__name__}: update_ctl(): Found Shape: {shape_name}")
+                    self._set_size(shape.component)  # type: ignore
+                    self.log.debug(f"{self.__class__.__name__}: update_ctl(): Leaving")
+                except mEx.ShapeMissingError:
+                    self.log.debug(f"{self.__class__.__name__}: update_ctl(): Shape not found: {shape_name}")
+                    self.log.debug(f"{self.__class__.__name__}: update_ctl(): Leaving")
 
-                return shape.component
-
-            name = self.namer.ctl_name
-            cell_ctl = CellControl(self.calc_cell, self.calc_cell.lo_inst)
-            # current_control = cell_ctl.current_control
-            # if current_control is not None:
-            #     self.log.debug(f"SimpleCtl: add_ctl(): Current Control Found: {name}")
-            #     return current_control
-
-            # self.log.debug(f"SimpleCtl: add_ctl(): Current Control Not Found: {name}")
-
-            btn = cell_ctl.insert_control_button(label=self._get_label(), name=name)
-            self.log.debug(f"{self.__class__.__name__}: add_ctl(): Inserted Button: {name}")
-            shape = btn.control_shape
-
-            self._set_size(shape)
-            btn.printable = False
-            btn.model.BackgroundColor = self._get_button_bg_color()  # type: ignore
-            btn.tab_stop = False
-            # btn.apply_styles()
-            btn.assign_script(
-                interface_name=XActionListener,  # type: ignore
-                method_name="actionPerformed",
-                script_name=self._script_loc,
-                loc="user:uno_packages",
-                language=LanguageKind.PYTHON,
-            )
-            # self.calc_cell.set_custom_property("CTL", "1")
-            self.log.debug(f"{self.__class__.__name__}: add_ctl(): Leaving")
-            self.calc_cell.set_custom_property(self.key_maker.ctl_shape_key, self.namer.ctl_shape_name)
-            self.calc_cell.set_custom_property(self.key_maker.ctl_orig_ctl_key, self.get_rule_name())
-
-            return shape
-        except Exception as e:
-            self.log.error(f"{self.__class__.__name__}: add_ctl error: {e}", exc_info=True)
-            return None
-
-    def update_ctl(self) -> None:
-        self.log.debug(f"{self.__class__.__name__}: update_ctl(): Entered")
-        try:
-            sheet = self.calc_cell.calc_sheet
-            dp = sheet.draw_page
-            shape_name = self.namer.ctl_shape_name
-            try:
-                shape = dp.find_shape_by_name(shape_name)
-                self.log.debug(f"{self.__class__.__name__}: update_ctl(): Found Shape: {shape_name}")
-                self._set_size(shape.component)  # type: ignore
-                self.log.debug(f"{self.__class__.__name__}: update_ctl(): Leaving")
-            except mEx.ShapeMissingError:
-                self.log.debug(f"{self.__class__.__name__}: update_ctl(): Shape not found: {shape_name}")
-                self.log.debug(f"{self.__class__.__name__}: update_ctl(): Leaving")
-
-        except Exception as e:
-            self.log.error(f"{self.__class__.__name__}: update_ctl error: {e}", exc_info=True)
-            return None
+            except Exception as e:
+                self.log.error(f"{self.__class__.__name__}: update_ctl error: {e}", exc_info=True)
+                return None
 
     def _get_button_bg_color(self) -> int:
         return StandardColor.TEAL_LIGHT3
@@ -166,33 +168,34 @@ class SimpleCtl:
         return "<>"
 
     def remove_ctl(self):
-        self.log.debug(f"{self.__class__.__name__}: remove_ctl(): Entered")
-        try:
-            sheet = self.calc_cell.calc_sheet
-            dp = sheet.draw_page
-            shape_name = self.namer.ctl_shape_name
+        with self.log.indent(True):
+            self.log.debug(f"{self.__class__.__name__}: remove_ctl(): Entered")
             try:
-                shape = dp.find_shape_by_name(shape_name)
-                self.log.debug(f"{self.__class__.__name__}: remove_ctl(): Found Shape: {shape_name}")
-                dp.remove(shape.component)  # type: ignore
-                self.log.debug(f"{self.__class__.__name__}: remove_ctl(): Removed Shape: {shape_name}")
-                shape = None
-                self.log.debug(f"{self.__class__.__name__}: remove_ctl(): Leaving")
-            except mEx.ShapeMissingError:
-                self.log.debug(f"{self.__class__.__name__}: remove_ctl(): Shape not found: {shape_name}")
-                self.log.debug(f"{self.__class__.__name__}: remove_ctl(): Leaving")
+                sheet = self.calc_cell.calc_sheet
+                dp = sheet.draw_page
+                shape_name = self.namer.ctl_shape_name
+                try:
+                    shape = dp.find_shape_by_name(shape_name)
+                    self.log.debug(f"{self.__class__.__name__}: remove_ctl(): Found Shape: {shape_name}")
+                    dp.remove(shape.component)  # type: ignore
+                    self.log.debug(f"{self.__class__.__name__}: remove_ctl(): Removed Shape: {shape_name}")
+                    shape = None
+                    self.log.debug(f"{self.__class__.__name__}: remove_ctl(): Leaving")
+                except mEx.ShapeMissingError:
+                    self.log.debug(f"{self.__class__.__name__}: remove_ctl(): Shape not found: {shape_name}")
+                    self.log.debug(f"{self.__class__.__name__}: remove_ctl(): Leaving")
 
-            if self.calc_cell.has_custom_property(self.key_maker.ctl_shape_key):
-                self.log.debug(
-                    f"{self.__class__.__name__}: remove_ctl(): Removing custom {self.key_maker.ctl_shape_key}"
-                )
-                self.calc_cell.remove_custom_property(self.key_maker.ctl_shape_key)
-            if self.calc_cell.has_custom_property(self.key_maker.ctl_orig_ctl_key):
-                self.log.debug(
-                    f"{self.__class__.__name__}: remove_ctl(): Removing custom {self.key_maker.ctl_orig_ctl_key}"
-                )
-                self.calc_cell.remove_custom_property(self.key_maker.ctl_orig_ctl_key)
+                if self.calc_cell.has_custom_property(self.key_maker.ctl_shape_key):
+                    self.log.debug(
+                        f"{self.__class__.__name__}: remove_ctl(): Removing custom {self.key_maker.ctl_shape_key}"
+                    )
+                    self.calc_cell.remove_custom_property(self.key_maker.ctl_shape_key)
+                if self.calc_cell.has_custom_property(self.key_maker.ctl_orig_ctl_key):
+                    self.log.debug(
+                        f"{self.__class__.__name__}: remove_ctl(): Removing custom {self.key_maker.ctl_orig_ctl_key}"
+                    )
+                    self.calc_cell.remove_custom_property(self.key_maker.ctl_orig_ctl_key)
 
-        except Exception as e:
-            self.log.error(f"{self.__class__.__name__}: remove_ctl error: {e}", exc_info=True)
-            return None
+            except Exception as e:
+                self.log.error(f"{self.__class__.__name__}: remove_ctl error: {e}", exc_info=True)
+                return None

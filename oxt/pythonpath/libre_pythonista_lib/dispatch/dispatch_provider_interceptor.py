@@ -141,62 +141,73 @@ class DispatchProviderInterceptor(unohelper.Base, XDispatchProviderInterceptor):
         if url.Main == UNO_DISPATCH_CODE_EDIT:
             with contextlib.suppress(Exception):
                 args = self._convert_query_to_dict(url.Arguments)
-                log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchEditPyCell")
+                with log.indent(True):
+                    log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchEditPyCell")
                 result = DispatchEditPyCell(sheet=args["sheet"], cell=args["cell"])
                 return result
         elif url.Main == UNO_DISPATCH_CODE_EDIT_MB:
             with contextlib.suppress(Exception):
                 args = self._convert_query_to_dict(url.Arguments)
-                log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchEditPyCellMb")
+                with log.indent(True):
+                    log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchEditPyCellMb")
                 in_thread = args.get("in_thread", "0") == "1"
                 result = DispatchEditPyCellMb(sheet=args["sheet"], cell=args["cell"], in_thread=in_thread)
                 return result
         elif url.Main == UNO_DISPATCH_LOG_WIN:
             with contextlib.suppress(Exception):
                 args = self._convert_query_to_dict(url.Arguments)
-                log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchLogWindow")
+                with log.indent(True):
+                    log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchLogWindow")
                 in_thread = args.get("in_thread", "0") == "1"
                 result = DispatchLogWindow(in_thread=in_thread)
                 return result
         elif url.Main == UNO_DISPATCH_DF_STATE:
             with contextlib.suppress(Exception):
                 args = self._convert_query_to_dict(url.Arguments)
-                log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchToggleDfState")
+                with log.indent(True):
+                    log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchToggleDfState")
                 return DispatchToggleDfState(sheet=args["sheet"], cell=args["cell"])
         elif url.Main == UNO_DISPATCH_DS_STATE:
             with contextlib.suppress(Exception):
                 args = self._convert_query_to_dict(url.Arguments)
-                log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchToggleSeriesState")
+                with log.indent(True):
+                    log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchToggleSeriesState")
                 return DispatchToggleSeriesState(sheet=args["sheet"], cell=args["cell"])
         elif url.Main == UNO_DISPATCH_DATA_TBL_STATE:
             with contextlib.suppress(Exception):
                 args = self._convert_query_to_dict(url.Arguments)
-                log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchToggleDataTblState")
+                with log.indent(True):
+                    log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchToggleDataTblState")
                 return DispatchToggleDataTblState(sheet=args["sheet"], cell=args["cell"])
         elif url.Main == UNO_DISPATCH_CODE_DEL:
             with contextlib.suppress(Exception):
                 args = self._convert_query_to_dict(url.Arguments)
-                log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchDelPyCell")
+                with log.indent(True):
+                    log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchDelPyCell")
                 return DispatchDelPyCell(sheet=args["sheet"], cell=args["cell"])
         elif url.Main == UNO_DISPATCH_PY_OBJ_STATE:
             with contextlib.suppress(Exception):
                 args = self._convert_query_to_dict(url.Arguments)
-                log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchPyObjState")
+                with log.indent(True):
+                    log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchPyObjState")
                 return DispatchPyObjState(sheet=args["sheet"], cell=args["cell"])
         elif url.Main == UNO_DISPATCH_CELL_SELECT:
             with contextlib.suppress(Exception):
                 args = self._convert_query_to_dict(url.Arguments)
-                log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchCellSelect")
+                with log.indent(True):
+                    log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchCellSelect")
                 return DispatchCellSelect(sheet=args["sheet"], cell=args["cell"])
         elif url.Main == UNO_DISPATCH_DF_CARD:
             with contextlib.suppress(Exception):
                 args = self._convert_query_to_dict(url.Arguments)
-                log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchCardDf")
+                with log.indent(True):
+                    log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchCardDf")
                 return DispatchCardDf(sheet=args["sheet"], cell=args["cell"])
         elif url.Main == UNO_DISPATCH_DATA_TBL_CARD:
             with contextlib.suppress(Exception):
                 args = self._convert_query_to_dict(url.Arguments)
-                log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchCardTblData")
+                with log.indent(True):
+                    log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchCardTblData")
                 return DispatchCardTblData(sheet=args["sheet"], cell=args["cell"])
         elif url.Main == UNO_DISPATCH_SEL_RNG:
             with contextlib.suppress(Exception):
@@ -204,11 +215,13 @@ class DispatchProviderInterceptor(unohelper.Base, XDispatchProviderInterceptor):
                     args = self._convert_query_to_dict(url.Arguments)
                 else:
                     args = {}
-                log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchRngSelectPopup")
+                with log.indent(True):
+                    log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchRngSelectPopup")
                 return DispatchRngSelectPopup(**args)
         elif url.Main == UNO_DISPATCH_ABOUT:
             with contextlib.suppress(Exception):
-                log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchAbout")
+                with log.indent(True):
+                    log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchAbout")
                 return DispatchAbout()
 
         return self._slave.queryDispatch(url, target_frame_name, search_flags)

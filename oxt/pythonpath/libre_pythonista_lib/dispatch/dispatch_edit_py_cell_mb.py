@@ -40,11 +40,13 @@ def thread_wrapper(inst_id: str, cell: CalcCell, url: URL, original_func):
     """
     global _THREADS_DICT, _ACTIVE_WINDOWS
     log = LogInst()
-    log.debug(f"thread_wrapper inst_id: {inst_id}")
+    with log.indent(True):
+        log.debug(f"thread_wrapper inst_id: {inst_id}")
     try:
         original_func(inst_id, cell, url)
     finally:
-        log.debug(f"thread_wrapper finally inst_id: {inst_id}")
+        with log.indent(True):
+            log.debug(f"thread_wrapper finally inst_id: {inst_id}")
         # Remove the thread from the dictionary
         del _THREADS_DICT[inst_id]
         if inst_id in _ACTIVE_WINDOWS:
@@ -57,15 +59,20 @@ def dispatch_in_thread(inst_id: str, cell: CalcCell, url: URL):
     """
     global _ACTIVE_WINDOWS
     log = LogInst()
-    log.debug(f"dispatch_in_thread inst_id: {inst_id}")
+    with log.indent(True):
+        log.debug(f"dispatch_in_thread inst_id: {inst_id}")
     if inst_id in _ACTIVE_WINDOWS:
-        log.debug(f"dispatch_in_thread inst_id: {inst_id} is in active windows. Deleting it.")
+        with log.indent(True):
+            log.debug(f"dispatch_in_thread inst_id: {inst_id} is in active windows. Deleting it.")
         del _ACTIVE_WINDOWS[inst_id]
-    log.debug("dispatch_in_thread creating DispatchWorker")
+    with log.indent(True):
+        log.debug("dispatch_in_thread creating DispatchWorker")
     worker = DispatchWorker(inst_id, cell, url)
-    log.debug("dispatch_in_thread dispatching DispatchWorker")
+    with log.indent(True):
+        log.debug("dispatch_in_thread dispatching DispatchWorker")
     worker.dispatch()
-    log.debug("dispatch_in_thread done")
+    with log.indent(True):
+        log.debug("dispatch_in_thread done")
 
 
 class DispatchEditPyCellMb(XDispatch, EventsPartial, unohelper.Base):
@@ -89,11 +96,12 @@ class DispatchEditPyCellMb(XDispatch, EventsPartial, unohelper.Base):
 
         Note: Notifications can't be guaranteed! This will be a part of interface XNotifyingDispatch.
         """
-        self._log.debug(f"addStatusListener(): url={url.Main}")
-        if url.Complete in self._status_listeners:
-            self._log.debug(f"addStatusListener(): url={url.Main} already exists.")
-        else:
-            self._status_listeners[url.Complete] = control
+        with self._log.indent(True):
+            self._log.debug(f"addStatusListener(): url={url.Main}")
+            if url.Complete in self._status_listeners:
+                self._log.debug(f"addStatusListener(): url={url.Main} already exists.")
+            else:
+                self._status_listeners[url.Complete] = control
 
     def dispatch(self, url: URL, args: Tuple[PropertyValue, ...]) -> None:
         """
@@ -122,7 +130,8 @@ class DispatchEditPyCellMb(XDispatch, EventsPartial, unohelper.Base):
             self._inst_id = f"{doc.runtime_uid}_{sheet.sheet_index}_{cell.cell_obj}"
 
             if self._inst_id in _ACTIVE_WINDOWS:
-                self._log.debug(f"Thread with inst_id '{self._inst_id}' is already running. Setting Focus")
+                with self._log.indent(True):
+                    self._log.debug(f"Thread with inst_id '{self._inst_id}' is already running. Setting Focus")
                 _ACTIVE_WINDOWS[self._inst_id].set_focus()
                 return
             if self._inst_id not in _THREADS_DICT:
@@ -135,25 +144,31 @@ class DispatchEditPyCellMb(XDispatch, EventsPartial, unohelper.Base):
 
                 t.start()
                 if self._in_thread:
-                    self._log.debug(f"Thread with inst_id '{self._inst_id}' is running. Waiting for join.")
+                    with self._log.indent(True):
+                        self._log.debug(f"Thread with inst_id '{self._inst_id}' is running. Waiting for join.")
                     t.join()
-                    self._log.debug(f"Thread with inst_id '{self._inst_id}' has joined.")
+                    with self._log.indent(True):
+                        self._log.debug(f"Thread with inst_id '{self._inst_id}' has joined.")
                 else:
-                    self._log.debug(f"Thread with inst_id '{self._inst_id}' is running. Did not wait for join.")
+                    with self._log.indent(True):
+                        self._log.debug(f"Thread with inst_id '{self._inst_id}' is running. Did not wait for join.")
             else:
-                self._log.debug(f"Thread with inst_id '{self._inst_id}' is already running.")
+                with self._log.indent(True):
+                    self._log.debug(f"Thread with inst_id '{self._inst_id}' is already running.")
 
         except Exception:
-            self._log.error("Error getting cell information", exc_info=True)
+            with self._log.indent(True):
+                self._log.error("Error getting cell information", exc_info=True)
             return
 
     def removeStatusListener(self, control: XStatusListener, url: URL) -> None:
         """
         Un-registers a listener from a control.
         """
-        self._log.debug(f"removeStatusListener(): url={url.Main}")
-        if url.Complete in self._status_listeners:
-            del self._status_listeners[url.Complete]
+        with self._log.indent(True):
+            self._log.debug(f"removeStatusListener(): url={url.Main}")
+            if url.Complete in self._status_listeners:
+                del self._status_listeners[url.Complete]
 
 
 class DispatchWorker(EventsPartial):
@@ -166,77 +181,78 @@ class DispatchWorker(EventsPartial):
         self._inst_id = inst_id
 
     def dispatch(self) -> None:
-        try:
-            self._log.debug(f"dispatch: cell={self._cell.cell_obj}")
-            cargs = CancelEventArgs(self)
-            cargs.event_data = DotDict(
-                cell=self._cell,
-            )
-            self.trigger_event(f"{self._url.Main}_before_dispatch", cargs)
-            if cargs.cancel:
-                self._log.debug(f"Event {self._url.Main}_before_dispatch was cancelled.")
-                return
+        with self._log.indent(True):
+            try:
+                self._log.debug(f"dispatch: cell={self._cell.cell_obj}")
+                cargs = CancelEventArgs(self)
+                cargs.event_data = DotDict(
+                    cell=self._cell,
+                )
+                self.trigger_event(f"{self._url.Main}_before_dispatch", cargs)
+                if cargs.cancel:
+                    self._log.debug(f"Event {self._url.Main}_before_dispatch was cancelled.")
+                    return
 
-            cc = CellCache(self._cell.calc_doc)  # singleton
-            cell_obj = self._cell.cell_obj
-            sheet_idx = self._cell.calc_sheet.sheet_index
-            if not cc.has_cell(cell=cell_obj, sheet_idx=sheet_idx):
-                self._log.error(f"Cell {self._cell} is not in the cache.")
-                return
-            with cc.set_context(cell=cell_obj, sheet_idx=sheet_idx):
-                result = self._edit_code(doc=self._cell.calc_doc, cell_obj=cell_obj)
-                if result:
-                    if self._cell.calc_doc.component.isAutomaticCalculationEnabled():
-                        # the purpose of writing the formulas back to the cell(s) is to trigger the recalculation
-                        cm = CellMgr(self._cell.calc_doc)  # singleton. Tracks all Code cells
-                        # https://ask.libreoffice.org/t/mark-a-calc-sheet-cell-as-dirty/106659
-                        with cm.listener_context(self._cell.component):
-                            # suspend the listeners for this cell
-                            formula = self._cell.component.getFormula()
-                            if not formula:
-                                self._log.error(f"Cell {self._cell} has no formula.")
-                                eargs = EventArgs.from_args(cargs)
-                                eargs.event_data.success = False
-                                self.trigger_event(f"{self._url.Main}_after_dispatch", eargs)
-                                return
-                            # s = s.lstrip("=")  # just in case there are multiple equal signs
-                            is_formula_array = False
-                            if formula.startswith("{"):
-                                is_formula_array = True
-                                formula = formula.lstrip("{")
-                                formula = formula.rstrip("}")
+                cc = CellCache(self._cell.calc_doc)  # singleton
+                cell_obj = self._cell.cell_obj
+                sheet_idx = self._cell.calc_sheet.sheet_index
+                if not cc.has_cell(cell=cell_obj, sheet_idx=sheet_idx):
+                    self._log.error(f"Cell {self._cell} is not in the cache.")
+                    return
+                with cc.set_context(cell=cell_obj, sheet_idx=sheet_idx):
+                    result = self._edit_code(doc=self._cell.calc_doc, cell_obj=cell_obj)
+                    if result:
+                        if self._cell.calc_doc.component.isAutomaticCalculationEnabled():
+                            # the purpose of writing the formulas back to the cell(s) is to trigger the recalculation
+                            cm = CellMgr(self._cell.calc_doc)  # singleton. Tracks all Code cells
+                            # https://ask.libreoffice.org/t/mark-a-calc-sheet-cell-as-dirty/106659
+                            with cm.listener_context(self._cell.component):
+                                # suspend the listeners for this cell
+                                formula = self._cell.component.getFormula()
+                                if not formula:
+                                    self._log.error(f"Cell {self._cell} has no formula.")
+                                    eargs = EventArgs.from_args(cargs)
+                                    eargs.event_data.success = False
+                                    self.trigger_event(f"{self._url.Main}_after_dispatch", eargs)
+                                    return
+                                # s = s.lstrip("=")  # just in case there are multiple equal signs
+                                is_formula_array = False
+                                if formula.startswith("{"):
+                                    is_formula_array = True
+                                    formula = formula.lstrip("{")
+                                    formula = formula.rstrip("}")
 
-                            dd = DotDict()
-                            for key, value in cargs.event_data.items():
-                                dd[key] = value
-                            eargs = EventArgs(self)
-                            if is_formula_array:
-                                # The try block is important. If there is a error without the block then the entire LibreOffice app can crash.
-                                self._log.debug("Resetting array formula")
-                                # get the cell that are involved in the array formula.
-                                cursor = cast("SheetCellCursor", sheet.component.createCursorByRange(cell.component))  # type: ignore
-                                # this next line also works.
-                                # cursor = cast("SheetCellCursor", cell.component.getSpreadsheet().createCursorByRange(cell.component))  # type: ignore
-                                cursor.collapseToCurrentArray()
-                                # reset the array formula
-                                cursor.setArrayFormula(formula)
-                                rng_addr = cursor.getRangeAddress()
-                                dd.range_obj = RangeObj.from_range(rng_addr)
-                                eargs.event_data = dd
-                                self.trigger_event("dispatch_remove_array_formula", eargs)
-                            else:
-                                self._log.debug("Resetting formula")
-                                self._cell.component.setFormula(formula)
-                                self.trigger_event("dispatch_added_cell_formula", eargs)
-                            self._cell.calc_doc.component.calculate()
-            eargs = EventArgs.from_args(cargs)
-            eargs.event_data.success = True
-            self.trigger_event(f"{self._url.Main}_after_dispatch", eargs)
-        except Exception as e:
-            # log the error and do not re-raise it.
-            # re-raising the error may crash the entire LibreOffice app.
-            self._log.error(f"Error: {e}", exc_info=True)
-            return
+                                dd = DotDict()
+                                for key, value in cargs.event_data.items():
+                                    dd[key] = value
+                                eargs = EventArgs(self)
+                                if is_formula_array:
+                                    # The try block is important. If there is a error without the block then the entire LibreOffice app can crash.
+                                    self._log.debug("Resetting array formula")
+                                    # get the cell that are involved in the array formula.
+                                    cursor = cast("SheetCellCursor", sheet.component.createCursorByRange(cell.component))  # type: ignore
+                                    # this next line also works.
+                                    # cursor = cast("SheetCellCursor", cell.component.getSpreadsheet().createCursorByRange(cell.component))  # type: ignore
+                                    cursor.collapseToCurrentArray()
+                                    # reset the array formula
+                                    cursor.setArrayFormula(formula)
+                                    rng_addr = cursor.getRangeAddress()
+                                    dd.range_obj = RangeObj.from_range(rng_addr)
+                                    eargs.event_data = dd
+                                    self.trigger_event("dispatch_remove_array_formula", eargs)
+                                else:
+                                    self._log.debug("Resetting formula")
+                                    self._cell.component.setFormula(formula)
+                                    self.trigger_event("dispatch_added_cell_formula", eargs)
+                                self._cell.calc_doc.component.calculate()
+                eargs = EventArgs.from_args(cargs)
+                eargs.event_data.success = True
+                self.trigger_event(f"{self._url.Main}_after_dispatch", eargs)
+            except Exception as e:
+                # log the error and do not re-raise it.
+                # re-raising the error may crash the entire LibreOffice app.
+                self._log.error(f"Error: {e}", exc_info=True)
+                return
 
     def _edit_code(self, doc: CalcDoc, cell_obj: CellObj) -> bool:
         global _ACTIVE_WINDOWS
@@ -256,21 +272,26 @@ class DispatchWorker(EventsPartial):
         self._log.debug("Displaying dialog")
         result = False
         if mb.show():
-            self._log.debug("Dialog returned with OK")
+            with self._log.indent(True):
+                self._log.debug("Dialog returned with OK")
             txt = mb.text.strip()
             if txt != code:
                 try:
-                    self._log.debug("Code has changed, updating ...")
-                    py_inst.update_source(code=txt, cell=cell_obj)
-                    self._log.debug(f"Cell Code updated for {cell_obj}")
-                    py_inst.update_all()
-                    self._log.debug("Code updated")
+                    with self._log.indent(True):
+                        self._log.debug("Code has changed, updating ...")
+                        py_inst.update_source(code=txt, cell=cell_obj)
+                        self._log.debug(f"Cell Code updated for {cell_obj}")
+                        py_inst.update_all()
+                        self._log.debug("Code updated")
                     result = True
                 except Exception as e:
-                    self._log.error("Error updating code", exc_info=True)
+                    with self._log.indent(True):
+                        self._log.error("Error updating code", exc_info=True)
             else:
-                self._log.debug("Code has not changed")
+                with self._log.indent(True):
+                    self._log.debug("Code has not changed")
         else:
-            self._log.debug("Dialog returned with Cancel")
+            with self._log.indent(True):
+                self._log.debug("Dialog returned with Cancel")
         mb.dispose()
         return result

@@ -125,17 +125,18 @@ class TblDataCard:
 
     def _get_has_row_header(self) -> bool:
         """Check if the range has headers. Considered to be a header if the first row is all string values."""
-        try:
-            py_src = self._lpl_cell.pyc_src
-            if not "range_obj" in py_src.dd_data:
+        with self._log.indent(True):
+            try:
+                py_src = self._lpl_cell.pyc_src
+                if not "range_obj" in py_src.dd_data:
+                    return False
+                ro = cast(RangeObj, py_src.dd_data.range_obj)
+                cell_rng = self._cell.calc_sheet.get_range(range_obj=ro)
+                tdo = TblDataObj(cell_rng)
+                return tdo.has_headers
+            except Exception:
+                self._log.exception("Error getting range object")
                 return False
-            ro = cast(RangeObj, py_src.dd_data.range_obj)
-            cell_rng = self._cell.calc_sheet.get_range(range_obj=ro)
-            tdo = TblDataObj(cell_rng)
-            return tdo.has_headers
-        except Exception:
-            self._log.exception("Error getting range object")
-            return False
 
     def _get_table_data_head(self) -> list:
         """Convert the dataframe and display in dialog grid control."""
@@ -160,48 +161,50 @@ class TblDataCard:
 
     def _get_table_data_head_tail(self) -> list:
         """Convert the dataframe and display in dialog grid control."""
-        py_src = self._lpl_cell.pyc_src
-        data = cast(List[List[Any]], py_src.dd_data.data)
+        with self._log.indent(True):
+            py_src = self._lpl_cell.pyc_src
+            data = cast(List[List[Any]], py_src.dd_data.data)
 
-        rows, cols = self._get_rows_cols(data)
+            rows, cols = self._get_rows_cols(data)
 
-        row_count = max(len(data), 10)
+            row_count = max(len(data), 10)
 
-        if row_count < 2:
-            self._log.error(f"_get_table_data_head_tail() Row count is less than 2: {row_count}")
-            raise ValueError("Row count is less than 2")
+            if row_count < 2:
+                self._log.error(f"_get_table_data_head_tail() Row count is less than 2: {row_count}")
+                raise ValueError("Row count is less than 2")
 
-        end = row_count // 2
-        start = row_count - end
+            end = row_count // 2
+            start = row_count - end
 
-        head_data = data[:start]
-        tail_data = data[-end:]
-        PandasUtil.convert_array_to_lo(head_data)
-        PandasUtil.convert_array_to_lo(tail_data)
+            head_data = data[:start]
+            tail_data = data[-end:]
+            PandasUtil.convert_array_to_lo(head_data)
+            PandasUtil.convert_array_to_lo(tail_data)
 
-        # create a row of ellipse to insert before tail.
-        ellipse = ["..." for _ in range(cols)]  # one extra column for row index
-        tbl = head_data + [ellipse] + tail_data
-        return tbl
+            # create a row of ellipse to insert before tail.
+            ellipse = ["..." for _ in range(cols)]  # one extra column for row index
+            tbl = head_data + [ellipse] + tail_data
+            return tbl
 
     # endregion Data
 
     # region Show Dialog
     def show(self) -> int:
-        # window = Lo.get_frame().getContainerWindow()
-        self._doc.activate()
-        try:
-            self._ctl_main_lbl.label = self._get_message()
-        except Exception as ex:
-            self._log.error(f"Error setting message: {ex}")
-        window = self._doc.get_frame().getContainerWindow()
-        ps = window.getPosSize()
-        x = round(ps.Width / 2 - self._width / 2)
-        y = round(ps.Height / 2 - self._height / 2)
-        self._dialog.set_pos_size(x, y, self._width, self._height, PosSize.POSSIZE)
-        self._dialog.set_visible(True)
-        result = self._dialog.execute()
-        self._dialog.dispose()
-        return result
+        with self._log.indent(True):
+            # window = Lo.get_frame().getContainerWindow()
+            self._doc.activate()
+            try:
+                self._ctl_main_lbl.label = self._get_message()
+            except Exception as ex:
+                self._log.error(f"Error setting message: {ex}")
+            window = self._doc.get_frame().getContainerWindow()
+            ps = window.getPosSize()
+            x = round(ps.Width / 2 - self._width / 2)
+            y = round(ps.Height / 2 - self._height / 2)
+            self._dialog.set_pos_size(x, y, self._width, self._height, PosSize.POSSIZE)
+            self._dialog.set_visible(True)
+            result = self._dialog.execute()
+            self._dialog.dispose()
+            return result
 
     # endregion Show Dialog

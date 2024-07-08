@@ -149,43 +149,44 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
 
     def _init_dialog(self) -> None:
         """Create dialog and add controls."""
-        rect = Rectangle()
-        rect.Width = self._width
-        if self._cfg.has_size():
-            rect.Height = self._height + self._cfg.menu_bar_height
-        else:
-            rect.Height = self._height
+        with self._log.indent(True):
+            rect = Rectangle()
+            rect.Width = self._width
+            if self._cfg.has_size():
+                rect.Height = self._height + self._cfg.menu_bar_height
+            else:
+                rect.Height = self._height
 
-        if self._cfg.has_position():
-            self._log.debug("_init_dialog() Config Has Position")
-            rect.X = self._cfg.x
-            rect.Y = max(0, self._cfg.y - self._cfg.menu_bar_height)
-        else:
-            ps = self.parent.getPosSize()  # type: ignore
-            rect.X = int((ps.Width - self._width) / 2 - 50)
-            rect.Y = int((ps.Height - self._height) / 2 - 100)
+            if self._cfg.has_position():
+                self._log.debug("_init_dialog() Config Has Position")
+                rect.X = self._cfg.x
+                rect.Y = max(0, self._cfg.y - self._cfg.menu_bar_height)
+            else:
+                ps = self.parent.getPosSize()  # type: ignore
+                rect.X = int((ps.Width - self._width) / 2 - 50)
+                rect.Y = int((ps.Height - self._height) / 2 - 100)
 
-        desc = WindowDescriptor()
-        desc.Type = TOP
-        desc.WindowServiceName = "window"
-        desc.ParentIndex = -1
-        desc.Parent = None  # type: ignore
-        desc.Bounds = rect
-        desc.WindowAttributes = (
-            # WindowAttribute.SHOW
-            WindowAttribute.BORDER
-            + WindowAttribute.SIZEABLE
-            + WindowAttribute.MOVEABLE
-            + VclWindowPeerAttribute.CLIPCHILDREN
-        )
+            desc = WindowDescriptor()
+            desc.Type = TOP
+            desc.WindowServiceName = "window"
+            desc.ParentIndex = -1
+            desc.Parent = None  # type: ignore
+            desc.Bounds = rect
+            desc.WindowAttributes = (
+                # WindowAttribute.SHOW
+                WindowAttribute.BORDER
+                + WindowAttribute.SIZEABLE
+                + WindowAttribute.MOVEABLE
+                + VclWindowPeerAttribute.CLIPCHILDREN
+            )
 
-        dialog_peer = self.tk.createWindow(desc)
+            dialog_peer = self.tk.createWindow(desc)
 
-        self._dialog = cast("WindowType", dialog_peer)
-        self._dialog.setVisible(False)
-        self._dialog.setOutputSize(Size(rect.Width, rect.Height))
+            self._dialog = cast("WindowType", dialog_peer)
+            self._dialog.setVisible(False)
+            self._dialog.setOutputSize(Size(rect.Width, rect.Height))
 
-        # self._dialog.setBackground(get_bg_color(self._dialog, 0xFAFAFA))
+            # self._dialog.setBackground(get_bg_color(self._dialog, 0xFAFAFA))
 
     def _init_style(self) -> None:
         # setting code border and border color seems to have no effect.
@@ -202,14 +203,15 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
 
     def get_parent(self):
         """Returns parent frame"""
-        try:
-            window = Lo.desktop.get_active_frame().getContainerWindow()
-            if window is None:
-                raise Exception("Window is None")
-            return window
-        except Exception:
-            self._log.error("Error in get_parent", exc_info=True)
-            return None
+        with self._log.indent(True):
+            try:
+                window = Lo.desktop.get_active_frame().getContainerWindow()
+                if window is None:
+                    raise Exception("Window is None")
+                return window
+            except Exception:
+                self._log.error("Error in get_parent", exc_info=True)
+                return None
 
     # endregion Misc Methods
 
@@ -279,24 +281,28 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
     # region XTopWindowListener
     def windowOpened(self, event: EventObject) -> None:
         """is invoked when a window is activated."""
-        self._log.debug("Window Opened")
+        with self._log.indent(True):
+            self._log.debug("Window Opened")
 
     def windowActivated(self, event: EventObject) -> None:
         """is invoked when a window is activated."""
-
-        self._log.debug("Window Activated")
+        with self._log.indent(True):
+            self._log.debug("Window Activated")
 
     def windowDeactivated(self, event: EventObject) -> None:
         """is invoked when a window is deactivated."""
-        self._log.debug("Window De-activated")
+        with self._log.indent(True):
+            self._log.debug("Window De-activated")
 
     def windowMinimized(self, event: EventObject) -> None:
         """Is invoked when a window is iconified."""
-        self._log.debug("Window Minimized")
+        with self._log.indent(True):
+            self._log.debug("Window Minimized")
 
     def windowNormalized(self, event: EventObject) -> None:
         """is invoked when a window is deiconified."""
-        self._log.debug("Window Normalized")
+        with self._log.indent(True):
+            self._log.debug("Window Normalized")
 
     def windowClosing(self, event: EventObject) -> None:
         """
@@ -304,57 +310,60 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
 
         The close operation can be overridden at this point.
         """
-        self._log.debug("Window Closing")
-        self._is_shown = False
+        with self._log.indent(True):
+            self._log.debug("Window Closing")
+            self._is_shown = False
 
-        if not self._closing_triggered:
-            self._closing_triggered = True
-            try:
-                self._update_config()
-            except Exception as e:
-                self._log.exception(f"Error saving configuration: {e}")
+            if not self._closing_triggered:
+                self._closing_triggered = True
+                try:
+                    self._update_config()
+                except Exception as e:
+                    self._log.exception(f"Error saving configuration: {e}")
 
     def windowClosed(self, event: EventObject) -> None:
         """is invoked when a window has been closed."""
-        self._log.debug("Window Closed")
-        DialogMb.reset_inst(self._inst_id)
+        with self._log.indent(True):
+            self._log.debug("Window Closed")
+            DialogMb.reset_inst(self._inst_id)
 
     def disposing(self, event: EventObject) -> None:
-
-        self._log.debug("Disposing")
-        if not self._disposed:
-            try:
-                DialogMb.reset_inst(self._inst_id)
-                self._is_shown = False
-                self._disposed = True
-                self._dialog.removeTopWindowListener(self)
-                self._dialog.setMenuBar(None)  # type: ignore
-                self._mb = None
-                self._dialog.dispose()
-            except Exception as e:
-                self._log.error("Error in disposing", exc_info=True)
+        with self._log.indent(True):
+            self._log.debug("Disposing")
+            if not self._disposed:
+                try:
+                    DialogMb.reset_inst(self._inst_id)
+                    self._is_shown = False
+                    self._disposed = True
+                    self._dialog.removeTopWindowListener(self)
+                    self._dialog.setMenuBar(None)  # type: ignore
+                    self._mb = None
+                    self._dialog.dispose()
+                except Exception as e:
+                    self._log.error("Error in disposing", exc_info=True)
 
     # endregion XTopWindowListener
 
     # region Menubar
     def _add_menu_bar(self) -> None:
-        try:
-            menu_provider = DialogMbMenu(self)
+        with self._log.indent(True):
+            try:
+                menu_provider = DialogMbMenu(self)
 
-            mb = Lo.create_instance_mcf(XMenuBar, "com.sun.star.awt.MenuBar", raise_err=True)
-            mb.insertItem(1, self._rr.resolve_string("mnuCode"), 0, 0)
-            mb.insertItem(2, self._rr.resolve_string("mnuInsert"), 0, 1)
-            # mb.insertItem(2, "~Code", MenuItemStyle.AUTOCHECK, 1)
-            insert_mnu = menu_provider.get_insert_menu()
-            insert_mnu.subscribe_all_item_selected(self._fn_on_menu_select)
-            code_mnu = menu_provider.get_code_menu()
-            code_mnu.subscribe_all_item_selected(self._fn_on_menu_select)
-            mb.setPopupMenu(1, code_mnu.component)  # type: ignore
-            mb.setPopupMenu(2, insert_mnu.component)  # type: ignore
-            self._mb = mb
-            self._dialog.setMenuBar(mb)
-        except Exception as e:
-            self._log.exception("Error adding menubar")
+                mb = Lo.create_instance_mcf(XMenuBar, "com.sun.star.awt.MenuBar", raise_err=True)
+                mb.insertItem(1, self._rr.resolve_string("mnuCode"), 0, 0)
+                mb.insertItem(2, self._rr.resolve_string("mnuInsert"), 0, 1)
+                # mb.insertItem(2, "~Code", MenuItemStyle.AUTOCHECK, 1)
+                insert_mnu = menu_provider.get_insert_menu()
+                insert_mnu.subscribe_all_item_selected(self._fn_on_menu_select)
+                code_mnu = menu_provider.get_code_menu()
+                code_mnu.subscribe_all_item_selected(self._fn_on_menu_select)
+                mb.setPopupMenu(1, code_mnu.component)  # type: ignore
+                mb.setPopupMenu(2, insert_mnu.component)  # type: ignore
+                self._mb = mb
+                self._dialog.setMenuBar(mb)
+            except Exception as e:
+                self._log.exception("Error adding menubar")
 
     # endregion Menubar
 
@@ -510,12 +519,14 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
     def on_code_focus_gained(self, source: Any, event: EventArgs, control_src: CtlTextEdit) -> None:
         self.code_focused = True
         self.tk.addKeyHandler(self.keyhandler)
-        self._log.debug("Focus Gained")
+        with self._log.indent(True):
+            self._log.debug("Focus Gained")
 
     def on_code_focus_lost(self, source: Any, event: EventArgs, control_src: CtlTextEdit) -> None:
         self.code_focused = False
         self.tk.removeKeyHandler(self.keyhandler)
-        self._log.debug("Focus Lost")
+        with self._log.indent(True):
+            self._log.debug("Focus Lost")
 
     # endregion focus handlers
 
@@ -553,60 +564,62 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
         return
 
     def _on_menu_range_select_result(self, src: Any, event: EventArgs) -> None:
-        log = self._log
-        try:
-            glbs = GblEvents()
-            glbs.unsubscribe_event("GlobalCalcRangeSelector", self._fn_on_menu_range_select_result)
-        except:
-            log.error("_on_menu_range_select_result() unsubscribing from GlobalCalcRangeSelector", exc_info=True)
-        if event.event_data.state != "done":
-            log.debug("on_sel _on_menu_range_select_result aborted")
-            return
-        log.debug(f"_on_menu_range_select_result {event.event_data.rng_obj}")
-        try:
-            view = event.event_data.view
-            # doc = view.calc_doc
-            # doc.msgbox(f"Selection made {event.event_data.rng_obj}")
-            self._dialog.toFront()
-            self._dialog.setFocus()
+        with self._log.indent(True):
+            log = self._log
+            try:
+                glbs = GblEvents()
+                glbs.unsubscribe_event("GlobalCalcRangeSelector", self._fn_on_menu_range_select_result)
+            except:
+                log.error("_on_menu_range_select_result() unsubscribing from GlobalCalcRangeSelector", exc_info=True)
+            if event.event_data.state != "done":
+                log.debug("on_sel _on_menu_range_select_result aborted")
+                return
+            log.debug(f"_on_menu_range_select_result {event.event_data.rng_obj}")
+            try:
+                view = event.event_data.view
+                # doc = view.calc_doc
+                # doc.msgbox(f"Selection made {event.event_data.rng_obj}")
+                self._dialog.toFront()
+                self._dialog.setFocus()
 
-            sel = self._code.view.getSelection()
-            # self._write(, (sel.Min, sel.Max))
-            self._write(str(event.event_data.rng_obj), (sel.Min, sel.Max))
-        except Exception:
-            log.error("_on_menu_range_select_result", exc_info=True)
+                sel = self._code.view.getSelection()
+                # self._write(, (sel.Min, sel.Max))
+                self._write(str(event.event_data.rng_obj), (sel.Min, sel.Max))
+            except Exception:
+                log.error("_on_menu_range_select_result", exc_info=True)
 
     def _on_menu_insert_lp_fn(self, src: Any, event: EventArgs) -> None:
         from ...data.auto_fn import AutoFn
 
-        log = self._log
-        try:
-            glbs = GblEvents()
-            glbs.unsubscribe_event("GlobalCalcRangeSelector", self._fn_on_menu_insert_lp_fn)
-        except:
-            log.error("_on_menu_insert_lp_fn() unsubscribing from GlobalCalcRangeSelector", exc_info=True)
-        if event.event_data.state != "done":
-            log.debug("on_sel _on_menu_insert_lp_fn aborted")
-            return
-        log.debug(f"_on_menu_insert_lp_fn {event.event_data.rng_obj}")
-        try:
-            view = event.event_data.view
-            # doc = view.calc_doc
-            # doc.msgbox(f"Selection made {event.event_data.rng_obj}")
-            self._dialog.toFront()
-            self._dialog.setFocus()
+        with self._log.indent(True):
+            log = self._log
+            try:
+                glbs = GblEvents()
+                glbs.unsubscribe_event("GlobalCalcRangeSelector", self._fn_on_menu_insert_lp_fn)
+            except:
+                log.error("_on_menu_insert_lp_fn() unsubscribing from GlobalCalcRangeSelector", exc_info=True)
+            if event.event_data.state != "done":
+                log.debug("on_sel _on_menu_insert_lp_fn aborted")
+                return
+            log.debug(f"_on_menu_insert_lp_fn {event.event_data.rng_obj}")
+            try:
+                view = event.event_data.view
+                # doc = view.calc_doc
+                # doc.msgbox(f"Selection made {event.event_data.rng_obj}")
+                self._dialog.toFront()
+                self._dialog.setFocus()
 
-            sel = self._code.view.getSelection()
-            # self._write(, (sel.Min, sel.Max))
-            doc = CalcDoc.from_current_doc()
-            ro = cast(RangeObj, event.event_data.rng_obj)
-            sheet = doc.sheets[ro.sheet_idx]
-            calc_cell_rng = sheet.get_range(range_obj=ro)
-            af = AutoFn(calc_cell_rng)
-            fn_str = af.generate_fn()
-            self._write(fn_str, (sel.Min, sel.Max))
-        except Exception:
-            log.error("_on_menu_insert_lp_fn", exc_info=True)
+                sel = self._code.view.getSelection()
+                # self._write(, (sel.Min, sel.Max))
+                doc = CalcDoc.from_current_doc()
+                ro = cast(RangeObj, event.event_data.rng_obj)
+                sheet = doc.sheets[ro.sheet_idx]
+                calc_cell_rng = sheet.get_range(range_obj=ro)
+                af = AutoFn(calc_cell_rng)
+                fn_str = af.generate_fn()
+                self._write(fn_str, (sel.Min, sel.Max))
+            except Exception:
+                log.error("_on_menu_insert_lp_fn", exc_info=True)
 
     # endregion menu
 
@@ -621,14 +634,15 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
         return False
 
     def onkey_526(self, modifiers: str) -> bool:  # o
-        if modifiers == KeyModifier.SHIFT | KeyModifier.MOD1:
-            # self._write("ö")
-            self._log.debug("Shift+Ctrl+o pressed")
-            self._write_range_sel()
-            return True
-        else:
-            self._log.debug(f"o pressed with modifiers {modifiers}")
-        return False
+        with self._log.indent(True):
+            if modifiers == KeyModifier.SHIFT | KeyModifier.MOD1:
+                # self._write("ö")
+                self._log.debug("Shift+Ctrl+o pressed")
+                self._write_range_sel()
+                return True
+            else:
+                self._log.debug(f"o pressed with modifiers {modifiers}")
+            return False
 
     # endregion Key Handlers
 
@@ -640,49 +654,50 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
     # region Read/Write
 
     def _write_range_sel(self) -> None:
-
-        doc = cast("CalcDoc", self._doc)
-        self._log.debug("_write_range_sel_popup() Write Range Selection Popup")
-        try:
-            glbs = GblEvents()
-            glbs.subscribe_event("GlobalCalcRangeSelector", self._fn_on_menu_range_select_result)
-            self._log.debug("_write_range_sel_popup() Hide Dialog")
-            doc.activate()
-            _ = TopListenerRng(doc)
-        except:
-            self._log.error("_write_range_sel_popup() Error getting range selection", exc_info=True)
-        finally:
-            # For some reason this need to be here.
-            # If not self._dialog.setFocus() the the top window listener will not fire right away.
-            self._dialog.setFocus()
+        with self._log.indent(True):
+            doc = cast("CalcDoc", self._doc)
+            self._log.debug("_write_range_sel_popup() Write Range Selection Popup")
+            try:
+                glbs = GblEvents()
+                glbs.subscribe_event("GlobalCalcRangeSelector", self._fn_on_menu_range_select_result)
+                self._log.debug("_write_range_sel_popup() Hide Dialog")
+                doc.activate()
+                _ = TopListenerRng(doc)
+            except:
+                self._log.error("_write_range_sel_popup() Error getting range selection", exc_info=True)
+            finally:
+                # For some reason this need to be here.
+                # If not self._dialog.setFocus() the the top window listener will not fire right away.
+                self._dialog.setFocus()
 
     def _write_auto_fn_sel(self) -> None:
-
-        doc = cast("CalcDoc", self._doc)
-        self._log.debug("_write_auto_fn_sel() Write Range Selection Popup")
-        try:
-            glbs = GblEvents()
-            glbs.subscribe_event("GlobalCalcRangeSelector", self._fn_on_menu_insert_lp_fn)
-            self._log.debug("_write_auto_fn_sel() Hide Dialog")
-            doc.activate()
-            _ = TopListenerRng(doc)
-        except:
-            self._log.error("_write_auto_fn_sel() Error getting range selection", exc_info=True)
-        finally:
-            # For some reason this need to be here.
-            # If not self._dialog.setFocus() the the top window listener will not fire right away.
-            self._dialog.setFocus()
+        with self._log.indent(True):
+            doc = cast("CalcDoc", self._doc)
+            self._log.debug("_write_auto_fn_sel() Write Range Selection Popup")
+            try:
+                glbs = GblEvents()
+                glbs.subscribe_event("GlobalCalcRangeSelector", self._fn_on_menu_insert_lp_fn)
+                self._log.debug("_write_auto_fn_sel() Hide Dialog")
+                doc.activate()
+                _ = TopListenerRng(doc)
+            except:
+                self._log.error("_write_auto_fn_sel() Error getting range selection", exc_info=True)
+            finally:
+                # For some reason this need to be here.
+                # If not self._dialog.setFocus() the the top window listener will not fire right away.
+                self._dialog.setFocus()
 
     def _write_line(self, text: str) -> None:
         self._code.write_line(text)
 
     def _write(self, data: str, sel: Tuple[int, int] | None = None):
         """Append data to edit control text"""
-        if not sel:
-            sel = (self.end, self.end)
-        # sel = (0, 0)
-        self._log.debug("Write", f'Data:"{data}"', "Selection", sel)
-        self._code.view.insertText(Selection(*sel), data)
+        with self._log.indent(True):
+            if not sel:
+                sel = (self.end, self.end)
+            # sel = (0, 0)
+            self._log.debug("Write", f'Data:"{data}"', "Selection", sel)
+            self._code.view.insertText(Selection(*sel), data)
 
     # endregion Read/Write
     # endregion Code Edit
@@ -692,50 +707,51 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
         self._dialog.setFocus()
 
     def _update_config(self) -> None:
-        self._log.debug("Updating Window Config")
-        if self._config_updated == True:
-            return
-        try:
-            # win = self._frame.getContainerWindow() return 0,0,0,0
+        with self._log.indent(True):
+            self._log.debug("Updating Window Config")
+            if self._config_updated == True:
+                return
+            try:
+                # win = self._frame.getContainerWindow() return 0,0,0,0
 
-            # next two lines are the same as self._dialog.getPosSize()
-            # win = self._frame.getComponentWindow()
-            # sz = win.getPosSize()
+                # next two lines are the same as self._dialog.getPosSize()
+                # win = self._frame.getComponentWindow()
+                # sz = win.getPosSize()
 
-            sz_pos = self._dialog.getPosSize()
-            sz = self._dialog.getOutputSize()
-            # if self._log.is_debug:
-            #     self._log.debug(f"Window Position: {sz_pos.X}, {sz_pos.Y}, Window Size: {sz_pos.Width}, {sz_pos.Height}")
-            #     self._log.debug(f"Output Size: {sz.Width}, {sz.Height}")
+                sz_pos = self._dialog.getPosSize()
+                sz = self._dialog.getOutputSize()
+                # if self._log.is_debug:
+                #     self._log.debug(f"Window Position: {sz_pos.X}, {sz_pos.Y}, Window Size: {sz_pos.Width}, {sz_pos.Height}")
+                #     self._log.debug(f"Output Size: {sz.Width}, {sz.Height}")
 
-            self._cfg.width = sz.Width
-            self._cfg.height = sz.Height
-            self._cfg.x = sz_pos.X
-            self._cfg.y = sz_pos.Y
-            # try:
-            # child = cast("AccessibleMenuBar", self._dialog.getAccessibleContext().getAccessibleChild(0))
-            # if child.getImplementationName() == "com.sun.star.comp.toolkit.AccessibleMenuBar": # type: ignore
-            # child.getBounds() actually gets - DEBUG - MenuBar Position: 0, 0, MenuBar Size: 600, 0
-            # so height is reported as 0
+                self._cfg.width = sz.Width
+                self._cfg.height = sz.Height
+                self._cfg.x = sz_pos.X
+                self._cfg.y = sz_pos.Y
+                # try:
+                # child = cast("AccessibleMenuBar", self._dialog.getAccessibleContext().getAccessibleChild(0))
+                # if child.getImplementationName() == "com.sun.star.comp.toolkit.AccessibleMenuBar": # type: ignore
+                # child.getBounds() actually gets - DEBUG - MenuBar Position: 0, 0, MenuBar Size: 600, 0
+                # so height is reported as 0
 
-            # mb_sz = child.getBounds()
-            # self._log.debug(
-            #     f"MenuBar Position: {mb_sz.X}, {mb_sz.Y}, MenuBar Size: {mb_sz.Width}, {mb_sz.Height}"
-            # )
-            # self._cfg.height += mb_sz.Height
-            # else:
-            #     self._cfg.height += 24
-            # except Exception:
-            #     self._log.exception("Error getting menubar size")
-            #     self._cfg.height += 24
-            self._cfg.menu_bar_height = 30  # add for the menu bar. Does not seem possible to get the real height.
+                # mb_sz = child.getBounds()
+                # self._log.debug(
+                #     f"MenuBar Position: {mb_sz.X}, {mb_sz.Y}, MenuBar Size: {mb_sz.Width}, {mb_sz.Height}"
+                # )
+                # self._cfg.height += mb_sz.Height
+                # else:
+                #     self._cfg.height += 24
+                # except Exception:
+                #     self._log.exception("Error getting menubar size")
+                #     self._cfg.height += 24
+                self._cfg.menu_bar_height = 30  # add for the menu bar. Does not seem possible to get the real height.
 
-            # get the menubar height and add it.
-            self._cfg.save()
-            self._config_updated = True
-            self._log.debug("Config Updated")
-        except Exception:
-            self._log.exception("Error updating config")
+                # get the menubar height and add it.
+                self._cfg.save()
+                self._config_updated = True
+                self._log.debug("Config Updated")
+            except Exception:
+                self._log.exception("Error updating config")
 
     # endregion Window Methods
 
@@ -765,42 +781,45 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
     def _on_dialog_hidden(self):
         # Placeholder for any cleanup or actions needed after dialog closure
         self._dialog.setVisible(False)
-        self._log.debug("Dialog Hidden")
+        with self._log.indent(True):
+            self._log.debug("Dialog Hidden")
 
     def dispose(self):
-        self._log.debug("Dispose Called")
-        try:
-            self._dialog.dispose()
-            if self._frame is not None:
-                self._frame.dispose()
-        except Exception as e:
-            self._log.error("Error in disposing", exc_info=True)
+        with self._log.indent(True):
+            self._log.debug("Dispose Called")
+            try:
+                self._dialog.dispose()
+                if self._frame is not None:
+                    self._frame.dispose()
+            except Exception as e:
+                self._log.error("Error in disposing", exc_info=True)
 
     # endregion Dialog Methods
 
     # region Range Selection
 
     def _on_range_select_result(self, src: Any, event: EventArgs) -> None:
-        log = self._log
-        try:
-            glbs = GblEvents()
-            glbs.unsubscribe_event("GlobalCalcRangeSelector", self._fn_on_menu_range_select_result)
-        except:
-            log.error("_on_menu_range_select_result() unsubscribing from GlobalCalcRangeSelector", exc_info=True)
-        if event.event_data.state != "done":
-            log.debug("on_sel _on_menu_range_select_result aborted")
-            return
-        log.debug(f"_on_menu_range_select_result {event.event_data.rng_obj}")
-        try:
-            view = event.event_data.view
-            self._dialog.toFront()
-            self._dialog.setFocus()
+        with self._log.indent(True):
+            log = self._log
+            try:
+                glbs = GblEvents()
+                glbs.unsubscribe_event("GlobalCalcRangeSelector", self._fn_on_menu_range_select_result)
+            except:
+                log.error("_on_menu_range_select_result() unsubscribing from GlobalCalcRangeSelector", exc_info=True)
+            if event.event_data.state != "done":
+                log.debug("on_sel _on_menu_range_select_result aborted")
+                return
+            log.debug(f"_on_menu_range_select_result {event.event_data.rng_obj}")
+            try:
+                view = event.event_data.view
+                self._dialog.toFront()
+                self._dialog.setFocus()
 
-            sel = self._code.view.getSelection()
-            # self._write(, (sel.Min, sel.Max))
-            self._write(str(event.event_data.rng_obj), (sel.Min, sel.Max))
-        except Exception:
-            log.error("_on_menu_range_select_result", exc_info=True)
+                sel = self._code.view.getSelection()
+                # self._write(, (sel.Min, sel.Max))
+                self._write(str(event.event_data.rng_obj), (sel.Min, sel.Max))
+            except Exception:
+                log.error("_on_menu_range_select_result", exc_info=True)
 
     # endregion Range Selection
 

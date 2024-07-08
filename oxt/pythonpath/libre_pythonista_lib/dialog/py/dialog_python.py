@@ -192,24 +192,28 @@ class DialogPython(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
     # region XTopWindowListener
     def windowOpened(self, event: EventObject) -> None:
         """is invoked when a window is activated."""
-        self._log.debug("Window Opened")
+        with self._log.indent(True):
+            self._log.debug("Window Opened")
 
     def windowActivated(self, event: EventObject) -> None:
         """is invoked when a window is activated."""
-
-        self._log.debug("Window Activated")
+        with self._log.indent(True):
+            self._log.debug("Window Activated")
 
     def windowDeactivated(self, event: EventObject) -> None:
         """is invoked when a window is deactivated."""
-        self._log.debug("Window De-activated")
+        with self._log.indent(True):
+            self._log.debug("Window De-activated")
 
     def windowMinimized(self, event: EventObject) -> None:
         """Is invoked when a window is iconified."""
-        self._log.debug("Window Minimized")
+        with self._log.indent(True):
+            self._log.debug("Window Minimized")
 
     def windowNormalized(self, event: EventObject) -> None:
         """is invoked when a window is deiconified."""
-        self._log.debug("Window Normalized")
+        with self._log.indent(True):
+            self._log.debug("Window Normalized")
 
     def windowClosing(self, event: EventObject) -> None:
         """
@@ -217,15 +221,18 @@ class DialogPython(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
 
         The close operation can be overridden at this point.
         """
-        self._log.debug("Window Closing")
-        self._is_shown = False
+        with self._log.indent(True):
+            self._log.debug("Window Closing")
+            self._is_shown = False
 
     def windowClosed(self, event: EventObject) -> None:
         """is invoked when a window has been closed."""
-        self._log.debug("Window Closed")
+        with self._log.indent(True):
+            self._log.debug("Window Closed")
 
     def disposing(self, event: EventObject) -> None:
-        self._log.debug("Disposing")
+        with self._log.indent(True):
+            self._log.debug("Disposing")
 
     # endregion XTopWindowListener
 
@@ -348,11 +355,12 @@ class DialogPython(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
 
     def _write(self, data: str, sel: Tuple[int, int] | None = None):
         """Append data to edit control text"""
-        if not sel:
-            sel = (self.end, self.end)
-        # sel = (0, 0)
-        self._log.debug("Write", f'Data:"{data}"', "Selection", sel)
-        self._code.view.insertText(Selection(*sel), data)
+        with self._log.indent(True):
+            if not sel:
+                sel = (self.end, self.end)
+            # sel = (0, 0)
+            self._log.debug("Write", f'Data:"{data}"', "Selection", sel)
+            self._code.view.insertText(Selection(*sel), data)
 
     # endregion Read/Write
     # endregion Code Edit
@@ -368,33 +376,34 @@ class DialogPython(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
         return False
 
     def onkey_526(self, modifiers: str) -> bool:  # o
-        if modifiers == KeyModifier.SHIFT | KeyModifier.MOD1:
-            # self._write("ö")
-            self._log.debug("Shift+Ctrl+o pressed")
-            self._write_range_sel()
-            return True
-        else:
-            self._log.debug(f"o pressed with modifiers {modifiers}")
-        return False
+        with self._log.indent(True):
+            if modifiers == KeyModifier.SHIFT | KeyModifier.MOD1:
+                # self._write("ö")
+                self._log.debug("Shift+Ctrl+o pressed")
+                self._write_range_sel()
+                return True
+            else:
+                self._log.debug(f"o pressed with modifiers {modifiers}")
+            return False
 
     # endregion Key Handlers
 
     def _write_range_sel(self) -> None:
-
-        doc = cast("CalcDoc", self._doc)
-        self._log.debug("_write_range_sel_popup() Write Range Selection Popup")
-        try:
-            glbs = GblEvents()
-            glbs.subscribe_event("GlobalCalcRangeSelector", self._fn_on_menu_range_select_result)
-            self._log.debug("_write_range_sel_popup() Hide Dialog")
-            doc.activate()
-            _ = TopListenerRng(doc)
-        except:
-            self._log.error("_write_range_sel_popup() Error getting range selection", exc_info=True)
-        finally:
-            # For some reason this need to be here.
-            # If not self._dialog.setFocus() the the top window listener will not fire right away.
-            self._dialog.setFocus()
+        with self._log.indent(True):
+            doc = cast("CalcDoc", self._doc)
+            self._log.debug("_write_range_sel_popup() Write Range Selection Popup")
+            try:
+                glbs = GblEvents()
+                glbs.subscribe_event("GlobalCalcRangeSelector", self._fn_on_menu_range_select_result)
+                self._log.debug("_write_range_sel_popup() Hide Dialog")
+                doc.activate()
+                _ = TopListenerRng(doc)
+            except:
+                self._log.error("_write_range_sel_popup() Error getting range selection", exc_info=True)
+            finally:
+                # For some reason this need to be here.
+                # If not self._dialog.setFocus() the the top window listener will not fire right away.
+                self._dialog.setFocus()
 
     # region Handle Results
     def _handle_results(self, result: int) -> None:
@@ -436,12 +445,14 @@ class DialogPython(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
     def on_code_focus_gained(self, source: Any, event: EventArgs, control_src: CtlTextEdit) -> None:
         self.code_focused = True
         self.tk.addKeyHandler(self.keyhandler)
-        self._log.debug("Focus Gained")
+        with self._log.indent(True):
+            self._log.debug("Focus Gained")
 
     def on_code_focus_lost(self, source: Any, event: EventArgs, control_src: CtlTextEdit) -> None:
         self.code_focused = False
         self.tk.removeKeyHandler(self.keyhandler)
-        self._log.debug("Focus Lost")
+        with self._log.indent(True):
+            self._log.debug("Focus Lost")
 
     # endregion focus handlers
 
@@ -471,12 +482,13 @@ class DialogPython(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
     # region Show Dialog
     def end_dialog(self, result: int = 0) -> None:
         """Terminate dialog"""
-        self._log.debug("End Dialog Called.")
-        try:
-            self._update_config()
-        except Exception as e:
-            self._log.error(f"Error saving configuration: {e}", exc_info=True)
-        self._dialog.endDialog(result)
+        with self._log.indent(True):
+            self._log.debug("End Dialog Called.")
+            try:
+                self._update_config()
+            except Exception as e:
+                self._log.error(f"Error saving configuration: {e}", exc_info=True)
+            self._dialog.endDialog(result)
 
     def show(self) -> int:
 
@@ -506,38 +518,40 @@ class DialogPython(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
         return self._main_menu
 
     def _display_popup(self, control_src: CtlFixedText) -> None:
-        try:
-            pm = self._get_main_menu()
-            view = control_src.view
-            pm.execute(self._dialog, view.getPosSize(), 0)  # type: ignore
-        except Exception as e:
-            self._log.error(f"Error displaying popup: {e}", exc_info=True)
+        with self._log.indent(True):
+            try:
+                pm = self._get_main_menu()
+                view = control_src.view
+                pm.execute(self._dialog, view.getPosSize(), 0)  # type: ignore
+            except Exception as e:
+                self._log.error(f"Error displaying popup: {e}", exc_info=True)
 
     def _on_menu_select(self, src: Any, event: EventArgs, menu: PopupMenu) -> None:
-        self._log.debug("Menu Selected")
-        me = cast("MenuEvent", event.event_data)
-        command = menu.get_command(me.MenuId)
-        # self._write_line(f"Menu Selected: {command}, Menu ID: {me.MenuId}")
+        with self._log.indent(True):
+            self._log.debug("Menu Selected")
+            me = cast("MenuEvent", event.event_data)
+            command = menu.get_command(me.MenuId)
+            # self._write_line(f"Menu Selected: {command}, Menu ID: {me.MenuId}")
 
-        if command == UNO_DISPATCH_PY_CODE_VALIDATE:
-            try:
-                self._doc.python_script.test_compile_python(self._code.text)
-                title = self._rr.resolve_string("mbtitle001")
-                msg = self._rr.resolve_string("mbmsg001")
-                box_type = MessageBoxType.INFOBOX
-            except Exception as e:
-                title = self._rr.resolve_string("log09")  # error
-                msg = str(e)
-                box_type = MessageBoxType.ERRORBOX
+            if command == UNO_DISPATCH_PY_CODE_VALIDATE:
+                try:
+                    self._doc.python_script.test_compile_python(self._code.text)
+                    title = self._rr.resolve_string("mbtitle001")
+                    msg = self._rr.resolve_string("mbmsg001")
+                    box_type = MessageBoxType.INFOBOX
+                except Exception as e:
+                    title = self._rr.resolve_string("log09")  # error
+                    msg = str(e)
+                    box_type = MessageBoxType.ERRORBOX
 
-            self._doc.msgbox(msg, title, box_type)
-            return
-        if self._doc.DOC_TYPE == DocType.CALC:
-            if command == UNO_DISPATCH_SEL_RNG:
-                self._dialog.setFocus()
-                self._write_range_sel()
-                # self._write_range_sel_popup(menu)
+                self._doc.msgbox(msg, title, box_type)
                 return
+            if self._doc.DOC_TYPE == DocType.CALC:
+                if command == UNO_DISPATCH_SEL_RNG:
+                    self._dialog.setFocus()
+                    self._write_range_sel()
+                    # self._write_range_sel_popup(menu)
+                    return
         return
 
     def _on_menu_lbl_mouse_entered(
@@ -551,28 +565,29 @@ class DialogPython(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
         self._display_popup(control_src)
 
     def _on_menu_range_select_result(self, src: Any, event: EventArgs) -> None:
-        log = self._log
-        try:
-            glbs = GblEvents()
-            glbs.unsubscribe_event("GlobalCalcRangeSelector", self._fn_on_menu_range_select_result)
-        except:
-            log.error("_on_menu_range_select_result() unsubscribing from GlobalCalcRangeSelector", exc_info=True)
-        if event.event_data.state != "done":
-            log.debug("on_sel _on_menu_range_select_result aborted")
-            return
-        log.debug(f"_on_menu_range_select_result {event.event_data.rng_obj}")
-        try:
-            view = event.event_data.view
-            # doc = view.calc_doc
-            # doc.msgbox(f"Selection made {event.event_data.rng_obj}")
-            self._dialog.toFront()
-            self._dialog.setFocus()
+        with self._log.indent(True):
+            log = self._log
+            try:
+                glbs = GblEvents()
+                glbs.unsubscribe_event("GlobalCalcRangeSelector", self._fn_on_menu_range_select_result)
+            except:
+                log.error("_on_menu_range_select_result() unsubscribing from GlobalCalcRangeSelector", exc_info=True)
+            if event.event_data.state != "done":
+                log.debug("on_sel _on_menu_range_select_result aborted")
+                return
+            log.debug(f"_on_menu_range_select_result {event.event_data.rng_obj}")
+            try:
+                view = event.event_data.view
+                # doc = view.calc_doc
+                # doc.msgbox(f"Selection made {event.event_data.rng_obj}")
+                self._dialog.toFront()
+                self._dialog.setFocus()
 
-            sel = self._code.view.getSelection()
-            # self._write(, (sel.Min, sel.Max))
-            self._write(str(event.event_data.rng_obj), (sel.Min, sel.Max))
-        except Exception:
-            log.error("_on_menu_range_select_result", exc_info=True)
+                sel = self._code.view.getSelection()
+                # self._write(, (sel.Min, sel.Max))
+                self._write(str(event.event_data.rng_obj), (sel.Min, sel.Max))
+            except Exception:
+                log.error("_on_menu_range_select_result", exc_info=True)
 
     # endregion Menu
 

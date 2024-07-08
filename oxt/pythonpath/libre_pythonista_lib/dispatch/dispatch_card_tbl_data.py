@@ -41,11 +41,12 @@ class DispatchCardTblData(XDispatch, EventsPartial, unohelper.Base):
 
         Note: Notifications can't be guaranteed! This will be a part of interface XNotifyingDispatch.
         """
-        self._log.debug(f"addStatusListener(): url={url.Main}")
-        if url.Complete in self._status_listeners:
-            self._log.debug(f"addStatusListener(): url={url.Main} already exists.")
-        else:
-            self._status_listeners[url.Complete] = control
+        with self._log.indent(True):
+            self._log.debug(f"addStatusListener(): url={url.Main}")
+            if url.Complete in self._status_listeners:
+                self._log.debug(f"addStatusListener(): url={url.Main} already exists.")
+            else:
+                self._status_listeners[url.Complete] = control
 
     def dispatch(self, url: URL, args: Tuple[PropertyValue, ...]) -> None:
         """
@@ -58,40 +59,42 @@ class DispatchCardTblData(XDispatch, EventsPartial, unohelper.Base):
         By default, and absent any arguments, ``SynchronMode`` is considered ``False`` and the execution is performed asynchronously (i.e. dispatch() returns immediately, and the action is performed in the background).
         But when set to ``True``, dispatch() processes the request synchronously.
         """
-        try:
-            self._log.debug(f"dispatch(): url={url.Main}")
-            doc = CalcDoc.from_current_doc()
-            sheet = doc.sheets[self._sheet]
-            cell = sheet[self._cell]
-            cargs = CancelEventArgs(self)
-            cargs.event_data = DotDict(
-                url=url,
-                args=args,
-                doc=doc,
-                sheet=sheet,
-                cell=cell,
-            )
-            self.trigger_event(f"{url.Main}_before_dispatch", cargs)
-            if cargs.cancel:
-                self._log.debug(f"Event {url.Main}_before_dispatch was cancelled.")
+        with self._log.indent(True):
+            try:
+                self._log.debug(f"dispatch(): url={url.Main}")
+                doc = CalcDoc.from_current_doc()
+                sheet = doc.sheets[self._sheet]
+                cell = sheet[self._cell]
+                cargs = CancelEventArgs(self)
+                cargs.event_data = DotDict(
+                    url=url,
+                    args=args,
+                    doc=doc,
+                    sheet=sheet,
+                    cell=cell,
+                )
+                self.trigger_event(f"{url.Main}_before_dispatch", cargs)
+                if cargs.cancel:
+                    self._log.debug(f"Event {url.Main}_before_dispatch was cancelled.")
+                    return
+
+                card = TblDataCard(cell)
+                card.show()
+
+                eargs = EventArgs.from_args(cargs)
+                eargs.event_data.success = True
+                self.trigger_event(f"{url.Main}_after_dispatch", eargs)
+            except Exception as e:
+                # log the error and do not re-raise it.
+                # re-raising the error may crash the entire LibreOffice app.
+                self._log.error(f"Error: {e}", exc_info=True)
                 return
-
-            card = TblDataCard(cell)
-            card.show()
-
-            eargs = EventArgs.from_args(cargs)
-            eargs.event_data.success = True
-            self.trigger_event(f"{url.Main}_after_dispatch", eargs)
-        except Exception as e:
-            # log the error and do not re-raise it.
-            # re-raising the error may crash the entire LibreOffice app.
-            self._log.error(f"Error: {e}", exc_info=True)
-            return
 
     def removeStatusListener(self, control: XStatusListener, url: URL) -> None:
         """
         Un-registers a listener from a control.
         """
-        self._log.debug(f"removeStatusListener(): url={url.Main}")
-        if url.Complete in self._status_listeners:
-            del self._status_listeners[url.Complete]
+        with self._log.indent(True):
+            self._log.debug(f"removeStatusListener(): url={url.Main}")
+            if url.Complete in self._status_listeners:
+                del self._status_listeners[url.Complete]

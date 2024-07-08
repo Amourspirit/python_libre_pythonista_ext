@@ -48,30 +48,33 @@ class TopListenerRng(unohelper.Base, XTopWindowListener):
 
     def windowActivated(self, event: EventObject) -> None:
         """is invoked when a window is activated."""
-
-        self._log.debug("Window Activated")
-        self._top.removeTopWindowListener(self)  # type: ignore
-        self._log.debug("Top Listener Removed")
-        try:
-            # self._doc.dispatch_cmd(".uno:About")
-            self._doc.dispatch_cmd(UNO_DISPATCH_SEL_RNG)
-            # Lo.dispatch_cmd(UNO_DISPATCH_SEL_RNG, in_thread=True)
-            # self._doc.invoke_range_selection()
-            self._log.debug(f"invoke_range_selection()")
-        except Exception:
-            self._log.error("Error getting range from popup.", exc_info=True)
+        with self._log.indent(True):
+            self._log.debug("Window Activated")
+            self._top.removeTopWindowListener(self)  # type: ignore
+            self._log.debug("Top Listener Removed")
+            try:
+                # self._doc.dispatch_cmd(".uno:About")
+                self._doc.dispatch_cmd(UNO_DISPATCH_SEL_RNG)
+                # Lo.dispatch_cmd(UNO_DISPATCH_SEL_RNG, in_thread=True)
+                # self._doc.invoke_range_selection()
+                self._log.debug(f"invoke_range_selection()")
+            except Exception:
+                self._log.error("Error getting range from popup.", exc_info=True)
 
     def windowDeactivated(self, event: EventObject) -> None:
         """is invoked when a window is deactivated."""
-        self._log.debug("Window De-activated")
+        with self._log.indent(True):
+            self._log.debug("Window De-activated")
 
     def windowMinimized(self, event: EventObject) -> None:
         """Is invoked when a window is iconified."""
-        self._log.debug("Window Minimized")
+        with self._log.indent(True):
+            self._log.debug("Window Minimized")
 
     def windowNormalized(self, event: EventObject) -> None:
         """is invoked when a window is deiconified."""
-        self._log.debug("Window Normalized")
+        with self._log.indent(True):
+            self._log.debug("Window Normalized")
 
     def windowClosing(self, event: EventObject) -> None:
         """
@@ -79,11 +82,13 @@ class TopListenerRng(unohelper.Base, XTopWindowListener):
 
         The close operation can be overridden at this point.
         """
-        self._log.debug("Window Closing")
+        with self._log.indent(True):
+            self._log.debug("Window Closing")
 
     def windowClosed(self, event: EventObject) -> None:
         """is invoked when a window has been closed."""
-        self._log.debug("Window Closed")
+        with self._log.indent(True):
+            self._log.debug("Window Closed")
 
     def disposing(self, event: EventObject) -> None:
         """
@@ -99,7 +104,8 @@ class TopListenerRng(unohelper.Base, XTopWindowListener):
 
         # don't expect Disposing to print if script ends due to closing.
         # script will stop before dispose is called
-        self._log.debug("Disposing")
+        with self._log.indent(True):
+            self._log.debug("Disposing")
 
 
 # endregion DocWindow Class
