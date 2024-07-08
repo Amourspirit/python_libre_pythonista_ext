@@ -41,6 +41,7 @@ class BasicConfig(metaclass=ConfigMeta):
         self._uninstall_on_update = bool(kwargs["uninstall_on_update"])
         self._install_on_no_uninstall_permission = bool(kwargs["install_on_no_uninstall_permission"])
         self._unload_after_install = bool(kwargs["unload_after_install"])
+        self._log_indent = int(kwargs.get("log_indent", 0))
         self._run_imports = set(kwargs["run_imports"])
 
         # region tool.libre_pythonista.config
@@ -180,6 +181,15 @@ class BasicConfig(metaclass=ConfigMeta):
         The value for this property can be set in pyproject.toml (tool.oxt.token.lo_implementation_name)
         """
         return self._lo_implementation_name
+
+    @property
+    def log_indent(self) -> int:
+        """
+        Gets the amount of logging indent. ``0`` is no indent.
+
+        The value for this property can be set in pyproject.toml (tool.oxt.config.log_indent)
+        """
+        return self._log_indent
 
     @property
     def py_pkg_dir(self) -> str:

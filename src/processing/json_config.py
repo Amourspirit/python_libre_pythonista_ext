@@ -83,6 +83,11 @@ class JsonConfig(metaclass=Singleton):
         except Exception:
             self._run_imports = []
 
+        try:
+            self._log_indent = cast(int, cfg["tool"]["oxt"]["config"]["log_indent"])
+        except Exception:
+            self._log_indent = False
+
         # region tool.libre_pythonista.config
         try:
             self._cell_custom_prop_prefix = cast(
@@ -160,6 +165,7 @@ class JsonConfig(metaclass=Singleton):
         json_config["unload_after_install"] = self._unload_after_install
         json_config["run_imports"] = self._run_imports
         # json_config["log_pip_installs"] = self._log_pip_installs
+        json_config["log_indent"] = self._log_indent
         # update the requirements
         json_config["requirements"] = self._requirements
         json_config["has_locals"] = self._config.has_locals
@@ -196,6 +202,7 @@ class JsonConfig(metaclass=Singleton):
         assert isinstance(self._sym_link_cpython, bool), "sym_link_cpython must be a bool"
         assert isinstance(self._uninstall_on_update, bool), "uninstall_on_update must be a bool"
         assert isinstance(self._unload_after_install, bool), "unload_after_install must be a bool"
+        assert isinstance(self._log_indent, int), "log_indent must be a int"
         assert isinstance(
             self._install_on_no_uninstall_permission, bool
         ), "_install_on_no_uninstall_permission must be a bool"

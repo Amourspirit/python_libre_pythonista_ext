@@ -2,9 +2,11 @@ import logging
 import sys
 from logging import Logger
 from logging.handlers import TimedRotatingFileHandler
+from contextlib import contextmanager
 
 # from .. import config
 from .logger_config import LoggerConfig
+from ..basic_config import BasicConfig
 
 
 # https://stackoverflow.com/questions/13521981/implementing-an-optional-logger-in-code
@@ -35,7 +37,15 @@ class OxtLogger(Logger):
             None: None
         """
         self._config = LoggerConfig()  # config.Config()
-        self.formatter = logging.Formatter(self._config.log_format)
+        basic_config = BasicConfig()
+        self._indent = 0
+        self._indent_amt = basic_config.log_indent
+        if self._indent_amt > 0:
+            self._fn_on_callback = self._on_callback
+            # "%(asctime)s %(levelname)s: %(indent_str)s%(message)s"
+            self.formatter = CallbackFormatter(fmt=self._config.log_format, callback=self._fn_on_callback)
+        else:
+            self.formatter = logging.Formatter(self._config.log_format)
         add_console_logger = kwargs.get("add_console_logger", False)
 
         if not log_file:
@@ -113,6 +123,38 @@ class OxtLogger(Logger):
         self.debug("\t".join(data))
         return
 
+    def _on_callback(self, record):
+        if self.current_indent > 0:
+            s = " " * self.current_indent
+        else:
+            s = ""
+        record.indent_str = s
+
+    # region Indent
+    def _core_indent(self, amount: int):
+        """Core functionality for indentation."""
+        self._indent = max(0, self._indent + amount)
+
+    @contextmanager
+    def indent(self, use_as_context_manager: bool = False):
+        if use_as_context_manager:
+            # Context manager behavior
+            try:
+                self._core_indent(self._indent_amt)
+                yield self._indent
+            finally:
+                self._core_indent(-self._indent_amt)
+        else:
+            # Normal method behavior
+            self._core_indent(self._indent_amt)
+            return self._indent  # Optionally return something
+
+    def outdent(self) -> int:
+        self._indent = max(0, self._indent - self._indent_amt)
+        return self._indent
+
+    # endregion Indent
+
     # region Properties
     @property
     def log_file(self):
@@ -139,4 +181,30 @@ class OxtLogger(Logger):
         """Check if is error"""
         return self._config.log_level <= logging.ERROR
 
+    @property
+    def current_indent(self) -> int:
+        """Indent level."""
+        return self._indent
+
+    @current_indent.setter
+    def current_indent(self, value: int):
+        self._indent = value
+
     # endregion Properties
+
+
+class CallbackFormatter(logging.Formatter):
+    # https://stackoverflow.com/questions/17558552/how-do-i-add-custom-field-to-python-log-format-string
+    def __init__(self, fmt=None, datefmt=None, style="%", validate=True, *, defaults=None, callback=None):
+        super().__init__(fmt=fmt, datefmt=datefmt, style=style, validate=validate, defaults=defaults)  # type: ignore
+        self.callback = callback
+
+    def format(self, record):
+        # Execute the callback with the log record if a callback is provided
+        if self.callback:
+            self.callback(record)
+        # Proceed with the normal formatting process
+        return super().format(record)
+
+    # def formatMessage(self, record):
+    #     return super().formatMessage(record)
