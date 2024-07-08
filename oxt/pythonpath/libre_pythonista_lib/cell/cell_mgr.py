@@ -35,6 +35,8 @@ from ..const import (
     UNO_DISPATCH_PY_OBJ_STATE,
     UNO_DISPATCH_CELL_SELECT,
 )
+from ..const.event_const import SHEET_MODIFIED
+
 from ..log.log_inst import LogInst
 
 if TYPE_CHECKING:
@@ -76,6 +78,7 @@ class CellMgr(SingletonBase):
         self._se.trigger_event("CellMgrCreated", EventArgs(self))
         self._subscribe_to_shared_events()
         self._cell_cache.subscribe_cell_addr_prop_update(self._fn_on_cell_cache_update_sheet_cell_addr_prop)
+        self._se.subscribe_event(SHEET_MODIFIED, self._fn_on_sheet_modified)
         # self.remove_all_listeners()
         # self.add_all_listeners()
 
@@ -110,6 +113,14 @@ class CellMgr(SingletonBase):
             self._log.debug(f"_on_cell_cache_update_sheet_cell_addr_prop() Done.")
 
     # endregion Events Cell Cache
+
+    # region Events Sheet
+    def _on_sheet_modified(self, src: Any, event: EventArgs) -> None:
+        self._log.debug(f"_on_sheet_modified() Entering.")
+        # self.reset_py_inst()
+        self._log.debug(f"_on_sheet_modified() Done.")
+
+    # endregion Events Sheet
 
     # region Control Update Methods
     def _update_lp_cell_control(self, cell: CalcCell) -> None:
@@ -218,6 +229,9 @@ class CellMgr(SingletonBase):
         # region Cell Cache Events
         self._fn_on_cell_cache_update_sheet_cell_addr_prop = self._on_cell_cache_update_sheet_cell_addr_prop
         # endregion Cell Cache Events
+        # region Sheet Events
+        self._fn_on_sheet_modified = self._on_sheet_modified
+        # endregion Sheet Events
 
     def on_cell_deleted(self, src: Any, event: EventArgs) -> None:
         """
@@ -671,11 +685,11 @@ class CellMgr(SingletonBase):
         """
         Reset the PyInstance.
         """
-        self._log.debug("Resetting PyInstance")
+        self._log.debug("reset_py_inst() Resetting PyInstance")
         self._py_inst = None
         PyInstance.reset_instance(self._doc)
         self.py_inst.update_all()
-        self._log.debug("Reset PyInstance")
+        self._log.debug("reset_py_inst() Done")
 
     def reset_cell_cache(self) -> None:
         """

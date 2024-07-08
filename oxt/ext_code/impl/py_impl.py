@@ -188,6 +188,7 @@ class PyImpl(unohelper.Base, XPy):
                 # handled by the CellMgr which uses CtlMgr to assign the control to the cell.
                 rule_result = matched_rule.action()
                 cm.add_cell_control_from_pyc_rule(rule=matched_rule)
+                self._logger.debug(f"pyc - Done")
                 return rule_result
 
             else:
@@ -221,6 +222,7 @@ class PyImpl(unohelper.Base, XPy):
             # rng.component.setArrayFormula(cell.component.getFormula())
 
             # return result
+        self._logger.debug(f"pyc - Done")
         return result
 
     def _get_code(self) -> str | None:

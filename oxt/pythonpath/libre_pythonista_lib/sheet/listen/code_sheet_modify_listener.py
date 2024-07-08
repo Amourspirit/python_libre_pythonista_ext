@@ -8,8 +8,11 @@ from ooodev.loader import Lo
 from ooodev.calc import CalcDoc
 from ooodev.events.lo_events import LoEvents
 from ooodev.events.args.event_args import EventArgs
+from ooodev.utils.helper.dot_dict import DotDict
 from ...cell.cell_mgr import CellMgr
 from ...const.event_const import GBL_DOC_CLOSING
+from ...event.shared_event import SharedEvent
+from ...const.event_const import SHEET_MODIFIED
 
 if TYPE_CHECKING:
     from com.sun.star.lang import EventObject
@@ -57,14 +60,14 @@ class CodeSheetModifyListener(XModifyListener, unohelper.Base):
         The source of the event may be the content of the object to which the listener
         is registered.
         """
-        try:
-            self._log.debug("Modified - Resetting instance.")
-            doc = CalcDoc.from_current_doc()
-            cm = CellMgr(doc)
-            # cm.reset_instance()
-            cm.reset_py_inst()
-        except Exception:
-            self._log.error("Error resetting instance", exc_info=True)
+        # event.Source: implementationName=ScTableSheetObj
+        # event.Source: com.sun.star.sheet.Spreadsheet
+        self._log.debug("Sheet Modified. Raising SHEET_MODIFIED event.")
+        # if self._log.is_debug:
+        #     self._log.debug(str(event.Source))
+        event_args = EventArgs(self)
+        event_args.event_data = DotDict(src=self, event=event)
+        SharedEvent().trigger_event(SHEET_MODIFIED, event_args)
 
     def disposing(self, event: EventObject) -> None:
         """
