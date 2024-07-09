@@ -104,6 +104,20 @@ class JsonConfig(metaclass=Singleton):
             self._cell_custom_prop_codename = "codename"
 
         try:
+            self._py_script_sheet_ctl_click = cast(
+                str, cfg["tool"]["libre_pythonista"]["config"]["py_script_sheet_ctl_click"]
+            )
+        except Exception:
+            self._py_script_sheet_ctl_click = "control_handler.py"
+
+        try:
+            self._py_script_sheet_on_calculate = cast(
+                str, cfg["tool"]["libre_pythonista"]["config"]["py_script_sheet_on_calculate"]
+            )
+        except Exception:
+            self._py_script_sheet_on_calculate = "share_event.py"
+
+        try:
             self._general_codename = cast(str, cfg["tool"]["libre_pythonista"]["config"]["general_code_name"])
         except Exception:
             self._general_codename = "libre_pythonista"
@@ -112,6 +126,20 @@ class JsonConfig(metaclass=Singleton):
             self._lp_default_log_format = cast(str, cfg["tool"]["libre_pythonista"]["config"]["lp_default_log_format"])
         except Exception:
             self._lp_default_log_format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+
+        try:
+            self._macro_lp_sheet_ctl_click = cast(
+                str, cfg["tool"]["libre_pythonista"]["config"]["macro_lp_sheet_ctl_click"]
+            )
+        except Exception:
+            self._macro_lp_sheet_ctl_click = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+
+        try:
+            self._macro_sheet_on_calculate = cast(
+                str, cfg["tool"]["libre_pythonista"]["config"]["macro_sheet_on_calculate"]
+            )
+        except Exception:
+            self._macro_sheet_on_calculate = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 
         try:
             self._extension_version = cast(str, cfg["tool"]["poetry"]["version"])
@@ -149,6 +177,7 @@ class JsonConfig(metaclass=Singleton):
         json_config["lo_identifier"] = token.get_token_value("lo_identifier")
         json_config["lo_implementation_name"] = token.get_token_value("lo_implementation_name")
         json_config["extension_display_name"] = token.get_token_value("display_name")
+        json_config["oxt_name"] = token.get_token_value("oxt_name")
 
         json_config["zipped_preinstall_pure"] = self._zip_preinstall_pure
         json_config["auto_install_in_site_packages"] = self._auto_install_in_site_packages
@@ -178,6 +207,10 @@ class JsonConfig(metaclass=Singleton):
         json_config["extension_version"] = self._extension_version
         json_config["extension_license"] = self._extension_license
         json_config["author_names"] = self._author_names
+        json_config["macro_lp_sheet_ctl_click"] = self._macro_lp_sheet_ctl_click
+        json_config["macro_sheet_on_calculate"] = self._macro_sheet_on_calculate
+        json_config["py_script_sheet_ctl_click"] = self._py_script_sheet_ctl_click
+        json_config["py_script_sheet_on_calculate"] = self._py_script_sheet_on_calculate
         # endregion tool.libre_pythonista.config
 
         # save the file

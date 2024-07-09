@@ -1,10 +1,10 @@
-"""To rename this module, change the module name in the project.toml ``tool.libre_pythonista.config.py_script_sheet_ctl_click`` and the filename."""
+"""To rename this module, change the module name in the project.toml ``tool.libre_pythonista.config.py_script_sheet_on_calculate`` and the filename."""
 
 from __future__ import annotations
 from typing import Any, cast, TYPE_CHECKING
 import uno
-from com.sun.star.awt import Rectangle
-from ooodev.calc import CalcDoc, CalcCell
+from ooodev.events.args.event_args import EventArgs
+from ooodev.calc import CalcDoc
 from ooodev.form.controls.from_control_factory import FormControlFactory
 
 if TYPE_CHECKING:
@@ -13,24 +13,36 @@ if TYPE_CHECKING:
     from com.sun.star.drawing import ControlShape  # service
 
     from ...pythonpath.libre_pythonista_lib.log.log_inst import LogInst
-    from ...pythonpath.libre_pythonista_lib.cell.menu.ctl_popup import CtlPopup
+
+    from ...pythonpath.libre_pythonista_lib.event.shared_event import SharedEvent
+    from ...pythonpath.libre_pythonista_lib.const.event_const import CALC_FORMULAS_CALCULATED
 
     XSCRIPTCONTEXT: XScriptContext
 else:
     from libre_pythonista_lib.log.log_inst import LogInst
-    from libre_pythonista_lib.cell.menu.ctl_popup import CtlPopup
+    from libre_pythonista_lib.event.shared_event import SharedEvent
+    from libre_pythonista_lib.const.event_const import CALC_FORMULAS_CALCULATED
 
 
-def on_btn_action_preformed(*args):
+def formulas_calc(*args):
     """
     Handle the button action event.
     """
-    if not args:
-        return
 
+    # no args for event
+    SharedEvent().trigger_event(CALC_FORMULAS_CALCULATED, EventArgs(None))
     log = LogInst()
+    if not args:
+        log.debug("formulas_calc() No Args")
+        print("No args")
+        return
     log.debug("button_handler debug")
+    log.debug(str(args))
+    print(args)
     ev_obj: ActionEvent = args[0]
+    log.debug(str(ev_obj))
+    print(ev_obj)
+    return
     action_command = getattr(ev_obj, "ActionCommand", None)
     if action_command is None:
         log.error("button_handler: ActionCommand not found. Not a valid ActionEvent")
@@ -64,40 +76,4 @@ def on_btn_action_preformed(*args):
         log.error("button_handler: Error", exc_info=True)
 
 
-# args[0] is the event object
-#  - libre_pythonista - DEBUG - button_handler: arg:
-# (com.sun.star.awt.ActionEvent){ (com.sun.star.lang.EventObject)
-# { Source = (com.sun.star.uno.XInterface)0x7f976d4a9ee0
-# {implementationName=com.sun.star.form.OButtonControl,
-# supportedServices={com.sun.star.awt.UnoControl,
-# com.sun.star.awt.UnoControlButton,
-# stardiv.vcl.control.Button,
-# com.sun.star.form.control.SubmitButton,
-# com.sun.star.form.control.CommandButton,
-# stardiv.one.form.control.CommandButton},
-# supportedInterfaces={com.sun.star.accessibility.XAccessible,
-# com.sun.star.awt.XActionListener,
-# com.sun.star.awt.XButton,com.sun.star.awt.XControl,
-# com.sun.star.awt.XItemListener,
-# com.sun.star.awt.XLayoutConstrains,
-# com.sun.star.awt.XStyleSettingsSupplier,
-# com.sun.star.awt.XToggleButton,
-# com.sun.star.awt.XUnitConversion,
-# com.sun.star.awt.XView,com.sun.star.awt.XWindow2,
-# com.sun.star.beans.XPropertiesChangeListener,
-# com.sun.star.beans.XPropertyChangeListener,
-# com.sun.star.form.XApproveActionBroadcaster,
-# com.sun.star.form.submission.XSubmission,
-# com.sun.star.frame.XDispatchProviderInterception,
-# com.sun.star.frame.XStatusListener,
-# com.sun.star.lang.XComponent,
-# com.sun.star.lang.XEventListener,
-# com.sun.star.lang.XServiceInfo,
-# com.sun.star.lang.XTypeProvider,
-# com.sun.star.uno.XAggregation,
-# com.sun.star.uno.XWeak,
-# com.sun.star.util.XModeChangeBroadcaster}} },
-# ActionCommand = (string)"" }
-
-
-g_exportedScripts = (on_btn_action_preformed,)
+g_exportedScripts = (formulas_calc,)

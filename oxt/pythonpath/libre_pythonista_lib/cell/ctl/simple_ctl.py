@@ -36,9 +36,9 @@ class SimpleCtl:
         Raises:
             CustomPropertyMissingError: Custom Property not found
         """
-        self._script_name = "LibrePythonista.oxt|python|scripts|control_handler.py"
-        self._script_loc = f"{self._script_name}$on_btn_action_preformed"
         self._cfg = Config()
+        self._script_name = f"{self._cfg.oxt_name}.oxt|python|scripts|{self._cfg.py_script_sheet_ctl_click}"
+        self._script_loc = f"{self._script_name}${self._cfg.macro_lp_sheet_ctl_click}"
 
         self._ctl_rule_key = self._cfg.cell_cp_prefix + "ctl_rule"
         self.calc_cell = calc_cell

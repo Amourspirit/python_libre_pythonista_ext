@@ -11,6 +11,8 @@ from ..basic_config import BasicConfig
 
 # https://stackoverflow.com/questions/13521981/implementing-an-optional-logger-in-code
 
+_INDENT = 0
+
 
 class OxtLogger(Logger):
     """Custom Logger Class"""
@@ -36,9 +38,9 @@ class OxtLogger(Logger):
         Returns:
             None: None
         """
+        global _INDENT
         self._config = LoggerConfig()  # config.Config()
         basic_config = BasicConfig()
-        self._indent = 0
         self._indent_amt = basic_config.log_indent
         if self._indent_amt > 0:
             self._fn_on_callback = self._on_callback
@@ -133,7 +135,7 @@ class OxtLogger(Logger):
     # region Indent
     def _core_indent(self, amount: int):
         """Core functionality for indentation."""
-        self._indent = max(0, self._indent + amount)
+        self.current_indent = max(0, self.current_indent + amount)
 
     @contextmanager
     def indent(self, use_as_context_manager: bool = False):
@@ -141,17 +143,27 @@ class OxtLogger(Logger):
             # Context manager behavior
             try:
                 self._core_indent(self._indent_amt)
-                yield self._indent
+                yield self.current_indent
             finally:
                 self._core_indent(-self._indent_amt)
         else:
             # Normal method behavior
             self._core_indent(self._indent_amt)
-            return self._indent  # Optionally return something
+            return self.current_indent  # Optionally return something
 
     def outdent(self) -> int:
-        self._indent = max(0, self._indent - self._indent_amt)
-        return self._indent
+        self.current_indent = max(0, self.current_indent - self._indent_amt)
+        return self.current_indent
+
+    @contextmanager
+    def noindent(self):
+        """Temporarily disable indentation."""
+        try:
+            indent = self.current_indent
+            self.current_indent = 0
+            yield
+        finally:
+            self.current_indent = indent
 
     # endregion Indent
 
@@ -183,12 +195,18 @@ class OxtLogger(Logger):
 
     @property
     def current_indent(self) -> int:
-        """Indent level."""
-        return self._indent
+        """
+        Gets/Set the indent level.
+
+        This is a global value that is shared across all instances of the logger.
+        """
+        global _INDENT
+        return _INDENT
 
     @current_indent.setter
     def current_indent(self, value: int):
-        self._indent = value
+        global _INDENT
+        _INDENT = value
 
     # endregion Properties
 

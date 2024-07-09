@@ -30,9 +30,15 @@ if TYPE_CHECKING:
     from ...pythonpath.libre_pythonista_lib.cell.cell_mgr import CellMgr  # type: ignore
     from ...pythonpath.libre_pythonista_lib.sheet.listen.code_sheet_modify_listener import CodeSheetModifyListener
     from ...pythonpath.libre_pythonista_lib.const.event_const import CB_DOC_FOCUS_GAINED, DOCUMENT_NEW_VIEW
+    from ...pythonpath.libre_pythonista_lib.sheet.calculate import set_doc_sheets_calculate_event
     from ...pythonpath.libre_pythonista_lib.sheet.listen.code_sheet_activation_listener import (
         CodeSheetActivationListener,
     )
+    from ...pythonpath.libre_pythonista_lib.sheet.listen.sheet_calculation_event_listener import (
+        SheetCalculationEventListener,
+    )
+
+    # from ...pythonpath.libre_pythonista_lib.doc.listen.document_event_listener import DocumentEventListener
 else:
     _CONDITIONS_MET = _conditions_met()
     if _CONDITIONS_MET:
@@ -43,8 +49,12 @@ else:
         from libre_pythonista_lib.event.shared_event import SharedEvent
         from libre_pythonista_lib.dispatch import dispatch_mgr  # type: ignore
         from libre_pythonista_lib.cell.cell_mgr import CellMgr  # type: ignore
+        from libre_pythonista_lib.sheet.calculate import set_doc_sheets_calculate_event
         from libre_pythonista_lib.sheet.listen.code_sheet_modify_listener import CodeSheetModifyListener
         from libre_pythonista_lib.sheet.listen.code_sheet_activation_listener import CodeSheetActivationListener
+        from libre_pythonista_lib.sheet.listen.sheet_calculation_event_listener import SheetCalculationEventListener
+
+        # from libre_pythonista_lib.doc.listen.document_event_listener import DocumentEventListener
         from libre_pythonista_lib.const.event_const import CB_DOC_FOCUS_GAINED, DOCUMENT_NEW_VIEW
 # endregion imports
 
@@ -65,7 +75,7 @@ class ViewJob(unohelper.Base, XJob):
     def __init__(self, ctx):
         self.ctx = ctx
         self.document = None
-        self._logger = self._get_local_logger()
+        self._log = self._get_local_logger()
 
     # endregion Init
 
@@ -75,26 +85,26 @@ class ViewJob(unohelper.Base, XJob):
         # When a spreadsheet is put into print preview this is fired.
         # When the print preview is closed this is fired again.
         # print("ViewJob execute")
-        self._logger.debug("ViewJob execute")
+        self._log.debug("ViewJob execute")
         try:
             # loader = Lo.load_office()
-            self._logger.debug(f"Args Length: {len(args)}")
+            self._log.debug(f"Args Length: {len(args)}")
             arg1 = args[0]
 
             for struct in arg1.Value:
-                self._logger.debug(f"Struct: {struct.Name}")
+                self._log.debug(f"Struct: {struct.Name}")
                 if struct.Name == "Model":
                     self.document = struct.Value
-                    self._logger.debug("Document Found")
+                    self._log.debug("Document Found")
 
             if self.document is None:
-                self._logger.debug("ViewJob - Document is None")
+                self._log.debug("ViewJob - Document is None")
                 return
             if self.document.supportsService("com.sun.star.sheet.SpreadsheetDocument"):
                 run_id = self.document.RuntimeUID
                 key = f"LIBRE_PYTHONISTA_DOC_{run_id}"
                 os.environ[key] = "1"
-                self._logger.debug(f"Added {key} to environment variables")
+                self._log.debug(f"Added {key} to environment variables")
                 if _CONDITIONS_MET:
                     try:
                         # Because print preview is a different view controller it can cause issues
@@ -106,7 +116,7 @@ class ViewJob(unohelper.Base, XJob):
                         # Removing all listeners and adding them again seems to work.
                         # If this is not done the dispatch manager will not work correctly.
                         # Specifically the intercept menu's stop working after print preview is closed.
-                        self._logger.debug("Registering dispatch manager")
+                        self._log.debug("Registering dispatch manager")
                         from ooodev.calc import CalcDoc
 
                         # Lo.load_office() only loads office if it is not already loaded
@@ -115,17 +125,26 @@ class ViewJob(unohelper.Base, XJob):
                         _ = Lo.load_office()
                         doc = CalcDoc.get_doc_from_component(self.document)
                         try:
+                            set_doc_sheets_calculate_event(doc)
+                        except Exception:
+                            self._log.error("Error setting document sheets calculate event", exc_info=True)
+                        # try:
+                        #     doc.component.addDocumentEventListener(DocumentEventListener())
+                        #     self._log.debug("Document event listener added")
+                        # except Exception:
+                        #     self._log.error("Error adding document event listener", exc_info=True)
+                        try:
                             view = doc.get_view()
                         except mEx.MissingInterfaceError as e:
-                            self._logger.debug(f"Error getting view from document. {e}")
+                            self._log.debug(f"Error getting view from document. {e}")
                             view = None
                         if view is None:
-                            self._logger.debug("View is None. May be print preview. Returning.")
+                            self._log.debug("View is None. May be print preview. Returning.")
                             return
                         if not view.view_controller_name == "Default":
                             # this could mean that the print preview has been activated.
                             # Print Preview view controller Name: PrintPreview
-                            self._logger.debug(
+                            self._log.debug(
                                 f"'{view.view_controller_name}' is not the default view controller. Returning."
                             )
                             return
@@ -140,20 +159,24 @@ class ViewJob(unohelper.Base, XJob):
                                 sheet.component.removeModifyListener(listener)
                                 sheet.component.addModifyListener(listener)
 
+                        # adds new modifier listeners to new sheets
                         code_sheet_activation_listener = CodeSheetActivationListener()
+                        # add calculate event to new sheets
+                        sheet_calc_event_listener = SheetCalculationEventListener()
                         view.component.removeActivationEventListener(code_sheet_activation_listener)
                         view.component.addActivationEventListener(code_sheet_activation_listener)
+                        view.component.addActivationEventListener(sheet_calc_event_listener)
                         if view.is_form_design_mode():
 
                             try:
-                                self._logger.debug("Setting form design mode to False")
+                                self._log.debug("Setting form design mode to False")
                                 view.set_form_design_mode(False)
-                                self._logger.debug("Form design mode set to False")
+                                self._log.debug("Form design mode set to False")
                                 # doc.toggle_design_mode()
                             except Exception:
-                                self._logger.warning("Unable to set form design mode", exc_info=True)
+                                self._log.warning("Unable to set form design mode", exc_info=True)
 
-                        self._logger.debug(f"Pre Dispatch manager loaded, UID: {doc.runtime_uid}")
+                        self._log.debug(f"Pre Dispatch manager loaded, UID: {doc.runtime_uid}")
                         dispatch_mgr.unregister_interceptor(doc)
                         dispatch_mgr.register_interceptor(doc)
                         cm = CellMgr(doc)
@@ -168,15 +191,15 @@ class ViewJob(unohelper.Base, XJob):
                         eargs.event_data = DotDict(run_id=run_id, doc=doc, event="new_view", doc_type=doc.DOC_TYPE)
                         se.trigger_event(DOCUMENT_NEW_VIEW, eargs)
                     except Exception:
-                        self._logger.error("Error setting components on view.", exc_info=True)
+                        self._log.error("Error setting components on view.", exc_info=True)
                 else:
-                    self._logger.debug("Conditions not met to register dispatch manager")
-                self._logger.debug("Dispatch manager registered")
+                    self._log.debug("Conditions not met to register dispatch manager")
+                self._log.debug("Dispatch manager registered")
             else:
-                self._logger.debug("Document is not a spreadsheet")
+                self._log.debug("Document is not a spreadsheet")
 
         except Exception as e:
-            self._logger.error("Error getting current document", exc_info=True)
+            self._log.error("Error getting current document", exc_info=True)
             return
 
     # endregion execute
@@ -184,7 +207,7 @@ class ViewJob(unohelper.Base, XJob):
     # region Logging
 
     def _get_local_logger(self) -> OxtLogger:
-        from ___lo_pip___.oxt_logger import OxtLogger
+        from ___lo_pip___.oxt_logger import OxtLogger  # type: ignore
 
         return OxtLogger(log_name="ViewJob")
 

@@ -43,12 +43,18 @@ class BasicConfig(metaclass=ConfigMeta):
         self._unload_after_install = bool(kwargs["unload_after_install"])
         self._log_indent = int(kwargs.get("log_indent", 0))
         self._run_imports = set(kwargs["run_imports"])
+        self._oxt_name = str(kwargs["oxt_name"])
 
         # region tool.libre_pythonista.config
         self._cell_cp_prefix = str(kwargs["cell_cp_prefix"])
         self._cell_cp_codename = str(kwargs["cell_cp_codename"])
         self._general_code_name = str(kwargs["general_code_name"])
         self._lp_default_log_format = str(kwargs["lp_default_log_format"])
+        self._macro_lp_sheet_ctl_click = str(kwargs["macro_lp_sheet_ctl_click"])
+        self._macro_sheet_on_calculate = str(kwargs["macro_sheet_on_calculate"])
+
+        self._py_script_sheet_ctl_click = str(kwargs["py_script_sheet_ctl_click"])
+        self._py_script_sheet_on_calculate = str(kwargs["py_script_sheet_on_calculate"])
         # endregion tool.libre_pythonista.config
 
         if "requirements" not in kwargs:
@@ -192,11 +198,56 @@ class BasicConfig(metaclass=ConfigMeta):
         return self._log_indent
 
     @property
+    def macro_lp_sheet_ctl_click(self) -> str:
+        """
+        Gets macro name of the sheet control click.
+
+        The value for this property can be set in pyproject.toml (tool.libre_pythonista.macro_lp_sheet_ctl_click)
+        """
+        return self._macro_lp_sheet_ctl_click
+
+    @property
+    def macro_sheet_on_calculate(self) -> str:
+        """
+        Gets macro name of for the sheet OnCalculate event.
+
+        The value for this property can be set in pyproject.toml (tool.libre_pythonista.macro_sheet_on_calculate)
+        """
+        return self._macro_sheet_on_calculate
+
+    @property
+    def oxt_name(self) -> str:
+        """
+        Gets the Otx name of the extension without the ``.otx`` extension.
+
+        The value for this property can be set in pyproject.toml (tool.oxt.token.oxt_name)
+        """
+        return self._oxt_name
+
+    @property
     def py_pkg_dir(self) -> str:
         """
         The value for this property can be set in pyproject.toml (tool.oxt.config.py_pkg_dir)
         """
         return self._py_pkg_dir
+
+    @property
+    def py_script_sheet_ctl_click(self) -> str:
+        """
+        Gets python Script name including the ``.py`` extension.
+
+        The value for this property can be set in pyproject.toml (tool.libre_pythonista.py_script_sheet_ctl_click)
+        """
+        return self._py_script_sheet_ctl_click
+
+    @property
+    def py_script_sheet_on_calculate(self) -> str:
+        """
+        Gets python Script name including the ``.py`` extension.
+
+        The value for this property can be set in pyproject.toml (tool.libre_pythonista.py_script_sheet_on_calculate)
+        """
+        return self._py_script_sheet_on_calculate
 
     @property
     def requirements(self) -> Dict[str, str]:

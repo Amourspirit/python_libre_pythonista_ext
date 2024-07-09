@@ -33,6 +33,7 @@
         "mkdirp",
         "msgbox",
         "nodepath",
+        "noindent",
         "ooodev",
         "ooopip",
         "osascript",

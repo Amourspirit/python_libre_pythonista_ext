@@ -35,7 +35,7 @@ from ..const import (
     UNO_DISPATCH_PY_OBJ_STATE,
     UNO_DISPATCH_CELL_SELECT,
 )
-from ..const.event_const import SHEET_MODIFIED
+from ..const.event_const import SHEET_MODIFIED, CALC_FORMULAS_CALCULATED
 
 from ..log.log_inst import LogInst
 
@@ -80,6 +80,7 @@ class CellMgr(SingletonBase):
         self._subscribe_to_shared_events()
         self._cell_cache.subscribe_cell_addr_prop_update(self._fn_on_cell_cache_update_sheet_cell_addr_prop)
         self._se.subscribe_event(SHEET_MODIFIED, self._fn_on_sheet_modified)
+        self._se.subscribe_event(CALC_FORMULAS_CALCULATED, self._fn_on_calc_formulas_calculated)
         # self.remove_all_listeners()
         # self.add_all_listeners()
 
@@ -96,7 +97,7 @@ class CellMgr(SingletonBase):
 
         When this event is fired the code listener for the cell gets is Absolute Name updated.
         """
-        with self._log.indent(True):
+        with self._log.noindent():
             is_db = self._log.is_debug
             if is_db:
                 self._log.debug(f"_on_cell_cache_update_sheet_cell_addr_prop() Entering.")
@@ -118,10 +119,16 @@ class CellMgr(SingletonBase):
 
     # region Events Sheet
     def _on_sheet_modified(self, src: Any, event: EventArgs) -> None:
-        with self._log.indent(True):
+        with self._log.noindent():
             self._log.debug(f"_on_sheet_modified() Entering.")
-            self.reset_py_inst()
+            # self.reset_py_inst()
             self._log.debug(f"_on_sheet_modified() Done.")
+
+    def _on_calc_formulas_calculated(self, src: Any, event: EventArgs) -> None:
+        with self._log.noindent():
+            self._log.debug(f"_on_calc_formulas_calculated() Entering.")
+            self.reset_py_inst()
+            self._log.debug(f"_on_calc_formulas_calculated() Done.")
 
     # endregion Events Sheet
 
@@ -236,6 +243,7 @@ class CellMgr(SingletonBase):
         # endregion Cell Cache Events
         # region Sheet Events
         self._fn_on_sheet_modified = self._on_sheet_modified
+        self._fn_on_calc_formulas_calculated = self._on_calc_formulas_calculated
         # endregion Sheet Events
 
     def on_cell_deleted(self, src: Any, event: EventArgs) -> None:
@@ -729,7 +737,14 @@ class CellMgr(SingletonBase):
         """
         Get the PySource for a cell.
         """
-        return self.py_inst[cell_obj]
+        is_db = self._log.is_debug
+        with self._log.indent(True):
+            if is_db:
+                self._log.debug(f"get_py_src() Getting PySource for cell: {cell_obj}")
+            result = self.py_inst[cell_obj]
+            if is_db:
+                self._log.debug(f"get_py_src() Got PySource for cell: {cell_obj}")
+            return result
 
     def update_from_cell_obj(self, cell_obj: CellObj) -> None:
         """

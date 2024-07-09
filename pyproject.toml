@@ -4,6 +4,14 @@ general_code_name = "libre_pythonista"
 cell_custom_prop_prefix = "libre_pythonista_"
 cell_custom_prop_codename = "codename"
 lp_default_log_format= "%(asctime)s - %(levelname)s - %(name)s: %(message)s"
+# name of macro to run when sheet control button is clicked
+# found in python/scripts/control_handler.py
+macro_lp_sheet_ctl_click = "on_btn_action_preformed"
+# name of macro to run when sheet is calculated
+# found in python/scripts/share_event.py
+macro_sheet_on_calculate = "formulas_calc"
+py_script_sheet_ctl_click = "control_handler.py"
+py_script_sheet_on_calculate = "share_event.py"
 
 [tool.oxt.config]
 auto_install_in_site_packages = true # https://tinyurl.com/ymeh4c9j#auto_install_in_site_packages
@@ -52,8 +60,8 @@ url_pip = 'https://bootstrap.pypa.io/get-pip.py' # https://tinyurl.com/ymeh4c9j#
 log_file = "libre_pythonista.log" # https://tinyurl.com/ymeh4c9j#log_file
 log_name = "LibrePythonista Installer" # https://tinyurl.com/ymeh4c9j#log_name
 log_level = "DEBUG" # NONE, DEBUG, INFO, WARNING, ERROR, CRITICAL https://tinyurl.com/ymeh4c9j#log_level
-# log_format = "%(asctime)s - %(levelname)s - %(name)s: %(message)s" # https://tinyurl.com/ymeh4c9j#log_format
-log_format = "%(asctime)s - %(levelname)s - %(indent_str)s%(name)s: %(message)s"
+log_format = "%(asctime)s - %(levelname)s - %(name)s: %(message)s" # https://tinyurl.com/ymeh4c9j#log_format
+# log_format = "%(asctime)s - %(levelname)s - %(indent_str)s%(name)s: %(message)s"
 log_add_console = true # should be false for production # https://tinyurl.com/ymeh4c9j#log_add_console
 lo_pip = "libre_pythonista" # https://tinyurl.com/ymeh4c9j#lo_pip
 platform = "all" # https://tinyurl.com/ymeh4c9j#platform
@@ -107,7 +115,7 @@ es = "Plantilla para crear extensiones basadas en pip para LibreOffice"
 
 [tool.poetry]
 name = "LibrePythonista"
-version = "0.0.4"
+version = "0.0.5"
 description = "Python For LibreOffice Calc"
 authors = [":Barry-Thomas-Paul: Moss <4193389+Amourspirit@users.noreply.github.com>"]
 license = "MIT"

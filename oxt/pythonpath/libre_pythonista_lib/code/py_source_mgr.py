@@ -527,11 +527,19 @@ class PySourceManager(EventsPartial):
         Returns:
             PySource: Source object
         """
+        is_db = self._log.is_debug
         if isinstance(key, CellObj):
             code_cell = self.convert_cell_obj_to_tuple(key)
         else:
             code_cell = (key[0], key[2], key[1])
-        return self._data[code_cell]
+        if is_db:
+            with self._log.indent(True):
+                self._log.debug(f"__getitem() - Code Cell: {code_cell}")
+        result = self._data[code_cell]
+        if is_db:
+            with self._log.indent(True):
+                self._log.debug(f"__getitem() - Result Unique Id: {result.unique_id}")
+        return result
 
     def __setitem__(self, key: CellObj | Tuple[int, int, int], value: PySource) -> None:
         """

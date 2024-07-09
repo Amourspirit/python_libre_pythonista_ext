@@ -659,6 +659,33 @@ class Config(metaclass=Singleton):
         """
         return self._basic_config.extension_display_name
 
+    @property
+    def macro_lp_sheet_ctl_click(self) -> str:
+        """
+        Gets macro name of the sheet control click.
+
+        The value for this property can be set in pyproject.toml (tool.libre_pythonista.macro_lp_sheet_ctl_click)
+        """
+        return self._basic_config.macro_lp_sheet_ctl_click
+
+    @property
+    def macro_sheet_on_calculate(self) -> str:
+        """
+        Gets macro name of for the sheet OnCalculate event.
+
+        The value for this property can be set in pyproject.toml (tool.libre_pythonista.macro_sheet_on_calculate)
+        """
+        return self._basic_config.macro_sheet_on_calculate
+
+    @property
+    def oxt_name(self) -> str:
+        """
+        Gets the Otx name of the extension without the ``.otx`` extension.
+
+        The value for this property can be set in pyproject.toml (tool.oxt.token.oxt_name)
+        """
+        return self._basic_config.oxt_name
+
     # region tool.libre_pythonista.config
     @property
     def cell_cp_prefix(self) -> str:
@@ -695,6 +722,24 @@ class Config(metaclass=Singleton):
         The value for this property can be set in pyproject.toml (tool.libre_pythonista.config)
         """
         return self._basic_config.lp_default_log_format
+
+    @property
+    def py_script_sheet_ctl_click(self) -> str:
+        """
+        Gets python Script name including the ``.py`` extension.
+
+        The value for this property can be set in pyproject.toml (tool.libre_pythonista.py_script_sheet_ctl_click)
+        """
+        return self._basic_config.py_script_sheet_ctl_click
+
+    @property
+    def py_script_sheet_on_calculate(self) -> str:
+        """
+        Gets python Script name including the ``.py`` extension.
+
+        The value for this property can be set in pyproject.toml (tool.libre_pythonista.py_script_sheet_on_calculate)
+        """
+        return self._basic_config.py_script_sheet_on_calculate
 
     # endregion tool.libre_pythonista.config
     # endregion Properties
