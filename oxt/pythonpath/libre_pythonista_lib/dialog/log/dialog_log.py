@@ -655,7 +655,10 @@ def _close_dialog(key: str) -> None:
         with contextlib.suppress(Exception):
             inst = DialogLog._instances[key]
             inst.dispose()
-        del DialogLog._instances[key]
+        with contextlib.suppress(Exception):
+            # don't know why but sometimes a key error is raised.
+            # This happened even thought the did call dispose above..
+            del DialogLog._instances[key]
 
 
 def _on_doc_closing(src: Any, event: EventArgs) -> None:

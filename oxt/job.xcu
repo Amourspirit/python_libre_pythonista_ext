@@ -56,7 +56,7 @@
         <node oor:name="LoadingJob" oor:op="fuse" />
       </node>
     </node>
-    <node oor:name="OnPrepareUnload" oor:op="fuse">
+    <node oor:name="OnUnload" oor:op="fuse">
       <node oor:name="JobList">
         <node oor:name="UnLoadingJob" oor:op="fuse" />
       </node>
