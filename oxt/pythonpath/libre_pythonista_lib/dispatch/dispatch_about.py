@@ -5,6 +5,7 @@ import unohelper
 from com.sun.star.frame import XDispatch
 from com.sun.star.beans import PropertyValue
 from com.sun.star.util import URL
+from ooo.dyn.frame.feature_state_event import FeatureStateEvent
 
 from ooodev.utils.string.str_list import StrList
 from ooodev.dialog.msgbox import MsgBox, MessageBoxType
@@ -38,10 +39,16 @@ class DispatchAbout(unohelper.Base, XDispatch):
 
         Note: Notifications can't be guaranteed! This will be a part of interface XNotifyingDispatch.
         """
+        # https://wiki.openoffice.org/wiki/Documentation/DevGuide/WritingUNO/Implementation
         with self._log.indent(True):
             if url.Complete in self._status_listeners:
                 self._log.debug(f"addStatusListener(): url={url.Main} already exists.")
             else:
+                # setting IsEnable=False here does not disable the dispatch command
+                # setting State will affect how the control is displayed in menus.
+                # State=True may cause the menu items to be displayed as checked.
+                fe = FeatureStateEvent(FeatureURL=url, IsEnabled=True, State=None)
+                control.statusChanged(fe)
                 self._status_listeners[url.Complete] = control
 
     def dispatch(self, url: URL, args: Tuple[PropertyValue, ...]) -> None:

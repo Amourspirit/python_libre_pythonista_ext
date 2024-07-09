@@ -6,6 +6,8 @@ from com.sun.star.frame import XDispatch
 from com.sun.star.beans import PropertyValue
 from com.sun.star.util import URL
 from com.sun.star.sheet import CellFlags
+from ooo.dyn.frame.feature_state_event import FeatureStateEvent
+
 from ooodev.calc import CalcDoc, CalcCell
 from ooodev.utils.data_type.range_obj import RangeObj
 from ooodev.utils.data_type.range_values import RangeValues
@@ -61,6 +63,10 @@ class DispatchToggleDfState(XDispatch, EventsPartial, unohelper.Base):
             if url.Complete in self._status_listeners:
                 self._log.debug(f"addStatusListener(): url={url.Main} already exists.")
             else:
+                # setting IsEnable=False here does not disable the dispatch command
+                # State=True may cause the menu items to be displayed as checked.
+                fe = FeatureStateEvent(FeatureURL=url, IsEnabled=True, State=None)
+                control.statusChanged(fe)
                 self._status_listeners[url.Complete] = control
 
     def dispatch(self, url: URL, args: Tuple[PropertyValue, ...]) -> None:

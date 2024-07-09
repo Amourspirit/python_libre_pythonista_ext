@@ -5,6 +5,8 @@ import unohelper
 from com.sun.star.frame import XDispatch
 from com.sun.star.beans import PropertyValue
 from com.sun.star.util import URL
+from ooo.dyn.frame.feature_state_event import FeatureStateEvent
+
 from ooodev.calc import CalcDoc
 from ooodev.events.partial.events_partial import EventsPartial
 from ooodev.events.args.cancel_event_args import CancelEventArgs
@@ -46,6 +48,9 @@ class DispatchCardDf(XDispatch, EventsPartial, unohelper.Base):
             if url.Complete in self._status_listeners:
                 self._log.debug(f"addStatusListener(): url={url.Main} already exists.")
             else:
+                # State=True may cause the menu items to be displayed as checked.
+                fe = FeatureStateEvent(FeatureURL=url, IsEnabled=True, State=None)
+                control.statusChanged(fe)
                 self._status_listeners[url.Complete] = control
 
     def dispatch(self, url: URL, args: Tuple[PropertyValue, ...]) -> None:

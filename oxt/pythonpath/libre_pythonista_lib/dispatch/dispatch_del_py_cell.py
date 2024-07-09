@@ -2,19 +2,21 @@ from __future__ import annotations
 from typing import cast, Dict, Tuple, TYPE_CHECKING
 import uno
 import unohelper
-from com.sun.star.frame import XDispatch
 from com.sun.star.beans import PropertyValue
+from com.sun.star.frame import XDispatch
 from com.sun.star.util import URL
-from ooodev.calc import CalcDoc, CalcCell
-from ooo.dyn.awt.message_box_type import MessageBoxType
-from ooodev.dialog.msgbox import MsgBox
-from ooo.dyn.awt.message_box_results import MessageBoxResultsEnum
 from ooo.dyn.awt.message_box_buttons import MessageBoxButtonsEnum
-from ooodev.utils.data_type.range_obj import RangeObj
-from ooodev.utils.data_type.range_values import RangeValues
-from ooodev.events.partial.events_partial import EventsPartial
+from ooo.dyn.awt.message_box_results import MessageBoxResultsEnum
+from ooo.dyn.awt.message_box_type import MessageBoxType
+from ooo.dyn.frame.feature_state_event import FeatureStateEvent
+
+from ooodev.calc import CalcDoc, CalcCell
+from ooodev.dialog.msgbox import MsgBox
 from ooodev.events.args.cancel_event_args import CancelEventArgs
 from ooodev.events.args.event_args import EventArgs
+from ooodev.events.partial.events_partial import EventsPartial
+from ooodev.utils.data_type.range_obj import RangeObj
+from ooodev.utils.data_type.range_values import RangeValues
 from ooodev.utils.helper.dot_dict import DotDict
 from ..code.cell_cache import CellCache
 from ..cell.props.key_maker import KeyMaker
@@ -57,6 +59,10 @@ class DispatchDelPyCell(XDispatch, EventsPartial, unohelper.Base):
             if url.Complete in self._status_listeners:
                 self._log.debug(f"addStatusListener(): url={url.Main} already exists.")
             else:
+                # setting IsEnable=False here does not disable the dispatch command
+                # State=True may cause the menu items to be displayed as checked.
+                fe = FeatureStateEvent(FeatureURL=url, IsEnabled=True, State=None)
+                control.statusChanged(fe)
                 self._status_listeners[url.Complete] = control
 
     def dispatch(self, url: URL, args: Tuple[PropertyValue, ...]) -> None:
