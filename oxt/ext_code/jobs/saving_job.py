@@ -21,12 +21,18 @@ def _conditions_met() -> bool:
 if TYPE_CHECKING:
     # just for design time
     _CONDITIONS_MET = True
+    from ooodev.calc import CalcDoc
     from ...___lo_pip___.oxt_logger import OxtLogger
     from ...___lo_pip___.config import Config
+    from ...pythonpath.libre_pythonista_lib.code.py_source_mgr import PyInstance
+    from ...pythonpath.libre_pythonista_lib.sheet.calculate import remove_doc_sheets_calculate_event
 else:
     _CONDITIONS_MET = _conditions_met()
     if _CONDITIONS_MET:
+        from ooodev.calc import CalcDoc
         from ___lo_pip___.config import Config
+        from libre_pythonista_lib.code.py_source_mgr import PyInstance
+        from libre_pythonista_lib.sheet.calculate import remove_doc_sheets_calculate_event
 # endregion imports
 
 
@@ -71,10 +77,8 @@ class SavingJob(XJob, unohelper.Base):
             if self.document.supportsService("com.sun.star.sheet.SpreadsheetDocument"):
                 self._logger.debug("Document Saving is a spreadsheet")
                 if _CONDITIONS_MET:
+                    doc = CalcDoc.get_doc_from_component(self.document)
                     try:
-                        from ooodev.calc import CalcDoc
-
-                        doc = CalcDoc.get_doc_from_component(self.document)
                         cfg = Config()
                         ver = doc.get_custom_property("LIBRE_PYTHONISTA_VERSION", "")
                         if ver != cfg.extension_version:
@@ -82,6 +86,16 @@ class SavingJob(XJob, unohelper.Base):
 
                     except Exception as e:
                         self._logger.error("Error Setting Custom Properties", exc_info=True)
+
+                    try:
+                        py_src = PyInstance(doc)  # singleton
+                        if not py_src.has_code():
+                            self._logger.debug("No Code Found for document")
+                            remove_doc_sheets_calculate_event(doc)
+                        else:
+                            self._logger.debug("Code Found for document")
+                    except Exception as e:
+                        self._logger.error("Error removing unused Sheet Events", exc_info=True)
             else:
                 self._logger.debug("Document UnLoading not a spreadsheet")
 

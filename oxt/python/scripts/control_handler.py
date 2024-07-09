@@ -1,10 +1,9 @@
 """To rename this module, change the module name in the project.toml ``tool.libre_pythonista.config.py_script_sheet_ctl_click`` and the filename."""
 
 from __future__ import annotations
-from typing import Any, cast, TYPE_CHECKING
+from typing import cast, TYPE_CHECKING
 import uno
-from com.sun.star.awt import Rectangle
-from ooodev.calc import CalcDoc, CalcCell
+from ooodev.calc import CalcDoc
 from ooodev.form.controls.from_control_factory import FormControlFactory
 
 if TYPE_CHECKING:
@@ -62,42 +61,6 @@ def on_btn_action_preformed(*args):
 
     except Exception:
         log.error("button_handler: Error", exc_info=True)
-
-
-# args[0] is the event object
-#  - libre_pythonista - DEBUG - button_handler: arg:
-# (com.sun.star.awt.ActionEvent){ (com.sun.star.lang.EventObject)
-# { Source = (com.sun.star.uno.XInterface)0x7f976d4a9ee0
-# {implementationName=com.sun.star.form.OButtonControl,
-# supportedServices={com.sun.star.awt.UnoControl,
-# com.sun.star.awt.UnoControlButton,
-# stardiv.vcl.control.Button,
-# com.sun.star.form.control.SubmitButton,
-# com.sun.star.form.control.CommandButton,
-# stardiv.one.form.control.CommandButton},
-# supportedInterfaces={com.sun.star.accessibility.XAccessible,
-# com.sun.star.awt.XActionListener,
-# com.sun.star.awt.XButton,com.sun.star.awt.XControl,
-# com.sun.star.awt.XItemListener,
-# com.sun.star.awt.XLayoutConstrains,
-# com.sun.star.awt.XStyleSettingsSupplier,
-# com.sun.star.awt.XToggleButton,
-# com.sun.star.awt.XUnitConversion,
-# com.sun.star.awt.XView,com.sun.star.awt.XWindow2,
-# com.sun.star.beans.XPropertiesChangeListener,
-# com.sun.star.beans.XPropertyChangeListener,
-# com.sun.star.form.XApproveActionBroadcaster,
-# com.sun.star.form.submission.XSubmission,
-# com.sun.star.frame.XDispatchProviderInterception,
-# com.sun.star.frame.XStatusListener,
-# com.sun.star.lang.XComponent,
-# com.sun.star.lang.XEventListener,
-# com.sun.star.lang.XServiceInfo,
-# com.sun.star.lang.XTypeProvider,
-# com.sun.star.uno.XAggregation,
-# com.sun.star.uno.XWeak,
-# com.sun.star.util.XModeChangeBroadcaster}} },
-# ActionCommand = (string)"" }
 
 
 g_exportedScripts = (on_btn_action_preformed,)

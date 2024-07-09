@@ -54,7 +54,8 @@
         "unohelper",
         "verr",
         "vlang",
-        "vstr"
+        "vstr",
+        "XSCRIPTCONTEXT"
     ],
     "ignoreWords": [],
     "import": []

@@ -843,6 +843,15 @@ class PySourceManager(EventsPartial):
 
     # endregion Source Management
 
+    def has_code(self) -> bool:
+        """
+        Check if the document has any code.
+
+        Returns:
+            bool: True if the document has code.
+        """
+        return len(self) > 0
+
     def _update_item(self, py_src: PySource) -> bool:
         with self._log.indent(True):
             cargs = CancelEventArgs(self)

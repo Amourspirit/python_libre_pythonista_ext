@@ -72,7 +72,12 @@
         <node oor:name="SavingJob" oor:op="fuse" />
       </node>
     </node>
-    <node oor:name="OnCopyTo" oor:op="fuse">
+    <node oor:name="OnSave" oor:op="fuse">
+      <node oor:name="JobList">
+        <node oor:name="SavingJob" oor:op="fuse" />
+      </node>
+    </node>
+    <node oor:name="OnSaveAs" oor:op="fuse">
       <node oor:name="JobList">
         <node oor:name="SavingJob" oor:op="fuse" />
       </node>

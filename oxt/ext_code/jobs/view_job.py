@@ -38,7 +38,7 @@ if TYPE_CHECKING:
         SheetCalculationEventListener,
     )
 
-    # from ...pythonpath.libre_pythonista_lib.doc.listen.document_event_listener import DocumentEventListener
+    from ...pythonpath.libre_pythonista_lib.doc.listen.document_event_listener import DocumentEventListener
 else:
     _CONDITIONS_MET = _conditions_met()
     if _CONDITIONS_MET:
@@ -54,7 +54,7 @@ else:
         from libre_pythonista_lib.sheet.listen.code_sheet_activation_listener import CodeSheetActivationListener
         from libre_pythonista_lib.sheet.listen.sheet_calculation_event_listener import SheetCalculationEventListener
 
-        # from libre_pythonista_lib.doc.listen.document_event_listener import DocumentEventListener
+        from libre_pythonista_lib.doc.listen.document_event_listener import DocumentEventListener
         from libre_pythonista_lib.const.event_const import CB_DOC_FOCUS_GAINED, DOCUMENT_NEW_VIEW
 # endregion imports
 
@@ -128,11 +128,11 @@ class ViewJob(unohelper.Base, XJob):
                             set_doc_sheets_calculate_event(doc)
                         except Exception:
                             self._log.error("Error setting document sheets calculate event", exc_info=True)
-                        # try:
-                        #     doc.component.addDocumentEventListener(DocumentEventListener())
-                        #     self._log.debug("Document event listener added")
-                        # except Exception:
-                        #     self._log.error("Error adding document event listener", exc_info=True)
+                        try:
+                            doc.component.addDocumentEventListener(DocumentEventListener())
+                            self._log.debug("Document event listener added")
+                        except Exception:
+                            self._log.error("Error adding document event listener", exc_info=True)
                         try:
                             view = doc.get_view()
                         except mEx.MissingInterfaceError as e:
