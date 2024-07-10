@@ -6,7 +6,6 @@ Manages adding and removing listeners to cells.
 
 from __future__ import annotations
 from typing import Any, cast, Dict, TYPE_CHECKING
-import contextlib
 from contextlib import contextmanager
 import uno
 from ooo.dyn.lang.event_object import EventObject
@@ -27,6 +26,7 @@ from ..event.shared_event import SharedEvent
 from .lpl_cell import LplCell
 from ..style.default_sytle import DefaultStyle
 from ..utils.singleton_base import SingletonBase
+from ..sheet.sheet_mgr import SheetMgr
 from ..const import (
     UNO_DISPATCH_CODE_DEL,
     UNO_DISPATCH_CODE_EDIT,
@@ -35,7 +35,7 @@ from ..const import (
     UNO_DISPATCH_PY_OBJ_STATE,
     UNO_DISPATCH_CELL_SELECT,
 )
-from ..const.event_const import SHEET_MODIFIED, CALC_FORMULAS_CALCULATED
+from ..const.event_const import SHEET_MODIFIED, CALC_FORMULAS_CALCULATED, PYC_FORMULA_INSERTED
 
 from ..log.log_inst import LogInst
 
@@ -74,6 +74,7 @@ class CellMgr(SingletonBase):
         self._ctl_mgr = CtlMgr()
         self._key_maker = KeyMaker()
         self._style = DefaultStyle()
+        self._sheet_mgr = SheetMgr(self._doc)
         self._init_events()
         self._se = SharedEvent(doc)
         self._se.trigger_event("CellMgrCreated", EventArgs(self))
@@ -81,6 +82,7 @@ class CellMgr(SingletonBase):
         self._cell_cache.subscribe_cell_addr_prop_update(self._fn_on_cell_cache_update_sheet_cell_addr_prop)
         self._se.subscribe_event(SHEET_MODIFIED, self._fn_on_sheet_modified)
         self._se.subscribe_event(CALC_FORMULAS_CALCULATED, self._fn_on_calc_formulas_calculated)
+        self._se.subscribe_event(PYC_FORMULA_INSERTED, self._fn_on_calc_pyc_formula_inserted)
         # self.remove_all_listeners()
         # self.add_all_listeners()
 
@@ -129,6 +131,12 @@ class CellMgr(SingletonBase):
             self._log.debug(f"_on_calc_formulas_calculated() Entering.")
             self.reset_py_inst()
             self._log.debug(f"_on_calc_formulas_calculated() Done.")
+
+    def _on_calc_pyc_formula_inserted(self, src: Any, event: EventArgs) -> None:
+        with self._log.noindent():
+            self._log.debug(f"_on_calc_pyc_formula_inserted() Entering.")
+            self._sheet_mgr.ensure_sheet_calculate_event()
+            self._log.debug(f"_on_calc_pyc_formula_inserted() Done.")
 
     # endregion Events Sheet
 
@@ -244,6 +252,7 @@ class CellMgr(SingletonBase):
         # region Sheet Events
         self._fn_on_sheet_modified = self._on_sheet_modified
         self._fn_on_calc_formulas_calculated = self._on_calc_formulas_calculated
+        self._fn_on_calc_pyc_formula_inserted = self._on_calc_pyc_formula_inserted
         # endregion Sheet Events
 
     def on_cell_deleted(self, src: Any, event: EventArgs) -> None:

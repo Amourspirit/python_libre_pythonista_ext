@@ -29,10 +29,14 @@ def _conditions_met() -> bool:
 
 if TYPE_CHECKING:
     _CONDITIONS_MET = True
+    from ooodev.events.args.event_args import EventArgs
+    from ooodev.events.args.cancel_event_args import CancelEventArgs
+    from ooodev.utils.helper.dot_dict import DotDict
     from ...___lo_pip___.lo_util.resource_resolver import ResourceResolver
     from ...pythonpath.libre_pythonista_lib.code.cell_cache import CellCache
     from ...pythonpath.libre_pythonista_lib.code.py_source_mgr import PyInstance
     from ...pythonpath.libre_pythonista_lib.log.py_logger import PyLogger
+    from ...pythonpath.libre_pythonista_lib.event.shared_event import SharedEvent
 
     from ooodev.loader import Lo
     from ooodev.calc import CalcDoc
@@ -43,11 +47,15 @@ if TYPE_CHECKING:
     from ooodev.dialog.msgbox import MsgBox
     from ...___lo_pip___.oxt_logger.oxt_logger import OxtLogger
     from ...pythonpath.libre_pythonista_lib.const import UNO_DISPATCH_ABOUT, UNO_DISPATCH_LOG_WIN
+    from ...pythonpath.libre_pythonista_lib.const.event_const import PYC_FORMULA_INSERTING, PYC_FORMULA_INSERTED
 else:
     _CONDITIONS_MET = _conditions_met()
     if _CONDITIONS_MET:
         from ooodev.loader import Lo
         from ooodev.calc import CalcDoc
+        from ooodev.events.args.event_args import EventArgs
+        from ooodev.events.args.cancel_event_args import CancelEventArgs
+        from ooodev.utils.helper.dot_dict import DotDict
         from ooodev.exceptions.ex import CellError
         from ooo.dyn.awt.message_box_results import MessageBoxResultsEnum
         from ooo.dyn.awt.message_box_buttons import MessageBoxButtonsEnum
@@ -56,7 +64,10 @@ else:
         from libre_pythonista_lib.code.cell_cache import CellCache
         from libre_pythonista_lib.code.py_source_mgr import PyInstance
         from libre_pythonista_lib.log.py_logger import PyLogger
+        from libre_pythonista_lib.event.shared_event import SharedEvent
         from libre_pythonista_lib.const import UNO_DISPATCH_ABOUT, UNO_DISPATCH_LOG_WIN
+        from libre_pythonista_lib.const.event_const import PYC_FORMULA_INSERTING, PYC_FORMULA_INSERTED
+
     from ___lo_pip___.lo_util.resource_resolver import ResourceResolver
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
 
@@ -138,8 +149,17 @@ class PythonImpl(unohelper.Base, XJobExecutor):
                     return
             # cell.component.setFormula("=" + res.resolve_string("fml001"))
             formula = '=___lo_identifier___.PYIMPL.PYC(SHEET();CELL("ADDRESS"))'
+            cargs = CancelEventArgs(self)
+            cargs.event_data = DotDict(formula=formula, is_dependent=False)
+            se = SharedEvent()
+            se.trigger_event(PYC_FORMULA_INSERTING, cargs)
+            if cargs.cancel and not cargs.handled:
+                self._log.debug(f"Event {PYC_FORMULA_INSERTING} was cancelled")
+                return
             cell.component.setFormula(formula.upper())
             _ = cell.value
+            eargs = EventArgs.from_args(cargs)
+            se.trigger_event(PYC_FORMULA_INSERTED, eargs)
         except Exception as e:
             self._log.error(f"{self.__class__.__name__} - Error: {e}")
 
@@ -178,6 +198,7 @@ class PythonImpl(unohelper.Base, XJobExecutor):
             cc = CellCache(doc)
 
             formula = '=___lo_identifier___.PyImpl.PYC(SHEET();CELL("ADDRESS")'.upper()
+
             with cc.set_context(cell=cell.cell_obj, sheet_idx=sheet.sheet_index):
                 found = cc.get_cell_before()
                 if found:
@@ -190,9 +211,19 @@ class PythonImpl(unohelper.Base, XJobExecutor):
 
                     formula += f"{found.col.upper()}{found.row}"
             formula += ")"
+
+            cargs = CancelEventArgs(self)
+            cargs.event_data = DotDict(formula=formula, is_dependent=True)
+            se = SharedEvent()
+            se.trigger_event(PYC_FORMULA_INSERTING, cargs)
+            if cargs.cancel and not cargs.handled:
+                self._log.debug(f"Event {PYC_FORMULA_INSERTING} was cancelled")
+                return
             # cell.component.setFormula("=" + res.resolve_string("fml001"))
             cell.component.setFormula(formula)
             _ = cell.value
+            eargs = EventArgs.from_args(cargs)
+            se.trigger_event(PYC_FORMULA_INSERTED, eargs)
         except Exception as e:
             self._log.error(f"{self.__class__.__name__} - Error: {e}")
 

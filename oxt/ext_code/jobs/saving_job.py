@@ -22,17 +22,24 @@ if TYPE_CHECKING:
     # just for design time
     _CONDITIONS_MET = True
     from ooodev.calc import CalcDoc
+    from ooodev.events.args.event_args import EventArgs
+    from ooodev.utils.helper.dot_dict import DotDict
     from ...___lo_pip___.oxt_logger import OxtLogger
     from ...___lo_pip___.config import Config
-    from ...pythonpath.libre_pythonista_lib.code.py_source_mgr import PyInstance
-    from ...pythonpath.libre_pythonista_lib.sheet.calculate import remove_doc_sheets_calculate_event
+    from ...pythonpath.libre_pythonista_lib.event.shared_event import SharedEvent
+    from ...pythonpath.libre_pythonista_lib.const.event_const import DOCUMENT_SAVING
+    from ...pythonpath.libre_pythonista_lib.doc_props.calc_props import CalcProps
+
 else:
     _CONDITIONS_MET = _conditions_met()
     if _CONDITIONS_MET:
         from ooodev.calc import CalcDoc
+        from ooodev.events.args.event_args import EventArgs
+        from ooodev.utils.helper.dot_dict import DotDict
         from ___lo_pip___.config import Config
-        from libre_pythonista_lib.code.py_source_mgr import PyInstance
-        from libre_pythonista_lib.sheet.calculate import remove_doc_sheets_calculate_event
+        from libre_pythonista_lib.const.event_const import DOCUMENT_SAVING
+        from libre_pythonista_lib.event.shared_event import SharedEvent
+        from libre_pythonista_lib.doc_props.calc_props import CalcProps
 # endregion imports
 
 
@@ -57,6 +64,10 @@ class SavingJob(XJob, unohelper.Base):
         self._logger = self._get_local_logger()
 
     # endregion Init
+
+    def _update_ext_location(self, doc: CalcDoc):
+        cp = CalcProps(doc)
+        cp.update_doc_ext_location()
 
     # region execute
     def execute(self, args: Any) -> None:
@@ -88,14 +99,15 @@ class SavingJob(XJob, unohelper.Base):
                         self._logger.error("Error Setting Custom Properties", exc_info=True)
 
                     try:
-                        py_src = PyInstance(doc)  # singleton
-                        if not py_src.has_code():
-                            self._logger.debug("No Code Found for document")
-                            remove_doc_sheets_calculate_event(doc)
-                        else:
-                            self._logger.debug("Code Found for document")
-                    except Exception as e:
-                        self._logger.error("Error removing unused Sheet Events", exc_info=True)
+                        self._update_ext_location(doc)
+                    except:
+                        self._logger.error("Error Updating Extension Location", exc_info=True)
+
+                    se = SharedEvent()
+                    eargs = EventArgs(self)
+                    eargs.event_data = DotDict(doc=doc)
+                    # SheetMgr will remove any unused Formula Calculate events from the sheets.
+                    se.trigger_event(DOCUMENT_SAVING, eargs)
             else:
                 self._logger.debug("Document UnLoading not a spreadsheet")
 

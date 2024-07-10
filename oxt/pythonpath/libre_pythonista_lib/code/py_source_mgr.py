@@ -905,6 +905,30 @@ class PySourceManager(EventsPartial):
                 self._update_item(py_src)
             self._log.debug("update_all() Leaving.")
 
+    def get_calc_cells(self) -> List[CalcCell]:
+        """
+        Get all the CalcCells that have code.
+
+        Returns:
+            List[CalcCell]: List of CalcCell objects. The order will be Sheet, Row, Column.
+        """
+        with self._log.indent(True):
+            self._log.debug("get_calc_cells() Entered.")
+            cc = CellCache(self._doc)
+            cells = []
+            sheet_idx = -1
+            for key in self._data.keys():
+                idx, row, col = key
+                sheet = None
+                if sheet is None or sheet_idx != idx:
+                    sheet = self._doc.sheets[idx]
+                    sheet_idx = idx
+                co = CellObj.from_idx(col_idx=col, row_idx=row, sheet_idx=sheet_idx)
+                calc_cell = sheet[co]
+                cells.append(calc_cell)
+            self._log.debug("get_calc_cells() Leaving.")
+            return cells
+
     def update_from_index(self, index: int) -> None:
         """
         Rebuilds the module from the specified index to the end of the data.

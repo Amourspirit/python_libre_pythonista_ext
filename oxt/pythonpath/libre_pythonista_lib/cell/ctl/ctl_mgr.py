@@ -152,6 +152,28 @@ class CtlMgr:
                 )
         return None
 
+    def update_ctl_script(self, cell: CalcCell) -> None:
+        """Sets the actionPerformed script location for the control."""
+        # if the current control and original control are the same then just update the control.
+        # if the current control and the original control are different then remove the original control and add the current control.
+        # if the current control is None and the original control is not None then remove the original control.
+        # if the current control is None and the original control is None then do nothing.
+        # if current_ctl_type is not present then the cell has been modified and the original control need to be removed if it exist.
+        with self._log.indent(True):
+            ctl_type = self.get_current_ctl_type_from_cell(cell)
+            # orig_ctl_type will always be present unless this a new cell.
+            if ctl_type is None:
+                self._log.debug(
+                    f"CtlMgr - update_ctl_script() No control type found for cell {cell.cell_obj}. Returning."
+                )
+                return
+
+            ctl = ctl_type(cell)
+            ctl.update_ctl_script()
+            self._log.debug("CtlMgr - update_ctl_script() Done.")
+
+        return
+
     def update_ctl(self, cell: CalcCell) -> None:
         """Updates the Control for a cell if it exists."""
         # if the current control and original control are the same then just update the control.

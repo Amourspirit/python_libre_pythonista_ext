@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, TYPE_CHECKING, Tuple
+from typing import Any, cast, TYPE_CHECKING, Tuple
 import contextlib
 import uno
 from com.sun.star.awt import XActionListener
@@ -19,6 +19,7 @@ from ..props.key_maker import KeyMaker
 
 if TYPE_CHECKING:
     from com.sun.star.drawing import ControlShape  # service
+    from ooodev.form.controls.form_ctl_base import FormCtlBase
     from .....___lo_pip___.config import Config
 
 else:
@@ -51,6 +52,58 @@ class SimpleCtl:
     def get_rule_name(self) -> str:
         """Gets the rule name for this class instance."""
         return self.key_maker.rule_names.cell_data_type_simple_ctl
+
+    def update_ctl_script(self) -> None:
+        """
+        Updates the actionPerformed script location for the control.
+        """
+        with self.log.indent(True):
+            try:
+                cell_ctl = CellControl(self.calc_cell, self.calc_cell.lo_inst)
+                ctl = cast("FormCtlBase", cell_ctl.current_control)
+                if ctl is None:
+                    self.log.debug("SimpleCtl: set_ctl_script(): Control not found")
+                    return
+                # self._remove_ctl_script(ctl)
+                self._set_ctl_script(ctl)
+                self.log.debug("SimpleCtl: set_ctl_script(): Script set")
+            except Exception:
+                self.log.exception("SimpleCtl: set_ctl_script(): Error getting current control")
+
+    def _set_ctl_script(self, ctl: FormCtlBase) -> None:
+        """
+        Sets the actionPerformed script location for the control.
+
+        Args:
+            ctl (FormCtlBase): Control that has a actionPerformed method.
+        """
+        if self._cfg.is_shared_installed:
+            location = "share:uno_packages"
+        else:
+            location = "user:uno_packages"
+        if self.log.is_debug:
+            self.log.debug(f"SimpleCtl: set_ctl_script(): Script location: {location}")
+            self.log.debug(f"SimpleCtl: set_ctl_script(): Script Name: {self._script_loc}")
+        ctl.assign_script(
+            interface_name=XActionListener,  # type: ignore
+            method_name="actionPerformed",
+            script_name=self._script_loc,
+            loc=location,
+            language=LanguageKind.PYTHON,
+            auto_remove_existing=True,
+        )
+
+    # def _remove_ctl_script(self, ctl: FormCtlBase) -> None:
+    #     """
+    #     Sets the actionPerformed script location for the control.
+
+    #     Args:
+    #         ctl (FormCtlBase): Control that has a actionPerformed method.
+    #     """
+    #     try:
+    #         ctl.remove_script(XActionListener, "actionPerformed")  # type: ignore
+    #     except Exception:
+    #         self.log.exception("SimpleCtl: _remove_ctl_script(): Error removing script")
 
     def add_ctl(self) -> Any:
         """
@@ -105,14 +158,11 @@ class SimpleCtl:
                 btn.model.BackgroundColor = self._get_button_bg_color()  # type: ignore
                 btn.tab_stop = False
                 # btn.apply_styles()
-                btn.assign_script(
-                    interface_name=XActionListener,  # type: ignore
-                    method_name="actionPerformed",
-                    script_name=self._script_loc,
-                    loc="user:uno_packages",
-                    language=LanguageKind.PYTHON,
-                )
-                # self.calc_cell.set_custom_property("CTL", "1")
+                # need a way to manage the script location.
+                # one possible way is to add the macro to the document and then call it.
+                # Another is to loop all the controls in the sheet and update the script location.
+                # Optionally the sheet can store the extension location on save. Then can be use to update controls on load if needed.
+                self._set_ctl_script(btn)
                 self.log.debug(f"{self.__class__.__name__}: add_ctl(): Leaving")
                 self.calc_cell.set_custom_property(self.key_maker.ctl_shape_key, self.namer.ctl_shape_name)
                 self.calc_cell.set_custom_property(self.key_maker.ctl_orig_ctl_key, self.get_rule_name())

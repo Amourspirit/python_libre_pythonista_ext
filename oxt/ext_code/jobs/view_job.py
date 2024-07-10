@@ -30,14 +30,16 @@ if TYPE_CHECKING:
     from ...pythonpath.libre_pythonista_lib.cell.cell_mgr import CellMgr  # type: ignore
     from ...pythonpath.libre_pythonista_lib.sheet.listen.code_sheet_modify_listener import CodeSheetModifyListener
     from ...pythonpath.libre_pythonista_lib.const.event_const import CB_DOC_FOCUS_GAINED, DOCUMENT_NEW_VIEW
-    from ...pythonpath.libre_pythonista_lib.sheet.calculate import set_doc_sheets_calculate_event
+    from ...pythonpath.libre_pythonista_lib.sheet.sheet_mgr import SheetMgr
+    from ...pythonpath.libre_pythonista_lib.cell.cell_update_mgr import CellUpdateMgr
     from ...pythonpath.libre_pythonista_lib.sheet.listen.code_sheet_activation_listener import (
         CodeSheetActivationListener,
     )
-    from ...pythonpath.libre_pythonista_lib.sheet.listen.sheet_calculation_event_listener import (
-        SheetCalculationEventListener,
-    )
 
+    # from ...pythonpath.libre_pythonista_lib.sheet.listen.sheet_calculation_event_listener import (
+    #     SheetCalculationEventListener,
+    # )
+    from ...pythonpath.libre_pythonista_lib.sheet.listen.sheet_activation_listener import SheetActivationListener
     from ...pythonpath.libre_pythonista_lib.doc.listen.document_event_listener import DocumentEventListener
 else:
     _CONDITIONS_MET = _conditions_met()
@@ -48,11 +50,14 @@ else:
         from ooodev.utils.helper.dot_dict import DotDict
         from libre_pythonista_lib.event.shared_event import SharedEvent
         from libre_pythonista_lib.dispatch import dispatch_mgr  # type: ignore
+        from libre_pythonista_lib.sheet.sheet_mgr import SheetMgr
         from libre_pythonista_lib.cell.cell_mgr import CellMgr  # type: ignore
-        from libre_pythonista_lib.sheet.calculate import set_doc_sheets_calculate_event
+        from libre_pythonista_lib.cell.cell_update_mgr import CellUpdateMgr
         from libre_pythonista_lib.sheet.listen.code_sheet_modify_listener import CodeSheetModifyListener
         from libre_pythonista_lib.sheet.listen.code_sheet_activation_listener import CodeSheetActivationListener
-        from libre_pythonista_lib.sheet.listen.sheet_calculation_event_listener import SheetCalculationEventListener
+
+        # from libre_pythonista_lib.sheet.listen.sheet_calculation_event_listener import SheetCalculationEventListener
+        from libre_pythonista_lib.sheet.listen.sheet_activation_listener import SheetActivationListener
 
         from libre_pythonista_lib.doc.listen.document_event_listener import DocumentEventListener
         from libre_pythonista_lib.const.event_const import CB_DOC_FOCUS_GAINED, DOCUMENT_NEW_VIEW
@@ -125,9 +130,14 @@ class ViewJob(unohelper.Base, XJob):
                         _ = Lo.load_office()
                         doc = CalcDoc.get_doc_from_component(self.document)
                         try:
-                            set_doc_sheets_calculate_event(doc)
+                            # check to see if the extension location is the same for this instance
+                            # as the previous time this document was opened.
+                            # The document may be opened in a different environment,
+                            # The extension location may be in shared instead of users or vice versa.
+                            cell_update = CellUpdateMgr(doc)
+                            cell_update.update_cells()
                         except Exception:
-                            self._log.error("Error setting document sheets calculate event", exc_info=True)
+                            self._log.error("Error updating cells with CellUpdateMgr", exc_info=True)
                         try:
                             doc.component.addDocumentEventListener(DocumentEventListener())
                             self._log.debug("Document event listener added")
@@ -161,11 +171,12 @@ class ViewJob(unohelper.Base, XJob):
 
                         # adds new modifier listeners to new sheets
                         code_sheet_activation_listener = CodeSheetActivationListener()
-                        # add calculate event to new sheets
-                        sheet_calc_event_listener = SheetCalculationEventListener()
+                        sheet_act_listener = SheetActivationListener()
                         view.component.removeActivationEventListener(code_sheet_activation_listener)
                         view.component.addActivationEventListener(code_sheet_activation_listener)
-                        view.component.addActivationEventListener(sheet_calc_event_listener)
+                        view.component.removeActivationEventListener(sheet_act_listener)
+                        view.component.addActivationEventListener(sheet_act_listener)
+
                         if view.is_form_design_mode():
 
                             try:
@@ -179,6 +190,7 @@ class ViewJob(unohelper.Base, XJob):
                         self._log.debug(f"Pre Dispatch manager loaded, UID: {doc.runtime_uid}")
                         dispatch_mgr.unregister_interceptor(doc)
                         dispatch_mgr.register_interceptor(doc)
+                        _ = SheetMgr(doc)  # init the singleton
                         cm = CellMgr(doc)
                         cm.reset_py_inst()
                         # cm.remove_all_listeners()

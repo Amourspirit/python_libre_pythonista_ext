@@ -38,7 +38,28 @@ class CalcProps(CustomPropsBase):
         self._is_init = True
         # please the type checker
 
+    def update_doc_ext_location(self) -> None:
+        """
+        Update the document extension location from the config.
+        """
+        self.doc_ext_location = "user" if self._cfg.is_user_installed else "share"
+
     # region Properties
+    @property
+    def doc_ext_location(self) -> str:
+        """Gets/sets the document extension location. Must be ``share`` or ``user``."""
+        if self._cfg.is_shared_installed:
+            location = "share"
+        else:
+            location = "user"
+        return self.get_custom_property("doc_ext_location", location)
+
+    @doc_ext_location.setter
+    def doc_ext_location(self, value: str) -> None:
+        if not value in ("share", "user"):
+            raise ValueError(f"Invalid value for doc_ext_location: {value}")
+        self.set_custom_property("doc_ext_location", value)
+
     @property
     def log_level(self) -> int:
         return self.get_custom_property("log_level", logging.INFO)
