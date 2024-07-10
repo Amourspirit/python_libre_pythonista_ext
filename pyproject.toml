@@ -31,7 +31,7 @@ dialog_desktop_owned = false # https://tinyurl.com/ymeh4c9j#dialog_desktop_owned
 resource_dir_name = "resources" # https://tinyurl.com/ymeh4c9j#resource_dir_name
 resource_properties_prefix = "pipstrings" # https://tinyurl.com/ymeh4c9j#resource_properties_prefix
 default_locale = ["en", "US"] # https://tinyurl.com/ymeh4c9j#default_locale
-sym_link_cpython = false # https://tinyurl.com/ymeh4c9j#sym_link_cpython
+sym_link_cpython = true # https://tinyurl.com/ymeh4c9j#sym_link_cpython
 uninstall_on_update = true # https://tinyurl.com/ymeh4c9j#uninstall_on_update uninstall previous python packages on update
 install_on_no_uninstall_permission = true # https://tinyurl.com/ymeh4c9j#install_on_no_uninstall_permission
 oo_types_uno = ""
@@ -112,6 +112,20 @@ de = "Vorlage zum Erstellen von pip-basierten Erweiterungen für LibreOffice"
 pt = "Modelo para criar extensões baseadas em pip para o LibreOffice"
 es = "Plantilla para crear extensiones basadas en pip para LibreOffice"
 
+
+[tool.oxt.bz2.32_bit]
+"3.8" = { url = "https://www.python.org/ftp/python/3.8.10/python-3.8.10-embed-win32.zip", md5="659adf421e90fba0f56a9631f79e70fb" }
+"3.9" = { url = "https://www.python.org/ftp/python/3.9.13/python-3.9.13-embed-win32.zip", md5="fec0bc06857502a56dd1aeaea6488ef8" }
+"3.10" = { url = "https://www.python.org/ftp/python/3.10.11/python-3.10.11-embed-win32.zip", md5="fee70dae06c25c60cbe825d6a1bfda57" }
+"3.11" = { url = "https://www.python.org/ftp/python/3.11.6/python-3.11.6-embed-win32.zip", md5="d035d12d72e2d62b6e5219ea8f3bda39" }
+"3.12" = { url = "https://www.python.org/ftp/python/3.12.0/python-3.12.0rc3-embed-win32.zip", md5="b6ed11598c929af946a110ca4db0d95c" }
+
+[tool.oxt.bz2.64_bit]
+"3.8" = { url = "https://www.python.org/ftp/python/3.8.10/python-3.8.10-embed-amd64.zip", md5="3acb1d7d9bde5a79f840167b166bb633" }
+"3.9" = { url = "https://www.python.org/ftp/python/3.9.13/python-3.9.13-embed-amd64.zip", md5="57731cf80b1c429a0be7133266d7d7cf" }
+"3.10" = { url = "https://www.python.org/ftp/python/3.10.11/python-3.10.11-embed-amd64.zip", md5="f1c0538b060e03cbb697ab3581cb73bc" }
+"3.11" = { url = "https://www.python.org/ftp/python/3.11.6/python-3.11.6-embed-amd64.zip", md5="ff5f34b8d2504c49fc94ffc29998b8a0" }
+"3.12" = { url = "https://www.python.org/ftp/python/3.12.0/python-3.12.0rc3-embed-arm64.zip", md5="728cbbfd0d5fc485233e1aba7884a773" }
 
 [tool.poetry]
 name = "LibrePythonista"
