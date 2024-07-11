@@ -24,10 +24,11 @@ def on_btn_action_preformed(*args):
     """
     Handle the button action event.
     """
+    log = LogInst()
     if not args:
+        log.debug("button_handler: No args. Returning.")
         return
 
-    log = LogInst()
     log.debug("button_handler debug")
     ev_obj: ActionEvent = args[0]
     action_command = getattr(ev_obj, "ActionCommand", None)

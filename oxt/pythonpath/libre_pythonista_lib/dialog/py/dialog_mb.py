@@ -72,7 +72,7 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
     WIDTH = 600
     NB_TAB = 4
     HEADER = 5  # can create space for label at the top
-    FOOTER = 40
+    FOOTER = 70
     HEIGHT = 310
     MIN_HEIGHT = HEADER + FOOTER + 30
     MIN_WIDTH = 225
@@ -447,8 +447,9 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
 
     # region resize
     def resize_buttons(self, sz: Rectangle) -> None:
-
-        btn_y = sz.Height - DialogMb.BUTTON_HEIGHT - self._padding  # - DialogMb.HEADER
+        txt_sz = self._code.view.getPosSize()
+        # btn_y = sz.Height - DialogMb.BUTTON_HEIGHT -  self._padding
+        btn_y = txt_sz.Y + txt_sz.Height + self._padding
         btn_x = sz.Width - DialogMb.BUTTON_WIDTH - self._padding
         self._ctl_btn_cancel.view.setPosSize(
             btn_x, btn_y, DialogMb.BUTTON_WIDTH, DialogMb.BUTTON_HEIGHT, PosSize.POSSIZE
@@ -474,8 +475,8 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
             return
         if sz.Width < DialogMb.MIN_WIDTH:
             return
-        self.resize_buttons(sz)
         self.resize_code(sz)
+        self.resize_buttons(sz)
         self.resize_info_lbl(sz)
 
     # endregion resize
