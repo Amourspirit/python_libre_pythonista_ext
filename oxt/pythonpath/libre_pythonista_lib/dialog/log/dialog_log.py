@@ -1,6 +1,7 @@
 from __future__ import annotations
 from typing import Any, cast, Dict, TYPE_CHECKING
 import contextlib
+import os
 import uno
 import unohelper
 
@@ -62,6 +63,7 @@ else:
 class DialogLog(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
     _instances: Dict[str, DialogLog] = {}
 
+    IS_WINDOWS = os.name == "nt"
     FONT = "DejaVu Sans Mono"
     MARGIN = 3
     BUTTON_WIDTH = 100
@@ -70,6 +72,8 @@ class DialogLog(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
     NB_TAB = 4
     HEADER = 1  # can create space for label at the top
     FOOTER = 0
+    if IS_WINDOWS:
+        FOOTER += 24
     HEIGHT = 310
     MIN_HEIGHT = HEADER + FOOTER + 30
     MIN_WIDTH = 225

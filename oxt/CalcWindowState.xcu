@@ -11,8 +11,12 @@
                 oor:name="private:resource/toolbar/addon____lo_identifier___.___lo_implementation_name___.toolbar"
                 oor:op="replace">
                 <prop oor:name="UIName" oor:type="xs:string">
-                    <value>LibrePythonista</value>
-                    <value xml:lang="en-US">LibrePythonista</value>
+                    <value>Libre Pythonista Bar</value>
+                    <value xml:lang="en-US">Libre Pythonista Bar</value>
+                    <value xml:lang="it">Barra Libre Pythonista</value>
+                    <value xml:lang="es">Barra Libre Pythonista</value>
+                    <value xml:lang="fr">Barre Libre Pythonista</value>
+                    <value xml:lang="de">Libre Pythonista Bar</value>
                 </prop>
                 <prop oor:name="DockPos" oor:type="xs:string">
                     <value>10,0</value>
