@@ -1,5 +1,6 @@
 import logging
 import sys
+import os
 from logging import Logger
 from logging.handlers import TimedRotatingFileHandler
 from contextlib import contextmanager
@@ -42,8 +43,12 @@ class OxtLogger(Logger):
         self._config = LoggerConfig()  # config.Config()
         basic_config = BasicConfig()
         self._indent_amt = basic_config.log_indent
+        self._fn_on_callback = self._on_callback
+        if os.name == "nt":
+            # for unknown reasons, the indent is not working on windows. The log and the extension totally fails.
+            self._indent_amt = 0
+
         if self._indent_amt > 0:
-            self._fn_on_callback = self._on_callback
             # "%(asctime)s %(levelname)s: %(indent_str)s%(message)s"
             self.formatter = CallbackFormatter(fmt=self._config.log_format, callback=self._fn_on_callback)
         else:
@@ -176,22 +181,22 @@ class OxtLogger(Logger):
     @property
     def is_debug(self) -> bool:
         """Check if is debug"""
-        return self._config.log_level <= logging.DEBUG
+        return self.isEnabledFor(logging.DEBUG)
 
     @property
     def is_info(self) -> bool:
         """Check if is info"""
-        return self._config.log_level <= logging.INFO
+        return self.isEnabledFor(logging.INFO)
 
     @property
     def is_warning(self) -> bool:
         """Check if is warning"""
-        return self._config.log_level <= logging.WARNING
+        return self.isEnabledFor(logging.WARNING)
 
     @property
     def is_error(self) -> bool:
         """Check if is error"""
-        return self._config.log_level <= logging.ERROR
+        return self.isEnabledFor(logging.ERROR)
 
     @property
     def current_indent(self) -> int:
