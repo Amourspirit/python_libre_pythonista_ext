@@ -64,7 +64,6 @@ else:
 
 class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
     _instances = {}
-
     FONT = "DejaVu Sans Mono"
     MARGIN = 3
     BUTTON_WIDTH = 100
@@ -657,13 +656,16 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
     def _write_range_sel(self) -> None:
         with self._log.indent(True):
             doc = cast("CalcDoc", self._doc)
+            sheet = doc.get_active_sheet()
             self._log.debug("_write_range_sel_popup() Write Range Selection Popup")
             try:
+                _ = TopListenerRng(doc)
                 glbs = GblEvents()
                 glbs.subscribe_event("GlobalCalcRangeSelector", self._fn_on_menu_range_select_result)
                 self._log.debug("_write_range_sel_popup() Hide Dialog")
+                self._dialog.toBack()
                 doc.activate()
-                _ = TopListenerRng(doc)
+                # sheet.set_active()
             except:
                 self._log.error("_write_range_sel_popup() Error getting range selection", exc_info=True)
             finally:
@@ -676,11 +678,12 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
             doc = cast("CalcDoc", self._doc)
             self._log.debug("_write_auto_fn_sel() Write Range Selection Popup")
             try:
+                _ = TopListenerRng(doc)
                 glbs = GblEvents()
                 glbs.subscribe_event("GlobalCalcRangeSelector", self._fn_on_menu_insert_lp_fn)
                 self._log.debug("_write_auto_fn_sel() Hide Dialog")
+                self._dialog.toBack()
                 doc.activate()
-                _ = TopListenerRng(doc)
             except:
                 self._log.error("_write_auto_fn_sel() Error getting range selection", exc_info=True)
             finally:
