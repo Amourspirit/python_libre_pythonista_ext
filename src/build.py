@@ -14,6 +14,7 @@ from .processing.locale.descriptions import Descriptions
 from .processing.locale.publisher import Publisher
 from .processing.locale.publisher_update import PublisherUpdate
 from .processing.locale.name import Name
+from .processing.bz2_process import BZ2Processor
 from .install.pre_install_pure import PreInstallPure
 from .processing.idl.idl_rdb import IdlRdb
 from .processing.idl.idl_manifest import IdlManifest
@@ -65,6 +66,7 @@ class Build:
 
         self._build_idl()
         self._write_xml()
+        self._process_bz2()
         self._ensure_default_resource()
 
         if self._args.make_dist:
@@ -140,6 +142,11 @@ class Build:
         config_file = self._build_path / token.get_token_value("lo_pip") / "config.json"
         json_config = JsonConfig()
         json_config.update_json_config(config_file)
+
+    def _process_bz2(self) -> None:
+        """Processes the bz2 files."""
+        bz2 = BZ2Processor()
+        bz2.process()
 
     def _copy_py_packages(self) -> None:
         """Copies the python packages to the build directory."""
