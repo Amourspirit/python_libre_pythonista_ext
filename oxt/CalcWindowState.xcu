@@ -8,7 +8,7 @@
     <node oor:name="UIElements">
         <node oor:name="States">
             <node
-                oor:name="private:resource/toolbar/___lo_identifier___.___lo_implementation_name___.toolbar"
+                oor:name="private:resource/toolbar/addon____lo_identifier___.___lo_implementation_name___.toolbar"
                 oor:op="replace">
                 <prop oor:name="UIName" oor:type="xs:string">
                     <value>LibrePythonista</value>
