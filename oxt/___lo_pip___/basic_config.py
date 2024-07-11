@@ -20,7 +20,6 @@ class ConfigMeta(type):
 
 class BasicConfig(metaclass=ConfigMeta):
     def __init__(self, **kwargs) -> None:
-        self._author_names = cast(List[str], kwargs.get("author_names", []))
         self._py_pkg_dir = str(kwargs["py_pkg_dir"])
         self._lo_identifier = str(kwargs["lo_identifier"])
         self._lo_implementation_name = str(kwargs["lo_implementation_name"])
@@ -32,47 +31,15 @@ class BasicConfig(metaclass=ConfigMeta):
         self._dialog_desktop_owned = bool(kwargs["dialog_desktop_owned"])
         self._default_locale = cast(List[str], (kwargs["default_locale"]))
         self._resource_dir_name = str(kwargs["resource_dir_name"])
-        self._extension_display_name = str(kwargs["extension_display_name"])
-        self._extension_version = str(kwargs["extension_version"])
-        self._extension_license = str(kwargs["extension_license"])
         self._resource_properties_prefix = str(kwargs["resource_properties_prefix"])
         self._isolate_windows = set(kwargs["isolate_windows"])
         self._sym_link_cpython = bool(kwargs["sym_link_cpython"])
-        self._uninstall_on_update = bool(kwargs["uninstall_on_update"])
-        self._install_on_no_uninstall_permission = bool(kwargs["install_on_no_uninstall_permission"])
-        self._unload_after_install = bool(kwargs["unload_after_install"])
-        self._log_indent = int(kwargs.get("log_indent", 0))
-        self._run_imports = set(kwargs["run_imports"])
-        self._oxt_name = str(kwargs["oxt_name"])
-
-        # region tool.libre_pythonista.config
-        self._cell_cp_prefix = str(kwargs["cell_cp_prefix"])
-        self._cell_cp_codename = str(kwargs["cell_cp_codename"])
-        self._general_code_name = str(kwargs["general_code_name"])
-        self._lp_default_log_format = str(kwargs["lp_default_log_format"])
-        self._macro_lp_sheet_ctl_click = str(kwargs["macro_lp_sheet_ctl_click"])
-        self._macro_sheet_on_calculate = str(kwargs["macro_sheet_on_calculate"])
-
-        self._py_script_sheet_ctl_click = str(kwargs["py_script_sheet_ctl_click"])
-        self._py_script_sheet_on_calculate = str(kwargs["py_script_sheet_on_calculate"])
-        # endregion tool.libre_pythonista.config
 
         if "requirements" not in kwargs:
             kwargs["requirements"] = {}
         self._requirements: Dict[str, str] = dict(**kwargs["requirements"])
 
     # region Properties
-    @property
-    def author_names(self) -> List[str]:
-        """
-        Gets the list of author names.
-
-        The value for this property can be set in pyproject.toml (tool.poetry.authors)
-
-        This is the list of author names for the extension.
-        """
-        return self._author_names
-
     @property
     def auto_install_in_site_packages(self) -> bool:
         """
@@ -112,47 +79,11 @@ class BasicConfig(metaclass=ConfigMeta):
         return self._dialog_desktop_owned
 
     @property
-    def extension_display_name(self) -> str:
-        """
-        Gets extension display Name.
-
-        The value for this property can be set in pyproject.toml (tool.token.display_name)
-        """
-        return self._extension_display_name
-
-    @property
-    def extension_license(self) -> str:
-        """
-        Gets extension license.
-
-        The value for this property can be set in pyproject.toml (tool.poetry.license)
-        """
-        return self._extension_license
-
-    @property
-    def extension_version(self) -> str:
-        """
-        Gets extension version.
-
-        The value for this property can be set in pyproject.toml (tool.poetry.version)
-        """
-        return self._extension_version
-
-    @property
     def has_locals(self) -> bool:
         """
         Gets the flag indicating if the extension has local pip files to install.
         """
         return self._has_locals
-
-    @property
-    def install_on_no_uninstall_permission(self) -> bool:
-        """
-        Gets the flag indicating if a package cannot be uninstalled due to permission error,
-        then it will be installed anyway. This is usually the case when a package is installed
-        in the system packages folder.
-        """
-        return self._install_on_no_uninstall_permission
 
     @property
     def install_wheel(self) -> bool:
@@ -189,65 +120,11 @@ class BasicConfig(metaclass=ConfigMeta):
         return self._lo_implementation_name
 
     @property
-    def log_indent(self) -> int:
-        """
-        Gets the amount of logging indent. ``0`` is no indent.
-
-        The value for this property can be set in pyproject.toml (tool.oxt.config.log_indent)
-        """
-        return self._log_indent
-
-    @property
-    def macro_lp_sheet_ctl_click(self) -> str:
-        """
-        Gets macro name of the sheet control click.
-
-        The value for this property can be set in pyproject.toml (tool.libre_pythonista.macro_lp_sheet_ctl_click)
-        """
-        return self._macro_lp_sheet_ctl_click
-
-    @property
-    def macro_sheet_on_calculate(self) -> str:
-        """
-        Gets macro name of for the sheet OnCalculate event.
-
-        The value for this property can be set in pyproject.toml (tool.libre_pythonista.macro_sheet_on_calculate)
-        """
-        return self._macro_sheet_on_calculate
-
-    @property
-    def oxt_name(self) -> str:
-        """
-        Gets the Otx name of the extension without the ``.otx`` extension.
-
-        The value for this property can be set in pyproject.toml (tool.oxt.token.oxt_name)
-        """
-        return self._oxt_name
-
-    @property
     def py_pkg_dir(self) -> str:
         """
         The value for this property can be set in pyproject.toml (tool.oxt.config.py_pkg_dir)
         """
         return self._py_pkg_dir
-
-    @property
-    def py_script_sheet_ctl_click(self) -> str:
-        """
-        Gets python Script name including the ``.py`` extension.
-
-        The value for this property can be set in pyproject.toml (tool.libre_pythonista.py_script_sheet_ctl_click)
-        """
-        return self._py_script_sheet_ctl_click
-
-    @property
-    def py_script_sheet_on_calculate(self) -> str:
-        """
-        Gets python Script name including the ``.py`` extension.
-
-        The value for this property can be set in pyproject.toml (tool.libre_pythonista.py_script_sheet_on_calculate)
-        """
-        return self._py_script_sheet_on_calculate
 
     @property
     def requirements(self) -> Dict[str, str]:
@@ -284,15 +161,6 @@ class BasicConfig(metaclass=ConfigMeta):
         return self._resource_properties_prefix
 
     @property
-    def run_imports(self) -> Set[str]:
-        """
-        Gets the set of imports that are required to run this extension.
-
-        The value for this property can be set in pyproject.toml (tool.oxt.isolate.run_imports)
-        """
-        return self._run_imports
-
-    @property
     def sym_link_cpython(self) -> bool:
         """
         Gets the flag indicating if CPython files should be symlinked on Linux AppImage and Mac OS.
@@ -302,20 +170,6 @@ class BasicConfig(metaclass=ConfigMeta):
         If this is set to ``True`` then CPython will be symlinked on Linux AppImage and Mac OS.
         """
         return self._sym_link_cpython
-
-    @property
-    def uninstall_on_update(self) -> bool:
-        """
-        Gets the flag indicating if python packages should be uninstalled before updating.
-        """
-        return self._uninstall_on_update
-
-    @property
-    def unload_after_install(self) -> bool:
-        """
-        Gets the flag indicating if the extension installer should unload after installation.
-        """
-        return self._unload_after_install
 
     @property
     def window_timeout(self) -> int:
@@ -338,44 +192,5 @@ class BasicConfig(metaclass=ConfigMeta):
         If this is set to ``True`` then pure python packages will be zipped and installed as a zip file.
         """
         return self._zipped_preinstall_pure
-
-    # region tool.libre_pythonista.config
-    @property
-    def cell_cp_prefix(self) -> str:
-        """
-        Gets the custom property prefix for cells.
-
-        The value for this property can be set in pyproject.toml (tool.libre_pythonista.config)
-        """
-        return self._cell_cp_prefix
-
-    @property
-    def cell_cp_codename(self) -> str:
-        """
-        Gets the custom property code name for cells.
-
-        The value for this property can be set in pyproject.toml (tool.libre_pythonista.config)
-        """
-        return self._cell_cp_codename
-
-    @property
-    def general_code_name(self) -> str:
-        """
-        Gets the General code name for the extension. This is a code safe name and can be use in var names.
-
-        The value for this property can be set in pyproject.toml (tool.libre_pythonista.config)
-        """
-        return self._general_code_name
-
-    @property
-    def lp_default_log_format(self) -> str:
-        """
-        Gets the default log format for the extension.
-
-        The value for this property can be set in pyproject.toml (tool.libre_pythonista.config)
-        """
-        return self._lp_default_log_format
-
-    # endregion tool.libre_pythonista.config
 
     # endregion Properties

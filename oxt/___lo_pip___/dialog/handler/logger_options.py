@@ -109,7 +109,7 @@ class RadioButtonListener(unohelper.Base, XPropertyChangeListener):
 class OptionsDialogHandler(unohelper.Base, XContainerWindowEventHandler):
     def __init__(self, ctx: Any):
         self._logger = OxtLogger(log_name=__name__)
-        self._logger.debug("OptionsDialogHandler.__init__")
+        self._logger.debug("LoggingOptionsPage-OptionsDialogHandler.__init__)")
         self.ctx = ctx
         self._config = Config()
         self._resource_resolver = ResourceResolver(self.ctx)
@@ -120,7 +120,7 @@ class OptionsDialogHandler(unohelper.Base, XContainerWindowEventHandler):
         self._logging_format = ""
         self._logging_format_original = ""
         self._settings = Settings()
-        self._logger.debug("OptionsDialogHandler.__init__ done")
+        self._logger.debug("LoggingOptionsPage-OptionsDialogHandler.__init__ done")
 
     # region XContainerWindowEventHandler
     def callHandlerMethod(self, window: UnoControlDialog, eventObject: Any, method: str):
@@ -143,7 +143,7 @@ class OptionsDialogHandler(unohelper.Base, XContainerWindowEventHandler):
         return self._logging_format != self._logging_format_original
 
     def _handle_external_event(self, window: UnoControlDialog, ev_name: str):
-        self._logger.debug(f"OptionsDialogHandler._handle_external_event: {ev_name}")
+        self._logger.debug(f"LoggingOptionsPage-OptionsDialogHandler._handle_external_event: {ev_name}")
         if ev_name == "ok":
             self._save_data(window)
         elif ev_name == "back":
@@ -154,7 +154,7 @@ class OptionsDialogHandler(unohelper.Base, XContainerWindowEventHandler):
 
     def _save_data(self, window: UnoControlDialog):
         name = cast(str, window.getModel().Name)  # type: ignore
-        self._logger.debug(f"OptionsDialogHandler._save_data name: {name}")
+        self._logger.debug(f"LoggingOptionsPage-OptionsDialogHandler._save_data name: {name}")
         if name != self._window_name:
             return
         txt_log_format = cast("UnoControlEdit", window.getControl("txtLogFormat"))
@@ -164,7 +164,7 @@ class OptionsDialogHandler(unohelper.Base, XContainerWindowEventHandler):
             "names": ("LogLevel", "LogFormat"),
             "values": (self.logging_level, self._logging_format),  # type: ignore
         }
-        self._logger.debug(f"OptionsDialogHandler._save_data settings: {settings}")
+        self._logger.debug(f"LoggingOptionsPage-OptionsDialogHandler._save_data settings: {settings}")
         self._config_writer(settings)
         if self._has_log_options_changed():
             try:
@@ -177,13 +177,13 @@ class OptionsDialogHandler(unohelper.Base, XContainerWindowEventHandler):
                     message=msg,
                 ).execute()
             except Exception as err:
-                self._logger.error(f"OptionsDialogHandler._save_data: {err}", exc_info=True)
+                self._logger.error(f"LoggingOptionsPage-OptionsDialogHandler._save_data: {err}", exc_info=True)
 
     def _load_data(self, window: UnoControlDialog, ev_name: str):
         # sourcery skip: extract-method
         name = cast(str, window.getModel().Name)  # type: ignore
-        self._logger.debug(f"OptionsDialogHandler._load_data name: {name}")
-        self._logger.debug(f"OptionsDialogHandler._load_data ev_name: {ev_name}")
+        self._logger.debug(f"LoggingOptionsPage-OptionsDialogHandler._load_data name: {name}")
+        self._logger.debug(f"LoggingOptionsPage-OptionsDialogHandler._load_data ev_name: {ev_name}")
         if name != self._window_name:
             return
         try:
@@ -209,7 +209,7 @@ class OptionsDialogHandler(unohelper.Base, XContainerWindowEventHandler):
                 self._logging_level_original = settings["LogLevel"]
                 self._logging_level = self._logging_level_original
                 self._logger.debug(
-                    f"OptionsDialogHandler._load_data settings LogLevel: {self._logging_level_original}"
+                    f"LoggingOptionsPage-OptionsDialogHandler._load_data settings LogLevel: {self._logging_level_original}"
                 )
                 if self._logging_level in _OPT_LOG:
                     opt_log = cast("UnoControlRadioButton", window.getControl(_OPT_LOG[self._logging_level]))
@@ -224,7 +224,7 @@ class OptionsDialogHandler(unohelper.Base, XContainerWindowEventHandler):
             lbl_log.setText(str(self._config.log_file))
 
         except Exception as err:
-            self._logger.error(f"OptionsDialogHandler._load_data: {err}", exc_info=True)
+            self._logger.error(f"LoggingOptionsPage-OptionsDialogHandler._load_data: {err}", exc_info=True)
             raise err
         return
 

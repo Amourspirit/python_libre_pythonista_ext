@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dlg:window PUBLIC "-//OpenOffice.org//DTD OfficeDocument 1.0//EN" "dialog.dtd">
+<dlg:window xmlns:dlg="http://openoffice.org/2000/dialog"
+    xmlns:script="http://openoffice.org/2000/script" dlg:id="install" dlg:left="56" dlg:top="24"
+    dlg:width="228" dlg:height="76" dlg:closeable="true" dlg:moveable="true"
+    dlg:withtitlebar="false">
+    <dlg:styles>
+        <dlg:style dlg:style-id="0" dlg:font-height="9" dlg:font-name="DejaVu Sans Mono" />
+    </dlg:styles>
+    <dlg:bulletinboard>
+        <dlg:text dlg:id="lblTroubleShoot" dlg:tab-index="1" dlg:left="5" dlg:top="6"
+            dlg:width="213" dlg:height="12" dlg:value="ins01" />
+        <dlg:checkbox dlg:id="chkOdfpy" dlg:tab-index="1" dlg:left="17" dlg:top="24"
+            dlg:width="189" dlg:height="8" dlg:value="ins03" dlg:checked="false" />
+        <dlg:checkbox dlg:id="chkOooDev" dlg:tab-index="1" dlg:left="17" dlg:top="36"
+            dlg:width="189" dlg:height="8" dlg:value="ins02" dlg:checked="false" />
+    </dlg:bulletinboard>
+</dlg:window>

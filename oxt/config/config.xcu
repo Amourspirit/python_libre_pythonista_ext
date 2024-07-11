@@ -68,12 +68,23 @@
       <value>___delay_startup___</value>
     </prop>
   </node>
-  <node oor:name="LpDialogWindow">
-    <prop oor:name="CodeWindowJson" oor:type="xs:string">
-      <value></value>
+  <node oor:name="Options">
+    <prop oor:name="OptionLoadPandas" oor:type="xs:boolean">
+      <value>false</value>
     </prop>
-    <prop oor:name="LogWindowJson" oor:type="xs:string">
-      <value></value>
+    <prop oor:name="OptionLoadNumpy" oor:type="xs:boolean">
+      <value>false</value>
+    </prop>
+    <prop oor:name="OptionLoadOooDev" oor:type="xs:boolean">
+      <value>false</value>
+    </prop>
+  </node>
+  <node oor:name="Install">
+    <prop oor:name="InstallOdfpy" oor:type="xs:boolean">
+      <value>true</value>
+    </prop>
+    <prop oor:name="InstallOooDev" oor:type="xs:boolean">
+      <value>true</value>
     </prop>
   </node>
 </oor:component-data>

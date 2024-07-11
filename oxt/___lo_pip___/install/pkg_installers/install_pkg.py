@@ -167,40 +167,6 @@ class InstallPkg:
 
         return result
 
-    def _uninstall_pkg(self, pkg: str) -> bool:
-        # pip uninstall -y package1 package2 package3
-        cmd = ["uninstall", "-y"]
-        cmd = self._cmd_pip(*[*cmd, pkg])
-        self._logger.debug(f"Running command {cmd}")
-        self._logger.info(f"Uninstalling package {pkg}")
-        msg = f"Pip Uninstall success for: {pkg}"
-        err_msg = f"Pip Uninstall failed for: {pkg}"
-        if STARTUP_INFO:
-            process = subprocess.run(
-                cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=self._get_env(), startupinfo=STARTUP_INFO
-            )
-        else:
-            process = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=self._get_env())
-        result = False
-        if process.returncode == 0:
-            self._logger.info(msg)
-            result = True
-        else:
-            self._logger.error(err_msg)
-            try:
-                # if permission denied then raise exception.
-                last_line = process.stderr.decode("utf-8").strip().split("\n")[-1]
-                if last_line.startswith("PermissionError: [Errno 13] Permission denied:"):
-                    raise PermissionError(last_line)
-                else:
-                    self._logger.error(process.stderr.decode("utf-8"))
-            except PermissionError:
-                raise
-            except Exception as err:
-                self._logger.error(f"Error decoding stderr: {err}")
-
-        return result
-
     def _get_env(self) -> Dict[str, str]:
         """
         Gets Environment used for subprocess.
@@ -212,13 +178,6 @@ class InstallPkg:
             py_path = py_path + d + p_sep
         my_env["PYTHONPATH"] = py_path
         return my_env
-
-    def _uninstall_allowed(self, pkg_name: str) -> bool:
-        """Check if a package can be uninstalled."""
-        # don't uninstall pip no matter what.
-        if pkg_name.lower() == "pip":
-            return False
-        return True
 
     def install(self, req: Dict[str, str] | None = None, force: bool = False) -> bool:
         """
@@ -253,26 +212,6 @@ class InstallPkg:
                 break
 
             ver_lst: List[str] = [rule.get_versions_str() for rule in rules]
-            if self.config.uninstall_on_update and self._uninstall_allowed(name):
-                pkg_ver = self.get_package_version(name)
-                if pkg_ver:
-                    try:
-                        if not self._uninstall_pkg(name):
-                            return False
-                    except PermissionError as e:
-                        if self.config.install_on_no_uninstall_permission:
-                            self._logger.error(f"Unable to uninstall {name}. {e}")
-                            self._logger.info(
-                                f"Permission error is usually because the package is installed as a system package that LibreOffice does not have permission to uninstall."
-                            )
-                            self._logger.info(
-                                f"Continuing to install {name} {ver} even though it is already installed. Probably because it is installed as a system package."
-                            )
-                        else:
-                            self._logger.error(
-                                f"Unable to uninstall {name}. {e}\nThis is usually because the package is installed as a system package that LibreOffice does not have permission to uninstall."
-                            )
-                            return False
             result = result and self._install_pkg(name, ",".join(ver_lst), force)
         self._logger.info("Installing packages Done!")
         return result

@@ -14,24 +14,11 @@ class MessageDialog(DialogBase):
     """Shows message in standard message box."""
 
     def __init__(self, ctx: Any, parent: XWindowPeer, **kwargs):
-        """
-        Constructor
-
-        Args:
-            ctx (Any): Component context
-            parent (XWindowPeer): Parent Window
-
-        Keyword Args:
-            type (int): Type of message box
-            buttons (int): Buttons to show
-            title (str): Title of message box
-            message (str): Message to show
-        """
         super().__init__(ctx)
         self.parent = parent
         self.args = kwargs
 
-    def execute(self) -> int:
+    def execute(self):
         box_type = self.args.get("type", MESSAGEBOX)
         buttons = int(self.args.get("buttons", 1))
         title = str(self.args.get("title", ""))

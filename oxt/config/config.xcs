@@ -124,15 +124,48 @@
                 </info>
             </prop>
         </group>
-        <group oor:name="LpDialogWindow">
-            <prop oor:name="CodeWindowJson" oor:type="xs:string">
+        <group oor:name="Options">
+            <prop oor:name="OptionLoadPandas" oor:type="xs:boolean">
                 <info>
-                    <desc>Code Edit Window Edit Data</desc>
+                    <desc>
+                        Determins if Pandas is loaded when LibreOffice is started.
+                    </desc>
                 </info>
             </prop>
-            <prop oor:name="LogWindowJson" oor:type="xs:string">
+            <prop oor:name="OptionLoadNumpy" oor:type="xs:boolean">
                 <info>
-                    <desc>Log Window Data</desc>
+                    <desc>
+                        Determins if Numpy is loaded when LibreOffice is started.
+                    </desc>
+                </info>
+            </prop>
+            <prop oor:name="OptionLoadOooDev" oor:type="xs:boolean">
+                <info>
+                    <desc>
+                        Determins if OooDev is loaded when LibreOffice is started.
+                    </desc>
+                </info>
+            </prop>
+        </group>
+        <group oor:name="Install">
+            <prop oor:name="InstallOdfpy" oor:type="xs:boolean">
+                <info>
+                    <desc>
+                        Determins if odfpy python package is to be installed.
+                        Default is true.
+                        This setting is available to allow the user to disable the installation of odfpy
+                        in the event that it failing install and continuing to try to install on every startup.
+                    </desc>
+                </info>
+            </prop>
+            <prop oor:name="InstallOooDev" oor:type="xs:boolean">
+                <info>
+                    <desc>
+                        Determins if ooodev python package is to be installed.
+                        Default is true.
+                        This setting is available to allow the user to disable the installation of
+                        odfpy
+                    </desc>
                 </info>
             </prop>
         </group>

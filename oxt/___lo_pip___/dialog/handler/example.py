@@ -52,18 +52,18 @@ class ButtonListener(unohelper.Base, XActionListener):
 class OptionsDialogHandler(unohelper.Base, XContainerWindowEventHandler):
     def __init__(self, ctx: Any):
         self._logger = OxtLogger(log_name=__name__)
-        self._logger.debug("OptionsDialogHandler.__init__")
+        self._logger.debug("Example-OptionsDialogHandler.__init__")
         self.ctx = ctx
         self._config = BasicConfig()
         self._resource_resolver = ResourceResolver(self.ctx)
         self._config_node = f"/{self._config.lo_implementation_name}.Settings/Logging"
         self._window_name = "example"
         self._settings = Settings()
-        self._logger.debug("OptionsDialogHandler.__init__ done")
+        self._logger.debug("Example-OptionsDialogHandler.__init__ done")
 
     # region XContainerWindowEventHandler
     def callHandlerMethod(self, window: UnoControlDialog, eventObject: Any, method: str):
-        self._logger.debug(f"OptionsDialogHandler.callHandlerMethod: {method}")
+        self._logger.debug(f"Example-OptionsDialogHandler.callHandlerMethod: {method}")
         if method == "external_event":
             try:
                 self._handle_external_event(window, eventObject)
@@ -77,7 +77,7 @@ class OptionsDialogHandler(unohelper.Base, XContainerWindowEventHandler):
     # endregion XContainerWindowEventHandler
 
     def _handle_external_event(self, window: UnoControlDialog, ev_name: str):
-        self._logger.debug(f"OptionsDialogHandler._handle_external_event: {ev_name}")
+        self._logger.debug(f"Example-OptionsDialogHandler._handle_external_event: {ev_name}")
         if ev_name == "ok":
             self._save_data(window)
         elif ev_name == "back":
@@ -88,7 +88,7 @@ class OptionsDialogHandler(unohelper.Base, XContainerWindowEventHandler):
 
     def _save_data(self, window: UnoControlDialog):
         name = cast(str, window.getModel().Name)  # type: ignore
-        self._logger.debug(f"OptionsDialogHandler._save_data name: {name}")
+        self._logger.debug(f"Example-OptionsDialogHandler._save_data name: {name}")
         if name != self._window_name:
             return
         editor = window.getControl("txtTest")
@@ -96,14 +96,14 @@ class OptionsDialogHandler(unohelper.Base, XContainerWindowEventHandler):
             "names": ("TestText",),
             "values": (editor.Text,),  # type: ignore
         }
-        self._logger.debug(f"OptionsDialogHandler._save_data settings: {settings}")
+        self._logger.debug(f"Example-OptionsDialogHandler._save_data settings: {settings}")
         self._config_writer(settings)
 
     def _load_data(self, window: UnoControlDialog, ev_name: str):
         # sourcery skip: extract-method
         name = cast(str, window.getModel().Name)  # type: ignore
-        self._logger.debug(f"OptionsDialogHandler._load_data name: {name}")
-        self._logger.debug(f"OptionsDialogHandler._load_data ev_name: {ev_name}")
+        self._logger.debug(f"Example-OptionsDialogHandler._load_data name: {name}")
+        self._logger.debug(f"Example-OptionsDialogHandler._load_data ev_name: {ev_name}")
         if name != self._window_name:
             return
         try:
@@ -118,11 +118,13 @@ class OptionsDialogHandler(unohelper.Base, XContainerWindowEventHandler):
                         model = control.Model
                         model.Label = self._resource_resolver.resolve_string(model.Label)
             if settings := self._settings.current_settings:
-                self._logger.debug(f"OptionsDialogHandler._load_data settings TestText: {settings['TestText']}")
+                self._logger.debug(
+                    f"Example-OptionsDialogHandler._load_data settings TestText: {settings['TestText']}"
+                )
                 tf_test = cast("UnoControlEdit", window.getControl("txtTest"))
                 tf_test.setText(settings["TestText"])
         except Exception as err:
-            self._logger.error(f"OptionsDialogHandler._load_data: {err}", exc_info=True)
+            self._logger.error(f"Example-OptionsDialogHandler._load_data: {err}", exc_info=True)
             raise err
         return
 
@@ -134,11 +136,11 @@ class OptionsDialogHandler(unohelper.Base, XContainerWindowEventHandler):
             raise e
 
     def choose_file(self):
-        self._logger.debug("OptionsDialogHandler.choose_file")
+        self._logger.debug("Example-OptionsDialogHandler.choose_file")
         try:
             return self._get_file_url()
         except Exception as err:
-            self._logger.error(f"OptionsDialogHandler.choose_file: {err}", exc_info=True)
+            self._logger.error(f"Example-OptionsDialogHandler.choose_file: {err}", exc_info=True)
             raise err
 
     def _get_file_url(self):

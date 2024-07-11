@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, cast, Any
+from typing import TYPE_CHECKING, cast
 from .dialog_base import DialogBase
 
 from ..oxt_logger import OxtLogger
@@ -13,19 +13,6 @@ class FileOpenDialog(DialogBase):
     """To get file url to open."""
 
     def __init__(self, ctx, **kwargs):
-        """
-        Constructor
-
-        Args:
-            ctx (Any): Component context
-
-        Keyword Args:
-            template (str): Template url.
-            title (str): Title of the dialog.
-            default (str): Default file name.
-            directory (str): Initial directory.
-            filters (list): List of filters.
-        """
         super().__init__(ctx)
         self._logger = OxtLogger(log_name=__name__)
         self._logger.debug("FileOpenDialog.__init__")
@@ -43,13 +30,8 @@ class FileOpenDialog(DialogBase):
             raise
         self._logger.debug("FileOpenDialog.__init__ done")
 
-    def execute(self) -> str:
-        """
-        Execute the dialog.
-
-        Returns:
-            str: Path if selected, else empty string.
-        """
+    def execute(self):
+        """Execute the dialog."""
         # sourcery skip: extract-method
         self._logger.debug("FileOpenDialog.execute")
         fp = cast("FilePicker", self.create(self.file_picker_service))
@@ -67,7 +49,7 @@ class FileOpenDialog(DialogBase):
             if "filters" in self.args:
                 for title, filter in self.args["filters"]:
                     fp.appendFilter(title, filter)
-            return fp.getFiles()[0] if fp.execute() else ""
+            return fp.getFiles()[0] if fp.execute() else None
         except Exception as err:
             self._logger.error(f"FileOpenDialog.execute: {err}", exc_info=True)
             raise
