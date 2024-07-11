@@ -9,7 +9,7 @@ services:
       context: ../
       dockerfile: .devcontainer/Dockerfile
       args:
-        LO_VERSION: "7.6.3"
+        LO_VERSION: "7.6.7"
         POETRY_VERSION: "1.8.3"
         CONFIG_DIR: /config
     # user: root

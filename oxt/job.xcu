@@ -4,9 +4,9 @@
   xmlns:oor="http://openoffice.org/2001/registry" xmlns:xs="http://www.w3.org/2001/XMLSchema"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <node oor:name="Jobs">
-    <node oor:name="___lo_implementation_name___Job" oor:op="fuse">
+    <node oor:name="___lo_identifier___.___lo_implementation_name___.py_runner_job" oor:op="fuse">
       <prop oor:name="Service">
-        <value>___lo_identifier___.___lo_implementation_name___</value>
+        <value>___lo_identifier___.___lo_implementation_name___.py_runner</value>
       </prop>
     </node>
     <node oor:name="ViewJob" oor:op="fuse">
@@ -48,7 +48,7 @@
   <node oor:name="Events">
     <node oor:name="___startup_event___" oor:op="fuse">
       <node oor:name="JobList">
-        <node oor:name="___lo_implementation_name___Job" oor:op="fuse" />
+        <node oor:name="___lo_identifier___.___lo_implementation_name___.py_runner_job" oor:op="fuse" />
       </node>
     </node>
     <node oor:name="OnLoad" oor:op="fuse">
