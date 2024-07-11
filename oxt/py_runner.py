@@ -251,7 +251,7 @@ class ___lo_implementation_name___(unohelper.Base, XJob):
             self._logger.debug("Created InstallPkg instance")
             pkg_installer.install()
 
-            # self._handel_bz2()
+            self._handel_bz2()
 
             self._post_install()
 
@@ -535,50 +535,50 @@ class ___lo_implementation_name___(unohelper.Base, XJob):
     # endregion Logging
 
     # region handel windows _bz2
-    # def _get_needs_bz2(self) -> bool:
-    #     if not self._config.is_win:
-    #         return False
-    #     try:
-    #         import _bz2  # noqa: F401
+    def _get_needs_bz2(self) -> bool:
+        if not self._config.is_win:
+            return False
+        try:
+            import _bz2  # noqa: F401
 
-    #         return False
-    #     except ImportError:
-    #         return True
+            return False
+        except ImportError:
+            return True
 
-    # def _handel_bz2(self) -> None:
-    #     if not self._get_needs_bz2():
-    #         import _bz2
+    def _handel_bz2(self) -> None:
+        if not self._get_needs_bz2():
+            import _bz2
 
-    #         self._logger.debug(f"_bz2 is already installed. Skipping _bz2 install:  {_bz2.__file__}")
-    #         return
-    #     from ___lo_pip___.bz2_config import BZ2Config  # type: ignore
+            self._logger.debug(f"_bz2 is already installed. Skipping _bz2 install:  {_bz2.__file__}")
+            return
+        from ___lo_pip___.bz2_config import BZ2Config  # type: ignore
 
-    #     self._logger.debug("Installing _bz2")
+        self._logger.debug("Installing _bz2")
 
-    #     cfg = BZ2Config()
-    #     bz_file = cfg.install_dir / "_bz2.pyd"
-    #     if bz_file.exists():
-    #         self._logger.debug(f"Found bz2 file: {bz_file}")
-    #         self._add_bz2_to_sys_path(cfg.install_dir)
-    #         return
-    #     from ___lo_pip___.install.bz2_install import BZ2Install  # type: ignore
+        cfg = BZ2Config()
+        bz_file = cfg.install_dir / "_bz2.pyd"
+        if bz_file.exists():
+            self._logger.debug(f"Found bz2 file: {bz_file}")
+            self._add_bz2_to_sys_path(cfg.install_dir)
+            return
+        from ___lo_pip___.install.bz2_install import BZ2Install  # type: ignore
 
-    #     bz_install = BZ2Install(ctx=self.ctx)
-    #     bz_install.install()
-    #     self._add_bz2_to_sys_path(cfg.install_dir)
+        bz_install = BZ2Install(ctx=self.ctx)
+        bz_install.install()
+        self._add_bz2_to_sys_path(cfg.install_dir)
 
-    # def _add_bz2_to_sys_path(self, pth: Path | None) -> None:
-    #     # sourcery skip: class-extract-method
-    #     if pth is None:
-    #         from ___lo_pip___.bz2_config import BZ2Config  # type: ignore
+    def _add_bz2_to_sys_path(self, pth: Path | None) -> None:
+        # sourcery skip: class-extract-method
+        if pth is None:
+            from ___lo_pip___.bz2_config import BZ2Config  # type: ignore
 
-    #         cfg = BZ2Config()
-    #         pth = cfg.install_dir
-    #     if not pth.exists():  # type: ignore
-    #         self._logger.debug(f"Dir no found: {pth}")
-    #         return
-    #     result = self._session.register_path(pth, True)
-    #     self._log_sys_path_register_result(pth, result)  # type: ignore
+            cfg = BZ2Config()
+            pth = cfg.install_dir
+        if not pth.exists():  # type: ignore
+            self._logger.debug(f"Dir no found: {pth}")
+            return
+        result = self._session.register_path(pth, True)
+        self._log_sys_path_register_result(pth, result)  # type: ignore
 
     # endregion handel windows _bz2
 
