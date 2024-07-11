@@ -6,10 +6,16 @@
 	oor:package="org.openoffice.Office">
 	<node oor:name="AddonUI">
 		<node oor:name="OfficeToolBar">
+			<!-- https://wiki.openoffice.org/wiki/Documentation/DevGuide/WritingUNO/AddOns/Toolbars -->
 			<node oor:name="___lo_identifier___.___lo_implementation_name___.toolbar"
 				oor:op="replace">
 				<prop oor:name="Title" oor:type="xs:string">
-					<value>LibrePythonista</value>
+					<value>Libre Pythonista Bar</value>
+					<value xml:lang="en-US">Libre Pythonista Bar</value>
+					<value xml:lang="it">Barra Libre Pythonista</value>
+					<value xml:lang="es">Barra Libre Pythonista</value>
+					<value xml:lang="fr">Barre Libre Pythonista</value>
+					<value xml:lang="de">Libre Pythonista Bar</value>
 				</prop>
 				<node oor:name="t01" oor:op="replace">
 					<prop oor:name="URL" oor:type="xs:string">
@@ -17,6 +23,10 @@
 					</prop>
 					<prop oor:name="Title" oor:type="xs:string">
 						<value xml:lang="en-US">Insert Python</value>
+						<value xml:lang="it">Inserisci Python</value>
+						<value xml:lang="es">Insertar Python</value>
+						<value xml:lang="fr">Insérer Python</value>
+						<value xml:lang="de">Python einfügen</value>
 					</prop>
 					<prop oor:name="Target" oor:type="xs:string">
 						<value>_self</value>
@@ -34,6 +44,10 @@
 					</prop>
 					<prop oor:name="Title" oor:type="xs:string">
 						<value xml:lang="en-US">Log Window</value>
+						<value xml:lang="it">Finestra di Log</value>
+						<value xml:lang="es">Ventana de Log</value>
+						<value xml:lang="fr">Fenêtre de Log</value>
+						<value xml:lang="de">Log-Fenster</value>
 					</prop>
 					<prop oor:name="Target" oor:type="xs:string">
 						<value>_self</value>
