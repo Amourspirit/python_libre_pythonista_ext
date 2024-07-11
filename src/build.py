@@ -64,7 +64,8 @@ class Build:
         if self._args.pre_install_pure_packages:
             self._pre_install_pure_packages()
 
-        self._build_idl()
+        if self._args.compile_idl:
+            self._build_idl()
         self._write_xml()
         self._process_bz2()
         self._ensure_default_resource()

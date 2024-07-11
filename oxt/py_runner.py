@@ -19,11 +19,11 @@ if TYPE_CHECKING:
     from com.sun.star.beans import NamedValue
 
     # from com.sun.star.lang import EventObject
-    from ___lo_pip___.install.install_pkg import InstallPkg  # type: ignore
-    from ___lo_pip___.oxt_logger import OxtLogger  # type: ignore
-    from ___lo_pip___.lo_util import Session, RegisterPathKind, UnRegisterPathKind  # type: ignore
-    from ___lo_pip___.install.requirements_check import RequirementsCheck  # type: ignore
-    from ___lo_pip___.lo_util.resource_resolver import ResourceResolver  # type: ignore
+    from .___lo_pip___.install.install_pkg import InstallPkg  # type: ignore
+    from .___lo_pip___.oxt_logger import OxtLogger  # type: ignore
+    from .___lo_pip___.lo_util import Session, RegisterPathKind, UnRegisterPathKind  # type: ignore
+    from .___lo_pip___.install.requirements_check import RequirementsCheck  # type: ignore
+    from .___lo_pip___.lo_util.resource_resolver import ResourceResolver  # type: ignore
 else:
     RegisterPathKind = object
     UnRegisterPathKind = object
@@ -38,16 +38,27 @@ def add_local_path_to_sys_path() -> None:
 
 add_local_path_to_sys_path()
 
-from ___lo_pip___.dialog.handler import logger_options  # type: ignore
-from ___lo_pip___.config import Config  # type: ignore
-from ___lo_pip___.install.install_pip import InstallPip  # type: ignore
-from ___lo_pip___.lo_util.util import Util  # type: ignore
-from ___lo_pip___.adapter.top_window_listener import TopWindowListener  # type: ignore
-from ___lo_pip___.events.lo_events import LoEvents  # type: ignore
-from ___lo_pip___.events.args.event_args import EventArgs  # type: ignore
-from ___lo_pip___.events.startup.startup_monitor import StartupMonitor  # type: ignore
-from ___lo_pip___.events.named_events.startup_events import StartupNamedEvent  # type: ignore
+if TYPE_CHECKING:
+    from .___lo_pip___.dialog.handler import logger_options
+    from .___lo_pip___.config import Config
+    from .___lo_pip___.install.install_pip import InstallPip
+    from .___lo_pip___.lo_util.util import Util
+    from .___lo_pip___.adapter.top_window_listener import TopWindowListener
+    from .___lo_pip___.events.lo_events import LoEvents
+    from .___lo_pip___.events.args.event_args import EventArgs
+    from .___lo_pip___.events.startup.startup_monitor import StartupMonitor
+    from .___lo_pip___.events.named_events.startup_events import StartupNamedEvent
 
+else:
+    from ___lo_pip___.dialog.handler import logger_options
+    from ___lo_pip___.config import Config
+    from ___lo_pip___.install.install_pip import InstallPip
+    from ___lo_pip___.lo_util.util import Util
+    from ___lo_pip___.adapter.top_window_listener import TopWindowListener
+    from ___lo_pip___.events.lo_events import LoEvents
+    from ___lo_pip___.events.args.event_args import EventArgs
+    from ___lo_pip___.events.startup.startup_monitor import StartupMonitor
+    from ___lo_pip___.events.named_events.startup_events import StartupNamedEvent
 # endregion imports
 
 # region Constants
@@ -525,7 +536,7 @@ class ___lo_implementation_name___(unohelper.Base, XJob):
     # region Logging
 
     def _get_local_logger(self) -> OxtLogger:
-        from ___lo_pip___.oxt_logger import OxtLogger # type: ignore
+        from ___lo_pip___.oxt_logger import OxtLogger  # type: ignore
 
         # if self._user_path:
         #     log_file = os.path.join(self._user_path, "py_runner.log")
@@ -537,48 +548,69 @@ class ___lo_implementation_name___(unohelper.Base, XJob):
     # region handel windows _bz2
     def _get_needs_bz2(self) -> bool:
         if not self._config.is_win:
+            self._logger.debug("_get_needs_bz2() Not Windows, not checking for _bz2")
             return False
+        self._logger.debug("_get_needs_bz2() Windows Detected Checking for _bz2")
         try:
             import _bz2  # noqa: F401
 
+            self._logger.debug("_get_needs_bz2() Found _bz2")
             return False
         except ImportError:
+            self._logger.debug("_get_needs_bz2() _bz2 not found")
             return True
 
     def _handel_bz2(self) -> None:
-        if not self._get_needs_bz2():
-            import _bz2
+        self._logger.debug("_handel_bz2() Starting")
+        try:
+            if not self._get_needs_bz2():
+                import _bz2
 
-            self._logger.debug(f"_bz2 is already installed. Skipping _bz2 install:  {_bz2.__file__}")
-            return
-        from ___lo_pip___.bz2_config import BZ2Config  # type: ignore
+                self._logger.debug(f"_bz2 is already installed. Skipping _bz2 install:  {_bz2.__file__}")
+                return
+            if TYPE_CHECKING:
+                from .___lo_pip___.bz2_config import BZ2Config
+            else:
+                from ___lo_pip___.bz2_config import BZ2Config
 
-        self._logger.debug("Installing _bz2")
+            self._logger.debug("Installing _bz2")
 
-        cfg = BZ2Config()
-        bz_file = cfg.install_dir / "_bz2.pyd"
-        if bz_file.exists():
-            self._logger.debug(f"Found bz2 file: {bz_file}")
+            cfg = BZ2Config()
+            bz_file = cfg.install_dir / "_bz2.pyd"
+            if bz_file.exists():
+                self._logger.debug(f"Found bz2 file: {bz_file}")
+                self._add_bz2_to_sys_path(cfg.install_dir)
+                return
+            if TYPE_CHECKING:
+                from .___lo_pip___.install.bz2_install import BZ2Install
+            else:
+                from ___lo_pip___.install.bz2_install import BZ2Install
+
+            bz_install = BZ2Install(ctx=self.ctx)
+            bz_install.install()
             self._add_bz2_to_sys_path(cfg.install_dir)
-            return
-        from ___lo_pip___.install.bz2_install import BZ2Install  # type: ignore
-
-        bz_install = BZ2Install(ctx=self.ctx)
-        bz_install.install()
-        self._add_bz2_to_sys_path(cfg.install_dir)
+        except Exception:
+            self._logger.exception("Error installing _bz")
+        self._logger.debug("_handel_bz2() done.")
 
     def _add_bz2_to_sys_path(self, pth: Path | None) -> None:
         # sourcery skip: class-extract-method
-        if pth is None:
-            from ___lo_pip___.bz2_config import BZ2Config  # type: ignore
+        try:
+            if pth is None:
+                if TYPE_CHECKING:
+                    from .___lo_pip___.bz2_config import BZ2Config
+                else:
+                    from ___lo_pip___.bz2_config import BZ2Config
 
-            cfg = BZ2Config()
-            pth = cfg.install_dir
-        if not pth.exists():  # type: ignore
-            self._logger.debug(f"Dir no found: {pth}")
-            return
-        result = self._session.register_path(pth, True)
-        self._log_sys_path_register_result(pth, result)  # type: ignore
+                cfg = BZ2Config()
+                pth = cfg.install_dir
+            if not pth.exists():  # type: ignore
+                self._logger.debug(f"Dir no found: {pth}")
+                return
+            result = self._session.register_path(pth, True)
+            self._log_sys_path_register_result(pth, result)  # type: ignore
+        except Exception:
+            self._logger.exception("Error adding bz2 to sys.path")
 
     # endregion handel windows _bz2
 
@@ -594,7 +626,10 @@ class ___lo_implementation_name___(unohelper.Base, XJob):
             self._logger.debug("Not Mac or AppImage. Skipping post install.")
             return
         try:
-            from ___lo_pip___.install.post.cpython_link import CPythonLink  # type: ignore
+            if TYPE_CHECKING:
+                from .___lo_pip___.install.post.cpython_link import CPythonLink
+            else:
+                from ___lo_pip___.install.post.cpython_link import CPythonLink
 
             link = CPythonLink()
             link.link()
@@ -611,7 +646,10 @@ class ___lo_implementation_name___(unohelper.Base, XJob):
             self._logger.debug("Not Windows, not isolating")
             return
 
-        from ___lo_pip___.lo_util.target_path import TargetPath  # type: ignore
+        if TYPE_CHECKING:
+            from .___lo_pip___.lo_util.target_path import TargetPath
+        else:
+            from ___lo_pip___.lo_util.target_path import TargetPath
 
         target_path = TargetPath()
         if target_path.has_other_target:
@@ -651,7 +689,10 @@ class ___lo_implementation_name___(unohelper.Base, XJob):
     @property
     def resource_resolver(self) -> ResourceResolver:
         if self._resource_resolver is None:
-            from ___lo_pip___.lo_util.resource_resolver import ResourceResolver  # type: ignore
+            if TYPE_CHECKING:
+                from .___lo_pip___.lo_util.resource_resolver import ResourceResolver
+            else:
+                from ___lo_pip___.lo_util.resource_resolver import ResourceResolver
 
             self._resource_resolver = ResourceResolver(self.ctx)
         return self._resource_resolver
