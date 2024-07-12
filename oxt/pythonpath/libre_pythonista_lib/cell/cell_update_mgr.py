@@ -56,7 +56,7 @@ class CellUpdateMgr:
                     self._log.debug("No cells to update.")
                     return
                 for cell in cells:
-                    self._ctl_mgr.update_ctl_script(cell)
+                    self._ctl_mgr.update_ctl_action(cell)
                 self._log.debug(f"Update Script Location for {len(cells)} Cells.")
             except Exception:
                 self._log.exception("Error updating cells")

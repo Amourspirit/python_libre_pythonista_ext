@@ -34,3 +34,9 @@ class CtlRuleT(Protocol):
             Tuple[int, int, int, int]: (x, y, width, height) in  ``1/100th mm``.
         """
         ...
+
+    def update_ctl_action(self) -> None:
+        """
+        Updates the controls action such as setting ``actionPerformed`` macro.
+        """
+        ...
