@@ -143,6 +143,7 @@ toml = "^0.10.2"
 typing-extensions = ">=4.11.0"
 ooo-dev-tools = ">=0.47.6"
 sortedcontainers = ">=2.4.0"
+oooenv = ">=0.2.4"
 
 
 [tool.poetry.group.dev.dependencies]
