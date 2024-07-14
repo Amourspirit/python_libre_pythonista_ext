@@ -6,9 +6,9 @@ from ...utils import str_util
 from ...log.log_inst import LogInst
 
 
-class LpFnObj:
+class LpFnPlot:
     """
-    A class to represent the last dictionary item in a module.
+    A class to represent the plt.show().
     """
 
     def __init__(self) -> None:
@@ -32,54 +32,52 @@ class LpFnObj:
         if not self.code:
             return False
         log = LogInst()
-        log.debug(f"LpFnObj - get_is_match() Entered.")
+        log.debug(f"LpFnPlot - get_is_match() Entered.")
+        code = str_util.clean_string(self.code)
 
-        last_lp = self.code.rfind("lp(")
+        # plt.show()
+        # if log.is_debug:
+        #     log.debug(f"LpFnPlot - get_is_match() code:\n{code}")
+        last_lp = code.rfind("plt.show(")
         if last_lp < 0:
-            log.debug(f"LpFnObj - get_is_match() No lp() found: {last_lp}")
+            log.debug(f"LpFnPlot - get_is_match() No plt.show() found: {last_lp}")
             return False
 
         # get the substring from the last_lp index.
-        # s = str_util.get_str_from_index(self.code, last_lp)
-        s = str_util.get_str_from_index(self.code, last_lp)
+        s = str_util.get_str_from_index(code, last_lp).rstrip()
+        # log.debug(f"LpFnPlot - get_is_match() s: {s}")
         # find the next index of )
         next_bracket_index = s.find(")")
         if next_bracket_index < 0:
             return False
 
-        if next_bracket_index == len(s) - 1:
-            log.debug(f"LpFnObj - get_is_match() Last bracket is not the end of the string: {next_bracket_index}")
+        if next_bracket_index != len(s) - 1:
+            log.debug(f"LpFnPlot - get_is_match() Last bracket is not the end of the string: {next_bracket_index}")
             return False
 
         result = None
         # with contextlib.suppress(Exception):
         try:
-            if "lp_mod" in self.mod.__dict__:
-                log.debug("LpFnObj - get_is_match() lp_mod is in module")
+            if "lp_plot" in self.mod.__dict__:
+                log.debug("LpFnPlot - get_is_match() lp_plot is in module")
                 flat_line = str_util.flatten_str(s)
-                log.debug(f"LpFnObj - get_is_match() flat_line: {flat_line}")
+                log.debug(f"LpFnPlot - get_is_match() flat_line: {flat_line}")
                 first_index = flat_line.find(")")
                 if first_index < 0:
-                    log.debug("LpFnObj - get_is_match() flat_line index of ) Not Found")
+                    log.debug("LpFnPlot - get_is_match() flat_line index of ) Not Found")
                     return False
                 # get the flat_line after the first index
                 short_line = flat_line[first_index + 1 :]
-                new_line = f"result = lp_mod.LAST_LP_RESULT.data{short_line}"
-                new_line += "\ndot_dictionary = lp_mod.LAST_LP_RESULT"
+                new_line = f"result = lp_plot.LAST_LP_RESULT.data{short_line}"
+                new_line += "\ndot_dictionary = lp_plot.LAST_LP_RESULT"
                 mod_copy = self.mod.__dict__.copy()
                 exec(new_line, mod_copy)
-                result = mod_copy["result"]
                 dd = cast(DotDict, mod_copy["dot_dictionary"])
-                headers = bool(dd.get("headers", False))
-                dd.headers = headers
-                dd.data = result
-                log.debug(f"LpFnObj - get_is_match() has headers: {dd.headers}")
-
             else:
-                log.debug("LpFnObj - get_is_match() lp_mod is NOT in module")
+                log.debug("LpFnPlot - get_is_match() lp_plot is NOT in module")
             self._result = dd
         except Exception as e:
-            log.error(f"LpFnObj - get_is_match() Exception: {e}", exc_info=True)
+            log.error(f"LpFnPlot - get_is_match() Exception: {e}", exc_info=True)
         return self._result is not None
 
     def get_value(self) -> DotDict:
@@ -95,4 +93,4 @@ class LpFnObj:
         self.code = None
 
     def __repr__(self) -> str:
-        return f"<LpFnObj()>"
+        return f"<LpFnPlot()>"

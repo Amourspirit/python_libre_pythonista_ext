@@ -1,11 +1,6 @@
 from __future__ import annotations
 from typing import Any
 
-try:
-    import matplotlib
-except ImportError:
-    matplotlib = None
-
 from .rule_base import RuleBase
 
 
@@ -15,12 +10,16 @@ class RuleMatPlotFigure(RuleBase):
         return self.key_maker.rule_names.cell_data_type_mp_figure
 
     def get_is_match(self) -> bool:
-        if matplotlib is None:
-            return False
         result = self.data.get("data", None)
         if result is None:
             return False
-        return isinstance(result, matplotlib.figure.Figure)  # type: ignore
+        data_type = self.data.get("data_type", "")
+        if data_type != "file":
+            return False
+        details = self.data.get("details", "")
+        if details != "figure":
+            return False
+        return True
 
     def action(self) -> Any:
         self._update_properties(

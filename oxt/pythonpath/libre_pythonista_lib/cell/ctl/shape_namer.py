@@ -41,7 +41,7 @@ class ShapeNamer:
                 raise CustomPropertyMissingError(f"Custom Property not found: {self._cfg.cell_cp_codename}")
 
     def _get_shape_name(self) -> str:
-        return f"SHAPE_{self._cfg.general_code_name}_img_cell_{self._code_name}"
+        return f"SHAPE_{self._cfg.general_code_name}_cell_{self._code_name}"
 
     @property
     def shape_name(self) -> str:

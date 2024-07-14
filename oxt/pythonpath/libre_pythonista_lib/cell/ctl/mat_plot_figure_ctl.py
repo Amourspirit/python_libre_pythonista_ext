@@ -1,15 +1,17 @@
 from __future__ import annotations
 from typing import Any, cast, Tuple
+import uno
 from ooodev.calc import CalcCell
+from pathlib import Path
 
-try:
-    from ...convert.data_convertors.matplot_convertor import fig_to_svg
-except ImportError:
-    MatPlotConvertor = None
-
+from ooodev.exceptions import ex as mEx
 from ..props.key_maker import KeyMaker
 from ...log.log_inst import LogInst
+
+# from ..lpl_cell import LplCell
+from ...code.py_source_mgr import PySource, PyInstance
 from .cell_img import CellImg
+from .shape_namer import ShapeNamer
 
 
 class MatPlotFigureCtl:
@@ -21,42 +23,80 @@ class MatPlotFigureCtl:
         self.calc_cell = calc_cell
         self.key_maker = KeyMaker()
         self.log = LogInst()
+        self._py_src = PyInstance(self.calc_cell.calc_doc)
+        self.namer = ShapeNamer(self.calc_cell)
+        self._prev_img = ""
         with self.log.indent(True):
             self.log.debug(f"CtlCellImg: __init__(): Entered")
 
     def get_rule_name(self) -> str:
         """Gets the rule name for this class instance."""
-        return self.key_maker.rule_names.cell_data_type_cell_img
+        return self.key_maker.rule_names.cell_data_type_mp_figure
 
     def add_ctl(self) -> Any:
         """Add control to the cell"""
         with self.log.indent(True):
-            if MatPlotConvertor is None:
-                self.log.error("MatPlotFigureCtl: add_ctl(): MatPlotConvertor not found")
-                return
+            src = self._py_src[self.calc_cell.cell_obj]
+            dd = src.dd_data
             try:
-                svg_path = fig_to_svg()
+                # if self.log.is_debug:
+                #     for k, v in dd.items():
+                #         self.log.debug(f"src DotDict: {k}: {v}")
+                if self._prev_img == dd.data:
+                    self.log.debug("MatPlotFigureCtl: add_ctl(): No change in image. Not adding again.")
+                    return
+                self.remove_ctl()
+                svg_path = Path(dd.data)
+                if not svg_path.exists():
+                    self.log.error(f"MatPlotFigureCtl: add_ctl(): File not found: {svg_path}")
+                    return
                 ci = CellImg(self.calc_cell, self.calc_cell.lo_inst)
-                ci.insert_cell_image_linked(svg_path)
+                shp = ci.insert_cell_image_linked(svg_path)
+                shp.name = self.namer.shape_name
 
                 # self._set_ctl_script(ctl)
-                self.log.debug("SimpleCtl: set_ctl_script(): Script set")
+                self.log.debug("MatPlotFigureCtl: set_ctl_script(): Script set")
             except Exception:
-                self.log.exception("SimpleCtl: set_ctl_script(): Error getting current control")
+                self.log.exception("MatPlotFigureCtl: set_ctl_script(): Error getting current control")
 
     def remove_ctl(self):
         """Remove control From the cell"""
         with self.log.indent(True):
-            if MatPlotConvertor is None:
-                self.log.error("MatPlotFigureCtl: add_ctl(): MatPlotConvertor not found")
-                return
+            self.log.debug(f"{self.__class__.__name__}: remove_ctl(): Entered")
+            try:
+                sheet = self.calc_cell.calc_sheet
+                dp = sheet.draw_page
+                shape_name = self.namer.shape_name
+                try:
+                    shape = dp.find_shape_by_name(shape_name)
+                    self.log.debug(f"{self.__class__.__name__}: remove_ctl(): Found Shape: {shape_name}")
+                    dp.remove(shape.component)  # type: ignore
+                    self.log.debug(f"{self.__class__.__name__}: remove_ctl(): Removed Shape: {shape_name}")
+                    shape = None
+                    self.log.debug(f"{self.__class__.__name__}: remove_ctl(): Leaving")
+                except mEx.ShapeMissingError:
+                    self.log.debug(f"{self.__class__.__name__}: remove_ctl(): Shape not found: {shape_name}")
+                    self.log.debug(f"{self.__class__.__name__}: remove_ctl(): Leaving")
+                    return None
+
+                if self.calc_cell.has_custom_property(self.key_maker.ctl_shape_key):
+                    self.log.debug(
+                        f"{self.__class__.__name__}: remove_ctl(): Removing custom {self.key_maker.ctl_shape_key}"
+                    )
+                    self.calc_cell.remove_custom_property(self.key_maker.ctl_shape_key)
+                if self.calc_cell.has_custom_property(self.key_maker.ctl_orig_ctl_key):
+                    self.log.debug(
+                        f"{self.__class__.__name__}: remove_ctl(): Removing custom {self.key_maker.ctl_orig_ctl_key}"
+                    )
+                    self.calc_cell.remove_custom_property(self.key_maker.ctl_orig_ctl_key)
+
+            except Exception as e:
+                self.log.error(f"{self.__class__.__name__}: remove_ctl error: {e}", exc_info=True)
+                return None
 
     def update_ctl(self) -> None:
         """Updates the control. Usually set the controls size and pos."""
-        with self.log.indent(True):
-            if MatPlotConvertor is None:
-                self.log.error("MatPlotFigureCtl: add_ctl(): MatPlotConvertor not found")
-                return
+        pass
 
     def get_cell_pos_size(self) -> Tuple[int, int, int, int]:
         """

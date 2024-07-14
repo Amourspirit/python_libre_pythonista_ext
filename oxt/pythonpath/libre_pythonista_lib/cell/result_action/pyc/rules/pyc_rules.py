@@ -142,11 +142,11 @@ class PycRules(SingletonBase):
         self._reg_rule(rule=RulePdDfHeaders)
         self._reg_rule(rule=RulePdDf)
         self._reg_rule(rule=RulePdDs)
+        self._reg_rule(rule=RuleMatPlotFigure)
         self._reg_rule(rule=RuleFloat)
         self._reg_rule(rule=RuleInt)
         self._reg_rule(rule=RuleStr)
         self._reg_rule(rule=RuleTblData)
-        self._reg_rule(rule=RuleMatPlotFigure)
         self._reg_rule(rule=RuleError)
         self._reg_rule(rule=RuleNone)
 

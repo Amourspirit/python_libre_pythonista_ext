@@ -12,6 +12,7 @@ from ooodev.exceptions import ex as mEx
 from ooodev.loader import Lo
 from ooodev.utils.helper.dot_dict import DotDict
 from ooodev.utils.kind.drawing_shape_kind import DrawingShapeKind
+from ooodev.units import UnitMM100
 from .shape_namer import ShapeNamer
 from ...ex import CustomPropertyMissingError
 from ...log.log_inst import LogInst
@@ -29,7 +30,7 @@ else:
     from ___lo_pip___.config import Config
 
 
-class CellImage(SheetControlBase):
+class CellImg(SheetControlBase):
     """A partial class for a cell control."""
 
     def __init__(self, calc_obj: CalcCell, lo_inst: LoInst | None = None) -> None:
@@ -48,10 +49,19 @@ class CellImage(SheetControlBase):
     def _init_calc_sheet_prop(self) -> None:
         CalcSheetPropPartial.__init__(self, self.calc_obj.calc_sheet)
 
-    def _get_pos_size(self) -> Tuple[int, int, int, int]:
-        ps = self.calc_obj.component.Position
-        size = self.calc_obj.component.Size
-        return (ps.X, ps.Y, size.Width, size.Height)
+    def _get_pos_size(self) -> Tuple[UnitMM100, UnitMM100, UnitMM100, UnitMM100]:
+        if self.calc_obj.component.IsMerged:  # type: ignore
+            self.__log.debug(f"CellControl: _get_pos_size(): Cell is merged")
+            cursor = self.calc_obj.calc_sheet.create_cursor_by_range(cell_obj=self.calc_obj.cell_obj)
+            cursor.component.collapseToMergedArea()
+            rng = cursor.get_calc_cell_range()
+            ps = rng.component.Position
+            size = rng.component.Size
+        else:
+            self.__log.debug(f"CellControl: _get_pos_size(): Cell is not merged")
+            ps = self.calc_obj.component.Position
+            size = self.calc_obj.component.Size
+        return (UnitMM100(ps.X), UnitMM100(ps.Y), UnitMM100(size.Width), UnitMM100(size.Height))
 
     def _get_form(self) -> CalcForm:
         sheet = self.calc_sheet
@@ -111,6 +121,7 @@ class CellImage(SheetControlBase):
         sheet = self.calc_sheet
         shape = sheet.draw_page.add_shape(DrawingShapeKind.GRAPHIC_OBJECT_SHAPE, *self._get_pos_size())
         shape.set_image(fmn)
+        self.__log.debug(f"CellImg: insert_cell_image_linked(): Image set  {fmn}")
         self._set_shape_props(shape.component)
         return shape
 

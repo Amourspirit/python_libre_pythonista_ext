@@ -5,8 +5,13 @@ from ooodev.utils.helper.dot_dict import DotDict
 from ..utils import str_util
 from .rules.code_rules import CodeRules
 
-from .mod_fn.lplog import LpLog as LibrePythonistaLog
+from .mod_helper.lplog import LpLog as LibrePythonistaLog
 from ..cell.errors.general_error import GeneralError
+
+try:
+    from .mod_helper import lp_plot
+except ImportError:
+    lp_plot = None
 
 if TYPE_CHECKING:
     from ....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
@@ -24,9 +29,10 @@ from ooodev.utils.data_type.cell_obj import CellObj
 from ooodev.utils.data_type.range_obj import RangeObj
 from ___lo_pip___.oxt_logger import OxtLogger
 from libre_pythonista_lib.log.log_inst import LogInst
-from libre_pythonista_lib.code.mod_fn import lp_mod
-from libre_pythonista_lib.code.mod_fn.lp_mod import lp
-from libre_pythonista_lib.code.mod_fn.lplog import StaticLpLog as lp_log, LpLog as LibrePythonistaLog
+from libre_pythonista_lib.code.mod_helper import lp_mod
+from libre_pythonista_lib.code.mod_helper.lp_mod import lp
+from libre_pythonista_lib.code.mod_helper.lplog import StaticLpLog as lp_log, LpLog as LibrePythonistaLog
+from libre_pythonista_lib.code.mod_helper import lp_plot
 import pandas as pd
 import numpy as np
 PY_ARGS = None
@@ -54,6 +60,10 @@ class PyModule:
         exec(code, self.mod.__dict__)
         # setattr(self.mod, "lp", lp.lp)
         self._init_dict = self.mod.__dict__.copy()
+        if lp_plot is not None:
+            self._init_dict.update(**lp_plot.__dict__.copy())
+        else:
+            self._log.warning("lp_plot module is not available.")
         self._log.debug(f"_init_mod() done.")
         # setattr(self.mod, "np", np)
         # setattr(self.mod, "Lo", lo)
