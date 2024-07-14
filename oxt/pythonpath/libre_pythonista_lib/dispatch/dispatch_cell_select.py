@@ -7,7 +7,7 @@ from com.sun.star.beans import PropertyValue
 from com.sun.star.util import URL
 from ooo.dyn.frame.feature_state_event import FeatureStateEvent
 
-from ooodev.calc import CalcDoc
+from ooodev.calc import CalcDoc, CalcCell
 from ooodev.utils.data_type.range_obj import RangeObj
 from ooodev.utils.data_type.range_values import RangeValues
 
@@ -48,6 +48,18 @@ class DispatchCellSelect(unohelper.Base, XDispatch):
                 control.statusChanged(fe)
                 self._status_listeners[url.Complete] = control
 
+    def _get_range_obj(self, cell: CalcCell) -> RangeValues:
+        if cell.component.IsMerged:  # type: ignore
+            cursor = cell.calc_sheet.create_cursor_by_range(cell_obj=cell.cell_obj)
+            cursor.component.collapseToMergedArea()
+            rng = cursor.get_calc_cell_range()
+            rv = rng.range_obj.get_range_values()
+
+        else:
+            cv = cell.cell_obj.get_cell_values()
+            rv = RangeValues(col_start=cv.col, row_start=cv.row, col_end=cv.col, row_end=cv.row)
+        return rv
+
     def dispatch(self, url: URL, args: Tuple[PropertyValue, ...]) -> None:
         """
         Dispatches (executes) a URL
@@ -65,8 +77,7 @@ class DispatchCellSelect(unohelper.Base, XDispatch):
                 doc = CalcDoc.from_current_doc()
                 sheet = doc.sheets[self._sheet]
                 cell = sheet[self._cell]
-                cv = cell.cell_obj.get_cell_values()
-                rv = RangeValues(col_start=cv.col, row_start=cv.row, col_end=cv.col, row_end=cv.row)
+                rv = self._get_range_obj(cell)
                 sheet.select_cells_range(RangeObj.from_range(rv))
 
                 return

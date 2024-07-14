@@ -4,6 +4,7 @@ from ooodev.calc import CalcCell
 from .simple_ctl import SimpleCtl
 from .float_ctl import FloatCtl
 from .str_ctl import StrCtl
+from .mat_plot_figure_ctl import MatPlotFigureCtl
 from .none_ctl import NoneCtl
 from .empty_ctl import EmptyCtl
 from .error_ctl import ErrorCtl
@@ -15,6 +16,7 @@ from ..props.key_maker import KeyMaker
 
 if TYPE_CHECKING:
     from ..result_action.pyc.rules.pyc_rule_t import PycRuleT
+    from .ctl_rule_t import CtlRuleT
 
 
 class CtlMgr:
@@ -48,7 +50,7 @@ class CtlMgr:
             self._log.error("CtlMgr - set_ctl_from_pyc_rule() Error setting control for cell", exc_info=True)
             raise
 
-    def _get_rule(self, rule_name: str, cell: CalcCell) -> Type[SimpleCtl] | None:
+    def _get_rule(self, rule_name: str, cell: CalcCell) -> Type[CtlRuleT] | None:
         rules = self._key_maker.rule_names
         if rule_name in (rules.cell_data_type_float, rules.cell_data_type_int):
             return FloatCtl
@@ -66,13 +68,15 @@ class CtlMgr:
             return EmptyCtl
         if rule_name == rules.cell_data_type_tbl_data:
             return DataTblCtl
+        if rule_name == rules.cell_data_type_mp_figure:
+            return MatPlotFigureCtl
         is_deleted = cell.extra_data.get("deleted", False)
         if is_deleted:
             self._log.debug(f"CtlMgr - _get_rule() Cell is deleted: {cell.cell_obj}. Returning SimpleCtl instance.")
             return SimpleCtl
         return None
 
-    def get_current_ctl_type_from_cell(self, cell: CalcCell) -> Type[SimpleCtl] | None:
+    def get_current_ctl_type_from_cell(self, cell: CalcCell) -> Type[CtlRuleT] | None:
         """Gets the control type for a cell."""
         with self._log.indent(True):
             km = self._key_maker
@@ -112,7 +116,7 @@ class CtlMgr:
                 )
         return None
 
-    def get_orig_ctl_type_from_cell(self, cell: CalcCell) -> Type[SimpleCtl] | None:
+    def get_orig_ctl_type_from_cell(self, cell: CalcCell) -> Type[CtlRuleT] | None:
         """Gets the control type for a cell."""
         with self._log.indent(True):
             km = self._key_maker
@@ -152,8 +156,8 @@ class CtlMgr:
                 )
         return None
 
-    def update_ctl_script(self, cell: CalcCell) -> None:
-        """Sets the actionPerformed script location for the control."""
+    def update_ctl_action(self, cell: CalcCell) -> None:
+        """Updates the controls action such as setting ``actionPerformed`` macro."""
         # if the current control and original control are the same then just update the control.
         # if the current control and the original control are different then remove the original control and add the current control.
         # if the current control is None and the original control is not None then remove the original control.
@@ -164,13 +168,13 @@ class CtlMgr:
             # orig_ctl_type will always be present unless this a new cell.
             if ctl_type is None:
                 self._log.debug(
-                    f"CtlMgr - update_ctl_script() No control type found for cell {cell.cell_obj}. Returning."
+                    f"CtlMgr - update_ctl_action() No control type found for cell {cell.cell_obj}. Returning."
                 )
                 return
 
             ctl = ctl_type(cell)
-            ctl.update_ctl_script()
-            self._log.debug("CtlMgr - update_ctl_script() Done.")
+            ctl.update_ctl_action()
+            self._log.debug("CtlMgr - update_ctl_action() Done.")
 
         return
 

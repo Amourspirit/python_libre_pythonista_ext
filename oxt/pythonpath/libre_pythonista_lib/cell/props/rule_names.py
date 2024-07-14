@@ -32,6 +32,16 @@ class RuleNames(SingletonBase):
         return "cell_data_type_simple_ctl"
 
     @property
+    def cell_data_type_mp_figure(self) -> str:
+        """Rule name for cell data type of Matplotlib Figure."""
+        return "cell_data_type_mp_figure"
+
+    @property
+    def cell_data_type_cell_img(self) -> str:
+        """Rule name for cell data type of Cell Images for Plots and stuff."""
+        return "cell_data_type_cell_img"
+
+    @property
     def cell_data_type_str(self) -> str:
         """Rule name for cell data type of string."""
         return "cell_data_type_str"

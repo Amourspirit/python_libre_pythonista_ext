@@ -9,6 +9,7 @@ from .lp_fn import LpFn
 from .lp_fn_obj import LpFnObj
 from .any_fn import AnyFn
 from .lp_fn_value import LpFnValue
+from .lp_fn_plot import LpFnPlot
 from .code_empty import CodeEmpty
 from ...log.log_inst import LogInst
 
@@ -126,6 +127,7 @@ class CodeRules:
         self._reg_rule(rule=CodeEmpty())
         self._reg_rule(rule=RegexLastLine())
         self._reg_rule(rule=RegexLastLine(re.compile(r"^(\w+)$")))
+        self._reg_rule(rule=LpFnPlot())
         self._reg_rule(rule=AnyFn())
         self._reg_rule(rule=EvalCode())
         self._reg_rule(rule=LpFn())
@@ -154,7 +156,7 @@ class CodeRules:
                 rule.reset()
             if found_rule:
                 # rules LpFn and LpFnObj already contain the correct DotDict
-                if not isinstance(found_rule, (LpFn, LpFnObj, CodeEmpty)):
+                if not isinstance(found_rule, (LpFn, LpFnObj, LpFnPlot, CodeEmpty)):
                     self._log.debug(
                         f"CodeRules - get_matched_rule() Rule: {found_rule} is not LpFn or LpFnObj. Checking for LpFnValue match."
                     )

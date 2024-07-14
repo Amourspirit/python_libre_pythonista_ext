@@ -53,7 +53,7 @@ class SimpleCtl:
         """Gets the rule name for this class instance."""
         return self.key_maker.rule_names.cell_data_type_simple_ctl
 
-    def update_ctl_script(self) -> None:
+    def update_ctl_action(self) -> None:
         """
         Updates the actionPerformed script location for the control.
         """
@@ -62,13 +62,13 @@ class SimpleCtl:
                 cell_ctl = CellControl(self.calc_cell, self.calc_cell.lo_inst)
                 ctl = cast("FormCtlBase", cell_ctl.current_control)
                 if ctl is None:
-                    self.log.debug("SimpleCtl: set_ctl_script(): Control not found")
+                    self.log.debug("SimpleCtl: update_ctl_action(): Control not found")
                     return
                 # self._remove_ctl_script(ctl)
                 self._set_ctl_script(ctl)
-                self.log.debug("SimpleCtl: set_ctl_script(): Script set")
+                self.log.debug("SimpleCtl: update_ctl_action(): Script set")
             except Exception:
-                self.log.exception("SimpleCtl: set_ctl_script(): Error getting current control")
+                self.log.exception("SimpleCtl: update_ctl_action(): Error getting current control")
 
     def _set_ctl_script(self, ctl: FormCtlBase) -> None:
         """

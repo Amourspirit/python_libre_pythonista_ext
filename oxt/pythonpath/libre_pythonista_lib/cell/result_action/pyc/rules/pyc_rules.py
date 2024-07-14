@@ -14,6 +14,7 @@ from .rule_pd_df_headers import RulePdDfHeaders
 from .rule_pd_ds import RulePdDs
 from .rule_str import RuleStr
 from .rule_tbl_data import RuleTblData
+from .rule_mat_plot_figure import RuleMatPlotFigure
 from .....utils.singleton_base import SingletonBase
 
 if TYPE_CHECKING:
@@ -141,6 +142,7 @@ class PycRules(SingletonBase):
         self._reg_rule(rule=RulePdDfHeaders)
         self._reg_rule(rule=RulePdDf)
         self._reg_rule(rule=RulePdDs)
+        self._reg_rule(rule=RuleMatPlotFigure)
         self._reg_rule(rule=RuleFloat)
         self._reg_rule(rule=RuleInt)
         self._reg_rule(rule=RuleStr)
