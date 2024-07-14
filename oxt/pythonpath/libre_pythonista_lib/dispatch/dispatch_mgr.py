@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from typing import Any, cast, TYPE_CHECKING
+from typing import Any, cast, TYPE_CHECKING, Tuple
 import re
 import contextlib
 import uno
@@ -20,7 +20,7 @@ from .dispatch_provider_interceptor import DispatchProviderInterceptor
 from .cell_dispatch_state import CellDispatchState
 from ..log.log_inst import LogInst
 from ..res.res_resolver import ResResolver
-from ..const import UNO_DISPATCH_CODE_EDIT_MB, UNO_DISPATCH_CODE_DEL
+from ..const import UNO_DISPATCH_CODE_EDIT_MB, UNO_DISPATCH_CODE_DEL, UNO_DISPATCH_CELL_SELECT
 from ..cell.props.key_maker import KeyMaker
 from ..cell.state.ctl_state import CtlState
 from ..cell.state.state_kind import StateKind
@@ -52,6 +52,12 @@ def on_menu_intercept(
         last_cmd = container[-1].CommandURL  # type: ignore
         fl = (first_cmd, last_cmd)
 
+        log = None
+        with contextlib.suppress(Exception):
+            log = LogInst()
+            log.debug(f"First Command: {first_cmd}")
+            log.debug(f"Last Command: {last_cmd}")
+
         # check the first and last items in the container
         if fl == (".uno:Cut", ".uno:FormatCellDialog"):
             # get the current selection
@@ -60,9 +66,9 @@ def on_menu_intercept(
             if selection.getImplementationName() == "ScCellObj":
                 # current selection is a cell.
 
-                log = None
-                with contextlib.suppress(Exception):
-                    log = LogInst()
+                # log = None
+                # with contextlib.suppress(Exception):
+                #     log = LogInst()
                 # log = LogInst()
                 key_maker = KeyMaker()  # singleton
                 addr = cast("CellAddress", selection.getCellAddress())
@@ -115,6 +121,74 @@ def on_menu_intercept(
                 except Exception:
                     if not log is None:
                         log.error("Error inserting context menu item.", exc_info=True)
+        else:
+            # check for Plot Figure
+            if _mi_plot_figure(container, fl, event):
+                event.event_data.action = ContextMenuAction.CONTINUE_MODIFIED
+                return
+
+
+def _mi_plot_figure(container: Any, fl: Tuple[str, str], event: Any) -> bool:
+    """
+    Menu Item for Plot Figure.
+    """
+    if not fl == (".uno:Cut", ".uno:EditQrCode"):
+        return False
+    # get the current selection
+    selection = event.event_data.event.selection.get_selection()
+    if selection.getImplementationName() != "com.sun.star.drawing.SvxShapeCollection":
+        return False
+    if len(selection) != 1:
+        return False
+
+    log = None
+    with contextlib.suppress(Exception):
+        log = LogInst()
+        log.debug("Plot Figure Match.")
+        try:
+            # get the anchor cell
+            shape = selection[0]
+            cell = shape.Anchor
+            if cell.getImplementationName() != "ScCellObj":
+                return False
+
+            addr = cast("CellAddress", cell.getCellAddress())
+            doc = CalcDoc.from_current_doc()
+            sheet = doc.get_active_sheet()
+            cell_obj = doc.range_converter.get_cell_obj_from_addr(addr)
+            cell = sheet[cell_obj]
+            if not cell.has_custom_property("libre_pythonista_codename"):
+                if not log is None:
+                    with log.indent(True):
+                        log.debug(f"Cell {cell_obj} does not have libre_pythonista_codename custom property.")
+                return False
+
+            items = ActionTriggerContainer()
+            rr = ResResolver()
+            edit_mnu = rr.resolve_string("mnuEditCode")
+            del_mnu = rr.resolve_string("mnuDeletePyCell")
+            menu_main_sub = ResResolver().resolve_string("mnuMainSub")  # Pythoninsta
+            cps = CellDispatchState(cell=cell)
+            item = None
+            if cps.is_dispatch_enabled(UNO_DISPATCH_CODE_EDIT_MB):
+                items.append(ActionTriggerItem(f"{UNO_DISPATCH_CODE_EDIT_MB}?sheet={sheet.name}&cell={cell_obj}&in_thread=0", edit_mnu))  # type: ignore
+                items.append(ActionTriggerItem(f"{UNO_DISPATCH_CODE_DEL}?sheet={sheet.name}&cell={cell_obj}", del_mnu))  # type: ignore
+                # container.insert_by_index(4, ActionTriggerItem(f".uno:libre_pythonista.calc.menu.reset.orig?sheet={sheet.name}&cell={cell_obj}", "Rest to Original"))  # type: ignore
+                items.append(ActionTriggerSep())  # type: ignore
+                item = ActionTriggerItem(menu_main_sub, menu_main_sub, sub_menu=items)
+
+            sel_name = rr.resolve_string("mnuSelCell")  # Select Cell
+            items.append(ActionTriggerItem(f"{UNO_DISPATCH_CELL_SELECT}?sheet={sheet.name}&cell={cell_obj}", sel_name))  # type: ignore
+
+            if item is not None and items.getCount() > 0:
+                container.insert_by_index(4, item)  # type: ignore
+
+            return True
+        except Exception:
+            if log:
+                log.exception("Plot Figure Error.")
+
+    return False
 
 
 def register_interceptor(doc_comp: Any):
