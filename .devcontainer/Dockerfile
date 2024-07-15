@@ -95,8 +95,9 @@ RUN  /usr/bin/pip install "poetry==$POETRY_VERSION" \
 
 WORKDIR /workspace/python_libre_pythonista_ext
 COPY ./*.toml ./*.lock ./
+# && poetry install $(test "$RUN_ENV" == production && echo "--no-dev") --no-interaction --no-ansi --no-root --no-cache\
 RUN poetry config virtualenvs.in-project true \
-    && poetry install $(test "$RUN_ENV" == production && echo "--no-dev") --no-interaction --no-ansi --no-root --no-cache \
+    && poetry install --no-interaction --no-ansi --no-root --no-cache --no-dev \
     && sed -i "s/include-system-site-packages = false/include-system-site-packages = false/g" /workspace/python_libre_pythonista_ext/.venv/pyvenv.cfg
 
 # Many of these environment variable are required for python and LibreOffice imports to work correctly.
