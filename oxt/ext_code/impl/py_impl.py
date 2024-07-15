@@ -1,11 +1,15 @@
 from __future__ import annotations
-from typing import Any, cast, TYPE_CHECKING
+from typing import Any, cast, Dict, List, TYPE_CHECKING
 from pathlib import Path
 import contextlib
 import os
 import sys
+import datetime
 import uno
 import unohelper
+from com.sun.star.sheet import XVolatileResult
+from com.sun.star.sheet import XResultListener
+from com.sun.star.sheet import ResultEvent
 from com.github.amourspirit.extensions.librepythonista import XPy  # type: ignore
 
 
@@ -52,7 +56,7 @@ else:
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
 
 
-class PyImpl(unohelper.Base, XPy):
+class PyImpl(XPy, unohelper.Base):
     IMPLE_NAME = "___lo_identifier___.PyImpl"
     SERVICE_NAMES = ("com.sun.star.sheet.AddIn",)
 
@@ -61,6 +65,8 @@ class PyImpl(unohelper.Base, XPy):
         return (cls, cls.IMPLE_NAME, cls.SERVICE_NAMES)
 
     def __init__(self, ctx: Any):
+        XPy.__init__(self)
+        unohelper.Base.__init__(self)
         # this is only init one time per session. When a new document is loaded, it is not called.
         self.ctx = ctx
         self._logger = OxtLogger(log_name=self.__class__.__name__)
@@ -70,6 +76,8 @@ class PyImpl(unohelper.Base, XPy):
             self.desktop = cast("Desktop", mgr.createInstanceWithContext("com.sun.star.frame.Desktop", self.ctx))
         except Exception as e:
             self._logger.error(f"Error: {e}", exc_info=True)
+        self._v_results: Dict[str, XVolatileResult] = {}
+        self._v_count = 0
 
         # it seems init is only call when the functions is first called.
 
@@ -225,6 +233,93 @@ class PyImpl(unohelper.Base, XPy):
         self._logger.debug(f"pyc - Done")
         return result
 
+    # region Volatile Result Methods
+
+    def pyv(self, sheet_num: int, cell_address: str) -> XVolatileResult:
+        # if not _CONDITIONS_MET:
+        #     self._logger.error("pyv - Conditions not met")
+        #     return None  # type: ignore
+
+        # try:
+        #     frame = self.desktop.getActiveFrame()
+        #     controller = frame.getController()
+        #     model = controller.getModel()
+        #     doc = CalcDoc.get_doc_from_component(model)
+        # except Exception:
+        #     self._logger.warning(
+        #         "pyv - Could not get current document. This usually happens when the document is not fully loaded."
+        #     )
+        #     vr = VolatileResult(None)
+        #     return vr
+        # result = None
+
+        # try:
+        #     self._logger.debug(f"pyv - Doc UID: {doc.runtime_uid}")
+        #     key = f"LIBRE_PYTHONISTA_DOC_{doc.runtime_uid}"
+        #     if not key in os.environ:
+        #         # if len(sheet.draw_page) == 0:
+        #         # if there are no draw pages for the sheet then they are not yet loaded. Return None, and expect a recalculation to take place when the document is fully loaded.
+        #         self._logger.debug("pyv - Not yet loaded. Returning.")
+        #         CellMgr.reset_instance(doc)
+        #         return None  # type: ignore
+
+        #     cm = CellMgr(doc)
+        #     sheet_idx = sheet_num - 1
+        #     self._logger.debug(f"pyv - sheet_num: arg {sheet_num}")
+        #     self._logger.debug(f"pyv - cell_address: arg {cell_address}")
+
+        #     sheet = doc.sheets[sheet_idx]
+        #     xcell = sheet.component.getCellRangeByName(cell_address)
+        #     cell = sheet.get_cell(xcell)
+        #     self._logger.debug(
+        #         f"pyv - Cell {cell.cell_obj} for sheet index {cell.cell_obj.sheet_idx} has custom properties: {cell.has_custom_properties()}"
+        #     )
+        #     if not cm.has_cell(cell_obj=cell.cell_obj):
+
+        #         self._logger.debug(f"pyv - py {cell.cell_obj} cell has no code")
+
+        #         code_handled = False
+        #         if not TYPE_CHECKING:
+        #             from libre_pythonista_lib.cell.lpl_cell import LplCell
+        #         lp_cell = LplCell(cell)
+        #         if lp_cell.has_code_name_prop:
+        #             self._logger.debug(
+        #                 f"pyv - py {cell.cell_obj} cell already has code. May be a row or column as been inserted."
+        #             )
+
+        #             code_handled = True
+        #             lp_cell.reset_py_instance()
+        #             CellMgr.reset_instance(doc)
+        #             cm = CellMgr(doc)
+        #             if lp_cell.has_cell_moved:
+        #                 self._logger.debug(f"pyc - py {cell.cell_obj} cell has Moved.")
+        #                 cm.update_sheet_cell_addr_prop(sheet_idx)
+
+        #         if not code_handled:
+        #             cm.add_source_code(source_code="", cell_obj=cell.cell_obj)
+        #     else:
+        #         self._logger.debug("pyc - py cell has code")
+
+        # except Exception as e:
+        #     self._logger.error(f"Error: {e}", exc_info=True)
+        #     raise
+
+        self._logger.debug("pyv entered")
+        # key should be set custom cell id.
+        key = f"{sheet_num}:{cell_address}"
+        if key in self._v_results:
+            return self._v_results[key]
+
+        self._v_count += 1
+        result = (
+            f'{self._v_count} - {sheet_num}:{cell_address} - {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}'
+        )
+        vr = VolatileResult(result)
+        self._v_results[key] = vr
+        return vr
+
+    # endregion Volatile Result Methods
+
     def _get_code(self) -> str | None:
         dlg = DialogPython(self.ctx)
         self._logger.debug("Py - _get_code() py displaying dialog")
@@ -238,6 +333,42 @@ class PyImpl(unohelper.Base, XPy):
         else:
             self._logger.debug("Py - _get_code() - py dialog returned with Cancel")
         return result
+
+
+# https://wiki.documentfoundation.org/Documentation/DevGuide/Spreadsheet_Documents#Variable_Results
+class VolatileResult(XVolatileResult, unohelper.Base):
+    def __init__(self, result: Any):
+        XVolatileResult.__init__(self)
+        unohelper.Base.__init__(self)
+        self._listeners: List[XResultListener] = []
+        self._v_result = result
+
+    def _get_result(self) -> ResultEvent:
+        re = ResultEvent()
+        re.Source = self
+        re.Value = self._v_result
+        return re
+
+    # region XVolatileResult
+    def addResultListener(self, listener: XResultListener) -> None:
+        """
+        adds a listener to be notified when a new value is available.
+        """
+        self._listeners.append(listener)
+        # immediately notify of initial value
+        listener.modified(self._get_result())
+
+    def removeResultListener(self, listener: XResultListener) -> None:
+        """
+        removes the specified listener.
+        """
+        with contextlib.suppress(ValueError):
+            self._listeners.remove(listener)
+
+    def disposing(self, ev: Any) -> None:
+        pass
+
+    # endregion XVolatileResult
 
 
 g_ImplementationHelper = unohelper.ImplementationHelper()

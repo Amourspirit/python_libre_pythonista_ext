@@ -1,10 +1,14 @@
 #include <com/sun/star/uno/XInterface.idl>
+#include <com/sun/star/sheet/XVolatileResult.idl>
  
 module com { module github { module amourspirit { module extensions { module librepythonista {
  
-interface XPy: com::sun::star::uno::XInterface
-{
-    sequence< sequence< any > > pyc( [in] long sheetIdx, [in] string cAddress, [in] any extras);
-};
+    interface XPy: com::sun::star::uno::XInterface
+    {
+        sequence< sequence< any > > pyc( [in] long sheetIdx, [in] string cAddress, [in] any extras);
+
+        /// Sample function that returns a volatile result.
+        com::sun::star::sheet::XVolatileResult pyv( [in] long sheetIdx, [in] string cAddress );
+    };
  
 }; }; }; }; };
