@@ -69,7 +69,7 @@ class SheetMgr(SingletonBase):
                     self._log.debug(f"Sheet Saving Event for {self._sheet.name}")
             # when the sheet is saved, Events may get removed.
             try:
-                SheetCalculate.remove_doc_sheets_calculate_event(self._doc)
+                self.clean_up_sheet_calculate_event()
             except Exception:
                 self._log.exception("Error removing sheet calculate event")
             self._calc_event_ensured = False
