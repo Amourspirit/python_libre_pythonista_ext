@@ -55,8 +55,6 @@ class LpFnPlot:
             log.debug(f"LpFnPlot - get_is_match() Last bracket is not the end of the string: {next_bracket_index}")
             return False
 
-        result = None
-        # with contextlib.suppress(Exception):
         try:
             if "lp_plot" in self.mod.__dict__:
                 log.debug("LpFnPlot - get_is_match() lp_plot is in module")
