@@ -20,7 +20,12 @@ from .dispatch_provider_interceptor import DispatchProviderInterceptor
 from .cell_dispatch_state import CellDispatchState
 from ..log.log_inst import LogInst
 from ..res.res_resolver import ResResolver
-from ..const import UNO_DISPATCH_CODE_EDIT_MB, UNO_DISPATCH_CODE_DEL, UNO_DISPATCH_CELL_SELECT
+from ..const import (
+    UNO_DISPATCH_CODE_EDIT_MB,
+    UNO_DISPATCH_CODE_DEL,
+    UNO_DISPATCH_CELL_SELECT,
+    UNO_DISPATCH_CELL_SELECT_RECALC,
+)
 from ..cell.props.key_maker import KeyMaker
 from ..cell.state.ctl_state import CtlState
 from ..cell.state.state_kind import StateKind
@@ -103,10 +108,13 @@ def on_menu_intercept(
                         # container.insert_by_index(4, ActionTriggerItem(f".uno:libre_pythonista.calc.menu.reset.orig?sheet={sheet.name}&cell={cell_obj}", "Rest to Original"))  # type: ignore
                         items.append(ActionTriggerSep())  # type: ignore
                         item = ActionTriggerItem(menu_main_sub, menu_main_sub, sub_menu=items)
+                    recalc_name = rr.resolve_string("mnuRecalcCell")  # Select Cell
+                    items.append(ActionTriggerItem(f"{UNO_DISPATCH_CELL_SELECT_RECALC}?sheet={sheet.name}&cell={cell_obj}", recalc_name))  # type: ignore
 
                     # is this a DataFrame or similar?
                     dp_cmd = cps.get_rule_dispatch_cmd()
                     if dp_cmd and cell.get_custom_property(key_maker.cell_array_ability_key, False):
+                        items.append(ActionTriggerSep())  # type: ignore
                         state = CtlState(cell).get_state()
                         if state == StateKind.ARRAY:
                             py_obj = rr.resolve_string("mnuViewPyObj")  # Python Object
@@ -179,6 +187,8 @@ def _mi_plot_figure(container: Any, fl: Tuple[str, str], event: Any) -> bool:
 
             sel_name = rr.resolve_string("mnuSelCell")  # Select Cell
             items.append(ActionTriggerItem(f"{UNO_DISPATCH_CELL_SELECT}?sheet={sheet.name}&cell={cell_obj}", sel_name))  # type: ignore
+            recalc_name = rr.resolve_string("mnuRecalcCell")  # Select Cell
+            items.append(ActionTriggerItem(f"{UNO_DISPATCH_CELL_SELECT_RECALC}?sheet={sheet.name}&cell={cell_obj}", recalc_name))  # type: ignore
 
             if item is not None and items.getCount() > 0:
                 container.insert_by_index(4, item)  # type: ignore

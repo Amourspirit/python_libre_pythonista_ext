@@ -13,6 +13,7 @@ from ...const import (
     UNO_DISPATCH_CODE_EDIT_MB,
     UNO_DISPATCH_CODE_DEL,
     UNO_DISPATCH_CELL_SELECT,
+    UNO_DISPATCH_CELL_SELECT_RECALC,
     UNO_DISPATCH_DF_CARD,
     UNO_DISPATCH_DATA_TBL_CARD,
 )
@@ -78,6 +79,7 @@ class CtlPopup:
             py_obj = self._res.resolve_string("mnuViewPyObj")  # Python Object
             array = self._res.resolve_string("mnuViewArray")  # Array
             return [
+                {"text": "-"},
                 {
                     "text": "State",
                     "command": "",
@@ -91,27 +93,36 @@ class CtlPopup:
     def _get_card_df_menu(self) -> list:
         card_name = self._res.resolve_string("mnuViewCard")
         card_url = f"{UNO_DISPATCH_DF_CARD}?sheet={self._sheet_name}&cell={self._cell.cell_obj}"
-        return [{"text": card_name, "command": card_url, "enabled": True}]
+        return [
+            {"text": "-"},
+            {"text": card_name, "command": card_url, "enabled": True},
+        ]
 
     def _get_card_tbl_data_menu(self) -> list:
         card_name = self._res.resolve_string("mnuViewCard")
         card_url = f"{UNO_DISPATCH_DATA_TBL_CARD}?sheet={self._sheet_name}&cell={self._cell.cell_obj}"
-        return [{"text": card_name, "command": card_url, "enabled": True}]
+        return [
+            {"text": "-"},
+            {"text": card_name, "command": card_url, "enabled": True},
+        ]
 
     def _get_popup_menu(self) -> list:
         edit_name = self._res.resolve_string("mnuEditCode")  # Edit Menu
         del_name = self._res.resolve_string("mnuDeletePyCell")  # Delete Python
         sel_name = self._res.resolve_string("mnuSelCell")  # Select Cell
+        recalc_name = self._res.resolve_string("mnuRecalcCell")  # Recalculate
 
         cmd_enabled = self._cps.is_dispatch_enabled(UNO_DISPATCH_CODE_EDIT)
         edit_url = f"{UNO_DISPATCH_CODE_EDIT_MB}?sheet={self._sheet_name}&cell={self._cell.cell_obj}&in_thread=1"
         del_url = f"{UNO_DISPATCH_CODE_DEL}?sheet={self._sheet_name}&cell={self._cell.cell_obj}"
         sel_url = f"{UNO_DISPATCH_CELL_SELECT}?sheet={self._sheet_name}&cell={self._cell.cell_obj}"
+        sel_recalc_url = f"{UNO_DISPATCH_CELL_SELECT_RECALC}?sheet={self._sheet_name}&cell={self._cell.cell_obj}"
         new_menu = [
             {"text": edit_name, "command": edit_url, "enabled": cmd_enabled},
             {"text": del_name, "command": del_url, "enabled": cmd_enabled},
             {"text": "-"},
             {"text": sel_name, "command": sel_url, "enabled": True},
+            {"text": recalc_name, "command": sel_recalc_url, "enabled": True},
         ]
         if not self._cps.is_protected() and self._lpl_cell.has_array_ability:
             # if self._cell.get_custom_property(self._key_maker.cell_array_ability_key, False):

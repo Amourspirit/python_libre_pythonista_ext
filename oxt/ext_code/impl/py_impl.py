@@ -113,7 +113,7 @@ class PyImpl(unohelper.Base, XPy):
             self._logger.debug(f"pyc - sheet_num: arg {sheet_num}")
             self._logger.debug(f"pyc - cell_address: arg {cell_address}")
             if args:
-                self._logger.debug(f"pyc -args: {args}")
+                self._logger.debug(f"pyc - args count: {len(args)}")
 
             sheet = doc.sheets[sheet_idx]
             xcell = sheet.component.getCellRangeByName(cell_address)

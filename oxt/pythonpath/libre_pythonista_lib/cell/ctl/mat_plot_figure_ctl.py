@@ -7,9 +7,11 @@ from pathlib import Path
 from ooodev.exceptions import ex as mEx
 from ..props.key_maker import KeyMaker
 from ...log.log_inst import LogInst
+from ...ex import CellDeletedError
+from .error_ctl import ErrorCtl
 
 # from ..lpl_cell import LplCell
-from ...code.py_source_mgr import PySource, PyInstance
+from ...code.py_source_mgr import PyInstance
 from .cell_img import CellImg
 from .shape_namer import ShapeNamer
 
@@ -22,6 +24,7 @@ class MatPlotFigureCtl:
     def __init__(self, calc_cell: CalcCell) -> None:
         self.calc_cell = calc_cell
         self.key_maker = KeyMaker()
+        self.is_deleted_cell = calc_cell.extra_data.get("deleted", False)
         self.log = LogInst()
         self._py_src = PyInstance(self.calc_cell.calc_doc)
         self.namer = ShapeNamer(self.calc_cell)
@@ -39,6 +42,8 @@ class MatPlotFigureCtl:
             src = self._py_src[self.calc_cell.cell_obj]
             dd = src.dd_data
             try:
+                if self.is_deleted_cell:
+                    raise CellDeletedError(f"Cell is deleted: {self.calc_cell.cell_obj}")
                 # if self.log.is_debug:
                 #     for k, v in dd.items():
                 #         self.log.debug(f"src DotDict: {k}: {v}")
@@ -93,6 +98,16 @@ class MatPlotFigureCtl:
             except Exception as e:
                 self.log.error(f"{self.__class__.__name__}: remove_ctl error: {e}", exc_info=True)
                 return None
+
+            # an error control may have been added. Remove it.
+            try:
+                self.log.debug(f"{self.__class__.__name__}: remove_ctl(): Checking for error control.")
+                err_ctl = ErrorCtl(self.calc_cell)
+                err_ctl.remove_ctl()
+            except Exception:
+                self.log.debug(
+                    f"{self.__class__.__name__}: remove_ctl(): Error removing error control. May not have been an error control to remove."
+                )
 
     def update_ctl(self) -> None:
         """Updates the control. Usually set the controls size and pos."""

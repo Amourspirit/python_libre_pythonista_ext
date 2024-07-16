@@ -25,6 +25,7 @@ from ..const import (
     UNO_DISPATCH_CODE_DEL,
     UNO_DISPATCH_PY_OBJ_STATE,
     UNO_DISPATCH_CELL_SELECT,
+    UNO_DISPATCH_CELL_SELECT_RECALC,
     UNO_DISPATCH_DF_CARD,
     UNO_DISPATCH_DATA_TBL_CARD,
     UNO_DISPATCH_SEL_RNG,
@@ -46,6 +47,7 @@ from .dispatch_card_tbl_data import DispatchCardTblData
 from .dispatch_rng_select_popup import DispatchRngSelectPopup
 from .dispatch_edit_py_cell_mb import DispatchEditPyCellMb
 from .dispatch_log_window import DispatchLogWindow
+from .dispatch_cell_select_recalc import DispatchCellSelectRecalc
 
 # from .listen.edit_status_listener import EditStatusListener
 from ..log.log_inst import LogInst
@@ -197,6 +199,12 @@ class DispatchProviderInterceptor(unohelper.Base, XDispatchProviderInterceptor):
                 with log.indent(True):
                     log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchCellSelect")
                 return DispatchCellSelect(sheet=args["sheet"], cell=args["cell"])
+        elif url.Main == UNO_DISPATCH_CELL_SELECT_RECALC:
+            with contextlib.suppress(Exception):
+                args = self._convert_query_to_dict(url.Arguments)
+                with log.indent(True):
+                    log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchCellSelectRecalc")
+                return DispatchCellSelectRecalc(sheet=args["sheet"], cell=args["cell"])
         elif url.Main == UNO_DISPATCH_DF_CARD:
             with contextlib.suppress(Exception):
                 args = self._convert_query_to_dict(url.Arguments)
