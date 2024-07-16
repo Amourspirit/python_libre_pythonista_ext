@@ -9,6 +9,7 @@ from ooodev.utils.data_type.range_values import RangeValues
 from ooodev.utils.data_type.cell_obj import CellObj
 from ooodev.utils.data_type.range_obj import RangeObj
 from ooodev.utils.data_type.cell_values import CellValues
+from ooodev.exceptions import ex as mEx
 from ...cell.cell_mgr import CellMgr
 from ...data.pandas_data_obj import PandasDataObj
 
@@ -57,42 +58,12 @@ def _get_addr(addr: str) -> str:
 
 
 def _collapse_to_used(sheet: CalcSheet, rng_obj: RangeObj) -> RangeObj:
-    cursor = sheet.create_cursor_by_range(range_obj=rng_obj)
-    q_result = cursor.component.queryContentCells(
-        CellFlags.FORMULA | CellFlags.VALUE | CellFlags.DATETIME | CellFlags.STRING
-    )
-    if q_result is None:
+    rng = sheet.get_range(range_obj=rng_obj)
+    try:
+        found = rng.find_used_range()
+        return found.range_obj.copy()
+    except mEx.CellRangeError:
         return rng_obj
-    cells = q_result.getCells()
-    if cells is None:
-        return rng_obj
-    if not cells.hasElements():
-        return rng_obj
-    enum = cells.createEnumeration()
-    if enum is None:
-        return rng_obj
-    sheet_cells: List[CellObj] = []
-    while enum.hasMoreElements():
-        sc = cast(SheetCell, enum.nextElement())
-        sheet_cells.append(CellObj.from_cell(sc.getCellAddress()))
-
-    if len(sheet_cells) < 2:
-        return rng_obj
-    sheet_cells.sort()
-    cell_start = sheet_cells[0]
-    cell_end = sheet_cells[-1]
-    addr_start = cell_start.get_cell_values()
-    addr_end = cell_end.get_cell_values()
-    result = RangeValues(
-        col_start=addr_start.col,
-        row_start=addr_start.row,
-        col_end=addr_end.col,
-        row_end=addr_end.row,
-        sheet_idx=rng_obj.sheet_idx,
-    )
-    # cursor.component.gotoStartOfUsedArea(False) and gotoEndOfUsedArea(True) are not working
-    # correctly. The goto methods go outside the bounds of the range.
-    return RangeObj.from_range(result)
 
 
 def lp(addr: str, **kwargs: Any) -> Any:

@@ -33,9 +33,22 @@ class AutoFn:
 
         s = f'lp("{self._cell_rng.range_obj}"'
         if self._data_info.has_headers:
-            headers = self._data_info.headers
+            # headers = self._data_info.headers
             s += ", headers=True"
+        if self._get_include_collapse():
+            s += ", collapse=True"
         s += ")"
 
         self._log.debug(f"generate_fn() returning '{s}'")
         return s
+
+    def _get_include_collapse(self) -> bool:
+        """Determines if the collapse parameter should be included"""
+        ro_orig = self._cell_rng.range_obj
+        try:
+            ro = self._cell_rng.find_used_range()
+            if ro_orig != ro.range_obj:
+                return True
+        except Exception as e:
+            self._log.exception(f"Error: {e}")
+        return False
