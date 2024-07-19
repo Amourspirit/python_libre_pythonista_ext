@@ -30,13 +30,12 @@ class PandasDataObj:
         self._date_column_names: List[str] = []
         self._date_column_indexes: List[int] = []
         self._log = OxtLogger(log_name=self.__class__.__name__)
-        if self._log.is_debug:
-            with self._log.indent(True):
-                self._log.debug(f"init: {cell_rng.range_obj}")
-        self._data_info = TblDataObj(cell_rng)
-        if col_types:
-            self._process_column_types(col_types)
         with self._log.indent(True):
+            if self._log.is_debug:
+                self._log.debug(f"init: {cell_rng.range_obj}")
+            self._data_info = TblDataObj(cell_rng)
+            if col_types:
+                self._process_column_types(col_types)
             self._log.debug("init complete.")
 
     def _process_column_types(self, col_types: Dict[str | int, str]):

@@ -287,6 +287,9 @@ class DispatchToggleDfState(XDispatch, EventsPartial, unohelper.Base):
             if has_headers is False:
                 has_headers = PandasUtil.has_headers(df)
             has_index_names = PandasUtil.has_index_names(df)
+            if self._log.is_debug:
+                self._log.debug(f"_get_rows_cols() - Has Headers: {has_headers}")
+                self._log.debug(f"_get_rows_cols() - Has Index Names: {has_index_names}")
 
             if self._log.is_debug:
                 self._log.debug(f"DataFrame Shape: {df.shape}")

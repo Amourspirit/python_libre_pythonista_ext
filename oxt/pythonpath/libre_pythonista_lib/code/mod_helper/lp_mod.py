@@ -127,11 +127,14 @@ def lp(addr: str, **kwargs: Any) -> Any:
                     log.debug(f"lp - Doc Named Ranges: {names}")
 
                 if sheet.named_ranges.has_by_name(addr):
-                    log.debug(f"lp - Named range found in sheet: {addr}")
+                    log.debug(f"lp - Named range found in sheet Name Ranges: {addr}")
                     nc = sheet.named_ranges.get_by_name(addr)
                 elif doc.named_ranges.has_by_name(addr):
-                    log.debug(f"lp - Named range found in doc: {addr}")
+                    log.debug(f"lp - Named range found in doc Named Ranges: {addr}")
                     nc = doc.named_ranges.get_by_name(addr)
+                elif doc.database_ranges.has_by_name(addr):
+                    log.debug(f"lp - Named range found in doc Database Ranges: {addr}")
+                    nc = doc.database_ranges.get_by_name(addr)
                 else:
                     log.error(f"lp - Named range {addr} not found in sheet or document.")
                     return _set_last_lp_result(None)

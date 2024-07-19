@@ -1,4 +1,5 @@
 from __future__ import annotations
+import contextlib
 from typing import Any, Tuple, List
 from datetime import datetime, timedelta
 import pandas as pd
@@ -21,8 +22,8 @@ class PandasUtil:
         """Detects if a DataFrame has a header."""
         return not df.columns.is_unique or not all(isinstance(col, (int, float)) for col in df.columns)
 
-    @staticmethod
-    def has_index_names(df: pd.DataFrame) -> bool:
+    @classmethod
+    def has_index_names(cls, df: pd.DataFrame) -> bool:
         """
         Detects if a DataFrame has index names.
 
@@ -31,7 +32,28 @@ class PandasUtil:
             This will return True for Head and Tail DataFrames.
         """
 
-        return not pd.RangeIndex(start=0, stop=df.shape[0]).equals(df.index)
+        # return not pd.RangeIndex(start=0, stop=df.shape[0]).equals(df.index)
+        result = False
+        with contextlib.suppress(AttributeError):
+            is_index = (
+                (isinstance(df.index, pd.RangeIndex) or (df.index.dtype == "int64"))
+                and df.index.name is None
+                and df.index.names == [None]
+            )
+            result = not is_index
+        return result
+
+    @staticmethod
+    def has_default_index(df: pd.DataFrame) -> bool:
+        """
+        Checks if the DataFrame has default numerical index values (pd.RangeIndex)
+        and not named indexes.
+
+        Returns:
+            bool: True if the DataFrame has a default numerical index, False otherwise.
+        """
+        # https://thispointer.com/how-to-get-the-index-column-name-in-pandas/
+        return isinstance(df.index, pd.RangeIndex) and df.index.name is None and df.index.names == [None]
 
     @staticmethod
     def get_index_names(df: pd.DataFrame) -> list:
