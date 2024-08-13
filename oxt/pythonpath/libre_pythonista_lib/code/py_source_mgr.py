@@ -534,11 +534,11 @@ class PySourceManager(EventsPartial):
             code_cell = (key[0], key[2], key[1])
         if is_db:
             with self._log.indent(True):
-                self._log.debug(f"__getitem() - Code Cell: {code_cell}")
+                self._log.debug(f"__getitem__() - Code Cell: {code_cell}")
         result = self._data[code_cell]
         if is_db:
             with self._log.indent(True):
-                self._log.debug(f"__getitem() - Result Unique Id: {result.unique_id}")
+                self._log.debug(f"__getitem__() - Result Unique Id: {result.unique_id}")
         return result
 
     def __setitem__(self, key: CellObj | Tuple[int, int, int], value: PySource) -> None:
@@ -861,7 +861,13 @@ class PySourceManager(EventsPartial):
             self._log.debug("_update_item() Entered.")
             self._log.debug(f"_update_item() sheet index: {sheet_idx} col: {col}, row: {row}")
             cargs.event_data = DotDict(
-                source=self, sheet_idx=sheet_idx, row=row, col=col, code=py_src.source_code, doc=self._doc
+                source=self,
+                sheet_idx=sheet_idx,
+                row=row,
+                col=col,
+                code=py_src.source_code,
+                doc=self._doc,
+                py_src=py_src,
             )
             # triggers are in col row format
             self.trigger_event(f"BeforeSourceUpdate_{col}_{row}", cargs)

@@ -24,9 +24,10 @@ from ..cell.cell_info import CellInfo
 from ..cell.props.key_maker import KeyMaker
 from ..event.shared_event import SharedEvent
 from .lpl_cell import LplCell
-from ..style.default_sytle import DefaultStyle
+from ..style.default_style import DefaultStyle
 from ..utils.singleton_base import SingletonBase
 from ..sheet.sheet_mgr import SheetMgr
+from ..dispatch.cell_dispatch_state import CellDispatchState
 from ..const import (
     UNO_DISPATCH_CODE_DEL,
     UNO_DISPATCH_CODE_EDIT,
@@ -35,7 +36,7 @@ from ..const import (
     UNO_DISPATCH_PY_OBJ_STATE,
     UNO_DISPATCH_CELL_SELECT,
 )
-from ..const.event_const import SHEET_MODIFIED, CALC_FORMULAS_CALCULATED, PYC_FORMULA_INSERTED
+from ..const.event_const import SHEET_MODIFIED, CALC_FORMULAS_CALCULATED, PYC_FORMULA_INSERTED, PYC_RULE_MATCH_DONE
 
 from ..log.log_inst import LogInst
 
@@ -83,6 +84,8 @@ class CellMgr(SingletonBase):
         self._se.subscribe_event(SHEET_MODIFIED, self._fn_on_sheet_modified)
         self._se.subscribe_event(CALC_FORMULAS_CALCULATED, self._fn_on_calc_formulas_calculated)
         self._se.subscribe_event(PYC_FORMULA_INSERTED, self._fn_on_calc_pyc_formula_inserted)
+        self._se.subscribe_event(PYC_RULE_MATCH_DONE, self._fn_on_pyc_rule_matched)
+
         # self.remove_all_listeners()
         # self.add_all_listeners()
 
@@ -129,7 +132,7 @@ class CellMgr(SingletonBase):
     def _on_calc_formulas_calculated(self, src: Any, event: EventArgs) -> None:
         with self._log.noindent():
             self._log.debug(f"_on_calc_formulas_calculated() Entering.")
-            self.reset_py_inst()
+            self.reset_py_inst(update_display=True)
             self._log.debug(f"_on_calc_formulas_calculated() Done.")
 
     def _on_calc_pyc_formula_inserted(self, src: Any, event: EventArgs) -> None:
@@ -139,6 +142,16 @@ class CellMgr(SingletonBase):
             self._log.debug(f"_on_calc_pyc_formula_inserted() Done.")
 
     # endregion Events Sheet
+
+    # region PYC Events
+    def _on_pyc_rule_matched(self, src: Any, event: EventArgs) -> None:
+        self._log.debug(f"_on_pyc_rule_matched() Entering.")
+        dd = cast(DotDict, event.event_data)
+        self._log.debug(f"Is First Cell: {dd.is_first_cell}")
+        self._log.debug(f"Is Last Cell: {dd.is_last_cell}")
+        self._log.debug("_on_pyc_rule_matched() Done")
+
+    # endregion PYC Events
 
     # region Control Update Methods
     def _update_lp_cell_control(self, cell: CalcCell) -> None:
@@ -152,9 +165,14 @@ class CellMgr(SingletonBase):
         with self._log.indent(True):
             self._log.debug(f"_update_py_event_control() Updating control for cell: {cell.cell_obj}")
             lpl = LplCell(cell)
-            # current_state = lpl.ctl_state
-            lpl.ctl_state = StateKind.PY_OBJ
+            current_state = lpl.ctl_state
+            if current_state != StateKind.PY_OBJ:
+                self._log.debug(f"Current State: {current_state}. Setting to PY_OBJ")
+                lpl.ctl_state = StateKind.PY_OBJ
             lpl.update_control()
+            if current_state != StateKind.PY_OBJ:
+                self._log.debug(f"Setting State back to: {current_state}")
+                lpl.ctl_state = current_state
             self._log.debug("_update_py_event_control() Done.")
 
     def _update_controls_forward(self, cell: CalcCell) -> None:
@@ -253,7 +271,11 @@ class CellMgr(SingletonBase):
         self._fn_on_sheet_modified = self._on_sheet_modified
         self._fn_on_calc_formulas_calculated = self._on_calc_formulas_calculated
         self._fn_on_calc_pyc_formula_inserted = self._on_calc_pyc_formula_inserted
+        self._fn_py_inst_after_source_update = self._py_inst_after_source_update
         # endregion Sheet Events
+        # region PYC Events
+        self._fn_on_pyc_rule_matched = self._on_pyc_rule_matched
+        # endregion PYC Events
 
     def on_cell_deleted(self, src: Any, event: EventArgs) -> None:
         """
@@ -355,6 +377,10 @@ class CellMgr(SingletonBase):
                     )
                     # address = cell.getCellAddress()
                     self._remove_cell(calc_cell=dd.calc_cell)
+                is_first_cell = getattr(dd, "is_first_cell", False)
+                is_last_cell = getattr(dd, "is_last_cell", False)
+                self._log.debug(f"Is First Cell: {is_first_cell}")
+                self._log.debug(f"Is Last Cell: {is_last_cell}")
             except Exception:
                 self._log.error(f"Error modifying cell: {dd.absolute_name}", exc_info=True)
 
@@ -720,16 +746,76 @@ class CellMgr(SingletonBase):
                 raise ValueError("Cell cache is None")
             return self._cell_cache.is_first_cell(cell=cell_obj, sheet_idx=cell_obj.sheet_idx)
 
-    def reset_py_inst(self) -> None:
+    def is_last_cell(self, cell_obj: CellObj) -> bool:
+        """
+        Check if the current cell is the last cell in the sheet.
+        """
+        with self._log.indent(True):
+            if self._cell_cache is None:
+                # this should never happen.
+                self._log.error("Cell cache is None")
+                raise ValueError("Cell cache is None")
+            return self._cell_cache.is_last_cell(cell=cell_obj, sheet_idx=cell_obj.sheet_idx)
+
+    def reset_py_inst(self, update_display: bool = False) -> None:
         """
         Reset the PyInstance.
+
+        Args:
+            update_display (bool, optional): Update the display after reset. Defaults to False.
+
+        Note:
+            Updating display will toggle the sheet python arrays on and off.
         """
+        update_display = False
         with self._log.indent(True):
             self._log.debug("reset_py_inst() Resetting PyInstance")
             self._py_inst = None
             PyInstance.reset_instance(self._doc)
+            if update_display:
+                self.py_inst.unsubscribe_after_update_source(self._fn_py_inst_after_source_update)
+                self.py_inst.subscribe_after_source_update(self._fn_py_inst_after_source_update)
             self.py_inst.update_all()
+            if update_display:
+                self.py_inst.unsubscribe_after_update_source(self._fn_py_inst_after_source_update)
             self._log.debug("reset_py_inst() Done")
+
+    def _py_inst_after_source_update(self, src: Any, event: EventArgs) -> None:
+        # event data is DotDict(
+        # source=self,
+        # sheet_idx=sheet_idx,
+        # row=row,
+        # col=col,
+        # code=code,
+        # doc=self._doc,
+        # py_src=py_src,
+        # )
+        self._log.debug("PyInstance after source update")
+        doc = cast(CalcDoc, event.event_data.doc)
+        sheet_idx = cast(int, event.event_data.sheet_idx)
+        row = cast(int, event.event_data.row)
+        col = cast(int, event.event_data.col)
+        co = CellObj.from_idx(col_idx=col, row_idx=row, sheet_idx=sheet_idx)
+        cc = doc.sheets[sheet_idx][co]
+
+        cds = CellDispatchState(cell=cc)
+        # if not cds.is_dispatch_enabled():
+        #     return
+        state = cds.get_state()
+
+        # lp = LplCell(cc)
+        # state = lp.ctl_state
+        if state == StateKind.ARRAY:
+            # lp.ctl_state = StateKind.PY_OBJ
+            # lp.ctl_state = StateKind.ARRAY
+            # dpc = f".uno:libre_pythonista.calc.py_obj.state?sheet={cc.calc_sheet.name}&cell={co}"
+            dpc = f"{UNO_DISPATCH_PY_OBJ_STATE}?sheet={cc.calc_sheet.name}&cell={co}"
+            doc.dispatch_cmd(dpc)
+            rule_dpc = cds.get_rule_dispatch_cmd()
+            if rule_dpc:
+                doc.dispatch_cmd(rule_dpc)
+
+        self._log.debug("PyInstance after source update Done")
 
     def reset_cell_cache(self) -> None:
         """

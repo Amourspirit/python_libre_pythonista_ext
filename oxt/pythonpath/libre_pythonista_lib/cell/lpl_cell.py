@@ -5,11 +5,12 @@ from ooodev.calc import CalcCell, CalcSheet
 from ooodev.utils.helper.dot_dict import DotDict
 from ooodev.exceptions import ex as mEx
 from ooodev.calc import CellObj
+from ..dispatch.cell_dispatch_state import CellDispatchState
 from .ctl.ctl_mgr import CtlMgr
 from .props.key_maker import KeyMaker
 from .state.ctl_state import CtlState
 from .state.state_kind import StateKind
-from ..const import UNO_DISPATCH_PY_OBJ_STATE
+from ..const import UNO_DISPATCH_PY_OBJ_STATE, UNO_DISPATCH_DF_STATE
 from ..cell.result_action.pyc.rules.pyc_rules import PycRules
 from ..code.py_source_mgr import PySource, PyInstance
 from ..utils.pandas_util import PandasUtil
@@ -39,6 +40,7 @@ class LplCell:
         with self._log.indent(True):
             self._log.debug(f"Creating LplCell({cell.cell_obj})")
         self._cell = cell
+        self._cell_dispatch_state = CellDispatchState(cell)
         self._key_maker = KeyMaker()
         self._ctl_mgr = CtlMgr()
         self._pyc_rules = PycRules()
@@ -72,7 +74,13 @@ class LplCell:
         There is not need to call ``RemoveControl()`` before calling this method.
         """
         with self._log.indent(True):
+
             self._log.debug("update_control() Entered")
+
+            if self.ctl_state == StateKind.ARRAY:
+                self._log.debug("update_control() State is ARRAY. removing control")
+                self.remove_control()
+                return
             matched_rule = self._pyc_rules.get_matched_rule(cell=self.cell, data=self.pyc_src.dd_data)
 
             if matched_rule is None:
@@ -212,6 +220,26 @@ class LplCell:
                     cmd = self.get_dispatch_command(url_main)
                     self.cell.calc_doc.dispatch_cmd(cmd)
                 self._ctl_mgr.remove_ctl(self.cell)
+                return
+            if value == StateKind.ARRAY and current_state != StateKind.ARRAY:
+                self._log.debug("ctl_state Setting state to ARRAY")
+                # the current state is not array
+                # Set the state to py obj first and then call the dispatch command.
+                # The dispatch command will toggle from PY_OBJ to ARRAY.
+                # Optionally the dispatch could be call twice.
+                self._log.debug("ctl_state Removing control if it exist")
+                self._ctl_mgr.remove_ctl(self.cell)
+                self._log.debug("ctl_state Setting state to PY_OBJ")
+                cs = CtlState(cell=self.cell)
+                cs.set_state(StateKind.PY_OBJ)
+                url_main = self.cell_dispatch_state.get_rule_dispatch_cmd()
+                # url_main = UNO_DISPATCH_DF_STATE
+                if not url_main:
+                    self._log.error("ctl_state No dispatch command found. Returning")
+                    return
+                cmd = self.get_dispatch_command(url_main)
+                self._log.debug(f"ctl_state Dispatching command: {cmd}")
+                self.cell.calc_doc.dispatch_cmd(cmd)
                 return
             # a known value
             # if there is a rule and a dispatch the toggle the state with a dispatch.
@@ -451,7 +479,12 @@ class LplCell:
         """
         key = self._key_maker.cell_array_ability_key
         if key in self.custom_properties:
-            return self.custom_properties[key]
+            return bool(self.custom_properties[key])
         return False
+
+    @property
+    def cell_dispatch_state(self) -> CellDispatchState:
+        """Cell Dispatch State. Class to get the dispatch state of a cell."""
+        return self._cell_dispatch_state
 
     # endregion Properties

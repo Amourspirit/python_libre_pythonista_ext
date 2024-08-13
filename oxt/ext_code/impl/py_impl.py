@@ -31,23 +31,31 @@ if TYPE_CHECKING:
     _CONDITIONS_MET = True
     from com.sun.star.frame import Desktop
     from ooodev.calc import CalcDoc
+    from ooodev.events.args.event_args import EventArgs
+    from ooodev.utils.helper.dot_dict import DotDict
     from ooodev.utils.data_type.col_obj import ColObj
     from ...___lo_pip___.oxt_logger.oxt_logger import OxtLogger
     from ...___lo_pip___.config import Config
-    from ...pythonpath.libre_pythonista_lib.dialog.py.dialog_python import DialogPython
     from ...pythonpath.libre_pythonista_lib.cell.cell_mgr import CellMgr
+    from ...pythonpath.libre_pythonista_lib.code.cell_cache import CellCache
     from ...pythonpath.libre_pythonista_lib.cell.result_action.pyc.rules.pyc_rules import PycRules
     from ...pythonpath.libre_pythonista_lib.cell.lpl_cell import LplCell
+    from ...pythonpath.libre_pythonista_lib.event.shared_event import SharedEvent
+    from ...pythonpath.libre_pythonista_lib.const.event_const import PYC_RULE_MATCH_DONE
 
 else:
     _CONDITIONS_MET = _conditions_met()
 
     if _CONDITIONS_MET:
         from ooodev.calc import CalcDoc
+        from ooodev.events.args.event_args import EventArgs
+        from ooodev.utils.helper.dot_dict import DotDict
         from ooodev.utils.data_type.col_obj import ColObj
-        from libre_pythonista_lib.dialog.py.dialog_python import DialogPython
         from libre_pythonista_lib.cell.cell_mgr import CellMgr
         from libre_pythonista_lib.cell.result_action.pyc.rules.pyc_rules import PycRules
+        from libre_pythonista_lib.event.shared_event import SharedEvent
+        from libre_pythonista_lib.code.cell_cache import CellCache
+        from libre_pythonista_lib.const.event_const import PYC_RULE_MATCH_DONE
     from ___lo_pip___.config import Config
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
 
@@ -157,19 +165,11 @@ class PyImpl(unohelper.Base, XPy):
                         self._logger.debug(f"pyc - py {cell.cell_obj} cell has Moved.")
                         cm.update_sheet_cell_addr_prop(sheet_idx)
 
-                # prompt for code
                 if not code_handled:
-                    # code = self._get_code()
-                    # if code:
-                    #     # When source code is added to CellMgr is will add CodeCellListener listener to this cell.
-                    #     cm.add_source_code(source_code=code, cell_obj=cell.cell_obj)
-                    #     # now the listener has been added to the cell, return a result and recalculate the cell.
-                    # else:
-                    #     self._logger.debug("pyc - No code entered")
-                    #     return None
                     cm.add_source_code(source_code="", cell_obj=cell.cell_obj)
             else:
                 self._logger.debug("pyc - py cell has code")
+
             # resetting is handled by the CodeSheetModifyListener
             # if cm.is_first_cell(cell_obj=cell.cell_obj):
             #     cm.reset_py_inst()
@@ -188,6 +188,16 @@ class PyImpl(unohelper.Base, XPy):
                 # handled by the CellMgr which uses CtlMgr to assign the control to the cell.
                 rule_result = matched_rule.action()
                 cm.add_cell_control_from_pyc_rule(rule=matched_rule)
+
+                shared_event = SharedEvent(doc)
+                cell_cache = CellCache(doc)
+                dd = DotDict(matched_rule=matched_rule, rule_result=rule_result, calc_cell=cell)
+                dd.is_first_cell = cell_cache.is_first_cell(cell=cell.cell_obj, sheet_idx=sheet_idx)
+                dd.is_last_cell = cell_cache.is_last_cell(cell=cell.cell_obj, sheet_idx=sheet_idx)
+                eargs = EventArgs(self)
+                eargs.event_data = dd
+                shared_event.trigger_event(PYC_RULE_MATCH_DONE, eargs)
+
                 self._logger.debug(f"pyc - Done")
                 return rule_result
 
@@ -223,20 +233,6 @@ class PyImpl(unohelper.Base, XPy):
 
             # return result
         self._logger.debug(f"pyc - Done")
-        return result
-
-    def _get_code(self) -> str | None:
-        dlg = DialogPython(self.ctx)
-        self._logger.debug("Py - _get_code() py displaying dialog")
-        result = None
-        if dlg.show():
-            self._logger.debug("Py - _get_code() - py dialog returned with OK")
-            txt = dlg.text.strip()
-            if txt:
-                result = dlg.text
-
-        else:
-            self._logger.debug("Py - _get_code() - py dialog returned with Cancel")
         return result
 
 

@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, cast, Dict, Tuple, List, TYPE_CHECKING
+from typing import Dict, Tuple, TYPE_CHECKING
 import uno
 import unohelper
 from com.sun.star.frame import XDispatch
@@ -8,8 +8,6 @@ from com.sun.star.util import URL
 from ooo.dyn.frame.feature_state_event import FeatureStateEvent
 
 from ooodev.calc import CalcDoc, CalcCell
-from ooodev.utils.data_type.range_obj import RangeObj
-from ooodev.utils.data_type.range_values import RangeValues
 from ooodev.events.partial.events_partial import EventsPartial
 from ooodev.events.args.cancel_event_args import CancelEventArgs
 from ooodev.events.args.event_args import EventArgs
@@ -19,20 +17,15 @@ from ..code.cell_cache import CellCache
 from ..cell.cell_mgr import CellMgr
 from ..cell.state.ctl_state import CtlState
 from ..cell.state.state_kind import StateKind
-from ..code.py_source_mgr import PyInstance
 from ..event.shared_event import SharedEvent
-from ..sheet.range.rng_util import RangeUtil
-from ..ex import CellFormulaExpandError
+from ..cell.array.array_tbl import ArrayTbl
 
 if TYPE_CHECKING:
     from com.sun.star.frame import XStatusListener
-    from com.sun.star.sheet import SheetCellCursor
-    from ooodev.utils.data_type.cell_obj import CellObj
     from ....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
     import pandas as pd
 else:
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
-    from libre_pythonista_lib.code.py_source_mgr import PyInstance
 
 
 class DispatchToggleDataTblState(XDispatch, EventsPartial, unohelper.Base):
@@ -84,6 +77,8 @@ class DispatchToggleDataTblState(XDispatch, EventsPartial, unohelper.Base):
                 doc = CalcDoc.from_current_doc()
                 sheet = doc.sheets[self._sheet]
                 cell = sheet[self._cell]
+                arr_helper = ArrayTbl(cell)
+                arr_helper.add_event_observers(self.event_observer)
                 cargs = CancelEventArgs(self)
                 cargs.event_data = DotDict(
                     url=url,
@@ -137,7 +132,7 @@ class DispatchToggleDataTblState(XDispatch, EventsPartial, unohelper.Base):
                     # The formula must be set as an array formula on the range.
 
                     try:
-                        self._set_array_formula(cell=cell, dd_args=cargs.event_data)
+                        self._set_array_formula(cell=cell, dd_args=cargs.event_data, arr_helper=arr_helper)
                     except Exception:
                         ctl_state.set_state(value=orig_state)
                         raise
@@ -145,7 +140,7 @@ class DispatchToggleDataTblState(XDispatch, EventsPartial, unohelper.Base):
 
                     try:
                         self._log.debug("Changing State to Data Table")
-                        self._set_formula(cell=cell, dd_args=cargs.event_data)
+                        self._set_formula(cell=cell, dd_args=cargs.event_data, arr_helper=arr_helper)
                     except Exception:
                         ctl_state.set_state(value=orig_state)
                         raise
@@ -167,84 +162,19 @@ class DispatchToggleDataTblState(XDispatch, EventsPartial, unohelper.Base):
                 self._log.error(f"Error: {e}", exc_info=True)
                 return
 
-    def _set_array_formula(self, cell: CalcCell, dd_args: DotDict) -> None:
+    def _set_array_formula(self, cell: CalcCell, dd_args: DotDict, arr_helper: ArrayTbl) -> None:
         with self._log.indent(True):
+            arr_helper.set_formula_array(**dd_args)
+
             cm = CellMgr(cell.calc_doc)  # singleton
-            formula = self._get_formula(cell)
-            if not formula:
-                self._log.error(f"Cell {cell.cell_obj} has no formula.")
-                return
-            self._log.debug(f"_set_array_formula() Formula: {formula}")
-            cell_obj = cell.cell_obj
-            rows, cols = self._get_rows_cols(cell.calc_doc, cell_obj)
-            ca = cell_obj.get_cell_address()
-            rv = RangeValues(
-                col_start=ca.Column,
-                col_end=ca.Column + max(0, cols - 1),
-                row_start=ca.Row,
-                row_end=ca.Row + max(0, rows - 1),
-            )
-            ro = RangeObj.from_range(rv)
-            cell_rng = cell.calc_sheet.get_range(range_obj=ro)
-
-            rng_util = RangeUtil(doc=cell.calc_doc)
-            if not rng_util.get_cell_can_expand(cell_rng):
-                msg = f"Range can not expand into range: {ro}"
-                if cell.calc_sheet.is_sheet_protected():
-                    msg += " Sheet is protected. Cells may be protected or contain other data."
-                else:
-                    msg += " Cells may contain other data."
-                self._log.error(msg)
-                raise CellFormulaExpandError(msg)
-
-            dd = DotDict()
-            for key, value in dd_args.items():
-                dd[key] = value
-            with cm.listener_context(cell.component):
-                cell.component.setFormula("")
-                eargs = EventArgs(self)
-                eargs.event_data = dd
-                self.trigger_event("dispatch_removed_cell_formula", eargs)
-
-                cell_rng.component.setArrayFormula(formula)
-                eargs.event_data.range_obj = ro
-                self.trigger_event("dispatch_add_array_formula", eargs)
-
             cm.update_control(cell)
 
-    def _set_formula(self, cell: CalcCell, dd_args: DotDict) -> None:
+    def _set_formula(self, cell: CalcCell, dd_args: DotDict, arr_helper: ArrayTbl) -> None:
         with self._log.indent(True):
-            formula = self._get_formula(cell)
-            if not formula:
-                self._log.error(f"Cell {cell.cell_obj} has no formula.")
-                return
+            arr_helper.set_formula(**dd_args)
+
             cm = CellMgr(cell.calc_doc)  # singleton
-            sheet = cell.calc_sheet
-            self._log.debug(f"_set_formula() Formula: {formula}")
-            cursor = cast("SheetCellCursor", sheet.component.createCursorByRange(cell.component))  # type: ignore
-            cursor.collapseToCurrentArray()
-            dd = DotDict()
-            for key, value in dd_args.items():
-                dd[key] = value
-            with cm.listener_context(cell.component):
-                eargs = EventArgs(self)
-                rng_addr = cursor.getRangeAddress()
-
-                dd.range_obj = RangeObj.from_range(rng_addr)
-                eargs.event_data = dd
-                self.trigger_event("dispatch_remove_array_formula", eargs)
-                del eargs.event_data["range_obj"]
-                cursor.setArrayFormula("")
-                cell.component.setFormula(formula)
-                self.trigger_event("dispatch_added_cell_formula", eargs)
             cm.update_control(cell)
-
-    def _get_formula(self, cell: CalcCell) -> str:
-        formula = cell.component.getFormula()
-        if not formula:
-            return ""
-        formula = formula.lstrip("{").rstrip("}")
-        return formula
 
     def removeStatusListener(self, control: XStatusListener, url: URL) -> None:
         """
@@ -254,26 +184,3 @@ class DispatchToggleDataTblState(XDispatch, EventsPartial, unohelper.Base):
             self._log.debug(f"removeStatusListener(): url={url.Main}")
             if url.Complete in self._status_listeners:
                 del self._status_listeners[url.Complete]
-
-    def _set_formula_array(self, cell: CalcCell, formula: str) -> None:
-        sheet = cell.calc_sheet
-        cursor = cast("SheetCellCursor", sheet.component.createCursorByRange(cell.component))  # type: ignore
-        cursor.collapseToCurrentArray()
-        cursor.setArrayFormula(formula)
-
-    def _get_data(self, doc: CalcDoc, cell_obj: CellObj) -> DotDict:
-        with self._log.indent(True):
-            py_inst = PyInstance(doc)  # singleton
-            py_src = py_inst[cell_obj]
-            return py_src.dd_data
-
-    def _get_rows_cols(self, doc: CalcDoc, cell: CellObj) -> List[int]:
-        dd = self._get_data(doc, cell)
-
-        lst_data = cast(List[List[Any]], dd.data)
-        rows = len(lst_data)
-        if rows == 0:
-            return [0, 0]
-        first = lst_data[0]
-        cols = len(first)
-        return [rows, cols]

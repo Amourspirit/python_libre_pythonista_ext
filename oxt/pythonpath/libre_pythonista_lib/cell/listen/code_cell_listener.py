@@ -9,6 +9,7 @@ from ooodev.events.partial.events_partial import EventsPartial
 from ooodev.events.args.event_args import EventArgs
 from ooodev.utils.helper.dot_dict import DotDict
 from ..cell_info import CellInfo
+from ...code.cell_cache import CellCache
 
 
 if TYPE_CHECKING:
@@ -88,6 +89,7 @@ class CodeCellListener(unohelper.Base, XModifyListener, EventsPartial):
         if name == self._absolute_name:
             eargs = EventArgs(self)
             calc_cell = self._get_calc_cell(cell=event.Source)  # type: ignore
+            cc = CellCache(calc_cell.calc_doc)
             dd = DotDict(
                 absolute_name=self._absolute_name,
                 event_obj=event,
@@ -95,6 +97,8 @@ class CodeCellListener(unohelper.Base, XModifyListener, EventsPartial):
                 calc_cell=calc_cell,
                 deleted=False,
                 cell_info=ci,
+                is_first_cell=cc.is_first_cell(calc_cell.cell_obj, calc_cell.cell_obj.sheet_idx),
+                is_last_cell=cc.is_last_cell(calc_cell.cell_obj, calc_cell.cell_obj.sheet_idx),
             )
             eargs.event_data = dd
             try:

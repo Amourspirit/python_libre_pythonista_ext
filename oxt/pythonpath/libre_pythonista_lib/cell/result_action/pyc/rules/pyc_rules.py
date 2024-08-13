@@ -44,11 +44,13 @@ class PycRules(SingletonBase):
         if getattr(self, "_is_init", False):
             return
         self._log = OxtLogger(log_name=self.__class__.__name__)
-        self._log.debug(f"{self.__class__.__name__}.__init__() Initializing.")
+        with self._log.indent(True):
+            self._log.debug(f"{self.__class__.__name__}.__init__() Initializing.")
         self._rules: List[Type[PycRuleT]] = []
         self._register_known_rules()
         self._default_rule = RuleNone
-        self._log.debug(f"{self.__class__.__name__}.__init__() Initialized.")
+        with self._log.indent(True):
+            self._log.debug(f"{self.__class__.__name__}.__init__() Initialized.")
         self._is_init = True
 
     def __len__(self) -> int:
@@ -78,11 +80,12 @@ class PycRules(SingletonBase):
         Args:
             rule (PycRuleT): Rule to register
         """
-        if rule in self._rules:
-            self._log.debug(f"add_rule() Rule {rule} already registered.")
-            return
-        self._log.debug(f"add_rule() Rule {rule} registered.")
-        self._reg_rule(rule=rule)
+        with self._log.indent(True):
+            if rule in self._rules:
+                self._log.debug(f"add_rule() Rule {rule} already registered.")
+                return
+            self._log.debug(f"add_rule() Rule {rule} registered.")
+            self._reg_rule(rule=rule)
 
     def add_rule_at(self, index: int, rule: Type[PycRuleT]) -> None:
         """
@@ -92,11 +95,12 @@ class PycRules(SingletonBase):
             index (int): Index to insert rule
             rule (PycRuleT): Rule to register
         """
-        if rule in self._rules:
-            self._log.debug(f"add_rule_at() Rule {rule} already registered.")
-            return
-        self._log.debug(f"add_rule_at() Rule {rule} registered at index {index}.")
-        self._rules.insert(index, rule)
+        with self._log.indent(True):
+            if rule in self._rules:
+                self._log.debug(f"add_rule_at() Rule {rule} already registered.")
+                return
+            self._log.debug(f"add_rule_at() Rule {rule} registered at index {index}.")
+            self._rules.insert(index, rule)
 
     def remove_rule(self, rule: Type[PycRuleT]):
         """
@@ -108,12 +112,13 @@ class PycRules(SingletonBase):
         Raises:
             ValueError: If an error occurs
         """
-        try:
-            self._rules.remove(rule)
-            self._log.debug(f"remove_rule_at() Rule {rule} removed.")
-        except ValueError as e:
-            msg = f"{self.__class__.__name__}.unregister_rule() Unable to unregister rule."
-            raise ValueError(msg) from e
+        with self._log.indent(True):
+            try:
+                self._rules.remove(rule)
+                self._log.debug(f"remove_rule_at() Rule {rule} removed.")
+            except ValueError as e:
+                msg = f"{self.__class__.__name__}.unregister_rule() Unable to unregister rule."
+                raise ValueError(msg) from e
 
     def remove_rule_at(self, index: int):
         """
@@ -125,13 +130,14 @@ class PycRules(SingletonBase):
         Raises:
             ValueError: If an error occurs
         """
-        try:
-            del self._rules[index]
-            self._log.debug(f"remove_rule_at() Rule at index {index} removed.")
-        except IndexError as e:
-            msg = f"{self.__class__.__name__}.unregister_rule() Unable to unregister rule."
-            self._log.error(msg, exc_info=True)
-            raise ValueError(msg) from e
+        with self._log.indent(True):
+            try:
+                del self._rules[index]
+                self._log.debug(f"remove_rule_at() Rule at index {index} removed.")
+            except IndexError as e:
+                msg = f"{self.__class__.__name__}.unregister_rule() Unable to unregister rule."
+                self._log.error(msg, exc_info=True)
+                raise ValueError(msg) from e
 
     def _reg_rule(self, rule: Type[PycRuleT]):
         self._rules.append(rule)
@@ -163,25 +169,26 @@ class PycRules(SingletonBase):
         Returns:
             List[PycRuleT]: Matched rule. Defaults to ``default_rule`` value.
         """
-        is_db = self._log.is_debug
-        if is_db:
-            self._log.debug(f"get_matched_rule() cell: {cell.cell_obj}. Data Type {type(data).__name__}")
-        result = None
-        for rule in self._rules:
-            inst = rule(cell, data)
-            if inst.get_is_match():
-                if is_db:
-                    self._log.debug(f"get_matched_rule() Rule {inst} matched.")
-                result = inst
-                break
-        if result is not None:
-            return result
-        if self._default_rule is not None:
-            self._log.warning(f"get_matched_rule() No rule matched. Using default rule.")
-            return self._default_rule(cell, data)
-        # this should never happen LastDict is always a match
-        self._log.warning(f"get_matched_rule() No rule matched.")
-        return None
+        with self._log.indent(True):
+            is_db = self._log.is_debug
+            if is_db:
+                self._log.debug(f"get_matched_rule() cell: {cell.cell_obj}. Data Type {type(data).__name__}")
+            result = None
+            for rule in self._rules:
+                inst = rule(cell, data)
+                if inst.get_is_match():
+                    if is_db:
+                        self._log.debug(f"get_matched_rule() Rule {inst} matched.")
+                    result = inst
+                    break
+            if result is not None:
+                return result
+            if self._default_rule is not None:
+                self._log.warning(f"get_matched_rule() No rule matched. Using default rule.")
+                return self._default_rule(cell, data)
+            # this should never happen LastDict is always a match
+            self._log.warning(f"get_matched_rule() No rule matched.")
+            return None
 
     def find_rule(self, cell: CalcCell) -> PycRuleT | None:
         """
@@ -193,19 +200,20 @@ class PycRules(SingletonBase):
         Returns:
             PycRuleT: Rule if found. The returned instance will have no data.
         """
-        key = RuleBase.get_rule_name_key()
-        if not cell.has_custom_property(key):
-            return None
-        rule_name = cell.get_custom_property(key)
+        with self._log.indent(True):
+            key = RuleBase.get_rule_name_key()
+            if not cell.has_custom_property(key):
+                return None
+            rule_name = cell.get_custom_property(key)
 
-        for rule in self._rules:
-            inst = rule(cell, None)
-            if inst.name == rule_name:
-                self._log.debug(f"find_rule() Rule {inst} found.")
-                return inst
-        # this should never happen LastDict is always a match
-        self._log.warning(f"find_rule() No rule found.")
-        return None
+            for rule in self._rules:
+                inst = rule(cell, None)
+                if inst.name == rule_name:
+                    self._log.debug(f"find_rule() Rule {inst} found.")
+                    return inst
+            # this should never happen LastDict is always a match
+            self._log.warning(f"find_rule() No rule found.")
+            return None
 
     # endregion Methods
 
