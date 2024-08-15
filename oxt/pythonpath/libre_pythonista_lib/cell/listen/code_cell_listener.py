@@ -50,101 +50,105 @@ class CodeCellListener(unohelper.Base, XModifyListener, EventsPartial):
             raise
 
     def modified(self, event: EventObject) -> None:
-        ci = CellInfo(cell=event.Source)  # type: ignore
-        if ci.is_cell_deleted():
-            self._log.debug("modified: Cell is deleted")
-            # cell is deleted
-            calc_cell = self._get_calc_cell(cell=event.Source)  # type: ignore
-            eargs = EventArgs(self)
+        try:
+            ci = CellInfo(cell=event.Source)  # type: ignore
+            if ci.is_cell_deleted():
+                self._log.debug("modified: Cell is deleted")
+                # cell is deleted
+                calc_cell = self._get_calc_cell(cell=event.Source)  # type: ignore
+                eargs = EventArgs(self)
 
-            dd = DotDict(
-                absolute_name=self._absolute_name,
-                event_obj=event,
-                code_name=self.code_name,
-                calc_cell=calc_cell,
-                deleted=True,
-                cell_info=ci,
-            )
-            eargs.event_data = dd
-            for key, value in dd.items():
-                calc_cell.extra_data[key] = value
-            self.trigger_event("cell_deleted", eargs)
-            # self._log.debug("modified: Cell is deleted")
-            return
-        name = event.Source.AbsoluteName  # type: ignore
-        if not ci.is_pyc_formula():
-            calc_cell = self._get_calc_cell(cell=event.Source)  # type: ignore
-
-            eargs = EventArgs(self)
-            dd = DotDict(
-                absolute_name=name, event_obj=event, code_name=self.code_name, calc_cell=calc_cell, deleted=False
-            )
-            eargs.event_data = dd
-            for key, value in dd.items():
-                calc_cell.extra_data[key] = value
-            trigger_name = "cell_pyc_formula_removed"
-            self._log.debug(f"modified: Triggering event: {trigger_name}")
-            self.trigger_event(trigger_name, eargs)
-            return
-        if name == self._absolute_name:
-            eargs = EventArgs(self)
-            calc_cell = self._get_calc_cell(cell=event.Source)  # type: ignore
-            cc = CellCache(calc_cell.calc_doc)
-            dd = DotDict(
-                absolute_name=self._absolute_name,
-                event_obj=event,
-                code_name=self.code_name,
-                calc_cell=calc_cell,
-                deleted=False,
-                cell_info=ci,
-                is_first_cell=cc.is_first_cell(calc_cell.cell_obj, calc_cell.cell_obj.sheet_idx),
-                is_last_cell=cc.is_last_cell(calc_cell.cell_obj, calc_cell.cell_obj.sheet_idx),
-            )
-            eargs.event_data = dd
-            try:
+                dd = DotDict(
+                    absolute_name=self._absolute_name,
+                    event_obj=event,
+                    code_name=self.code_name,
+                    calc_cell=calc_cell,
+                    deleted=True,
+                    cell_info=ci,
+                )
+                eargs.event_data = dd
                 for key, value in dd.items():
                     calc_cell.extra_data[key] = value
-                # doc = CalcDoc.from_current_doc()
-                # sheet = doc.sheets[self._get_sheet_name(event.Source)]
-                # cell = cast("SheetCell", event.Source)
-                # cell_addr = cell.getCellAddress()
-                # cell_obj = CellObj.from_idx(col_idx=cell_addr.Column, row_idx=cell_addr.Row, sheet_idx=cell_addr.Sheet)
-                # calc_cell = CalcCell(owner=sheet, cell=cell_obj, lo_inst=sheet.lo_inst)
-                cfg = Config()
-                key = f"{cfg.cell_cp_prefix}modify_trigger_event"
-                if calc_cell.has_custom_property(key):
-                    trigger_name = str(calc_cell.get_custom_property(key))
-                    eargs.event_data.trigger_name = trigger_name
-                    eargs.event_data.remove_custom_property = False
-                    eargs.event_data.calc_cell = calc_cell
-                    eargs.event_data.cell_cp_codename = cfg.cell_cp_codename
-
-                    self._log.debug(f"modified: Triggering event: {trigger_name}")
-                    self.trigger_event("cell_custom_prop_modify", eargs)
-                    if eargs.event_data.remove_custom_property:
-                        if calc_cell.has_custom_property(key):
-                            calc_cell.remove_custom_property(key)
-                else:
-                    self.trigger_event("cell_modified", eargs)
-            except Exception as e:
-                self._log.error(f"modified: {e}", exc_info=True)
+                self.trigger_event("cell_deleted", eargs)
+                # self._log.debug("modified: Cell is deleted")
                 return
+            name = event.Source.AbsoluteName  # type: ignore
+            if not ci.is_pyc_formula():
+                calc_cell = self._get_calc_cell(cell=event.Source)  # type: ignore
 
-            # self._log.debug("CodeCellListener: modified: Cell is the same")
-        else:
-            eargs = EventArgs(self)
-            calc_cell = self._get_calc_cell(cell=event.Source)  # type: ignore
-            eargs.event_data = DotDict(
-                absolute_name=self._absolute_name,
-                old_name=self._absolute_name,
-                event_obj=event,
-                code_name=self.code_name,
-                deleted=False,
-                calc_cell=calc_cell,
-                cell_info=ci,
-            )
-            self.trigger_event("cell_moved", eargs)
-            self._absolute_name = name
+                eargs = EventArgs(self)
+                dd = DotDict(
+                    absolute_name=name, event_obj=event, code_name=self.code_name, calc_cell=calc_cell, deleted=False
+                )
+                eargs.event_data = dd
+                for key, value in dd.items():
+                    calc_cell.extra_data[key] = value
+                trigger_name = "cell_pyc_formula_removed"
+                self._log.debug(f"modified: Triggering event: {trigger_name}")
+                self.trigger_event(trigger_name, eargs)
+                return
+            if name == self._absolute_name:
+                eargs = EventArgs(self)
+                calc_cell = self._get_calc_cell(cell=event.Source)  # type: ignore
+                cc = CellCache(calc_cell.calc_doc)
+                dd = DotDict(
+                    absolute_name=self._absolute_name,
+                    event_obj=event,
+                    code_name=self.code_name,
+                    calc_cell=calc_cell,
+                    deleted=False,
+                    cell_info=ci,
+                    is_first_cell=cc.is_first_cell(calc_cell.cell_obj, calc_cell.cell_obj.sheet_idx),
+                    is_last_cell=cc.is_last_cell(calc_cell.cell_obj, calc_cell.cell_obj.sheet_idx),
+                )
+                eargs.event_data = dd
+                try:
+                    for key, value in dd.items():
+                        calc_cell.extra_data[key] = value
+                    # doc = CalcDoc.from_current_doc()
+                    # sheet = doc.sheets[self._get_sheet_name(event.Source)]
+                    # cell = cast("SheetCell", event.Source)
+                    # cell_addr = cell.getCellAddress()
+                    # cell_obj = CellObj.from_idx(col_idx=cell_addr.Column, row_idx=cell_addr.Row, sheet_idx=cell_addr.Sheet)
+                    # calc_cell = CalcCell(owner=sheet, cell=cell_obj, lo_inst=sheet.lo_inst)
+                    cfg = Config()
+                    key = f"{cfg.cell_cp_prefix}modify_trigger_event"
+                    if calc_cell.has_custom_property(key):
+                        trigger_name = str(calc_cell.get_custom_property(key))
+                        eargs.event_data.trigger_name = trigger_name
+                        eargs.event_data.remove_custom_property = False
+                        eargs.event_data.calc_cell = calc_cell
+                        eargs.event_data.cell_cp_codename = cfg.cell_cp_codename
+
+                        self._log.debug(f"modified: Triggering event: {trigger_name}")
+                        self.trigger_event("cell_custom_prop_modify", eargs)
+                        if eargs.event_data.remove_custom_property:
+                            if calc_cell.has_custom_property(key):
+                                calc_cell.remove_custom_property(key)
+                    else:
+                        self.trigger_event("cell_modified", eargs)
+                except Exception as e:
+                    self._log.error(f"modified: {e}", exc_info=True)
+                    return
+
+                # self._log.debug("CodeCellListener: modified: Cell is the same")
+            else:
+                eargs = EventArgs(self)
+                calc_cell = self._get_calc_cell(cell=event.Source)  # type: ignore
+                eargs.event_data = DotDict(
+                    absolute_name=self._absolute_name,
+                    old_name=self._absolute_name,
+                    event_obj=event,
+                    code_name=self.code_name,
+                    deleted=False,
+                    calc_cell=calc_cell,
+                    cell_info=ci,
+                )
+                self.trigger_event("cell_moved", eargs)
+                self._absolute_name = name
+        except Exception:
+            self._log.exception("modified() error.")
+            raise
 
     def disposing(self, event: EventObject) -> None:
         eargs = EventArgs(self)

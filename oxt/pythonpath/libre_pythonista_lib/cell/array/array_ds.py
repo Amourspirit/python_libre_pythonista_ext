@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, cast, List, TYPE_CHECKING
+from typing import cast, List, TYPE_CHECKING
 import uno
 
 from ooodev.calc import CalcCell
@@ -10,10 +10,6 @@ from .array_base import ArrayBase
 
 if TYPE_CHECKING:
     import pandas as pd
-    from .....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
-
-else:
-    from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
 
 
 class ArrayDS(ArrayBase):

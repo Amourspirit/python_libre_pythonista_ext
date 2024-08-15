@@ -14,13 +14,13 @@ from ooodev.events.partial.events_partial import EventsPartial
 from ...code.py_source_mgr import PyInstance
 from ...code.py_source_mgr import PySource
 from ...sheet.range.rng_util import RangeUtil
-from ...cell.cell_mgr import CellMgr
 from ...ex import CellFormulaExpandError
 from ...cell.state.ctl_state import CtlState
 from ...cell.state.state_kind import StateKind
 
 
 if TYPE_CHECKING:
+    from ...cell.cell_mgr import CellMgr
     from com.sun.star.sheet import SheetCellCursor
     import pandas as pd
     from .....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
@@ -43,6 +43,13 @@ class ArrayBase(EventsPartial):
         self._cell = cell
         self._log = OxtLogger(log_name=self.__class__.__name__)
         self._ctl_state = CtlState(cell)
+        self._cell_mgr = self._get_cell_mgr()
+
+    def _get_cell_mgr(self) -> CellMgr:
+        # avoid circular import
+        from ...cell.cell_mgr import CellMgr
+
+        return CellMgr(self.cell.calc_doc)
 
     def get_data(self) -> PySource:
         """
@@ -87,8 +94,11 @@ class ArrayBase(EventsPartial):
             Setting the formula array for the cell here will not update the cell control if there is one.
         """
         with self.log.indent(True):
-            cm = CellMgr(self.cell.calc_doc)  # singleton
-            formula = self.get_formula()
+            cm = self._cell_mgr
+            # cm = CellMgr(self.cell.calc_doc)  # singleton
+            formula = kwargs.pop("current_formula", None)
+            if not formula:
+                formula = self.get_formula()
             if not formula:
                 self.log.error(f"Cell {self.cell.cell_obj} has no formula.")
                 return
@@ -145,7 +155,8 @@ class ArrayBase(EventsPartial):
             if not formula:
                 self.log.error(f"Cell {self.cell.cell_obj} has no formula.")
                 return
-            cm = CellMgr(self.cell.calc_doc)  # singleton
+            cm = self._cell_mgr
+            # cm = CellMgr(self.cell.calc_doc)  # singleton
             self.log.debug(f"set_formula() Formula: {formula}")
             cursor = cast("SheetCellCursor", self.cell.calc_sheet.component.createCursorByRange(self.cell.component))  # type: ignore
             cursor.collapseToCurrentArray()
@@ -214,14 +225,16 @@ class ArrayBase(EventsPartial):
                 self.log.debug("No update needed.")
                 return
             self.log.debug("Update needed.")
+            formula = self.get_formula()
             cursor = cast("SheetCellCursor", self.cell.calc_sheet.component.createCursorByRange(self.cell.component))  # type: ignore
             cursor.collapseToCurrentArray()
-            cm = CellMgr(self.cell.calc_doc)  # singleton
+            cm = self._cell_mgr
+            # cm = CellMgr(self.cell.calc_doc)  # singleton
             with cm.listener_context(self.cell.component):
                 self.log.debug("Clearing Array Formula")
                 cursor.clearContents(CellFlags.DATETIME | CellFlags.VALUE | CellFlags.STRING | CellFlags.FORMULA)
             self.log.debug("Setting Formula Array")
-            self.set_formula_array()
+            self.set_formula_array(current_formula=formula)
 
     # region Properties
     @property

@@ -19,7 +19,7 @@ from ..cell.state.ctl_state import CtlState
 from ..cell.state.state_kind import StateKind
 from ..event.shared_event import SharedEvent
 from ..ex import CellFormulaExpandError
-from ..cell.array.array_df import ArrayDf
+from ..cell.array.array_df import ArrayDF
 
 if TYPE_CHECKING:
     from com.sun.star.frame import XStatusListener
@@ -78,7 +78,7 @@ class DispatchToggleDfState(XDispatch, EventsPartial, unohelper.Base):
                 doc = CalcDoc.from_current_doc()
                 sheet = doc.sheets[self._sheet]
                 cell = sheet[self._cell]
-                arr_helper = ArrayDf(cell)
+                arr_helper = ArrayDF(cell)
                 arr_helper.add_event_observers(self.event_observer)
                 cargs = CancelEventArgs(self)
                 cargs.event_data = DotDict(
@@ -170,14 +170,14 @@ class DispatchToggleDfState(XDispatch, EventsPartial, unohelper.Base):
                 self._log.error(f"Error: {e}", exc_info=True)
                 return
 
-    def _set_array_formula(self, cell: CalcCell, dd_args: DotDict, arr_helper: ArrayDf) -> None:
+    def _set_array_formula(self, cell: CalcCell, dd_args: DotDict, arr_helper: ArrayDF) -> None:
         with self._log.indent(True):
             arr_helper.set_formula_array(**dd_args)
 
             cm = CellMgr(cell.calc_doc)  # singleton
             cm.update_control(cell)
 
-    def _set_formula(self, cell: CalcCell, dd_args: DotDict, arr_helper: ArrayDf) -> None:
+    def _set_formula(self, cell: CalcCell, dd_args: DotDict, arr_helper: ArrayDF) -> None:
         with self._log.indent(True):
             arr_helper.set_formula(**dd_args)
 

@@ -6,6 +6,7 @@ from .exceptions import CellError as CellError
 from .exceptions import CellFormulaExpandError as CellFormulaExpandError
 from .exceptions import DocumentError as DocumentError
 from .exceptions import RuntimeUidError as RuntimeUidError
+from .exceptions import CalculationVetoError as CalculationVetoError
 
 __all__ = [
     "CustomPropertyError",
@@ -16,4 +17,5 @@ __all__ = [
     "CellFormulaExpandError",
     "DocumentError",
     "RuntimeUidError",
+    "CalculationVetoError",
 ]

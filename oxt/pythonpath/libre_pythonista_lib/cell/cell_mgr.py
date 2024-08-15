@@ -7,6 +7,8 @@ Manages adding and removing listeners to cells.
 from __future__ import annotations
 from typing import Any, cast, Dict, TYPE_CHECKING
 from contextlib import contextmanager
+import threading
+import time
 import uno
 from ooo.dyn.lang.event_object import EventObject
 from ooodev.calc import CalcDoc, CalcCell, CalcSheet
@@ -28,6 +30,7 @@ from ..style.default_style import DefaultStyle
 from ..utils.singleton_base import SingletonBase
 from ..sheet.sheet_mgr import SheetMgr
 from ..dispatch.cell_dispatch_state import CellDispatchState
+from ..ex import CalculationVetoError
 from ..const import (
     UNO_DISPATCH_CODE_DEL,
     UNO_DISPATCH_CODE_EDIT,
@@ -37,8 +40,9 @@ from ..const import (
     UNO_DISPATCH_CELL_SELECT,
 )
 from ..const.event_const import SHEET_MODIFIED, CALC_FORMULAS_CALCULATED, PYC_FORMULA_INSERTED, PYC_RULE_MATCH_DONE
-
 from ..log.log_inst import LogInst
+
+from .array.array_mgr import ArrayMgr
 
 if TYPE_CHECKING:
     from com.sun.star.sheet import SheetCell  # service
@@ -145,10 +149,35 @@ class CellMgr(SingletonBase):
 
     # region PYC Events
     def _on_pyc_rule_matched(self, src: Any, event: EventArgs) -> None:
-        self._log.debug(f"_on_pyc_rule_matched() Entering.")
-        dd = cast(DotDict, event.event_data)
-        self._log.debug(f"Is First Cell: {dd.is_first_cell}")
-        self._log.debug(f"Is Last Cell: {dd.is_last_cell}")
+        is_veto = False
+        try:
+            self._log.debug(f"_on_pyc_rule_matched() Entering.")
+            dd = cast(DotDict, event.event_data)
+            self._log.debug(f"Is First Cell: {dd.is_first_cell}")
+            self._log.debug(f"Is Last Cell: {dd.is_last_cell}")
+            # from .array.array_mgr import ArrayMgr
+
+            if dd.is_last_cell:
+                # raise CalculationVetoError("Last Cell Test")
+                t = threading.Thread(target=update_array_cells, args=(self._doc, self), daemon=True)
+                t.start()
+                # self._log.debug(f"Updating Array Cells")
+                # am = ArrayMgr(self._doc)
+                # am.update_array_cells()
+
+        except CalculationVetoError:
+            is_veto = True
+            self._log.debug("_on_pyc_rule_matched(): Caught CalculationVetoError().")
+            raise
+        except Exception:
+            self._log.exception("_on_pyc_rule_matched()")
+            raise
+
+        # finally:
+        #     if is_veto:
+        #         self._log.debug(f"Updating Array Cells")
+        #         am = ArrayMgr(self._doc)
+        #         am.update_array_cells()
         self._log.debug("_on_pyc_rule_matched() Done")
 
     # endregion PYC Events
@@ -942,6 +971,10 @@ class CellMgr(SingletonBase):
             self._py_inst.subscribe_after_update_source(self._fn_on_py_code_updated)
         return self._py_inst
 
+    @property
+    def log(self) -> OxtLogger:
+        return self._log
+
     @classmethod
     def reset_instance(cls, doc: CalcDoc) -> None:
         """
@@ -960,3 +993,11 @@ class CellMgr(SingletonBase):
 
         PyInstance.reset_instance(doc)
         CellCache.reset_instance(doc)
+
+
+def update_array_cells(doc: Any, mgr: CellMgr):
+    mgr.log.debug("update_array_cells()")
+    # from .array.array_mgr import ArrayMgr
+
+    am = ArrayMgr(doc)
+    am.update_array_cells()
