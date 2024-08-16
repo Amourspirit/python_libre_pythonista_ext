@@ -46,7 +46,7 @@ if TYPE_CHECKING:
     from ooo.dyn.awt.message_box_type import MessageBoxType
     from ooodev.dialog.msgbox import MsgBox
     from ...___lo_pip___.oxt_logger.oxt_logger import OxtLogger
-    from ...pythonpath.libre_pythonista_lib.const import UNO_DISPATCH_ABOUT, UNO_DISPATCH_LOG_WIN
+    from ...pythonpath.libre_pythonista_lib.const import UNO_DISPATCH_ABOUT, UNO_DISPATCH_LOG_WIN, FORMULA_PYC
     from ...pythonpath.libre_pythonista_lib.const.event_const import PYC_FORMULA_INSERTING, PYC_FORMULA_INSERTED
 else:
     _CONDITIONS_MET = _conditions_met()
@@ -65,7 +65,7 @@ else:
         from libre_pythonista_lib.code.py_source_mgr import PyInstance
         from libre_pythonista_lib.log.py_logger import PyLogger
         from libre_pythonista_lib.event.shared_event import SharedEvent
-        from libre_pythonista_lib.const import UNO_DISPATCH_ABOUT, UNO_DISPATCH_LOG_WIN
+        from libre_pythonista_lib.const import UNO_DISPATCH_ABOUT, UNO_DISPATCH_LOG_WIN, FORMULA_PYC
         from libre_pythonista_lib.const.event_const import PYC_FORMULA_INSERTING, PYC_FORMULA_INSERTED
 
     from ___lo_pip___.lo_util.resource_resolver import ResourceResolver
@@ -116,6 +116,7 @@ class PythonImpl(unohelper.Base, XJobExecutor):
             self._do_pyc_formula()
 
     def _do_pyc_formula(self):
+        global FORMULA_PYC
         try:
 
             msg = self._res.resolve_string("title10")
@@ -148,7 +149,7 @@ class PythonImpl(unohelper.Base, XJobExecutor):
                 if msg_result != MessageBoxResultsEnum.YES:
                     return
             # cell.component.setFormula("=" + res.resolve_string("fml001"))
-            formula = '=___lo_identifier___.PYIMPL.PYC(SHEET();CELL("ADDRESS"))'
+            formula = f'={FORMULA_PYC}(SHEET();CELL("ADDRESS"))'
             cargs = CancelEventArgs(self)
             cargs.event_data = DotDict(formula=formula, is_dependent=False)
             se = SharedEvent()
@@ -164,6 +165,7 @@ class PythonImpl(unohelper.Base, XJobExecutor):
             self._log.error(f"{self.__class__.__name__} - Error: {e}")
 
     def _do_pyc_formula_with_dependent(self):
+        global FORMULA_PYC
         try:
 
             msg = self._res.resolve_string("title10")
@@ -176,6 +178,8 @@ class PythonImpl(unohelper.Base, XJobExecutor):
             except CellError:
                 self._log.error(f"{self.__class__.__name__} - No cell selected")
                 return
+            if self._log.is_debug:
+                self._log.debug(f"Selected cell: {cell.cell_obj} with sheet index of {cell.cell_obj.sheet_idx}")
             # https://api.libreoffice.org/docs/idl/ref/namespacecom_1_1sun_1_1star_1_1awt_1_1MessageBoxButtons.html
             cell_locked = cell.cell_protection.is_locked
             if cell_locked and sheet_locked:
@@ -195,10 +199,10 @@ class PythonImpl(unohelper.Base, XJobExecutor):
                 )
                 if msg_result != MessageBoxResultsEnum.YES:
                     return
+
             cc = CellCache(doc)
 
-            formula = '=___lo_identifier___.PyImpl.PYC(SHEET();CELL("ADDRESS")'.upper()
-
+            formula = f'={FORMULA_PYC}(SHEET();CELL("ADDRESS")'
             with cc.set_context(cell=cell.cell_obj, sheet_idx=sheet.sheet_index):
                 found = cc.get_cell_before()
                 if found:
@@ -210,7 +214,7 @@ class PythonImpl(unohelper.Base, XJobExecutor):
                             formula += f"${prev_sheet.name}."
 
                     formula += f"{found.col.upper()}{found.row}"
-            formula += ")"
+                formula += ")"
 
             cargs = CancelEventArgs(self)
             cargs.event_data = DotDict(formula=formula, is_dependent=True)

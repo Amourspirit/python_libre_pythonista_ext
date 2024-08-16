@@ -52,9 +52,3 @@ class RuntimeUidError(DocumentError):
     """Runtime Uid Error."""
 
     pass
-
-
-class CalculationVetoError(Exception):
-    """Calculation Veto Error."""
-
-    pass

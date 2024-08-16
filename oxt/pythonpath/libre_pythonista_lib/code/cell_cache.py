@@ -552,17 +552,28 @@ class CellCache(SingletonBase):
                 return None
             # get the index of the current cell if available
             index = self.get_cell_index(cell, sheet_idx)
+            if self._log.is_debug:
+                self._log.debug(f"get_cell_before() Index for current cell {cell} is {index}")
             if index == 0:
+                if self._log.is_debug:
+                    self._log.debug(f"get_cell_before() Current cell {cell} is the first cell")
                 return None
             if index > 0:
-                return self.get_by_index(index - 1, sheet_idx)
+                co = self.get_by_index(index - 1, sheet_idx)
+                if self._log.is_debug:
+                    self._log.debug(f"get_cell_before() Cell before current cell {cell} is {co}")
+                return co
             # negative index means the cell is not in this instance.
             items = self.code_cells[sheet_idx]
             found = None
-            for key in reversed(items.keys()):
-                if key < cell:
-                    found = key
+            cell_objs = list(items.keys())
+            cell_objs.sort()
+            for co in cell_objs:
+                if co >= cell:
                     break
+                found = co
+            if self._log.is_debug:
+                self._log.debug(f"get_cell_before() Cell found before current cell {cell} is {found}")
             return found
 
     # make a context manager method that will set the current cell and sheet index

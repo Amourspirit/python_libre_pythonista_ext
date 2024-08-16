@@ -17,7 +17,7 @@ from ...sheet.range.rng_util import RangeUtil
 from ...ex import CellFormulaExpandError
 from ...cell.state.ctl_state import CtlState
 from ...cell.state.state_kind import StateKind
-
+from ...style.default_style import DefaultStyle
 
 if TYPE_CHECKING:
     from ...cell.cell_mgr import CellMgr
@@ -44,6 +44,7 @@ class ArrayBase(EventsPartial):
         self._log = OxtLogger(log_name=self.__class__.__name__)
         self._ctl_state = CtlState(cell)
         self._cell_mgr = self._get_cell_mgr()
+        self._style = DefaultStyle()
 
     def _get_cell_mgr(self) -> CellMgr:
         # avoid circular import
@@ -97,6 +98,7 @@ class ArrayBase(EventsPartial):
             cm = self._cell_mgr
             # cm = CellMgr(self.cell.calc_doc)  # singleton
             formula = kwargs.pop("current_formula", None)
+            add_style = bool(kwargs.pop("add_default_style", False))
             if not formula:
                 formula = self.get_formula()
             if not formula:
@@ -138,6 +140,8 @@ class ArrayBase(EventsPartial):
 
                 cell_rng.component.setArrayFormula(formula)
                 eargs.event_data.range_obj = ro
+                if add_style:
+                    self._style.add_style_range(cell_rng)
                 self.trigger_event("dispatch_add_array_formula", eargs)
 
     def set_formula(self, **kwargs: Any) -> None:
@@ -232,9 +236,16 @@ class ArrayBase(EventsPartial):
             # cm = CellMgr(self.cell.calc_doc)  # singleton
             with cm.listener_context(self.cell.component):
                 self.log.debug("Clearing Array Formula")
-                cursor.clearContents(CellFlags.DATETIME | CellFlags.VALUE | CellFlags.STRING | CellFlags.FORMULA)
+                cursor.clearContents(
+                    CellFlags.DATETIME | CellFlags.VALUE | CellFlags.STRING | CellFlags.FORMULA | CellFlags.STYLES
+                )
+                # clear the borders
+                ro = RangeObj.from_range(cursor.getRangeAddress())
+                cell_rng = self.cell.calc_sheet.get_range(range_obj=ro)
+                self._style.remove_style_range(cell_rng)
+
             self.log.debug("Setting Formula Array")
-            self.set_formula_array(current_formula=formula)
+            self.set_formula_array(current_formula=formula, add_default_style=True)
 
     # region Properties
     @property

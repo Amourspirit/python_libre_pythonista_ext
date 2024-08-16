@@ -28,19 +28,4 @@ def formulas_calc(*args):
     return
 
 
-def content_changed(*args):
-    """
-    Handle the button action event.
-    """
-
-    # no args for this event
-    log = LogInst()
-    # SharedEvent().trigger_event(CALC_FORMULAS_CALCULATED, EventArgs(None))
-    log.debug("content_changed() Triggered")
-    return
-
-
-g_exportedScripts = (
-    formulas_calc,
-    content_changed,
-)
+g_exportedScripts = (formulas_calc,)

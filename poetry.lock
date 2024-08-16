@@ -793,13 +793,13 @@ files = [
 
 [[package]]
 name = "ooo-dev-tools"
-version = "0.47.7"
+version = "0.47.10"
 description = "LibreOffice Developer Tools"
 optional = false
 python-versions = "<4.0,>=3.8"
 files = [
-    {file = "ooo_dev_tools-0.47.7-py3-none-any.whl", hash = "sha256:e1c16e4825a38219fd0f7749f077b658d34712a3cf9e5a99b5032e9f6b32849a"},
-    {file = "ooo_dev_tools-0.47.7.tar.gz", hash = "sha256:ddd0598647348337b61ba408761794e688470250d7107dca733dc1effe8603aa"},
+    {file = "ooo_dev_tools-0.47.10-py3-none-any.whl", hash = "sha256:56856a1ed7a9243ed271e7c57cc977f63b2a8c2214afb6165673c6c503f6d0ff"},
+    {file = "ooo_dev_tools-0.47.10.tar.gz", hash = "sha256:1f936d6ef1f6519131e2b3d3ba5b2306ee43a65f97b09bb6c1cedf7f3d00ea89"},
 ]
 
 [package.dependencies]
@@ -1473,4 +1473,4 @@ test = ["big-O", "importlib-resources", "jaraco.functools", "jaraco.itertools", 
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "3ebc45b81f7e4ffd6b2a8c0ca35213b73f647af6415ab306a6511e8c6d2294d9"
+content-hash = "2d5809ce21c2f56a019341eba9ef81881b9ea975c9545b1c4aaacc06c2f2ea73"

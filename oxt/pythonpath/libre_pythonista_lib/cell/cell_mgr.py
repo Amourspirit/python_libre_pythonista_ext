@@ -30,7 +30,6 @@ from ..style.default_style import DefaultStyle
 from ..utils.singleton_base import SingletonBase
 from ..sheet.sheet_mgr import SheetMgr
 from ..dispatch.cell_dispatch_state import CellDispatchState
-from ..ex import CalculationVetoError
 from ..const import (
     UNO_DISPATCH_CODE_DEL,
     UNO_DISPATCH_CODE_EDIT,
@@ -149,35 +148,28 @@ class CellMgr(SingletonBase):
 
     # region PYC Events
     def _on_pyc_rule_matched(self, src: Any, event: EventArgs) -> None:
-        is_veto = False
+        # this event is raised in PY.C when a rule is matched.
+        # So, basically every call to PY.C will raise this event.
         try:
             self._log.debug(f"_on_pyc_rule_matched() Entering.")
             dd = cast(DotDict, event.event_data)
-            self._log.debug(f"Is First Cell: {dd.is_first_cell}")
-            self._log.debug(f"Is Last Cell: {dd.is_last_cell}")
-            # from .array.array_mgr import ArrayMgr
+            if self._log.is_debug:
+                self._log.debug(f"Is First Cell: {dd.is_first_cell}")
+                self._log.debug(f"Is Last Cell: {dd.is_last_cell}")
 
             if dd.is_last_cell:
-                # raise CalculationVetoError("Last Cell Test")
-                t = threading.Thread(target=update_array_cells, args=(self._doc, self), daemon=True)
+                # it is imperative that the update be called in a new thread.
+                # If not called in a new thread then chances are LibreOffice will totally crash.
+                # Most likely the crash is because a re-calculation of the sheet is taking place,
+                # and the update that can change the sheet cell formulas is being called at the same time.
+                # By calling in a thread the crash is avoided and the sheet is updated without any issues.
+                t = threading.Thread(target=update_array_cells, args=(self._doc,), daemon=True)
                 t.start()
-                # self._log.debug(f"Updating Array Cells")
-                # am = ArrayMgr(self._doc)
-                # am.update_array_cells()
 
-        except CalculationVetoError:
-            is_veto = True
-            self._log.debug("_on_pyc_rule_matched(): Caught CalculationVetoError().")
-            raise
         except Exception:
             self._log.exception("_on_pyc_rule_matched()")
             raise
 
-        # finally:
-        #     if is_veto:
-        #         self._log.debug(f"Updating Array Cells")
-        #         am = ArrayMgr(self._doc)
-        #         am.update_array_cells()
         self._log.debug("_on_pyc_rule_matched() Done")
 
     # endregion PYC Events
@@ -995,9 +987,9 @@ class CellMgr(SingletonBase):
         CellCache.reset_instance(doc)
 
 
-def update_array_cells(doc: Any, mgr: CellMgr):
-    mgr.log.debug("update_array_cells()")
-    # from .array.array_mgr import ArrayMgr
-
+def update_array_cells(doc: Any):
+    # this method is called by CellMgr._on_pyc_rule_matched() in a separate thread.
+    # this method calls ArrayMgr.update_array_cells(),
+    # which is responsible for updating the array formula for the cells if the array size has changed.
     am = ArrayMgr(doc)
     am.update_array_cells()

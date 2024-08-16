@@ -22,6 +22,12 @@ class ArrayMgr:
         self._key_maker = KeyMaker()
 
     def get_array_cells(self) -> List[CalcCell]:
+        """
+        Gets all the cell if the sheet that have array formulas and are currently displayed as an array formula.
+
+        Returns:
+            List[CalcCell]: A list of CalcCell objects that have array formulas.
+        """
         results: List[CalcCell] = []
 
         for idx, value in self._cell_cache.code_cells.items():
@@ -40,6 +46,9 @@ class ArrayMgr:
         return cell.get_custom_property(key, False)
 
     def update_array_cells(self):
+        """
+        Updates all sheet array formulas for this extension if the array size has changed.
+        """
         try:
             for cell in self.get_array_cells():
                 helper = get_array_helper(cell)
