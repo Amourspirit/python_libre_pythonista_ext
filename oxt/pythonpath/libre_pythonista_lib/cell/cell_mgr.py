@@ -5,12 +5,10 @@ Manages adding and removing listeners to cells.
 """
 
 from __future__ import annotations
-from typing import Any, cast, Dict, TYPE_CHECKING
+from typing import Any, cast, TYPE_CHECKING
 from contextlib import contextmanager
 import threading
-import time
 import uno
-from ooo.dyn.lang.event_object import EventObject
 from ooodev.calc import CalcDoc, CalcCell, CalcSheet
 from ooodev.utils.data_type.cell_obj import CellObj
 from ooodev.events.args.event_args import EventArgs
@@ -30,14 +28,7 @@ from ..style.default_style import DefaultStyle
 from ..utils.singleton_base import SingletonBase
 from ..sheet.sheet_mgr import SheetMgr
 from ..dispatch.cell_dispatch_state import CellDispatchState
-from ..const import (
-    UNO_DISPATCH_CODE_DEL,
-    UNO_DISPATCH_CODE_EDIT,
-    UNO_DISPATCH_DF_STATE,
-    UNO_DISPATCH_DS_STATE,
-    UNO_DISPATCH_PY_OBJ_STATE,
-    UNO_DISPATCH_CELL_SELECT,
-)
+from ..const import UNO_DISPATCH_DF_STATE, UNO_DISPATCH_PY_OBJ_STATE
 from ..const.event_const import SHEET_MODIFIED, CALC_FORMULAS_CALCULATED, PYC_FORMULA_INSERTED, PYC_RULE_MATCH_DONE
 from ..log.log_inst import LogInst
 

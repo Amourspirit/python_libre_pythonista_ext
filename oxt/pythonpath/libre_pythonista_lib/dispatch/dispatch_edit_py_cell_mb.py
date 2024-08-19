@@ -236,9 +236,9 @@ class DispatchWorker(EventsPartial):
                                     # The try block is important. If there is a error without the block then the entire LibreOffice app can crash.
                                     self._log.debug("Resetting array formula")
                                     # get the cell that are involved in the array formula.
-                                    cursor = cast("SheetCellCursor", sheet.component.createCursorByRange(cell.component))  # type: ignore
+                                    cursor = cast("SheetCellCursor", self._cell.calc_sheet.component.createCursorByRange(self._cell.component))  # type: ignore
                                     # this next line also works.
-                                    # cursor = cast("SheetCellCursor", cell.component.getSpreadsheet().createCursorByRange(cell.component))  # type: ignore
+                                    # cursor = cast("SheetCellCursor", self._cell.component.getSpreadsheet().createCursorByRange(self._cell.component))  # type: ignore
                                     cursor.collapseToCurrentArray()
                                     # reset the array formula
                                     cursor.setArrayFormula(formula)

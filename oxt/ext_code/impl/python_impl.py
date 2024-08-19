@@ -235,7 +235,7 @@ class PythonImpl(unohelper.Base, XJobExecutor):
         doc = CalcDoc.from_current_doc()
         src = PyInstance(doc).dump_module_source_code_to_log()
         if src:
-            PyLogger(doc).info(f" Source Code \n# Start Dump\n{src}\nEnd Dump\n")
+            PyLogger(doc).info(f" Source Code \n# Start Dump\n{src}\n# End Dump\n")
 
     def _do_testing(self):
         try:
