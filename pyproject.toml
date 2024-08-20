@@ -132,7 +132,7 @@ name = "LibrePythonista"
 version = "0.0.20"
 description = "Python For LibreOffice Calc"
 authors = [":Barry-Thomas-Paul: Moss <4193389+Amourspirit@users.noreply.github.com>"]
-license = "MIT"
+license = "Apache"
 readme = "README.md"
 packages = [{ include = "src" }]
 
