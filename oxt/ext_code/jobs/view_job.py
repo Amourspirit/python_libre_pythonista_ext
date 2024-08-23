@@ -26,7 +26,6 @@ if TYPE_CHECKING:
     from ...___lo_pip___.oxt_logger import OxtLogger
     from ...pythonpath.libre_pythonista_lib.oxt_init import oxt_init
     from ...pythonpath.libre_pythonista_lib.state.calc_state_mgr import CalcStateMgr
-    from ...pythonpath.libre_pythonista_lib.const.event_const import OXT_INIT
 
     # from ...pythonpath.libre_pythonista_lib.sheet.listen.sheet_calculation_event_listener import (
     #     SheetCalculationEventListener,
@@ -37,7 +36,6 @@ else:
         from ooodev.loader import Lo
         from ooodev.calc import CalcDoc
         from libre_pythonista_lib.oxt_init import oxt_init
-        from libre_pythonista_lib.const.event_const import OXT_INIT
         from libre_pythonista_lib.state.calc_state_mgr import CalcStateMgr
 # endregion imports
 
@@ -92,21 +90,9 @@ class ViewJob(unohelper.Base, XJob):
                     try:
                         _ = Lo.load_office()
                         doc = CalcDoc.get_doc_from_component(self.document)
-                        state_mgr = CalcStateMgr(doc)
-                        if not state_mgr.is_oxt_init:
-                            t = threading.Thread(target=oxt_init, args=(self.document, self._log), daemon=True)
-                            t.start()
-                            # oxt_init(self.document, self._log)
-                            state_mgr.is_oxt_init = True
-                        # Because print preview is a different view controller it can cause issues
-                        # when the document is put into print preview.
-                        # When print preview is opened and is closed this method fires.
-                        # Checking for com.sun.star.sheet.XSpreadsheetView via the qi() method,
-                        # which is what OooDev does when it is getting the view,
-                        # is a good way to check if the view is the default view controller.
-                        # Removing all listeners and adding them again seems to work.
-                        # If this is not done the dispatch manager will not work correctly.
-                        # Specifically the intercept menu's stop working after print preview is closed.
+                        t = threading.Thread(target=_init_with_state, args=(doc, self._log), daemon=True)
+                        t.start()
+                        # t.join() # DO NOT join. Can cause LibreOffice to hang.
 
                     except Exception:
                         self._log.error("Error setting components on view.", exc_info=True)
@@ -130,6 +116,21 @@ class ViewJob(unohelper.Base, XJob):
         return OxtLogger(log_name="ViewJob")
 
     # endregion Logging
+
+
+def _init_with_state(doc: CalcDoc, log: OxtLogger):
+    # This method is run in a thread.
+    # The reason for this on Ubuntu 20.04 is that the main thread crashes if there is a plot in the document python code.
+    # This crash does not give any information in the logs.
+    # After much testing and debugging I discovered that crash can be avoided if this code is run in a thread.
+    # The crash did not happen Flatpak version, Snap Version, Windows version or Docker version. Only on Ubuntu 20.04 when apt installed so far.
+    try:
+        state_mgr = CalcStateMgr(doc)
+        if not state_mgr.is_oxt_init:
+            oxt_init(doc.component, log)
+            state_mgr.is_oxt_init = True
+    except Exception:
+        log.error("Error _init_with_state()", exc_info=True)
 
 
 # endregion XJob

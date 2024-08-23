@@ -13,7 +13,6 @@ from .cell.cell_update_mgr import CellUpdateMgr
 from .state.calc_state_mgr import CalcStateMgr
 from .sheet.listen.code_sheet_modify_listener import CodeSheetModifyListener
 from .sheet.listen.code_sheet_activation_listener import CodeSheetActivationListener
-from .code.py_source_mgr import PySourceManager, PyInstance
 
 # from libre_pythonista_lib.sheet.listen.sheet_calculation_event_listener import SheetCalculationEventListener
 from .sheet.listen.sheet_activation_listener import SheetActivationListener
@@ -30,13 +29,22 @@ else:
 def oxt_init(document: Any, log: OxtLogger) -> None:
     run_id = document.RuntimeUID
 
-    _ = Lo.load_office()
     doc = CalcDoc.get_doc_from_component(document)
     try:
         # Init the CalcStateMgr singleton
         _ = CalcStateMgr(doc)
     except Exception:
         log.error("Error getting CalcStateMgr", exc_info=True)
+
+    try:
+        # check to see if the extension location is the same for this instance
+        # as the previous time this document was opened.
+        # The document may be opened in a different environment,
+        # The extension location may be in shared instead of users or vice versa.
+        cell_update = CellUpdateMgr(doc)
+        cell_update.update_cells()
+    except Exception:
+        log.error("Error updating cells with CellUpdateMgr", exc_info=True)
 
     try:
         doc.component.addDocumentEventListener(DocumentEventListener())
@@ -89,26 +97,17 @@ def oxt_init(document: Any, log: OxtLogger) -> None:
     log.debug(f"Pre Dispatch manager loaded, UID: {doc.runtime_uid}")
     dispatch_mgr.unregister_interceptor(doc)
     dispatch_mgr.register_interceptor(doc)
+
     _ = SheetMgr(doc)  # init the singleton
 
-    # try:
-    #     # check to see if the extension location is the same for this instance
-    #     # as the previous time this document was opened.
-    #     # The document may be opened in a different environment,
-    #     # The extension location may be in shared instead of users or vice versa.
-    #     cell_update = CellUpdateMgr(doc)
-    #     cell_update.update_cells()
-    # except Exception:
-    #     log.error("Error updating cells with CellUpdateMgr", exc_info=True)
+    cm = CellMgr(doc)
+    cm.reset_py_inst()
+    cm.add_all_listeners()
 
-    # cm = CellMgr(doc)
-    # cm.reset_py_inst()
-    # cm.add_all_listeners()
+    # py_inst = PyInstance(doc)
+    # py_inst.update_all()
 
-    py_inst = PyInstance(doc)
-    py_inst.update_all()
-
-    # document.calculateAll()
+    document.calculateAll()
     se = SharedEvent()
     eargs = EventArgs(object())
     eargs.event_data = DotDict(run_id=run_id, doc=doc, event=OXT_INIT, doc_type=doc.DOC_TYPE)
