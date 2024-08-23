@@ -189,15 +189,19 @@ class InstallPkg:
             self._logger.error(err_msg)
             try:
                 # if permission denied then raise exception.
-                last_line = process.stderr.decode("utf-8").strip().split("\n")[-1]
-                if last_line.startswith("PermissionError: [Errno 13] Permission denied:"):
+                error_msg = process.stderr.decode("utf-8")
+                last_line = error_msg.strip().split("\n")[-1]
+                if error_msg.startswith("ERROR: Cannot uninstall") or last_line.startswith(
+                    "PermissionError: [Errno 13] Permission denied:"
+                ):
                     raise PermissionError(last_line)
                 else:
-                    self._logger.error(process.stderr.decode("utf-8"))
+                    self._logger.error(error_msg)
             except PermissionError:
+                self._logger.debug("_uninstall_pkg() Permission Error has been raised.")
                 raise
             except Exception as err:
-                self._logger.error(f"Error decoding stderr: {err}")
+                self._logger.error(f"_uninstall_pkg() Error decoding stderr: {err}")
 
         return result
 
