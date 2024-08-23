@@ -1,14 +1,13 @@
 from __future__ import annotations
-from typing import Any, cast, List, TYPE_CHECKING
+from typing import Any, cast, TYPE_CHECKING
 import re
 import uno
-from com.sun.star.sheet import CellFlags
 
+from ooodev.loader import Lo
+from ooodev.calc import CalcDoc, CalcSheet
 from ooodev.utils.helper.dot_dict import DotDict
-from ooodev.utils.data_type.range_values import RangeValues
 from ooodev.utils.data_type.cell_obj import CellObj
 from ooodev.utils.data_type.range_obj import RangeObj
-from ooodev.utils.data_type.cell_values import CellValues
 from ooodev.exceptions import ex as mEx
 from ...cell.cell_mgr import CellMgr
 from ...data.pandas_data_obj import PandasDataObj
@@ -17,14 +16,12 @@ LAST_LP_RESULT = DotDict(data=None)
 
 if TYPE_CHECKING:
     from com.sun.star.sheet import SheetCellRange
-    from ooodev.calc import CalcDoc, CalcSheet
     from com.sun.star.sheet import SheetCell
     from ...log.log_inst import LogInst
 
     CURRENT_CELL_OBJ: CellObj
 else:
     CURRENT_CELL_OBJ = None
-    from ooodev.calc import CalcDoc
     from libre_pythonista_lib.log.log_inst import LogInst
 
     SheetCell = Any
@@ -72,15 +69,28 @@ def lp(addr: str, **kwargs: Any) -> Any:
     with log.indent(True):
         log.debug(f"lp - Current Cell Obj Global: {CURRENT_CELL_OBJ}")
         addr = _get_addr(addr)
+        is_debug = log.is_debug
+        if is_debug:
+            log.debug(f"lp - Address: {addr}")
         if not addr:
             return _set_last_lp_result(None)
-        gbl_cell = cast(CellObj, CURRENT_CELL_OBJ)
-        cell_obj = CellObj(col=gbl_cell.col, row=gbl_cell.row, sheet_idx=gbl_cell.sheet_idx)
-        doc = CalcDoc.from_current_doc()
-        cm = CellMgr(doc)  # singleton
-        # also needs to be able to look up the name from named ranges.
-        # Also needs to return the cell value if the cell is not a python cell.
-        headers = kwargs.get("headers", False)
+        try:
+            gbl_cell = cast(CellObj, CURRENT_CELL_OBJ)
+            cell_obj = CellObj(col=gbl_cell.col, row=gbl_cell.row, sheet_idx=gbl_cell.sheet_idx)
+            if is_debug:
+                log.debug(f"lp - Cell Obj: {cell_obj}")
+            doc = cast(CalcDoc, Lo.current_doc)
+            # doc = CalcDoc.from_current_doc()
+            if is_debug:
+                log.debug(f"lp - CalcDoc Runtime ID: {doc.runtime_uid}")
+            cm = CellMgr(doc)  # singleton
+            log.debug("lp - Got CellMgr")
+            # also needs to be able to look up the name from named ranges.
+            # Also needs to return the cell value if the cell is not a python cell.
+            # headers = kwargs.get("headers", False)
+        except Exception:
+            log.exception("lp - Could not get CalcDoc or CellMgr instance.")
+            return _set_last_lp_result(None)
         collapse = False
         try:
             collapse = bool(kwargs.get("collapse", False))
@@ -89,12 +99,13 @@ def lp(addr: str, **kwargs: Any) -> Any:
             collapse = False
         addr_rng = None
         sheet_idx = cell_obj.sheet_idx
+        log.debug(f"lp - Sheet Index: {sheet_idx}")
+        log.debug(f"lp - Address: {addr}")
         if not ":" in addr:
             # could be a cell or a named range
             # create a regular expression that can detect if it is a cell or a named range
             # https://www.libreofficehelp.com/maximum-number-rows-columns-cells-libreoffice-calc/
             # Maximum number of Columns per worksheet = 16384 (Col A to XFD).
-
             cell_name_regex = r"^[A-Za-z]{1,3}\d{1,7}$"
             sheet_cell_name_regex = r"^[A-Za-z\s\d]+\.[A-Za-z]{1,3}\d{1,7}$"
             is_cell_name = bool(re.match(cell_name_regex, addr))

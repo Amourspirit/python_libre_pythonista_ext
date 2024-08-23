@@ -79,6 +79,7 @@ class CellMgr(SingletonBase):
         self._se.subscribe_event(CALC_FORMULAS_CALCULATED, self._fn_on_calc_formulas_calculated)
         self._se.subscribe_event(PYC_FORMULA_INSERTED, self._fn_on_calc_pyc_formula_inserted)
         self._se.subscribe_event(PYC_RULE_MATCH_DONE, self._fn_on_pyc_rule_matched)
+        self.add_all_listeners()
 
         # self.remove_all_listeners()
         # self.add_all_listeners()

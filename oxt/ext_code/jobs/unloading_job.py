@@ -25,11 +25,12 @@ if TYPE_CHECKING:
     from ooodev.events.args.event_args import EventArgs
     from ooodev.utils.helper.dot_dict import DotDict
     from ...___lo_pip___.oxt_logger import OxtLogger
+    from ...pythonpath.libre_pythonista_lib.event.shared_event import SharedEvent
     from ...pythonpath.libre_pythonista_lib.sheet.listen.code_sheet_modify_listener import CodeSheetModifyListener
     from ...pythonpath.libre_pythonista_lib.sheet.listen.code_sheet_activation_listener import (
         CodeSheetActivationListener,
     )
-    from ...pythonpath.libre_pythonista_lib.code.mod_fn.lplog import LpLog
+    from ...pythonpath.libre_pythonista_lib.code.mod_helper.lplog import LpLog
     from ...pythonpath.libre_pythonista_lib.cell.cell_mgr import CellMgr
     from ...pythonpath.libre_pythonista_lib.dispatch import dispatch_mgr  # type: ignore
     from ...pythonpath.libre_pythonista_lib.const.event_const import GBL_DOC_CLOSING
@@ -39,9 +40,10 @@ else:
         from ooodev.events.lo_events import LoEvents
         from ooodev.events.args.event_args import EventArgs
         from ooodev.utils.helper.dot_dict import DotDict
+        from libre_pythonista_lib.event.shared_event import SharedEvent
         from libre_pythonista_lib.sheet.listen.code_sheet_modify_listener import CodeSheetModifyListener
         from libre_pythonista_lib.sheet.listen.code_sheet_activation_listener import CodeSheetActivationListener
-        from libre_pythonista_lib.code.mod_fn.lplog import LpLog
+        from libre_pythonista_lib.code.mod_helper.lplog import LpLog
         from libre_pythonista_lib.cell.cell_mgr import CellMgr
         from libre_pythonista_lib.dispatch import dispatch_mgr  # type: ignore
         from libre_pythonista_lib.const.event_const import GBL_DOC_CLOSING
@@ -127,9 +129,14 @@ class UnLoadingJob(XJob, unohelper.Base):
                     # many singletons are created and need to be removed
                     # The code.py_source_mgr.PyInstance and many other modules listen for this
                     # event to clean up singletons.
+                    se = SharedEvent()
                     event_args = EventArgs(self)
                     event_args.event_data = DotDict(uid=run_time_id, doc=self.document)
+                    # TODO: check and see if LoEvents is needed
                     LoEvents().trigger(GBL_DOC_CLOSING, event_args)
+
+                    event_args.event_data = DotDict(run_id=run_time_id, doc=self.document)
+                    se.trigger_event(GBL_DOC_CLOSING, event_args)
                     # any class the has the SingletonBase can be used to clear the instance for the uid
                     CellMgr.remove_instance_by_uid(run_time_id)
             else:

@@ -1,5 +1,6 @@
 from __future__ import annotations
 from typing import Any, TYPE_CHECKING
+import threading
 import types
 from ooodev.utils.helper.dot_dict import DotDict
 from ..utils import str_util
@@ -20,8 +21,17 @@ else:
 
 
 def get_module_init_code() -> str:
+    # See https://matplotlib.org/stable/users/explain/figure/backends.html
+    # for more information on the matplotlib backend.
     return """from __future__ import annotations
 from typing import Any, cast, TYPE_CHECKING
+import matplotlib
+matplotlib.use('svg')
+# matplotlib.use('agg')
+from matplotlib import pyplot as plt
+import pandas as pd
+import numpy as np
+pd.options.plotting.backend = 'matplotlib'
 from ooodev.loader import Lo
 from ooodev.calc import CalcDoc
 from ooodev.calc import CalcSheet
@@ -33,8 +43,6 @@ from libre_pythonista_lib.code.mod_helper import lp_mod
 from libre_pythonista_lib.code.mod_helper.lp_mod import lp
 from libre_pythonista_lib.code.mod_helper.lplog import StaticLpLog as lp_log, LpLog as LibrePythonistaLog
 from libre_pythonista_lib.code.mod_helper import lp_plot
-import pandas as pd
-import numpy as np
 PY_ARGS = None
 CURRENT_CELL_OBJ = None
 CURRENT_CELL_ID = ""
@@ -56,15 +64,21 @@ class PyModule:
         self._log.debug("_init_mod()")
         code = get_module_init_code()
         # from .mod_fn import lp
-
-        exec(code, self.mod.__dict__)
-        # setattr(self.mod, "lp", lp.lp)
-        self._init_dict = self.mod.__dict__.copy()
-        if lp_plot is not None:
-            self._init_dict.update(**lp_plot.__dict__.copy())
-        else:
-            self._log.warning("lp_plot module is not available.")
-        self._log.debug(f"_init_mod() done.")
+        try:
+            # t = threading.Thread(target=exec, args=(code, self.mod.__dict__), daemon=True)
+            # t.start()
+            # t.join()
+            exec(code, self.mod.__dict__)
+            # setattr(self.mod, "lp", lp.lp)
+            self._init_dict = self.mod.__dict__.copy()
+            if lp_plot is not None:
+                self._init_dict.update(**lp_plot.__dict__.copy())
+            else:
+                self._log.warning("lp_plot module is not available.")
+            self._log.debug(f"_init_mod() done.")
+        except Exception:
+            self._log.exception("Error initializing module")
+            raise
         # setattr(self.mod, "np", np)
         # setattr(self.mod, "Lo", lo)
         # setattr(self.mod, "XSCRIPTCONTEXT", Lo.XSCRIPTCONTEXT)
@@ -92,35 +106,54 @@ class PyModule:
             If there is an error the result will be a DotDict with ``data=GeneralError(e)`` and ``error=True`` the error.
         """
         with self._log.indent(True):
-            self._log.debug("update_with_result()")
-        code = str_util.remove_comments(code)
-        code = str_util.clean_string(code)
+            self._log.debug("update_with_result() Entered.")
+        try:
+            code = str_util.remove_comments(code)
+            code = str_util.clean_string(code)
+            self._log.debug(f"Cleaned code. \n{code}")
+        except Exception:
+            self._log.exception(f"Error cleaning code: {code}")
+            raise
+
         result = None
         try:
             if code:
+                self._log.debug("Executing code.")
+                # run exec in a new thread and wait for it to finish
+                # t = threading.Thread(target=exec, args=(code, self.mod.__dict__), daemon=True)
+                # t.start()
+                # t.join()
                 exec(code, self.mod.__dict__)
+                self._log.debug("Executed code.")
             rule = self._cr.get_matched_rule(self.mod, code)
+            self._log.debug("Got matched rule.")
             result = rule.get_value()
+            self._log.debug("Got result.")
             rule.reset()
+            self._log.debug("Reset rule.")
             return result
         # other exceptions can be caught and new error classes can be created.
         except Exception as e:
             with self._log.indent(True):
-                # result will be assigned to the py_source.value Other rules for the cell will handle this.
-                result = DotDict(data=GeneralError(e), error=True)
                 try:
-                    lp_log_inst = LibrePythonistaLog()
-                    ps_log = lp_log_inst.log
-                    if lp_log_inst.log_extra_info:
-                        ps_log.error(f"Error updating module.\n{code}\n", exc_info=True)
+                    # result will be assigned to the py_source.value Other rules for the cell will handle this.
+                    result = DotDict(data=GeneralError(e), error=True)
+                    try:
+                        lp_log_inst = LibrePythonistaLog()
+                        ps_log = lp_log_inst.log
+                        if lp_log_inst.log_extra_info:
+                            ps_log.error(f"Error updating module.\n{code}\n", exc_info=True)
+                        else:
+                            ps_log.error(f"{e}")
+                    except Exception as e:
+                        self._log.error(f"LibrePythonistaLog error", exc_info=True)
+                    if self._log.is_debug:
+                        self._log.warning(f"Error updating module. Result set to {result}.\n{code}\n", exc_info=True)
                     else:
-                        ps_log.error(f"{e}")
-                except Exception as e:
-                    self._log.error(f"LibrePythonistaLog error", exc_info=True)
-                if self._log.is_debug:
-                    self._log.warning(f"Error updating module. Result set to {result}.\n{code}\n", exc_info=True)
-                else:
-                    self._log.warning(f"Error updating module. Result set to {result}.\n", exc_info=True)
+                        self._log.warning(f"Error updating module. Result set to {result}.\n", exc_info=True)
+                except Exception:
+                    self._log.exception(f"update_with_result() Error updating module.\n{code}\n")
+                    raise
         return result
 
     def set_global_var(self, var_name: str, value: Any) -> None:

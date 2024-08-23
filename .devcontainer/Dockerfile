@@ -21,8 +21,8 @@ RUN apk update \
     make \
     openssh-client-default \
     openssh\
-    zip \
-    libreoffice-sdk
+    zip
+#    libreoffice-sdk
 
 # https://pkgs.alpinelinux.org/package/edge/community/x86_64/libreoffice-sdk
 

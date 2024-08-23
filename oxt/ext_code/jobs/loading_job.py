@@ -3,13 +3,35 @@ from __future__ import unicode_literals, annotations
 from typing import Any, TYPE_CHECKING
 import uno
 import unohelper
+import contextlib
 
 
 from com.sun.star.task import XJob
 
+
+def _conditions_met() -> bool:
+    with contextlib.suppress(Exception):
+        from ___lo_pip___.install.requirements_check import RequirementsCheck  # type: ignore
+
+        return RequirementsCheck().run_imports_ready()
+    return False
+
+
 if TYPE_CHECKING:
     # just for design time
+    _CONDITIONS_MET = True
+    from ooodev.loader import Lo
+    from ooodev.calc import CalcDoc
     from ...___lo_pip___.oxt_logger import OxtLogger
+    from ...pythonpath.libre_pythonista_lib.oxt_init import oxt_init
+    from ...pythonpath.libre_pythonista_lib.state.calc_state_mgr import CalcStateMgr
+else:
+    _CONDITIONS_MET = _conditions_met()
+    if _CONDITIONS_MET:
+        from ooodev.loader import Lo
+        from ooodev.calc import CalcDoc
+        from libre_pythonista_lib.oxt_init import oxt_init
+        from libre_pythonista_lib.state.calc_state_mgr import CalcStateMgr
 
 # endregion imports
 
@@ -54,6 +76,14 @@ class LoadingJob(XJob, unohelper.Base):
                 return
             if self.document.supportsService("com.sun.star.sheet.SpreadsheetDocument"):
                 self._logger.debug("Document Loading is a spreadsheet")
+                # if _CONDITIONS_MET:
+                # _ = Lo.load_office()
+                # doc = CalcDoc.get_doc_from_component(self.document)
+                # state_mgr = CalcStateMgr(doc)
+                # if not state_mgr.is_oxt_init:
+                #     oxt_init(self.document, self._logger)
+                #     state_mgr.is_oxt_init = True
+                # self._logger.debug(f"Document Loading State Manager.is_doc_loaded: {state_mgr.is_doc_loaded}")
             else:
                 self._logger.debug("Document Loading not a spreadsheet")
 

@@ -1,6 +1,7 @@
 # region imports
 from __future__ import unicode_literals, annotations
 from typing import Any, TYPE_CHECKING
+import threading
 import contextlib
 import os
 import uno
@@ -20,47 +21,24 @@ def _conditions_met() -> bool:
 if TYPE_CHECKING:
     # just for design time
     _CONDITIONS_MET = True
-    from ...___lo_pip___.oxt_logger import OxtLogger
     from ooodev.loader import Lo
-    from ooodev.exceptions import ex as mEx
-    from ooodev.events.args.event_args import EventArgs
-    from ooodev.utils.helper.dot_dict import DotDict
-    from ...pythonpath.libre_pythonista_lib.event.shared_event import SharedEvent
-    from ...pythonpath.libre_pythonista_lib.dispatch import dispatch_mgr  # type: ignore
-    from ...pythonpath.libre_pythonista_lib.cell.cell_mgr import CellMgr  # type: ignore
-    from ...pythonpath.libre_pythonista_lib.sheet.listen.code_sheet_modify_listener import CodeSheetModifyListener
-    from ...pythonpath.libre_pythonista_lib.const.event_const import CB_DOC_FOCUS_GAINED, DOCUMENT_NEW_VIEW
-    from ...pythonpath.libre_pythonista_lib.sheet.sheet_mgr import SheetMgr
-    from ...pythonpath.libre_pythonista_lib.cell.cell_update_mgr import CellUpdateMgr
-    from ...pythonpath.libre_pythonista_lib.sheet.listen.code_sheet_activation_listener import (
-        CodeSheetActivationListener,
-    )
+    from ooodev.calc import CalcDoc
+    from ...___lo_pip___.oxt_logger import OxtLogger
+    from ...pythonpath.libre_pythonista_lib.oxt_init import oxt_init
+    from ...pythonpath.libre_pythonista_lib.state.calc_state_mgr import CalcStateMgr
+    from ...pythonpath.libre_pythonista_lib.const.event_const import OXT_INIT
 
     # from ...pythonpath.libre_pythonista_lib.sheet.listen.sheet_calculation_event_listener import (
     #     SheetCalculationEventListener,
     # )
-    from ...pythonpath.libre_pythonista_lib.sheet.listen.sheet_activation_listener import SheetActivationListener
-    from ...pythonpath.libre_pythonista_lib.doc.listen.document_event_listener import DocumentEventListener
 else:
     _CONDITIONS_MET = _conditions_met()
     if _CONDITIONS_MET:
         from ooodev.loader import Lo
-        from ooodev.exceptions import ex as mEx
-        from ooodev.events.args.event_args import EventArgs
-        from ooodev.utils.helper.dot_dict import DotDict
-        from libre_pythonista_lib.event.shared_event import SharedEvent
-        from libre_pythonista_lib.dispatch import dispatch_mgr  # type: ignore
-        from libre_pythonista_lib.sheet.sheet_mgr import SheetMgr
-        from libre_pythonista_lib.cell.cell_mgr import CellMgr  # type: ignore
-        from libre_pythonista_lib.cell.cell_update_mgr import CellUpdateMgr
-        from libre_pythonista_lib.sheet.listen.code_sheet_modify_listener import CodeSheetModifyListener
-        from libre_pythonista_lib.sheet.listen.code_sheet_activation_listener import CodeSheetActivationListener
-
-        # from libre_pythonista_lib.sheet.listen.sheet_calculation_event_listener import SheetCalculationEventListener
-        from libre_pythonista_lib.sheet.listen.sheet_activation_listener import SheetActivationListener
-
-        from libre_pythonista_lib.doc.listen.document_event_listener import DocumentEventListener
-        from libre_pythonista_lib.const.event_const import CB_DOC_FOCUS_GAINED, DOCUMENT_NEW_VIEW
+        from ooodev.calc import CalcDoc
+        from libre_pythonista_lib.oxt_init import oxt_init
+        from libre_pythonista_lib.const.event_const import OXT_INIT
+        from libre_pythonista_lib.state.calc_state_mgr import CalcStateMgr
 # endregion imports
 
 
@@ -112,6 +90,14 @@ class ViewJob(unohelper.Base, XJob):
                 self._log.debug(f"Added {key} to environment variables")
                 if _CONDITIONS_MET:
                     try:
+                        _ = Lo.load_office()
+                        doc = CalcDoc.get_doc_from_component(self.document)
+                        state_mgr = CalcStateMgr(doc)
+                        if not state_mgr.is_oxt_init:
+                            t = threading.Thread(target=oxt_init, args=(self.document, self._log), daemon=True)
+                            t.start()
+                            # oxt_init(self.document, self._log)
+                            state_mgr.is_oxt_init = True
                         # Because print preview is a different view controller it can cause issues
                         # when the document is put into print preview.
                         # When print preview is opened and is closed this method fires.
@@ -121,87 +107,7 @@ class ViewJob(unohelper.Base, XJob):
                         # Removing all listeners and adding them again seems to work.
                         # If this is not done the dispatch manager will not work correctly.
                         # Specifically the intercept menu's stop working after print preview is closed.
-                        self._log.debug("Registering dispatch manager")
-                        from ooodev.calc import CalcDoc
 
-                        # Lo.load_office() only loads office if it is not already loaded
-                        # It is needed here or the dispatch manager will not receive the correct document
-                        # when multiple documents are open.
-                        _ = Lo.load_office()
-                        doc = CalcDoc.get_doc_from_component(self.document)
-                        try:
-                            # check to see if the extension location is the same for this instance
-                            # as the previous time this document was opened.
-                            # The document may be opened in a different environment,
-                            # The extension location may be in shared instead of users or vice versa.
-                            cell_update = CellUpdateMgr(doc)
-                            cell_update.update_cells()
-                        except Exception:
-                            self._log.error("Error updating cells with CellUpdateMgr", exc_info=True)
-                        try:
-                            doc.component.addDocumentEventListener(DocumentEventListener())
-                            self._log.debug("Document event listener added")
-                        except Exception:
-                            self._log.error("Error adding document event listener", exc_info=True)
-                        try:
-                            view = doc.get_view()
-                        except mEx.MissingInterfaceError as e:
-                            self._log.debug(f"Error getting view from document. {e}")
-                            view = None
-                        if view is None:
-                            self._log.debug("View is None. May be print preview. Returning.")
-                            return
-                        if not view.view_controller_name == "Default":
-                            # this could mean that the print preview has been activated.
-                            # Print Preview view controller Name: PrintPreview
-                            self._log.debug(
-                                f"'{view.view_controller_name}' is not the default view controller. Returning."
-                            )
-                            return
-
-                        for sheet in doc.sheets:
-                            unique_id = sheet.unique_id
-                            if not CodeSheetModifyListener.has_listener(unique_id):
-                                listener = CodeSheetModifyListener(unique_id)  # singleton
-                                sheet.component.addModifyListener(listener)
-                            else:
-                                listener = CodeSheetModifyListener.get_listener(unique_id)  # singleton
-                                sheet.component.removeModifyListener(listener)
-                                sheet.component.addModifyListener(listener)
-
-                        # adds new modifier listeners to new sheets
-                        code_sheet_activation_listener = CodeSheetActivationListener()
-                        sheet_act_listener = SheetActivationListener()
-                        view.component.removeActivationEventListener(code_sheet_activation_listener)
-                        view.component.addActivationEventListener(code_sheet_activation_listener)
-                        view.component.removeActivationEventListener(sheet_act_listener)
-                        view.component.addActivationEventListener(sheet_act_listener)
-
-                        if view.is_form_design_mode():
-
-                            try:
-                                self._log.debug("Setting form design mode to False")
-                                view.set_form_design_mode(False)
-                                self._log.debug("Form design mode set to False")
-                                # doc.toggle_design_mode()
-                            except Exception:
-                                self._log.warning("Unable to set form design mode", exc_info=True)
-
-                        self._log.debug(f"Pre Dispatch manager loaded, UID: {doc.runtime_uid}")
-                        dispatch_mgr.unregister_interceptor(doc)
-                        dispatch_mgr.register_interceptor(doc)
-                        _ = SheetMgr(doc)  # init the singleton
-                        cm = CellMgr(doc)
-                        cm.reset_py_inst()
-                        # cm.remove_all_listeners()
-                        # adding listeners will remove first.
-                        cm.add_all_listeners()
-
-                        self.document.calculateAll()
-                        se = SharedEvent()
-                        eargs = EventArgs(self)
-                        eargs.event_data = DotDict(run_id=run_id, doc=doc, event="new_view", doc_type=doc.DOC_TYPE)
-                        se.trigger_event(DOCUMENT_NEW_VIEW, eargs)
                     except Exception:
                         self._log.error("Error setting components on view.", exc_info=True)
                 else:

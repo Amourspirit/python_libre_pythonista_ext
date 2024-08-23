@@ -6,6 +6,10 @@ import unohelper
 from com.sun.star.document import XDocumentEventListener
 
 from ooodev.loader import Lo
+from ooodev.events.args.event_args import EventArgs
+from ooodev.utils.helper.dot_dict import DotDict
+from ...event.shared_event import SharedEvent
+from ...const.event_const import DOCUMENT_EVENT
 
 if TYPE_CHECKING:
     from com.sun.star.lang import EventObject
@@ -41,6 +45,8 @@ class DocumentEventListener(XDocumentEventListener, unohelper.Base):
         self._inst_name: str  # = inst_name
         self._log = OxtLogger(log_name=self.__class__.__name__)
         self._log.debug("Init")
+        self._uid = Lo.current_doc.runtime_uid
+        self._shared_event = SharedEvent()
         self._is_init = True
 
     def documentEventOccured(self, event: DocumentEvent) -> None:
@@ -59,6 +65,10 @@ class DocumentEventListener(XDocumentEventListener, unohelper.Base):
         # - OnTitleChanged
         # and more. See: https://ask.libreoffice.org/t/extension-run-on-libreoffice-startup/94512
         self._log.debug(f"Document Event Occurred: {event.EventName}")
+        eargs = EventArgs(self)
+        dd = DotDict(run_id=self._uid, event_name=event.EventName)
+        eargs.event_data = dd
+        self._shared_event.trigger_event(DOCUMENT_EVENT, eargs)
 
     def disposing(self, event: EventObject) -> None:
         """

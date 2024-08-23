@@ -37,6 +37,7 @@ if TYPE_CHECKING:
     from ...___lo_pip___.oxt_logger.oxt_logger import OxtLogger
     from ...___lo_pip___.config import Config
     from ...pythonpath.libre_pythonista_lib.cell.cell_mgr import CellMgr
+    from ...pythonpath.libre_pythonista_lib.state.calc_state_mgr import CalcStateMgr
     from ...pythonpath.libre_pythonista_lib.code.cell_cache import CellCache
     from ...pythonpath.libre_pythonista_lib.cell.result_action.pyc.rules.pyc_rules import PycRules
     from ...pythonpath.libre_pythonista_lib.cell.lpl_cell import LplCell
@@ -52,6 +53,7 @@ else:
         from ooodev.utils.helper.dot_dict import DotDict
         from ooodev.utils.data_type.col_obj import ColObj
         from libre_pythonista_lib.cell.cell_mgr import CellMgr
+        from libre_pythonista_lib.state.calc_state_mgr import CalcStateMgr
         from libre_pythonista_lib.cell.result_action.pyc.rules.pyc_rules import PycRules
         from libre_pythonista_lib.event.shared_event import SharedEvent
         from libre_pythonista_lib.code.cell_cache import CellCache
@@ -104,6 +106,16 @@ class PyImpl(unohelper.Base, XPy):
                 "pyc - Could not get current document. This usually happens when the document is not fully loaded."
             )
             return None
+
+        # try:
+        #     state_mgr = CalcStateMgr(doc)
+        #     if not state_mgr.is_view_loaded:
+        #         self._logger.debug("pyc - View not loaded. Returning.")
+        #         return None
+        # except Exception:
+        #     self._logger.warning("pyc - Could not get CalcStateMgr")
+        #     return None
+
         result = None
         try:
             self._logger.debug(f"pyc - Doc UID: {doc.runtime_uid}")
