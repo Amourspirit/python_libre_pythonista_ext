@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, cast, TYPE_CHECKING, Tuple
+from typing import Any, cast, TYPE_CHECKING, Tuple, Set
 import contextlib
 import uno
 from com.sun.star.awt import XActionListener
@@ -44,10 +44,32 @@ class SimpleCtl:
         self._ctl_rule_key = self._cfg.cell_cp_prefix + "ctl_rule"
         self.calc_cell = calc_cell
         self.is_deleted_cell = calc_cell.extra_data.get("deleted", False)
+        self._supported_features = None
         self.log = LogInst()
         self.namer = CtlNamer(calc_cell)
         self.res = ResResolver()
         self.key_maker = KeyMaker()
+
+    def _get_features(self) -> Set[str]:
+        if self._supported_features is None:
+            self._supported_features = set(
+                ["add_ctl", "remove_ctl", "update_ctl", "update_ctl_action", "get_rule_name", "get_cell_pos_size"]
+            )
+
+        return self._supported_features
+
+    def supports_feature(self, feature: str) -> bool:
+        """
+        Checks if the feature is supported.
+
+        Args:
+            feature (str): Feature to check such as "update_ctl", "add_ctl", "remove_ctl", "update_ctl_action", "get_rule_name", "get_cell_pos_size".
+
+        Returns:
+            bool: True if supported, False otherwise.
+        """
+        features = self._get_features()
+        return feature in features
 
     def get_rule_name(self) -> str:
         """Gets the rule name for this class instance."""

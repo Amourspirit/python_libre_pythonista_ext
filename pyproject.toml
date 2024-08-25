@@ -129,7 +129,7 @@ es = "Plantilla para crear extensiones basadas en pip para LibreOffice"
 
 [tool.poetry]
 name = "LibrePythonista"
-version = "0.0.20"
+version = "0.0.21"
 description = "Python For LibreOffice Calc"
 authors = [":Barry-Thomas-Paul: Moss <4193389+Amourspirit@users.noreply.github.com>"]
 license = "Apache"
@@ -140,7 +140,7 @@ packages = [{ include = "src" }]
 python = "^3.8"
 ooouno = "^2.1.2"
 toml = "^0.10.2"
-typing-extensions = ">=4.11.0"
+typing-extensions = ">=4.12.2"
 ooo-dev-tools = ">=0.47.12"
 sortedcontainers = ">=2.4.0"
 oooenv = ">=0.2.4"

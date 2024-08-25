@@ -31,6 +31,7 @@ from ..const import (
     UNO_DISPATCH_SEL_RNG,
     UNO_DISPATCH_ABOUT,
     UNO_DISPATCH_LOG_WIN,
+    UNO_DISPATCH_CELL_CTl_UPDATE,
 )
 from ..const.event_const import GBL_DOC_CLOSING
 
@@ -48,6 +49,7 @@ from .dispatch_rng_select_popup import DispatchRngSelectPopup
 from .dispatch_edit_py_cell_mb import DispatchEditPyCellMb
 from .dispatch_log_window import DispatchLogWindow
 from .dispatch_cell_select_recalc import DispatchCellSelectRecalc
+from .dispatch_ctl_update import DispatchCtlUpdate
 
 # from .listen.edit_status_listener import EditStatusListener
 from ..log.log_inst import LogInst
@@ -231,6 +233,12 @@ class DispatchProviderInterceptor(unohelper.Base, XDispatchProviderInterceptor):
                 with log.indent(True):
                     log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchAbout")
                 return DispatchAbout()
+        elif url.Main == UNO_DISPATCH_CELL_CTl_UPDATE:
+            with contextlib.suppress(Exception):
+                with log.indent(True):
+                    args = self._convert_query_to_dict(url.Arguments)
+                    log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchCtlUpdate")
+                return DispatchCtlUpdate(sheet=args["sheet"], cell=args["cell"])
 
         return self._slave.queryDispatch(url, target_frame_name, search_flags)
 

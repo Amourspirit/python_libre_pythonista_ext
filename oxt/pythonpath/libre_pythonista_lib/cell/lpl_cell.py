@@ -120,6 +120,25 @@ class LplCell:
             except Exception:
                 self._log.error("get_control_rule() Error getting control rule", exc_info=True)
 
+    def get_control_supports_feature(self, feature: str) -> bool:
+        """
+        Checks if the feature is supported by the control.
+
+        Args:
+            feature (str): Feature to check such as "update_ctl", "add_ctl", "remove_ctl", "update_ctl_action", "get_rule_name", "get_cell_pos_size".
+
+        Returns:
+            bool: True if supported, False otherwise.
+        """
+        with self._log.indent(True):
+            try:
+                rule = self.get_control_rule()
+                if rule is None:
+                    return False
+                return rule.supports_feature(feature)
+            except Exception:
+                self._log.error("get_control_supports_feature() Error getting control supports feature", exc_info=True)
+
     def _convert_query_to_dict(self, query: str):
         query_dict = parse_qs(query)
         return {k: v[0] for k, v in query_dict.items()}

@@ -40,3 +40,15 @@ class CtlRuleT(Protocol):
         Updates the controls action such as setting ``actionPerformed`` macro.
         """
         ...
+
+    def supports_feature(self, feature: str) -> bool:
+        """
+        Checks if the feature is supported.
+
+        Args:
+            feature (str): Feature to check such as "update_ctl", "add_ctl", "remove_ctl", "update_ctl_action", "get_rule_name", "get_cell_pos_size".
+
+        Returns:
+            bool: True if supported, False otherwise.
+        """
+        ...

@@ -16,6 +16,7 @@ from ...const import (
     UNO_DISPATCH_CELL_SELECT_RECALC,
     UNO_DISPATCH_DF_CARD,
     UNO_DISPATCH_DATA_TBL_CARD,
+    UNO_DISPATCH_CELL_CTl_UPDATE,
 )
 from ..state.state_kind import StateKind
 from ..state.ctl_state import CtlState
@@ -90,6 +91,13 @@ class CtlPopup:
                 },
             ]
 
+    def _get_refresh_menu(self) -> list:
+        refresh_ctl = self._res.resolve_string("mnuRefreshCtl")
+        refresh_url = f"{UNO_DISPATCH_CELL_CTl_UPDATE}?sheet={self._sheet_name}&cell={self._cell.cell_obj}"
+        return [
+            {"text": refresh_ctl, "command": refresh_url, "enabled": True},
+        ]
+
     def _get_card_df_menu(self) -> list:
         card_name = self._res.resolve_string("mnuViewCard")
         card_url = f"{UNO_DISPATCH_DF_CARD}?sheet={self._sheet_name}&cell={self._cell.cell_obj}"
@@ -124,6 +132,8 @@ class CtlPopup:
             {"text": sel_name, "command": sel_url, "enabled": True},
             {"text": recalc_name, "command": sel_recalc_url, "enabled": True},
         ]
+        if self._lpl_cell.get_control_supports_feature("update_ctl"):
+            new_menu.extend(self._get_refresh_menu())
         if not self._cps.is_protected() and self._lpl_cell.has_array_ability:
             # if self._cell.get_custom_property(self._key_maker.cell_array_ability_key, False):
             state_menu = self._get_state_menu()

@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, cast, Tuple
+from typing import Any, Tuple, Set
 import uno
 from ooodev.calc import CalcCell
 from pathlib import Path
@@ -29,8 +29,30 @@ class MatPlotFigureCtl:
         self._py_src = PyInstance(self.calc_cell.calc_doc)
         self.namer = ShapeNamer(self.calc_cell)
         self._prev_img = ""
+        self._supported_features = None
         with self.log.indent(True):
             self.log.debug(f"CtlCellImg: __init__(): Entered")
+
+    def _get_features(self) -> Set[str]:
+        if self._supported_features is None:
+            self._supported_features = set(
+                ["add_ctl", "remove_ctl", "update_ctl_action", "get_rule_name", "get_cell_pos_size"]
+            )
+
+        return self._supported_features
+
+    def supports_feature(self, feature: str) -> bool:
+        """
+        Checks if the feature is supported.
+
+        Args:
+            feature (str): Feature to check such as "update_ctl", "add_ctl", "remove_ctl", "update_ctl_action", "get_rule_name", "get_cell_pos_size".
+
+        Returns:
+            bool: True if supported, False otherwise.
+        """
+        features = self._get_features()
+        return feature in features
 
     def get_rule_name(self) -> str:
         """Gets the rule name for this class instance."""
