@@ -191,7 +191,8 @@ class InstallPkg:
                 # if permission denied then raise exception.
                 error_msg = process.stderr.decode("utf-8")
                 last_line = error_msg.strip().split("\n")[-1]
-                if error_msg.startswith("ERROR: Cannot uninstall") or last_line.startswith(
+                start_err = ("ERROR: Cannot uninstall", "error: externally-managed-environment")
+                if error_msg.startswith(start_err) or last_line.startswith(
                     "PermissionError: [Errno 13] Permission denied:"
                 ):
                     raise PermissionError(last_line)
