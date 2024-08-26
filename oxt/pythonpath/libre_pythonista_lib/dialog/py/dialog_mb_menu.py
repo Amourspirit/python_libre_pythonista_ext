@@ -47,13 +47,19 @@ class DialogMbMenu:
     def _get_code_data(self) -> List[dict]:
         rr = self._dlg.res_resolver.resolve_string
 
+        # new_menu = [
+        #     {
+        #         "text": rr("mnuData"),
+        #         "command": ".uno.py_data",
+        #         "submenu": [
+        #             {"text": rr("mnuValidate"), "command": UNO_DISPATCH_PY_CODE_VALIDATE},
+        #         ],
+        #     }
+        # ]
         new_menu = [
             {
-                "text": rr("mnuData"),
-                "command": ".uno.py_data",
-                "submenu": [
-                    {"text": rr("mnuValidate"), "command": UNO_DISPATCH_PY_CODE_VALIDATE},
-                ],
+                "text": rr("mnuValidate"),
+                "command": UNO_DISPATCH_PY_CODE_VALIDATE,
             }
         ]
         return new_menu
