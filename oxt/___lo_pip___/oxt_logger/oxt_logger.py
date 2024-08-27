@@ -1,6 +1,7 @@
 import logging
 import sys
 import os
+import platform
 from logging import Logger
 from logging.handlers import TimedRotatingFileHandler
 from contextlib import contextmanager
@@ -44,7 +45,8 @@ class OxtLogger(Logger):
         basic_config = BasicConfig()
         self._indent_amt = basic_config.log_indent
         self._fn_on_callback = self._on_callback
-        if os.name == "nt":
+        # no indent for windows or MacOS
+        if os.name == "nt" or platform.system().lower() == "darwin":
             # for unknown reasons, the indent is not working on windows. The log and the extension totally fails.
             self._indent_amt = 0
 
