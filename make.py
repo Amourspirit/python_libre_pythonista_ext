@@ -32,9 +32,9 @@ def _args_action_build(args: argparse.Namespace) -> None:
             compile_idl=args.compile_idl,
         )
     )
-    print("Processing...", end="", flush=True)
+    print("Building...", flush=True)
     builder.build()
-    print(f'Done {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}')
+    print(f'Build Finished {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}')
     # print the date and time
 
 
