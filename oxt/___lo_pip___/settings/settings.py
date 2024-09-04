@@ -31,12 +31,14 @@ class Settings(metaclass=Singleton):
     def _set_events(self) -> None:
         def on_configuration_saved(src: Any, event_args: EventArgs) -> None:
             if self._logger:
-                self._logger.debug("Settings. Configuration saved. Updating settings..")
+                with self._logger.indent(True):
+                    self._logger.debug("Settings. Configuration saved. Updating settings..")
             self._update_settings()
 
         def on_configuration_str_lst_saved(src: Any, event_args: EventArgs) -> None:
             if self._logger:
-                self._logger.debug("Settings. Configuration str lst saved. Updating settings..")
+                with self._logger.indent(True):
+                    self._logger.debug("Settings. Configuration str lst saved. Updating settings..")
             self._update_settings()
 
         def on_logging_ready(src: Any, event_args: EventArgs) -> None:
@@ -45,7 +47,8 @@ class Settings(metaclass=Singleton):
             # it is critical that trigger=False, otherwise we'll get an infinite loop.
             if self._logger is None:
                 self._logger = OxtLogger(log_name=__name__, trigger=False)
-                self._logger.debug("Created Logger.")
+                with self._logger.indent(True):
+                    self._logger.debug("Created Logger.")
 
         # keep callbacks in scope
         self._fn_on_configuration_saved = on_configuration_saved
@@ -71,7 +74,8 @@ class Settings(metaclass=Singleton):
             # settings.update({k: v for k, v in zip(props, values)})
             settings.update(dict(zip(props, values)))
         if self._logger:
-            self._logger.debug(f"Returning {self.lo_implementation_name} settings.")
+            with self._logger.indent(True):
+                self._logger.debug(f"Returning {self.lo_implementation_name} settings.")
         return settings
 
     def _update_settings(self) -> None:

@@ -16,3 +16,5 @@ class BuildArgs:
     """Whether to make the dist zip(oxt) file in the dist folder."""
     pre_install_pure_packages: bool = True
     """Whether to pre-install pure packages."""
+    compile_idl: bool = True
+    """Whether to compile idl files."""

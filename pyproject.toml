@@ -1,14 +1,29 @@
 # See: https://github.com/Amourspirit/python-libreoffice-pip/wiki/pyproject.toml
+[tool.libre_pythonista.config]
+general_code_name = "libre_pythonista"
+cell_custom_prop_prefix = "libre_pythonista_"
+cell_custom_prop_codename = "codename"
+lp_default_log_format= "%(asctime)s - %(levelname)s - %(name)s: %(message)s"
+# name of macro to run when sheet control button is clicked
+# found in python/scripts/control_handler.py
+macro_lp_sheet_ctl_click = "on_btn_action_preformed"
+# name of macro to run when sheet is calculated
+# found in python/scripts/share_event.py
+macro_sheet_on_calculate = "formulas_calc"
+py_script_sheet_ctl_click = "control_handler.py"
+py_script_sheet_on_calculate = "share_event.py"
+
 [tool.oxt.config]
 auto_install_in_site_packages = true # https://tinyurl.com/ymeh4c9j#auto_install_in_site_packages
 build_dir = "build" # https://tinyurl.com/ymeh4c9j#build_dir
-dist_dir = "dist" # https://tinyurl.com/ymeh4c9j#dist_dir should be changed to someting like dist, tmp_dist is not included in git
+dist_dir = "dist" # "dist" https://tinyurl.com/ymeh4c9j#dist_dir should be changed to someting like dist, tmp_dist is not included in git
 install_wheel = true # https://tinyurl.com/ymeh4c9j#install_wheel
-oxt_name = "LibreOfficePY" # https://tinyurl.com/ymeh4c9j#oxt_name
+oxt_name = "LibrePythonista" # https://tinyurl.com/ymeh4c9j#oxt_name
 py_pkg_dir = "py_pkgs" # https://tinyurl.com/ymeh4c9j#py_pkg_dir
 py_pkg_files = [] # https://tinyurl.com/ymeh4c9j#py_pkg_files
 py_pkg_names = [] # ["ooodev", "ooo"] https://tinyurl.com/ymeh4c9j#py_pkg_names
-token_file_ext = ["txt", "xml", "xcu", "xcs"] # https://tinyurl.com/ymeh4c9j#token_file_ext
+token_file_ext = ["txt", "xml", "xcu", "xcs", "py","components"] # https://tinyurl.com/ymeh4c9j#token_file_ext
+tokes_files = [] # ["python_impl.py", "res_resolver.py", "py_code.py"]
 update_file = "update.xml" # https://tinyurl.com/ymeh4c9j#update_file
 zip_preinstall_pure = true # https://tinyurl.com/ymeh4c9j#zip_preinstall_pure
 window_timeout = 5 # https://tinyurl.com/ymeh4c9j#window_timeout number of seconds to wait for window to appear
@@ -16,11 +31,15 @@ dialog_desktop_owned = false # https://tinyurl.com/ymeh4c9j#dialog_desktop_owned
 resource_dir_name = "resources" # https://tinyurl.com/ymeh4c9j#resource_dir_name
 resource_properties_prefix = "pipstrings" # https://tinyurl.com/ymeh4c9j#resource_properties_prefix
 default_locale = ["en", "US"] # https://tinyurl.com/ymeh4c9j#default_locale
-sym_link_cpython = false # https://tinyurl.com/ymeh4c9j#sym_link_cpython
+sym_link_cpython = true # https://tinyurl.com/ymeh4c9j#sym_link_cpython
 uninstall_on_update = true # https://tinyurl.com/ymeh4c9j#uninstall_on_update uninstall previous python packages on update
 install_on_no_uninstall_permission = true # https://tinyurl.com/ymeh4c9j#install_on_no_uninstall_permission
 oo_types_uno = ""
 oo_types_office = ""
+unload_after_install = false
+run_imports = ["ooodev", "verr", "sortedcontainers"]
+# when log_indent is set indent_str can be used in the format str - "%(asctime)s %(levelname)s - %(indent_str)s%(name)s: %(message)s"
+log_indent = 0 # set to 0 or less to disable; Ignored in windows. Should be set to 0 for production.
 
 [tool.oxt.token]
 # in the form of "token_name": "token_value"
@@ -28,40 +47,45 @@ oo_types_office = ""
 pip_wheel_url = "https://files.pythonhosted.org/packages/50/c2/e06851e8cc28dcad7c155f4753da8833ac06a5c704c109313b8d5a62968a/pip-23.2.1-py3-none-any.whl" # https://tinyurl.com/ymeh4c9j#pip_wheel_url
 test_internet_url = "https://duckduckgo.com" # https://tinyurl.com/ymeh4c9j#test_internet_url
 log_pip_installs = false # https://tinyurl.com/ymeh4c9j#log_pip_installs
-lo_identifier = "org.openoffice.extensions.ooopip" # https://tinyurl.com/ymeh4c9j#lo_identifier
-lo_implementation_name = "OooPipRunner" # https://tinyurl.com/ymeh4c9j#lo_implementation_name
-display_name = "LibreOffice Python Calc Addon" # https://tinyurl.com/ymeh4c9j#display_name
-description = "Extension for adding Python input into LibreOffice Calc Cell" # https://tinyurl.com/ymeh4c9j#description
+lo_identifier = "com.github.amourspirit.extensions.librepythonista" # https://tinyurl.com/ymeh4c9j#lo_identifier
+lo_implementation_name = "LibrePythonista" # https://tinyurl.com/ymeh4c9j#lo_implementation_name
+display_name = "LibrePythonista" # https://tinyurl.com/ymeh4c9j#display_name
+description = "Extension for adding Python inside of LibreOffice Calc" # https://tinyurl.com/ymeh4c9j#description
 publisher = "AmourSpirit" # https://tinyurl.com/ymeh4c9j#publisher
 publisher_url = "https://github.com/Amourspirit/python_libreoffice_ext" # https://tinyurl.com/ymeh4c9j#publisher_url
 update_url_xml = "https://raw.githubusercontent.com/Amourspirit/python_libreoffice_ext/main/___dist_dir___/___update_file___" # https://tinyurl.com/ymeh4c9j#update_url_xml
 update_url_oxt = "https://raw.githubusercontent.com/Amourspirit/python_libreoffice_ext/main/___dist_dir___/___oxt_name___.oxt" # https://tinyurl.com/ymeh4c9j#update_url_oxt
 url_pip = 'https://bootstrap.pypa.io/get-pip.py' # https://tinyurl.com/ymeh4c9j#url_pip
 # set log_file to "" to disable logging
-log_file = "libreoffice_py_install.log" # https://tinyurl.com/ymeh4c9j#log_file
-log_name = "LibreOffice Py Installer" # https://tinyurl.com/ymeh4c9j#log_name
-log_level = "DEBUG" # NONE, DEBUG, INFO, WARNING, ERROR, CRITICAL https://tinyurl.com/ymeh4c9j#log_level
-log_format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s" # https://tinyurl.com/ymeh4c9j#log_format
-log_add_console = false # should be false for production # https://tinyurl.com/ymeh4c9j#log_add_console
-lo_pip = "libreoffice_py" # https://tinyurl.com/ymeh4c9j#lo_pip
+log_file = "libre_pythonista.log" # https://tinyurl.com/ymeh4c9j#log_file
+log_name = "LibrePythonista Installer" # https://tinyurl.com/ymeh4c9j#log_name
+log_level = "INFO" # NONE, DEBUG, INFO, WARNING, ERROR, CRITICAL https://tinyurl.com/ymeh4c9j#log_level
+log_format = "%(asctime)s - %(levelname)s - %(name)s: %(message)s" # https://tinyurl.com/ymeh4c9j#log_format
+# log_format = "%(asctime)s - %(levelname)s - %(indent_str)s%(name)s: %(message)s"
+log_add_console = true # should be false for production # https://tinyurl.com/ymeh4c9j#log_add_console
+lo_pip = "libre_pythonista" # https://tinyurl.com/ymeh4c9j#lo_pip
 platform = "all" # https://tinyurl.com/ymeh4c9j#platform
 startup_event = "OnStartApp" # OnStartApp or onFirstVisibleTask https://tinyurl.com/ymeh4c9j#startup_event
 show_progress = true # https://tinyurl.com/ymeh4c9j#show_progress
 delay_startup = true # determines if installing waits fo the window to load before installing https://tinyurl.com/ymeh4c9j#delay_startup
+float_dialog_error = "dialogs/log_dock.xdl"
+float_dialog_error_num = "9809"
 
 [tool.oxt.requirements]
 # https://tinyurl.com/ymeh4c9j#tooloxtrequirements
 # https://python-poetry.org/docs/dependency-specification/
-typing-extensions = ">=4.11.0"
+typing-extensions = ">=4.12.2"
 verr = ">=1.1.2"
 pandas = ">=2"
 odfpy = ">=1.4"
-ooo-dev-tools = ">=0.42.1"
+ooo-dev-tools = ">=0.47.13"
 matplotlib = ">=3.7.5"
+seaborn = ">=0.13"
+sortedcontainers = ">=2.4.0"
 
 [tool.oxt.isolate]
 # https://tinyurl.com/ymeh4c9j#tooloxtisolate
-windows = ["pandas", "matplotlib"]
+windows = ["pandas", "matplotlib", "seaborn"]
 
 [tool.oxt.preinstall.pure]
 # https://tinyurl.com/ymeh4c9j#tooloxtpreinstallpure
@@ -89,35 +113,64 @@ pt = "Modelo para criar extensões baseadas em pip para o LibreOffice"
 es = "Plantilla para crear extensiones basadas en pip para LibreOffice"
 
 
+[tool.oxt.bz2.32_bit]
+"3.8" = { url = "https://www.python.org/ftp/python/3.8.10/python-3.8.10-embed-win32.zip", md5="659adf421e90fba0f56a9631f79e70fb" }
+"3.9" = { url = "https://www.python.org/ftp/python/3.9.13/python-3.9.13-embed-win32.zip", md5="fec0bc06857502a56dd1aeaea6488ef8" }
+"3.10" = { url = "https://www.python.org/ftp/python/3.10.11/python-3.10.11-embed-win32.zip", md5="fee70dae06c25c60cbe825d6a1bfda57" }
+"3.11" = { url = "https://www.python.org/ftp/python/3.11.6/python-3.11.6-embed-win32.zip", md5="d035d12d72e2d62b6e5219ea8f3bda39" }
+"3.12" = { url = "https://www.python.org/ftp/python/3.12.0/python-3.12.0rc3-embed-win32.zip", md5="b6ed11598c929af946a110ca4db0d95c" }
+
+[tool.oxt.bz2.64_bit]
+"3.8" = { url = "https://www.python.org/ftp/python/3.8.10/python-3.8.10-embed-amd64.zip", md5="3acb1d7d9bde5a79f840167b166bb633" }
+"3.9" = { url = "https://www.python.org/ftp/python/3.9.13/python-3.9.13-embed-amd64.zip", md5="57731cf80b1c429a0be7133266d7d7cf" }
+"3.10" = { url = "https://www.python.org/ftp/python/3.10.11/python-3.10.11-embed-amd64.zip", md5="f1c0538b060e03cbb697ab3581cb73bc" }
+"3.11" = { url = "https://www.python.org/ftp/python/3.11.6/python-3.11.6-embed-amd64.zip", md5="ff5f34b8d2504c49fc94ffc29998b8a0" }
+"3.12" = { url = "https://www.python.org/ftp/python/3.12.0/python-3.12.0rc3-embed-arm64.zip", md5="728cbbfd0d5fc485233e1aba7884a773" }
+
 [tool.poetry]
-name = "LibreOffice-Python"
-version = "0.1.0"
+name = "LibrePythonista"
+version = "0.1.1"
 description = "Python For LibreOffice Calc"
 authors = [":Barry-Thomas-Paul: Moss <4193389+Amourspirit@users.noreply.github.com>"]
-license = "MIT"
+license = "Apache"
 readme = "README.md"
 packages = [{ include = "src" }]
 
 [tool.poetry.dependencies]
 python = "^3.8"
-ooouno = "^2.1.2"
 toml = "^0.10.2"
-typing-extensions = ">=4.11.0"
-
+typing-extensions = ">=4.12.2"
+ooo-dev-tools = ">=0.47.13"
+sortedcontainers = ">=2.4.0"
+oooenv = ">=0.2.4"
 
 [tool.poetry.group.dev.dependencies]
 types-scriptforge = ">=2.0.1"
 pytest = "^7.4.0"
 pytest-dotenv = "^0.5.2"
-black = "^23.7.0"
+black = "^24.8.0"
 oooscript = "^1.1.3"
-oooenv = "^0.2.2"
 lxml = "^4.9.3"
-ooo-dev-tools = ">=0.42.1"
+sortedcontainers-stubs = "^2.4.2"
+debuggy = "^3.0.1"
+
+
+# [tool.poetry.group.container.dependencies]
+# pandas = ">=2.0.3"
+# matplotlib = ">=3.7.5"
+
+[tool.poetry.group.linux.dependencies]
+pandas = ">=2.0.3"
+matplotlib = ">=3.7.5"
+
+[tool.poetry.group.windows.dependencies]
+pandas = ">=2"
+matplotlib = ">=3.7.5"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+# build-backend="setuptools.build_meta"
 
 
 [tool.pylint.'MESSAGES CONTROL']

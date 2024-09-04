@@ -1,9 +1,148 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<oor:component-data 
- xmlns:oor="http://openoffice.org/2001/registry"
- xmlns:xs="http://www.w3.org/2001/XMLSchema"
- oor:name="Addons"
- oor:package="org.openoffice.Office">
+<oor:component-data
+	xmlns:oor="http://openoffice.org/2001/registry"
+	xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	oor:name="Addons"
+	oor:package="org.openoffice.Office">
 	<node oor:name="AddonUI">
+		<node oor:name="Images">
+			<node oor:name="___lo_identifier___.___lo_implementation_name___.img_code" oor:op="replace">
+				<prop oor:name="URL" oor:type="xs:string">
+					<value>service:___lo_identifier___.impl?pyc_formula_with_dependent</value>
+				</prop>
+				<node oor:name="UserDefinedImages">
+					<prop oor:name="ImageSmallURL">
+						<value>%origin%/images/code_16.png</value>
+					</prop>
+					<prop oor:name="ImageBigURL">
+						<value>%origin%/images/code_26.png</value>
+					</prop>
+				</node>
+			</node>
+			<node oor:name="___lo_identifier___.___lo_implementation_name___.img_log"
+				oor:op="replace">
+				<prop oor:name="URL" oor:type="xs:string">
+					<value>service:___lo_identifier___.impl?log_window</value>
+				</prop>
+				<node oor:name="UserDefinedImages">
+					<prop oor:name="ImageSmallURL">
+						<value>%origin%/images/log_16.png</value>
+					</prop>
+					<prop oor:name="ImageBigURL">
+						<value>%origin%/images/log_26.png</value>
+					</prop>
+				</node>
+			</node>
+		</node>
+		<node oor:name="OfficeMenuBar">
+			<node oor:name="___lo_identifier___.___lo_implementation_name___.calc.menu"
+				oor:op="replace">
+				<prop oor:name="Title" oor:type="xs:string">
+					<value />
+					<value xml:lang="en-US">~LibrePy</value>
+					<value xml:lang="fr">~LibrePy</value>
+				</prop>
+				<prop oor:name="Context" oor:type="xs:string">
+					<value>com.sun.star.sheet.SpreadsheetDocument</value>
+				</prop>
+				<node oor:name="Submenu">
+					<node oor:name="m001"
+						oor:op="replace">
+						<prop oor:name="URL" oor:type="xs:string">
+							<value>service:___lo_identifier___.impl?pyc_formula_with_dependent</value>
+						</prop>
+						<prop oor:name="Title" oor:type="xs:string">
+							<value>Insert Python</value>
+						</prop>
+						<prop oor:name="Target" oor:type="xs:string">
+							<value>_self</value>
+						</prop>
+						<!-- <prop oor:name="ImageIdentifier" oor:type="xs:string">
+							<value>%origin%/images/code</value>
+						</prop> -->
+					</node>
+					<node oor:name="m003"
+						oor:op="replace">
+						<prop oor:name="URL" oor:type="xs:string">
+							<value>private:separator</value>
+						</prop>
+					</node>
+					<!-- <node oor:name="m003"
+						oor:op="replace">
+						<prop oor:name="URL" oor:type="xs:string">
+							<value>service:___lo_identifier___.Switcher</value>
+						</prop>
+						<prop oor:name="Title" oor:type="xs:string">
+							<value>Toggle Log</value>
+						</prop>
+						<prop oor:name="Target" oor:type="xs:string">
+							<value>_self</value>
+						</prop>
+					</node>
+					<node oor:name="m004"
+						oor:op="replace">
+						<prop oor:name="URL" oor:type="xs:string">
+							<value>service:___lo_identifier___.LogViewLoader</value>
+						</prop>
+						<prop oor:name="Title" oor:type="xs:string">
+							<value>LogViewLoader</value>
+						</prop>
+						<prop oor:name="Target" oor:type="xs:string">
+							<value>_self</value>
+						</prop>
+					</node> -->
+					<node oor:name="m003"
+						oor:op="replace">
+						<prop oor:name="URL" oor:type="xs:string">
+							<!--
+							<value>.uno:libre_pythonista.calc.log_window&amp;in_thread=0</value> -->
+							<value>service:___lo_identifier___.impl?log_window</value>
+						</prop>
+						<prop oor:name="Title" oor:type="xs:string">
+							<value>Log Window</value>
+							<value xml:lang="en-US">Log Window</value>
+							<value xml:lang="fr">Fenêtre de journalisation</value>
+						</prop>
+						<prop oor:name="Target" oor:type="xs:string">
+							<value>_self</value>
+						</prop>
+					</node>
+					<node oor:name="m004"
+						oor:op="replace">
+						<prop oor:name="Context" oor:type="xs:string">
+							<value>com.sun.star.sheet.SpreadsheetDocument</value>
+						</prop>
+						<prop oor:name="URL" oor:type="xs:string">
+							<value>service:___lo_identifier___.impl?debug_dump_module_to_log</value>
+						</prop>
+						<prop oor:name="Title" oor:type="xs:string">
+							<value>Debug - Log Module</value>
+						</prop>
+						<prop oor:name="Target" oor:type="xs:string">
+							<value>_self</value>
+						</prop>
+					</node>
+					<node oor:name="m098"
+						oor:op="replace">
+						<prop oor:name="URL" oor:type="xs:string">
+							<value>private:separator</value>
+						</prop>
+					</node>
+					<node oor:name="m099" oor:op="replace">
+						<prop oor:name="URL" oor:type="xs:string">
+							<value>service:___lo_identifier___.impl?about</value>
+						</prop>
+						<prop oor:name="Title" oor:type="xs:string">
+							<value>About ___display_name___</value>
+							<value xml:lang="fr">À propos ___display_name___</value>
+							<value xml:lang="en-US">About ___display_name___</value>
+						</prop>
+						<prop oor:name="Target" oor:type="xs:string">
+							<value>_self</value>
+						</prop>
+					</node>
+				</node>
+			</node>
+		</node>
 	</node>
 </oor:component-data>

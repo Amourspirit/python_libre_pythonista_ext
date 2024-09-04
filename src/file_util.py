@@ -50,7 +50,7 @@ def mkdirp(self, dest_dir):
         Path(dest_dir).mkdir(parents=True, exist_ok=True)
 
 
-def find_files_matching_patterns(root_dir: str | Path, ext: Iterable[str]) -> List[str]:
+def find_files_matching_patterns(root_dir: str | Path, ext: Iterable[str], *files: str) -> List[str]:
     """
     Finds all files in the given directory and its subdirectories that match the patterns *.txt and *.xml.
     Returns a list of absolute file paths.
@@ -71,7 +71,7 @@ def find_files_matching_patterns(root_dir: str | Path, ext: Iterable[str]) -> Li
     return [
         str(file_path.absolute())
         for file_path in root_path.glob("**/*")
-        if file_path.is_file() and (file_path.suffix in extensions)
+        if file_path.is_file() and ((file_path.suffix in extensions) or (file_path.name in files))
     ]
 
 

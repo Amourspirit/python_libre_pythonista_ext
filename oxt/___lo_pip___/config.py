@@ -207,6 +207,17 @@ class Config(metaclass=Singleton):
         return self._basic_config
 
     @property
+    def author_names(self) -> List[str]:
+        """
+        Gets the list of author names.
+
+        The value for this property can be set in pyproject.toml (tool.poetry.authors)
+
+        This is the list of author names for the extension.
+        """
+        return self.basic_config.author_names
+
+    @property
     def delay_startup(self) -> bool:
         """
         Gets the flag indicating if the startup should be delayed.
@@ -514,6 +525,15 @@ class Config(metaclass=Singleton):
         return self._log_pip_installs
 
     @property
+    def log_indent(self) -> int:
+        """
+        Gets the amount of logging indent. ``0`` is no indent.
+
+        The value for this property can be set in pyproject.toml (tool.oxt.config.log_indent)
+        """
+        return self._basic_config.log_indent
+
+    @property
     def has_locals(self) -> bool:
         """
         Gets the flag indicating if the extension has local pip files to install.
@@ -566,6 +586,13 @@ class Config(metaclass=Singleton):
         return self.basic_config.uninstall_on_update
 
     @property
+    def unload_after_install(self) -> bool:
+        """
+        Gets the flag indicating if the extension installer should unload after installation.
+        """
+        return self.basic_config.unload_after_install
+
+    @property
     def window_timeout(self) -> int:
         """
         Gets the window timeout value.
@@ -596,6 +623,125 @@ class Config(metaclass=Singleton):
         """
         return self._basic_config.sym_link_cpython
 
+    @property
+    def run_imports(self) -> Set[str]:
+        """
+        Gets the set of imports that are required to run this extension.
+
+        The value for this property can be set in pyproject.toml (tool.oxt.isolate.run_imports)
+        """
+        return self._basic_config.run_imports
+
+    @property
+    def extension_version(self) -> str:
+        """
+        Gets extension version.
+
+        The value for this property can be set in pyproject.toml (tool.poetry.version)
+        """
+        return self._basic_config.extension_version
+
+    @property
+    def extension_license(self) -> str:
+        """
+        Gets extension license.
+
+        The value for this property can be set in pyproject.toml (tool.poetry.license)
+        """
+        return self._basic_config.extension_license
+
+    @property
+    def extension_display_name(self) -> str:
+        """
+        Gets extension display Name.
+
+        The value for this property can be set in pyproject.toml (tool.token.display_name)
+        """
+        return self._basic_config.extension_display_name
+
+    @property
+    def macro_lp_sheet_ctl_click(self) -> str:
+        """
+        Gets macro name of the sheet control click.
+
+        The value for this property can be set in pyproject.toml (tool.libre_pythonista.macro_lp_sheet_ctl_click)
+        """
+        return self._basic_config.macro_lp_sheet_ctl_click
+
+    @property
+    def macro_sheet_on_calculate(self) -> str:
+        """
+        Gets macro name of for the sheet OnCalculate event.
+
+        The value for this property can be set in pyproject.toml (tool.libre_pythonista.macro_sheet_on_calculate)
+        """
+        return self._basic_config.macro_sheet_on_calculate
+
+    @property
+    def oxt_name(self) -> str:
+        """
+        Gets the Otx name of the extension without the ``.otx`` extension.
+
+        The value for this property can be set in pyproject.toml (tool.oxt.token.oxt_name)
+        """
+        return self._basic_config.oxt_name
+
+    # region tool.libre_pythonista.config
+    @property
+    def cell_cp_prefix(self) -> str:
+        """
+        Gets the custom property prefix for cells.
+
+        The value for this property can be set in pyproject.toml (tool.libre_pythonista.config)
+        """
+        return self._basic_config.cell_cp_prefix
+
+    @property
+    def cell_cp_codename(self) -> str:
+        """
+        Gets the custom property code name for cells.
+
+        The value for this property can be set in pyproject.toml (tool.libre_pythonista.config)
+        """
+        return self._basic_config.cell_cp_codename
+
+    @property
+    def general_code_name(self) -> str:
+        """
+        Gets the General code name for the extension. This is a code safe name and can be use in var names.
+
+        The value for this property can be set in pyproject.toml (tool.libre_pythonista.config)
+        """
+        return self._basic_config.general_code_name
+
+    @property
+    def lp_default_log_format(self) -> str:
+        """
+        Gets the default log format for the extension.
+
+        The value for this property can be set in pyproject.toml (tool.libre_pythonista.config)
+        """
+        return self._basic_config.lp_default_log_format
+
+    @property
+    def py_script_sheet_ctl_click(self) -> str:
+        """
+        Gets python Script name including the ``.py`` extension.
+
+        The value for this property can be set in pyproject.toml (tool.libre_pythonista.py_script_sheet_ctl_click)
+        """
+        return self._basic_config.py_script_sheet_ctl_click
+
+    @property
+    def py_script_sheet_on_calculate(self) -> str:
+        """
+        Gets python Script name including the ``.py`` extension.
+
+        The value for this property can be set in pyproject.toml (tool.libre_pythonista.py_script_sheet_on_calculate)
+        """
+        return self._basic_config.py_script_sheet_on_calculate
+
+    # endregion tool.libre_pythonista.config
     # endregion Properties
 
 

@@ -29,6 +29,7 @@ class Config(metaclass=Singleton):
         self._ver_str = cast(str, cfg["tool"]["poetry"]["version"])
         self._license = cast(str, cfg["tool"]["poetry"]["license"])
         self._token_file_ext: Set[str] = set(cast(List, cfg_meta["token_file_ext"]))
+        self._token_files: Set[str] = set(cast(List, cfg_meta.get("tokes_files", [])))
         self._py_pkg_dir = cast(str, cfg_meta["py_pkg_dir"])
         self._zip_preinstall_pure = cast(bool, cfg_meta["zip_preinstall_pure"])
 
@@ -119,6 +120,11 @@ class Config(metaclass=Singleton):
     def token_file_ext(self) -> Set[str]:
         """The file extensions of token files."""
         return self._token_file_ext
+
+    @property
+    def token_files(self) -> Set[str]:
+        """The token files."""
+        return self._token_files
 
     @property
     def update_file(self) -> str:

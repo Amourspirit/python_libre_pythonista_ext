@@ -15,14 +15,14 @@
     <item oor:path="/org.openoffice.Office.Common/Misc">
         <prop oor:name="FilePickerPlacesNames" oor:op="fuse">
             <value>
-                <it>libreoffice_py_addon</it>
+                <it>python_libre_pythonista_ext</it>
             </value>
         </prop>
     </item>
     <item oor:path="/org.openoffice.Office.Common/Misc">
         <prop oor:name="FilePickerPlacesUrls" oor:op="fuse">
             <value>
-                <it>file:///workspace/libreoffice_py_addon</it>
+                <it>file:///workspace/python_libre_pythonista_ext</it>
             </value>
         </prop>
     </item>

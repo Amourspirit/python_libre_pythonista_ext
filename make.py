@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from __future__ import annotations
 import sys
+import datetime
 import argparse
 from src.build import Build
 from src.build_args import BuildArgs
@@ -28,11 +29,13 @@ def _args_action_build(args: argparse.Namespace) -> None:
             process_tokens=args.process_tokens,
             make_dist=args.make_dist,
             pre_install_pure_packages=args.process_pure,
+            compile_idl=args.compile_idl,
         )
     )
-    print("Processing...", end="", flush=True)
+    print("Building...", flush=True)
     builder.build()
-    print("Done!")
+    print(f'Build Finished {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}')
+    # print the date and time
 
 
 def _args_add_sub_build(parser: argparse.ArgumentParser) -> None:
@@ -62,6 +65,14 @@ def _args_add_sub_build(parser: argparse.ArgumentParser) -> None:
         help="Do not pre-install pure packages",
         action="store_false",
         dest="process_pure",
+        default=True,
+    )
+    parser.add_argument(
+        "-i",
+        "--no-idl",
+        help="Do not compile idl files",
+        action="store_false",
+        dest="compile_idl",
         default=True,
     )
     parser.add_argument(
