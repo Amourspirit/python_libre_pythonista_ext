@@ -1,5 +1,6 @@
 from __future__ import annotations
 from typing import Set, Dict, List, Any, cast
+import os
 from . import file_util
 import toml
 from pathlib import Path
@@ -28,12 +29,25 @@ class Config(metaclass=Singleton):
         self._ver_str = cast(str, cfg["tool"]["poetry"]["version"])
         self._license = cast(str, cfg["tool"]["poetry"]["license"])
         self._token_file_ext: Set[str] = set(cast(List, cfg_meta["token_file_ext"]))
+        self._token_files: Set[str] = set(cast(List, cfg_meta.get("tokes_files", [])))
         self._py_pkg_dir = cast(str, cfg_meta["py_pkg_dir"])
         self._zip_preinstall_pure = cast(bool, cfg_meta["zip_preinstall_pure"])
 
         self._default_locale = cast(List[str], cfg_meta["default_locale"])
         self._resource_dir_name = cast(str, cfg_meta["resource_dir_name"])
         self._resource_properties_prefix = cast(str, cfg_meta["resource_properties_prefix"])
+
+        self._oo_types_uno = ""
+        if "oo_types_uno" in cfg_meta:
+            self._oo_types_uno = cast(str, cfg_meta["oo_types_uno"])
+        if not self._oo_types_uno:
+            self._oo_types_uno = os.environ.get("OO_TYPES_UNO", "/usr/lib/libreoffice/program/types.rdb")
+
+        self._oo_types_office = ""
+        if "oo_types_office" in cfg_meta:
+            self._oo_types_office = cast(str, cfg_meta["oo_types_office"])
+        if not self._oo_types_office:
+            self._oo_types_office = os.environ.get("OO_TYPES_OFFICE", "/usr/lib/libreoffice/program/types/offapi.rdb")
 
         self._validate()
         self._has_locals = self._get_has_locals()
@@ -106,6 +120,11 @@ class Config(metaclass=Singleton):
     def token_file_ext(self) -> Set[str]:
         """The file extensions of token files."""
         return self._token_file_ext
+
+    @property
+    def token_files(self) -> Set[str]:
+        """The token files."""
+        return self._token_files
 
     @property
     def update_file(self) -> str:
@@ -181,5 +200,31 @@ class Config(metaclass=Singleton):
         This is the prefix for the resource properties.
         """
         return self._resource_properties_prefix
+
+    @property
+    def oo_types_uno(self) -> str:
+        """
+        Gets the path to the uno types file.
+
+        The value for this property can be set in pyproject.toml (tool.oxt.config.oo_types_uno)
+
+        This is the path to the uno types file.
+
+        If not set in pyproject.toml, the value will be read from the environment variable ``OO_TYPES_UNO``.
+        """
+        return self._oo_types_uno
+
+    @property
+    def oo_types_office(self) -> str:
+        """
+        Gets the path to the office types file.
+
+        The value for this property can be set in pyproject.toml (tool.oxt.config.oo_types_office)
+
+        This is the path to the office types file.
+
+        If not set in pyproject.toml, the value will be read from the environment variable ``OO_TYPES_OFFICE``.
+        """
+        return self._oo_types_office
 
     # endregion Properties

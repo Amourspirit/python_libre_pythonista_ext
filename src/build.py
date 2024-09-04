@@ -14,7 +14,10 @@ from .processing.locale.descriptions import Descriptions
 from .processing.locale.publisher import Publisher
 from .processing.locale.publisher_update import PublisherUpdate
 from .processing.locale.name import Name
+from .processing.bz2_process import BZ2Processor
 from .install.pre_install_pure import PreInstallPure
+from .processing.idl.idl_rdb import IdlRdb
+from .processing.idl.idl_manifest import IdlManifest
 
 
 class Build:
@@ -61,7 +64,10 @@ class Build:
         if self._args.pre_install_pure_packages:
             self._pre_install_pure_packages()
 
+        if self._args.compile_idl:
+            self._build_idl()
         self._write_xml()
+        self._process_bz2()
         self._ensure_default_resource()
 
         if self._args.make_dist:
@@ -83,6 +89,9 @@ class Build:
 
         publisher = Publisher()
         publisher.write()
+
+        idl_manifest = IdlManifest()
+        idl_manifest.write()
 
     def clean(self) -> None:
         """Cleans the project."""
@@ -114,7 +123,9 @@ class Build:
 
     def _process_tokens(self) -> None:
         """Processes the tokens in the dest files."""
-        files = file_util.find_files_matching_patterns(self._build_path, self._config.token_file_ext)
+        files = file_util.find_files_matching_patterns(
+            self._build_path, self._config.token_file_ext, *self._config.token_files
+        )
         for file in files:
             text = file_util.read_file(file)
             text = self.process_tokens(text)
@@ -132,6 +143,11 @@ class Build:
         config_file = self._build_path / token.get_token_value("lo_pip") / "config.json"
         json_config = JsonConfig()
         json_config.update_json_config(config_file)
+
+    def _process_bz2(self) -> None:
+        """Processes the bz2 files."""
+        bz2 = BZ2Processor()
+        bz2.process()
 
     def _copy_py_packages(self) -> None:
         """Copies the python packages to the build directory."""
@@ -197,6 +213,12 @@ class Build:
         file_util.zip_folder(folder=self._build_path, dest_dir=self._dist_path)
 
         os.rename(old_file, new_file)
+
+    def _build_idl(self) -> None:
+        """Builds the idl files."""
+        idl = IdlRdb()
+        if idl.has_files:
+            idl.compile()
 
     def _process_update(self) -> None:
         """Processes the update file."""

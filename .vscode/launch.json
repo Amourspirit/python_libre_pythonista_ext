@@ -31,5 +31,13 @@
             "console": "integratedTerminal",
             "justMyCode": false
         },
+        {
+            "name": "Debuggy",
+            "type": "python",
+            "request": "attach",
+            "connect": {
+                "port": 8550,
+            }
+        },
     ]
 }

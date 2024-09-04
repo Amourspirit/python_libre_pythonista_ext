@@ -1,0 +1,65 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<oor:component-data
+	xmlns:oor="http://openoffice.org/2001/registry"
+	xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	oor:name="Addons"
+	oor:package="org.openoffice.Office">
+	<node oor:name="AddonUI">
+		<node oor:name="OfficeToolBar">
+			<!-- https://wiki.openoffice.org/wiki/Documentation/DevGuide/WritingUNO/AddOns/Toolbars -->
+			<node oor:name="___lo_identifier___.___lo_implementation_name___.toolbar"
+				oor:op="replace">
+				<prop oor:name="Title" oor:type="xs:string">
+					<value>Libre Pythonista Bar</value>
+					<value xml:lang="en-US">Libre Pythonista Bar</value>
+					<value xml:lang="it">Barra Libre Pythonista</value>
+					<value xml:lang="es">Barra Libre Pythonista</value>
+					<value xml:lang="fr">Barre Libre Pythonista</value>
+					<value xml:lang="de">Libre Pythonista Bar</value>
+				</prop>
+				<node oor:name="t01" oor:op="replace">
+					<prop oor:name="URL" oor:type="xs:string">
+						<value>service:___lo_identifier___.impl?pyc_formula_with_dependent</value>
+					</prop>
+					<prop oor:name="Title" oor:type="xs:string">
+						<value xml:lang="en-US">Insert Python</value>
+						<value xml:lang="it">Inserisci Python</value>
+						<value xml:lang="es">Insertar Python</value>
+						<value xml:lang="fr">Insérer Python</value>
+						<value xml:lang="de">Python einfügen</value>
+					</prop>
+					<prop oor:name="Target" oor:type="xs:string">
+						<value>_self</value>
+					</prop>
+					<prop oor:name="Context" oor:type="xs:string">
+						<value>com.sun.star.sheet.SpreadsheetDocument</value>
+					</prop>
+					<prop oor:name="ControlType" oor:type="xs:string">
+						<value>ImageButton</value>
+					</prop>
+				</node>
+				<node oor:name="t02" oor:op="replace">
+					<prop oor:name="URL" oor:type="xs:string">
+						<value>service:___lo_identifier___.impl?log_window</value>
+					</prop>
+					<prop oor:name="Title" oor:type="xs:string">
+						<value xml:lang="en-US">Log Window</value>
+						<value xml:lang="it">Finestra di Log</value>
+						<value xml:lang="es">Ventana de Log</value>
+						<value xml:lang="fr">Fenêtre de Log</value>
+						<value xml:lang="de">Log-Fenster</value>
+					</prop>
+					<prop oor:name="Target" oor:type="xs:string">
+						<value>_self</value>
+					</prop>
+					<prop oor:name="Context" oor:type="xs:string">
+						<value>com.sun.star.sheet.SpreadsheetDocument</value>
+					</prop>
+					<prop oor:name="ControlType" oor:type="xs:string">
+						<value>ImageButton</value>
+					</prop>
+				</node>
+			</node>
+		</node>
+	</node>
+</oor:component-data>

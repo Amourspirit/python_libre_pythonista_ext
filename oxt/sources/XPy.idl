@@ -1,0 +1,10 @@
+#include <com/sun/star/uno/XInterface.idl>
+ 
+module com { module github { module amourspirit { module extensions { module librepythonista {
+ 
+interface XPy: com::sun::star::uno::XInterface
+{
+    sequence< sequence< any > > pyc( [in] long sheetIdx, [in] string cAddress, [in] any extras);
+};
+ 
+}; }; }; }; };
