@@ -342,34 +342,44 @@ class DialogLog(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
         self._log.debug("Menu Selected")
         me = cast("MenuEvent", event.event_data)
         command = menu.get_command(me.MenuId)
-        self._log.debug(f"Menu Selected: {command}, Menu ID: {me.MenuId}")
+        self._log.debug(f"_on_menu_select() Menu Selected: {command}, Menu ID: {me.MenuId}")
         # self._write_line(f"Menu Selected: {command}, Menu ID: {me.MenuId}")
 
-        if command == ".uno:lp.rest_data":
-            result = MsgBox.msgbox(
-                title=self._rr.resolve_string("mbtitle006"),
-                msg=self._rr.resolve_string("mbmsg006"),
-                boxtype=MessageBoxType.QUERYBOX,
-                buttons=MessageBoxButtonsEnum.BUTTONS_YES_NO,
-            )
-            if result == MessageBoxResultsEnum.YES:
-                self.clear()
-            return
-        elif command == ".uno:lp.close":
-            result = MsgBox.msgbox(
-                title=self._rr.resolve_string("mbtitle007"),
-                msg=self._rr.resolve_string("mbmsg007"),
-                boxtype=MessageBoxType.QUERYBOX,
-                buttons=MessageBoxButtonsEnum.BUTTONS_YES_NO,
-            )
-            if result == MessageBoxResultsEnum.YES:
-                self._update_config()
-                self.dispose()
-        elif command == ".uno:lp.hide_window":
-            self.visible = False
-        elif command == ".uno:lp.log_settings":
-            LogOpt().show()
-            return
+        try:
+
+            if command == ".uno:lp.rest_data":
+                result = MsgBox.msgbox(
+                    title=self._rr.resolve_string("mbtitle006"),
+                    msg=self._rr.resolve_string("mbmsg006"),
+                    boxtype=MessageBoxType.QUERYBOX,
+                    buttons=MessageBoxButtonsEnum.BUTTONS_YES_NO,
+                )
+                if result == MessageBoxResultsEnum.YES:
+                    self.clear()
+                return
+            elif command == ".uno:lp.close":
+                self._log.debug("_on_menu_select() command Matched: .uno:lp.close")
+                result = MsgBox.msgbox(
+                    title=self._rr.resolve_string("mbtitle007"),
+                    msg=self._rr.resolve_string("mbmsg007"),
+                    boxtype=MessageBoxType.QUERYBOX,
+                    buttons=MessageBoxButtonsEnum.BUTTONS_YES_NO,
+                )
+                if result == MessageBoxResultsEnum.YES:
+                    self._log.debug("_on_menu_select() Close Confirmed")
+                    self._update_config()
+                    self._log.debug("_on_menu_select() Disposing")
+                    self.dispose()
+                    self._log.debug("_on_menu_select() Disposed")
+                else:
+                    self._log.debug("Close Cancelled")
+            elif command == ".uno:lp.hide_window":
+                self.visible = False
+            elif command == ".uno:lp.log_settings":
+                LogOpt().show()
+                return
+        except Exception:
+            self._log.exception("Error in _on_menu_select")
         return
 
     def _on_log_event(self, src: Any, event: EventArgs) -> None:
@@ -530,7 +540,9 @@ class DialogLog(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
             buttons=MessageBoxButtonsEnum.BUTTONS_YES_NO,
         )
         if result != MessageBoxResultsEnum.YES:
+            self._log.debug(f"windowClosing() Close Cancelled. Result: {result}")
             return
+        self._log.debug("windowClosing() Close Confirmed")
 
         if not self._closing_triggered:
             self._closing_triggered = True
@@ -645,7 +657,7 @@ def create_window_name(win_name: str):
 
 
 def on_menu_select(src: Any, event: EventArgs, menu: PopupMenu) -> None:
-    print("Menu Selected")
+    # print("Menu Selected")
     me = cast("MenuEvent", event.event_data)
     command = menu.get_command(me.MenuId)
     if command:

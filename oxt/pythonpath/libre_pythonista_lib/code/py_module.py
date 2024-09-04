@@ -110,7 +110,7 @@ class PyModule:
         try:
             code = str_util.remove_comments(code)
             code = str_util.clean_string(code)
-            self._log.debug(f"Cleaned code. \n{code}")
+            # self._log.debug(f"Cleaned code. \n{code}")
         except Exception:
             self._log.exception(f"Error cleaning code: {code}")
             raise

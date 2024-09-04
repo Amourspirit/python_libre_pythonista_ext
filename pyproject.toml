@@ -16,7 +16,7 @@ py_script_sheet_on_calculate = "share_event.py"
 [tool.oxt.config]
 auto_install_in_site_packages = true # https://tinyurl.com/ymeh4c9j#auto_install_in_site_packages
 build_dir = "build" # https://tinyurl.com/ymeh4c9j#build_dir
-dist_dir = "tmp_dist" # "dist" https://tinyurl.com/ymeh4c9j#dist_dir should be changed to someting like dist, tmp_dist is not included in git
+dist_dir = "dist" # "dist" https://tinyurl.com/ymeh4c9j#dist_dir should be changed to someting like dist, tmp_dist is not included in git
 install_wheel = true # https://tinyurl.com/ymeh4c9j#install_wheel
 oxt_name = "LibrePythonista" # https://tinyurl.com/ymeh4c9j#oxt_name
 py_pkg_dir = "py_pkgs" # https://tinyurl.com/ymeh4c9j#py_pkg_dir
@@ -59,7 +59,7 @@ url_pip = 'https://bootstrap.pypa.io/get-pip.py' # https://tinyurl.com/ymeh4c9j#
 # set log_file to "" to disable logging
 log_file = "libre_pythonista.log" # https://tinyurl.com/ymeh4c9j#log_file
 log_name = "LibrePythonista Installer" # https://tinyurl.com/ymeh4c9j#log_name
-log_level = "DEBUG" # NONE, DEBUG, INFO, WARNING, ERROR, CRITICAL https://tinyurl.com/ymeh4c9j#log_level
+log_level = "INFO" # NONE, DEBUG, INFO, WARNING, ERROR, CRITICAL https://tinyurl.com/ymeh4c9j#log_level
 log_format = "%(asctime)s - %(levelname)s - %(name)s: %(message)s" # https://tinyurl.com/ymeh4c9j#log_format
 # log_format = "%(asctime)s - %(levelname)s - %(indent_str)s%(name)s: %(message)s"
 log_add_console = true # should be false for production # https://tinyurl.com/ymeh4c9j#log_add_console
@@ -78,7 +78,7 @@ typing-extensions = ">=4.12.2"
 verr = ">=1.1.2"
 pandas = ">=2"
 odfpy = ">=1.4"
-ooo-dev-tools = ">=0.47.12"
+ooo-dev-tools = ">=0.47.13"
 matplotlib = ">=3.7.5"
 seaborn = ">=0.13"
 sortedcontainers = ">=2.4.0"
@@ -129,7 +129,7 @@ es = "Plantilla para crear extensiones basadas en pip para LibreOffice"
 
 [tool.poetry]
 name = "LibrePythonista"
-version = "0.0.23"
+version = "0.1.1"
 description = "Python For LibreOffice Calc"
 authors = [":Barry-Thomas-Paul: Moss <4193389+Amourspirit@users.noreply.github.com>"]
 license = "Apache"
@@ -138,10 +138,9 @@ packages = [{ include = "src" }]
 
 [tool.poetry.dependencies]
 python = "^3.8"
-ooouno = "^2.1.2"
 toml = "^0.10.2"
 typing-extensions = ">=4.12.2"
-ooo-dev-tools = ">=0.47.12"
+ooo-dev-tools = ">=0.47.13"
 sortedcontainers = ">=2.4.0"
 oooenv = ">=0.2.4"
 
@@ -149,7 +148,7 @@ oooenv = ">=0.2.4"
 types-scriptforge = ">=2.0.1"
 pytest = "^7.4.0"
 pytest-dotenv = "^0.5.2"
-black = "^23.7.0"
+black = "^24.8.0"
 oooscript = "^1.1.3"
 lxml = "^4.9.3"
 sortedcontainers-stubs = "^2.4.2"

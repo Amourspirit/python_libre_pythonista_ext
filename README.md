@@ -1,64 +1,71 @@
-# Python LibreOffice Pip Extension Template
+<p align="center"><img src="https://github.com/user-attachments/assets/4535b1a5-7a18-4a76-b4ba-61f688455bc0" alt="logo"></p>
 
-## Introduction
+# LibrePythonista
 
-This project is intended to be a template for developers of LibreOffice Extensions.
+[![License](https://img.shields.io/badge/License-Apache2-blue.svg)](https://opensource.org/license/apache-2-0)
 
-Need to create a quick cross platform extension that installs python packages requirements? If so you found the correct template.
 
-If you only need to create an extension that installs one or more Python Packages into LibreOffice the no code experience is needed. Simply make a repo from the current template, change configuration, build and your done. A new LibreOffice extension has been generated that will install your python packages when it is installed into LibreOffice. See the [Quick Start](https://github.com/Amourspirit/python-libreoffice-pip/wiki/Quick-Start) in the Wiki.
+LibrePythonista is an extension for LibreOffice Calc. The extension allows Interactive Python code to be run directly in a spreadsheet.
 
-This project is also well suited for developers who want to create a LibreOffice Extension using Python and need to Pip install one or more requirements.
+LibrePythonista is currently in beta and is subject to change based on feedback. 
 
-All the tools needed to develop, debug, and test are included in this template.
-A developer can use this template to create a LibreOffice Extension that uses Python and Pip install.
+LibrePythonista is free and open source software so there are no fees to start using it.
 
-The extensions created with this template can be installed cross platform.
+LibrePythonista bring the power of [Pandas](https://pandas.pydata.org/pandas-docs/stable/index.html), [Matplotlib](https://matplotlib.org/stable/) and much more to LibreOffice Calc.
 
-Tested on the following:
+All  python code is executes on your local computer. This can alleviate many concerns around data privacy as your data
 
-- Windows
-- Windows LibreOffice Portable
-- Mac
-- Linux sudo installed LibreOffice
-- Linux Snap installed LibreOffice
-- Linux Flatpak installed LibreOffice
-- Linux AppImage LibreOffice
+Using LibrePythonista is it possible to create Data frame's, Series, custom Graphs an much more directly in a spreadsheet.
 
-For more information see the [Wiki](https://github.com/Amourspirit/python-libreoffice-pip/wiki)
+LibrePythonista is built using [OOO Development Tools](https://python-ooo-dev-tools.readthedocs.io/en/latest/index.html) which removes many barriers when working with the LibreOffice API.
 
-For a working example see the following extensions:
+## What is LibrePythonista?
 
-- [OOO Development Tools Extension](https://github.com/Amourspirit/libreoffice_ooodev_ext#readme)
-- [OooDev GUI Automation for Windows](https://github.com/Amourspirit/ooodev-gui-win-ext#readme)
+LibrePythonista brings the power of Python analytics into LibreOffice Calc. Use it to process data in Calc with Python code. You type Python directly into a cell via the code edit window, the Python calculations runs locally, and your results are displayed in the sheet.
 
-<details>
-<summary>Original Template Readme</summary>
+![500](https://github.com/user-attachments/assets/0493c94f-4cbf-4262-bc2f-f28ed4082906)
 
-# Live LibreOffice Python
+LibrePythonista comes with a core set of Python libraries. Use Python libraries to simplify your data analysis, find patterns and hidden insights, and visualize your data with plots.
 
-Live LibreOffice Python is a complete development environment for creating, debugging and testing python scripts. It leverages the power of [VS Code] and has [LibreOffice] baked in that can be access via the internal web browser or via your local web browser which allows for a much more pleasant and consistent debugging experience.
 
-With the power of [GitHub Codespaces](https://docs.github.com/en/codespaces/overview) it is possible to have [VS Code] and [LibreOffice] running together. One big benefit is a isolated and [VS Code]/[LibreOffice] environment.
+## Start using Python
 
-Locally a project based upon this template can also be run in a [Development Container](https://code.visualstudio.com/remote/advancedcontainers/overview).
+To begin using LibrePythonista, select a cell and on the **LibrePy** menu, **Insert Python**. This tells Calc that you want to write a Python formula in the selected cell.
 
-It is also possible to use [GitHub CLI/CD] to create a workflow that test your project with the presents of LibreOffice. This template has a working example of testing using [GitHub CLI/CD].
+![menu_001](https://github.com/user-attachments/assets/4b55f17d-daf1-4cf0-a9a7-ecae8bcfd0ef)
 
-There are Built in [Tools](https://github.com/Amourspirit/live-libreoffice-python/wiki/Tools) such as [gitget](https://github.com/Amourspirit/live-libreoffice-python/wiki/Tools#gitget) that allow you to quickly add examples to your project from sources such as [LibreOffice Python UNO Examples]. Also there is a built in [console](https://github.com/Amourspirit/live-libreoffice-python/wiki/Console) to help debug the [API](https://api.libreoffice.org/).
 
-This templated can also be leveraged to demonstrate working examples of code.
+Alternatively insert using shortcut `Shift+Ctl+Alt+L` or by clicking on the toolbar button.
 
-[![image](https://github.com/Amourspirit/live-libreoffice-python/assets/4193389/35758c26-63b7-48f9-99c0-84dd19b26a8f)](https://github.com/Amourspirit/live-libreoffice-python/assets/4193389/35758c26-63b7-48f9-99c0-84dd19b26a8f)
+![toolbar_py_c](https://github.com/user-attachments/assets/7db6b9e1-617a-4ed7-9f42-af32d3c4f115)
 
-## Getting Started
 
-See the [Getting Started](https://github.com/Amourspirit/live-libreoffice-python/wiki/Getting-Started) in the [Wiki](https://github.com/Amourspirit/live-libreoffice-python/wiki).
+LibrePythonista uses the custom Python function `lp()` to interface between Calc and Python. The `lp()` function accepts Calc objects like ranges, named ranges, and data ranges.
+You can also directly type references into a Python cell with the `lp()` function. For example, to reference cell **A1** use `lp("A1")` and for the range **B1:C5** use `lp("B1:C5")`. For a named range with headers named **MyRange**, use `lp("MyRange", headers=True)`.
 
-[VS Code]:https://code.visualstudio.com/
+If the range or named range has empty rows at the end of the range then `collapse=True` can be used. The `collapse` parameter instructs the Data frame to exclude empty rows at the end of the named range. This way when new data is added to the end of the range the Data frame will automatically recalculate to include the new rows.
 
-[LibreOffice]:https://www.libreoffice.org/
-[GitHub CLI/CD]:https://resources.github.com/ci-cd/
-[LibreOffice Python UNO Examples]:https://github.com/Amourspirit/python-ooouno-ex
+Example named
+`df = lp("A2:D81", headers=True, collapse=True)`
 
-</details>
+
+The following image shows a Python in Calc calculation adding the values of cell **A1** and **B1**, with the Python result returned in cell **C1**.
+
+![image](https://github.com/user-attachments/assets/2bd490e0-6f4b-4205-a71d-9d644212695b)
+
+## Code Editing
+
+When a cell contains Python code It can be edit by clicking the control and choosing Edit Code.
+
+![image](https://github.com/user-attachments/assets/f9d50085-d496-4f62-852f-cf98d514b5e8)
+
+Or Python cells and charts can right click and choose `Pythonista --> Edit Code`
+![image](https://github.com/user-attachments/assets/1b129b80-1558-42fe-b937-e4810f5be513)
+
+Image for the code editor for the example above.
+![tri_code](https://github.com/user-attachments/assets/a52c20f9-6536-437a-8ebd-8f997921b83f)
+
+
+## Other Resources
+
+- [LibrePythonista Channel](https://www.youtube.com/@LibrePythonista)
