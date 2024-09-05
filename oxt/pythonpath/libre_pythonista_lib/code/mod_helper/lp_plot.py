@@ -14,6 +14,8 @@ if TYPE_CHECKING:
 else:
     from libre_pythonista_lib.log.log_inst import LogInst
 
+# _ORIG_PLT_SHOW = plt.show
+
 
 def _lp_plt_show_prefix_function(function: Any, pre_function: Any):
     @functools.wraps(function)
@@ -40,11 +42,21 @@ def _custom_plt_show(*args, **kwargs):
     pth = Lo.tmp_dir / s
     if log.is_debug:
         log.debug(f"Saving Plot to {pth}")
+
     plt.savefig(str(pth), format="svg")
+    try:
+        # https://stackoverflow.com/questions/9622163/save-plot-to-image-file-instead-of-displaying-it
+        # Is is important to call plt.close() to clear the plot after saving it.
+        # This fixes the issue of the plot going for area to line still being outputted as area.
+        plt.close()
+        log.debug("Closed plot")
+    except Exception as e:
+        log.exception(f"Error in _custom_plt_show with plt.close: {e}")
     if log.is_debug:
         log.debug(f"Plot saved to {pth}")
     dd = DotDict(data=str(pth), data_type="file", file_kind="image", file_ext="svg", details="figure")
     LAST_LP_RESULT = dd
+
     log.debug("_custom_plt_show Done")
 
 
