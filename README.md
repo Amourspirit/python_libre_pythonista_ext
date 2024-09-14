@@ -27,6 +27,12 @@ LibrePythonista brings the power of Python analytics into LibreOffice Calc. Use 
 
 LibrePythonista comes with a core set of Python libraries. Use Python libraries to simplify your data analysis, find patterns and hidden insights, and visualize your data with plots.
 
+## Watch the Introduction Video
+
+<div align="center">
+  <iframe width="560" height="315" src="https://www.youtube.com/embed/AQLuSNHhUY4" frameborder="0" allowfullscreen></iframe>
+</div>
+
 
 ## Start using Python
 
