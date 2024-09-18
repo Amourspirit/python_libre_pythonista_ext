@@ -22,7 +22,7 @@ RUN apk update \
     openssh-client-default \
     openssh\
     zip
-#    libreoffice-sdk
+#   libreoffice-sdk
 
 # https://pkgs.alpinelinux.org/package/edge/community/x86_64/libreoffice-sdk
 
@@ -58,10 +58,10 @@ RUN sed -i "s/\/bin\/ash/\/bin\/bash/g" /etc/passwd \
     && sed -i "s/--writer/--writer --accept=\"socket,host=localhost,port=${CODE_PORT},tcpNoDelay=1;urp;StarOffice.ServiceManager\"/g" /usr/lib/libreoffice/share/xdg/writer.desktop
 
 # Codespaces mounts its own /tmp directory, so we need to create a new one
-COPY ./.devcontainer/res $CONFIG_DIR/.tmp/res
-COPY ./.devcontainer/root/rc.sh /etc/profile.d/10bashrc.sh
+COPY ../.devcontainer/res $CONFIG_DIR/.tmp/res
+COPY ../.devcontainer/root/rc.sh /etc/profile.d/10bashrc.sh
 COPY ./.devcontainer/root/bashrc.sh $CONFIG_DIR/.bashrc
-COPY ./.devcontainer/root/bash_custom.sh $CONFIG_DIR/.bashrc_custom
+COPY ../.devcontainer/root/bash_custom.sh $CONFIG_DIR/.bashrc_custom
 
 
 # ENV HOME=$CONFIG_DIR \
@@ -88,16 +88,17 @@ RUN MY_PY_VER=$(python -c "import sys; major, minor = sys.version_info[:2]; prin
     && if [ -f "/usr/lib/python$MY_PY_VER/EXTERNALLY-MANAGED" ]; then \
     rm "/usr/lib/python$MY_PY_VER/EXTERNALLY-MANAGED"; fi
 
+RUN  /usr/bin/pip install "setuptools==75.1.0"
 # install poetry and requirements.txt using pip
 RUN  /usr/bin/pip install "poetry==$POETRY_VERSION" \
     && if [ -f "$CONFIG_DIR/.tmp/res/req/requirements.txt" ]; then \
     /usr/bin/pip install --no-cache-dir -r "$CONFIG_DIR/.tmp/res/req/requirements.txt"; fi
 
 WORKDIR /workspace/python_libre_pythonista_ext
-COPY ./*.toml ./*.lock ./
+COPY ../*.toml ../*.lock ./
 # && poetry install $(test "$RUN_ENV" == production && echo "--no-dev") --no-interaction --no-ansi --no-root --no-cache\
 RUN poetry config virtualenvs.in-project true \
-    && poetry install --no-interaction --no-ansi --no-root --no-cache --no-dev \
+    && poetry install --no-interaction --no-ansi --no-root --no-cache --without linux,windows \
     && sed -i "s/include-system-site-packages = false/include-system-site-packages = false/g" /workspace/python_libre_pythonista_ext/.venv/pyvenv.cfg
 
 # Many of these environment variable are required for python and LibreOffice imports to work correctly.
@@ -147,8 +148,8 @@ RUN MY_PY_VER=$(python -c "import sys; major, minor = sys.version_info[:2]; prin
 WORKDIR /workspace/python_libre_pythonista_ext
 
 # EXPOSE $CODE_PORT
-COPY ./.devcontainer/root/defaults /defaults
-COPY ./.devcontainer/startup.sh /usr/local/bin/startup.sh
+COPY ../.devcontainer/root/defaults /defaults
+COPY ../.devcontainer/startup.sh /usr/local/bin/startup.sh
 
 # Moved extension install to to here 
 RUN chmod -R +x "$CONFIG_DIR/.tmp/res/scripts" \

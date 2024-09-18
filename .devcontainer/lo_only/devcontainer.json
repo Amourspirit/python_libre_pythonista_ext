@@ -1,12 +1,12 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
 // README at: https://github.com/devcontainers/templates/tree/main/src/ubuntu
 {
-	"name": "LibreOffice Python App",
+	"name": "LibrePythonista",
 	"hostRequirements": {
 		"cpus": 4
 	},
 	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-	"dockerComposeFile": "docker-compose.yml",
+	"dockerComposeFile": "./docker-compose.yml",
 	"service": "python_libre_pythonista_ext",
 	"workspaceFolder": "/workspace/python_libre_pythonista_ext",
 	// Features to add to the dev container. More info: https://containers.dev/features.
