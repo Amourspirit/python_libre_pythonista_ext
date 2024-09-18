@@ -88,16 +88,17 @@ RUN MY_PY_VER=$(python -c "import sys; major, minor = sys.version_info[:2]; prin
     && if [ -f "/usr/lib/python$MY_PY_VER/EXTERNALLY-MANAGED" ]; then \
     rm "/usr/lib/python$MY_PY_VER/EXTERNALLY-MANAGED"; fi
 
+RUN  /usr/bin/pip install "setuptools==75.1.0"
 # install poetry and requirements.txt using pip
 RUN  /usr/bin/pip install "poetry==$POETRY_VERSION" \
     && if [ -f "$CONFIG_DIR/.tmp/res/req/requirements.txt" ]; then \
     /usr/bin/pip install --no-cache-dir -r "$CONFIG_DIR/.tmp/res/req/requirements.txt"; fi
 
 WORKDIR /workspace/python_libre_pythonista_ext
-COPY ../*.toml ../*.lock ../
+COPY ../*.toml ../*.lock ./
 # && poetry install $(test "$RUN_ENV" == production && echo "--no-dev") --no-interaction --no-ansi --no-root --no-cache\
 RUN poetry config virtualenvs.in-project true \
-    && poetry install --no-interaction --no-ansi --no-root --no-cache --no-dev \
+    && poetry install --no-interaction --no-ansi --no-root --no-cache --without linux,windows \
     && sed -i "s/include-system-site-packages = false/include-system-site-packages = false/g" /workspace/python_libre_pythonista_ext/.venv/pyvenv.cfg
 
 # Many of these environment variable are required for python and LibreOffice imports to work correctly.
