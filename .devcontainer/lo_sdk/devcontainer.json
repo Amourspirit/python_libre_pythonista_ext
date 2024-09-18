@@ -1,19 +1,19 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
 // README at: https://github.com/devcontainers/templates/tree/main/src/ubuntu
 {
-	"name": "LibreOffice Python App",
+	"name": "LibrePythonistaSDK",
 	"hostRequirements": {
 		"cpus": 4
 	},
 	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-	"dockerComposeFile": "docker-compose.yml",
-	"service": "python_libre_pythonista_ext",
+	"dockerComposeFile": "./docker-compose.yml",
+	"service": "python_libre_pythonista_ext_sdk",
 	"workspaceFolder": "/workspace/python_libre_pythonista_ext",
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	// "features": {},
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	"forwardPorts": [3100, 3101],
+	"forwardPorts": [3102, 3103],
 	"portsAttributes": {
 		"2002": {
 			"onAutoForward": "silent",
@@ -52,7 +52,7 @@
 						]
 					}
 				},
-				"vs-browser.url": "http://localhost:3100"
+				"vs-browser.url": "http://localhost:3102"
 			}
 		}
 	},
