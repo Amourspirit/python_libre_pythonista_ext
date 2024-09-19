@@ -33,6 +33,6 @@ if [ "$CODESPACES" == "true" ]; then
 fi
 
 mkdir -p "$CONFIG_DIR/.config/gtk-3.0"
-echo "file:///workspace/libreoffice_py_addon" > "$CONFIG_DIR/.config/gtk-3.0/bookmarks"
+echo "file:///workspace/python_libre_pythonista_ext" > "$CONFIG_DIR/.config/gtk-3.0/bookmarks"
 
 echo "Startup Success!!!"
