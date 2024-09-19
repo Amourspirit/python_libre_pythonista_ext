@@ -1,17 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<oor:items xmlns:oor="http://openoffice.org/2001/registry"
-    xmlns:xs="http://www.w3.org/2001/XMLSchema"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-    <item oor:path="/org.openoffice.Office.Canvas">
-        <prop oor:name="ForceSafeServiceImpl" oor:op="fuse">
-            <value>true</value>
-        </prop>
-    </item>
-    <item oor:path="/org.openoffice.Office.Common/Help">
-        <prop oor:name="BuiltInHelpNotInstalledPopUp" oor:op="fuse">
-            <value>false</value>
-        </prop>
-    </item>
+<oor:items xmlns:oor="http://openoffice.org/2001/registry" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <item oor:path="/org.openoffice.Office.Common/Misc">
         <prop oor:name="FilePickerPlacesNames" oor:op="fuse">
             <value>
@@ -38,17 +26,17 @@
     </item>
     <item oor:path="/org.openoffice.Office.Common/Misc">
         <prop oor:name="LastTipOfTheDayShown" oor:op="fuse">
-            <value>19536</value>
+            <value>19985</value>
         </prop>
     </item>
     <item oor:path="/org.openoffice.Office.Common/Misc">
         <prop oor:name="Persona" oor:op="fuse">
-            <value>default</value>
+            <value>no</value>
         </prop>
     </item>
     <item oor:path="/org.openoffice.Office.Common/Misc">
         <prop oor:name="PersonaSettings" oor:op="fuse">
-            <value>gray;Gray;gray/preview.png;gray/header.png;gray/footer.png;#000000;#ffffff</value>
+            <value></value>
         </prop>
     </item>
     <item oor:path="/org.openoffice.Office.Common/Misc">
@@ -57,22 +45,7 @@
         </prop>
     </item>
     <item oor:path="/org.openoffice.Office.Common/Misc">
-        <prop oor:name="SymbolSet" oor:op="fuse">
-            <value>2</value>
-        </prop>
-    </item>
-    <item oor:path="/org.openoffice.Office.Common/Misc">
-        <prop oor:name="SymbolStyle" oor:op="fuse">
-            <value>auto</value>
-        </prop>
-    </item>
-    <item oor:path="/org.openoffice.Office.Common/Misc">
         <prop oor:name="UseOpenCL" oor:op="fuse">
-            <value>false</value>
-        </prop>
-    </item>
-    <item oor:path="/org.openoffice.Office.Common/Misc">
-        <prop oor:name="UseSystemFileDialog" oor:op="fuse">
             <value>false</value>
         </prop>
     </item>
@@ -113,8 +86,155 @@
     <item oor:path="/org.openoffice.Office.Recovery/RecoveryList">
         <node oor:name="recovery_item_1" oor:op="remove" />
     </item>
-    <item
-        oor:path="/org.openoffice.Office.UI.Sidebar/Content/DeckList/org.openoffice.Office.UI.Sidebar:Deck['GalleryDeck']">
+    <item oor:path="/org.openoffice.Office.UI.CalcWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/formatobjectbar']">
+        <prop oor:name="ContextActive" oor:op="fuse">
+            <value>true</value>
+        </prop>
+    </item>
+    <item oor:path="/org.openoffice.Office.UI.CalcWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/formatobjectbar']">
+        <prop oor:name="ContextSensitive" oor:op="fuse">
+            <value>true</value>
+        </prop>
+    </item>
+    <item oor:path="/org.openoffice.Office.UI.CalcWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/formatobjectbar']">
+        <prop oor:name="DockPos" oor:op="fuse">
+            <value>0,2</value>
+        </prop>
+    </item>
+    <item oor:path="/org.openoffice.Office.UI.CalcWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/formatobjectbar']">
+        <prop oor:name="Docked" oor:op="fuse">
+            <value>true</value>
+        </prop>
+    </item>
+    <item oor:path="/org.openoffice.Office.UI.CalcWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/formatobjectbar']">
+        <prop oor:name="DockingArea" oor:op="fuse">
+            <value>0</value>
+        </prop>
+    </item>
+    <item oor:path="/org.openoffice.Office.UI.CalcWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/formatobjectbar']">
+        <prop oor:name="HideFromToolbarMenu" oor:op="fuse">
+            <value>false</value>
+        </prop>
+    </item>
+    <item oor:path="/org.openoffice.Office.UI.CalcWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/formatobjectbar']">
+        <prop oor:name="Locked" oor:op="fuse">
+            <value>true</value>
+        </prop>
+    </item>
+    <item oor:path="/org.openoffice.Office.UI.CalcWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/formatobjectbar']">
+        <prop oor:name="NoClose" oor:op="fuse">
+            <value>false</value>
+        </prop>
+    </item>
+    <item oor:path="/org.openoffice.Office.UI.CalcWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/formatobjectbar']">
+        <prop oor:name="Pos" oor:op="fuse">
+            <value>2147483647,2147483647</value>
+        </prop>
+    </item>
+    <item oor:path="/org.openoffice.Office.UI.CalcWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/formatobjectbar']">
+        <prop oor:name="Size" oor:op="fuse">
+            <value>0,0</value>
+        </prop>
+    </item>
+    <item oor:path="/org.openoffice.Office.UI.CalcWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/formatobjectbar']">
+        <prop oor:name="SoftClose" oor:op="fuse">
+            <value>false</value>
+        </prop>
+    </item>
+    <item oor:path="/org.openoffice.Office.UI.CalcWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/formatobjectbar']">
+        <prop oor:name="Style" oor:op="fuse">
+            <value>0</value>
+        </prop>
+    </item>
+    <item oor:path="/org.openoffice.Office.UI.CalcWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/formatobjectbar']/UIName">
+        <value xml:lang="en-US">Formatting</value>
+    </item>
+    <item oor:path="/org.openoffice.Office.UI.CalcWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/formatobjectbar']">
+        <prop oor:name="Visible" oor:op="fuse">
+            <value>false</value>
+        </prop>
+    </item>
+    <item oor:path="/org.openoffice.Office.UI.CalcWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/standardbar']">
+        <prop oor:name="ContextActive" oor:op="fuse">
+            <value>true</value>
+        </prop>
+    </item>
+    <item oor:path="/org.openoffice.Office.UI.CalcWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/standardbar']">
+        <prop oor:name="ContextSensitive" oor:op="fuse">
+            <value>true</value>
+        </prop>
+    </item>
+    <item oor:path="/org.openoffice.Office.UI.CalcWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/standardbar']">
+        <prop oor:name="DockPos" oor:op="fuse">
+            <value>0,0</value>
+        </prop>
+    </item>
+    <item oor:path="/org.openoffice.Office.UI.CalcWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/standardbar']">
+        <prop oor:name="Docked" oor:op="fuse">
+            <value>true</value>
+        </prop>
+    </item>
+    <item oor:path="/org.openoffice.Office.UI.CalcWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/standardbar']">
+        <prop oor:name="DockingArea" oor:op="fuse">
+            <value>0</value>
+        </prop>
+    </item>
+    <item oor:path="/org.openoffice.Office.UI.CalcWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/standardbar']">
+        <prop oor:name="HideFromToolbarMenu" oor:op="fuse">
+            <value>false</value>
+        </prop>
+    </item>
+    <item oor:path="/org.openoffice.Office.UI.CalcWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/standardbar']">
+        <prop oor:name="Locked" oor:op="fuse">
+            <value>true</value>
+        </prop>
+    </item>
+    <item oor:path="/org.openoffice.Office.UI.CalcWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/standardbar']">
+        <prop oor:name="NoClose" oor:op="fuse">
+            <value>false</value>
+        </prop>
+    </item>
+    <item oor:path="/org.openoffice.Office.UI.CalcWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/standardbar']">
+        <prop oor:name="Pos" oor:op="fuse">
+            <value>2147483647,2147483647</value>
+        </prop>
+    </item>
+    <item oor:path="/org.openoffice.Office.UI.CalcWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/standardbar']">
+        <prop oor:name="Size" oor:op="fuse">
+            <value>0,0</value>
+        </prop>
+    </item>
+    <item oor:path="/org.openoffice.Office.UI.CalcWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/standardbar']">
+        <prop oor:name="SoftClose" oor:op="fuse">
+            <value>false</value>
+        </prop>
+    </item>
+    <item oor:path="/org.openoffice.Office.UI.CalcWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/standardbar']">
+        <prop oor:name="Style" oor:op="fuse">
+            <value>0</value>
+        </prop>
+    </item>
+    <item oor:path="/org.openoffice.Office.UI.CalcWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/standardbar']/UIName">
+        <value xml:lang="en-US">Standard</value>
+    </item>
+    <item oor:path="/org.openoffice.Office.UI.CalcWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/standardbar']">
+        <prop oor:name="Visible" oor:op="fuse">
+            <value>false</value>
+        </prop>
+    </item>
+    <item oor:path="/org.openoffice.Office.UI.Sidebar/Content/DeckList/org.openoffice.Office.UI.Sidebar:Deck['A11yCheckDeck']">
+        <prop oor:name="ContextList" oor:op="fuse">
+            <value>
+                <it>com.sun.star.text.TextDocument, any, visible</it>
+                <it>com.sun.star.text.GlobalDocument, any, visible</it>
+                <it>com.sun.star.text.WebDocument, any, visible</it>
+                <it>com.sun.star.xforms.XMLFormDocument, any, visible</it>
+                <it>com.sun.star.sdb.FormDesign, any, visible</it>
+                <it>com.sun.star.sdb.TextReportDesign, any, visible</it>
+            </value>
+        </prop>
+    </item>
+    <item oor:path="/org.openoffice.Office.UI.Sidebar/Content/DeckList/org.openoffice.Office.UI.Sidebar:Deck['GalleryDeck']">
         <prop oor:name="ContextList" oor:op="fuse">
             <value>
                 <it>com.sun.star.sheet.SpreadsheetDocument, any, visible</it>
@@ -129,8 +249,7 @@
             </value>
         </prop>
     </item>
-    <item
-        oor:path="/org.openoffice.Office.UI.Sidebar/Content/DeckList/org.openoffice.Office.UI.Sidebar:Deck['InspectorDeck']">
+    <item oor:path="/org.openoffice.Office.UI.Sidebar/Content/DeckList/org.openoffice.Office.UI.Sidebar:Deck['InspectorDeck']">
         <prop oor:name="ContextList" oor:op="fuse">
             <value>
                 <it>com.sun.star.text.TextDocument, any, visible</it>
@@ -142,8 +261,7 @@
             </value>
         </prop>
     </item>
-    <item
-        oor:path="/org.openoffice.Office.UI.Sidebar/Content/DeckList/org.openoffice.Office.UI.Sidebar:Deck['NavigatorDeck']">
+    <item oor:path="/org.openoffice.Office.UI.Sidebar/Content/DeckList/org.openoffice.Office.UI.Sidebar:Deck['NavigatorDeck']">
         <prop oor:name="ContextList" oor:op="fuse">
             <value>
                 <it>com.sun.star.sheet.SpreadsheetDocument, any, visible</it>
@@ -158,16 +276,21 @@
             </value>
         </prop>
     </item>
-    <item
-        oor:path="/org.openoffice.Office.UI.Sidebar/Content/DeckList/org.openoffice.Office.UI.Sidebar:Deck['PropertyDeck']">
+    <item oor:path="/org.openoffice.Office.UI.Sidebar/Content/DeckList/org.openoffice.Office.UI.Sidebar:Deck['PropertyDeck']">
         <prop oor:name="ContextList" oor:op="fuse">
             <value>
                 <it>any, any, visible</it>
             </value>
         </prop>
     </item>
-    <item
-        oor:path="/org.openoffice.Office.UI.Sidebar/Content/DeckList/org.openoffice.Office.UI.Sidebar:Deck['StyleListDeck']">
+    <item oor:path="/org.openoffice.Office.UI.Sidebar/Content/DeckList/org.openoffice.Office.UI.Sidebar:Deck['ScFunctionsDeck']">
+        <prop oor:name="ContextList" oor:op="fuse">
+            <value>
+                <it>com.sun.star.sheet.SpreadsheetDocument, any, visible</it>
+            </value>
+        </prop>
+    </item>
+    <item oor:path="/org.openoffice.Office.UI.Sidebar/Content/DeckList/org.openoffice.Office.UI.Sidebar:Deck['StyleListDeck']">
         <prop oor:name="ContextList" oor:op="fuse">
             <value>
                 <it>com.sun.star.sheet.SpreadsheetDocument, any, visible</it>
@@ -182,8 +305,7 @@
             </value>
         </prop>
     </item>
-    <item
-        oor:path="/org.openoffice.Office.UI.Sidebar/Content/DeckList/org.openoffice.Office.UI.Sidebar:Deck['SwManageChangesDeck']">
+    <item oor:path="/org.openoffice.Office.UI.Sidebar/Content/DeckList/org.openoffice.Office.UI.Sidebar:Deck['SwManageChangesDeck']">
         <prop oor:name="ContextList" oor:op="fuse">
             <value>
                 <it>com.sun.star.text.TextDocument, Annotation, visible</it>
@@ -219,8 +341,7 @@
             </value>
         </prop>
     </item>
-    <item
-        oor:path="/org.openoffice.Office.UI.Sidebar/Content/DeckList/org.openoffice.Office.UI.Sidebar:Deck['WriterPageDeck']">
+    <item oor:path="/org.openoffice.Office.UI.Sidebar/Content/DeckList/org.openoffice.Office.UI.Sidebar:Deck['WriterPageDeck']">
         <prop oor:name="ContextList" oor:op="fuse">
             <value>
                 <it>com.sun.star.text.TextDocument, any, visible</it>
@@ -237,40 +358,32 @@
             <value>
                 <it>any,PropertyDeck</it>
                 <it>com.sun.star.formula.FormulaProperties,ElementsDeck</it>
+                <it>com.sun.star.sheet.SpreadsheetDocument,PropertyDeck</it>
                 <it>com.sun.star.text.TextDocument,PropertyDeck</it>
             </value>
         </prop>
     </item>
-    <item
-        oor:path="/org.openoffice.Office.UI.Sidebar/Content/PanelList/org.openoffice.Office.UI.Sidebar:Panel['ParaPropertyPanel']">
+    <item oor:path="/org.openoffice.Office.UI.Sidebar/Content/PanelList/org.openoffice.Office.UI.Sidebar:Panel['ParaPropertyPanel']">
         <prop oor:name="ContextList" oor:op="fuse">
             <value>
                 <it>com.sun.star.sheet.SpreadsheetDocument, DrawText, visible, .uno:ParagraphDialog</it>
                 <it>com.sun.star.sheet.SpreadsheetDocument, DrawLine, hidden, .uno:ParagraphDialog</it>
                 <it>com.sun.star.drawing.DrawingDocument, DrawLine, hidden, .uno:ParagraphDialog</it>
-                <it>com.sun.star.presentation.PresentationDocument, DrawLine, hidden,
-                    .uno:ParagraphDialog</it>
+                <it>com.sun.star.presentation.PresentationDocument, DrawLine, hidden, .uno:ParagraphDialog</it>
                 <it>com.sun.star.drawing.DrawingDocument, 3DObject, hidden, .uno:ParagraphDialog</it>
-                <it>com.sun.star.presentation.PresentationDocument, 3DObject, hidden,
-                    .uno:ParagraphDialog</it>
+                <it>com.sun.star.presentation.PresentationDocument, 3DObject, hidden, .uno:ParagraphDialog</it>
                 <it>com.sun.star.drawing.DrawingDocument, Draw, hidden, .uno:ParagraphDialog</it>
-                <it>com.sun.star.presentation.PresentationDocument, Draw, hidden,
-                    .uno:ParagraphDialog</it>
+                <it>com.sun.star.presentation.PresentationDocument, Draw, hidden, .uno:ParagraphDialog</it>
                 <it>com.sun.star.drawing.DrawingDocument, DrawFontwork, hidden, .uno:ParagraphDialog</it>
-                <it>com.sun.star.presentation.PresentationDocument, DrawFontwork, hidden,
-                    .uno:ParagraphDialog</it>
+                <it>com.sun.star.presentation.PresentationDocument, DrawFontwork, hidden, .uno:ParagraphDialog</it>
                 <it>com.sun.star.drawing.DrawingDocument, DrawText, visible, .uno:ParagraphDialog</it>
-                <it>com.sun.star.presentation.PresentationDocument, DrawText, visible,
-                    .uno:ParagraphDialog</it>
+                <it>com.sun.star.presentation.PresentationDocument, DrawText, visible, .uno:ParagraphDialog</it>
                 <it>com.sun.star.drawing.DrawingDocument, Graphic, hidden, .uno:ParagraphDialog</it>
-                <it>com.sun.star.presentation.PresentationDocument, Graphic, hidden,
-                    .uno:ParagraphDialog</it>
+                <it>com.sun.star.presentation.PresentationDocument, Graphic, hidden, .uno:ParagraphDialog</it>
                 <it>com.sun.star.drawing.DrawingDocument, Table, visible, .uno:ParagraphDialog</it>
-                <it>com.sun.star.presentation.PresentationDocument, Table, visible,
-                    .uno:ParagraphDialog</it>
+                <it>com.sun.star.presentation.PresentationDocument, Table, visible, .uno:ParagraphDialog</it>
                 <it>com.sun.star.drawing.DrawingDocument, TextObject, visible, .uno:ParagraphDialog</it>
-                <it>com.sun.star.presentation.PresentationDocument, TextObject, visible,
-                    .uno:ParagraphDialog</it>
+                <it>com.sun.star.presentation.PresentationDocument, TextObject, visible, .uno:ParagraphDialog</it>
                 <it>com.sun.star.text.TextDocument, Annotation, visible, .uno:ParagraphDialog</it>
                 <it>com.sun.star.text.GlobalDocument, Annotation, visible, .uno:ParagraphDialog</it>
                 <it>com.sun.star.text.WebDocument, Annotation, visible, .uno:ParagraphDialog</it>
@@ -304,8 +417,43 @@
             </value>
         </prop>
     </item>
-    <item
-        oor:path="/org.openoffice.Office.UI.Sidebar/Content/PanelList/org.openoffice.Office.UI.Sidebar:Panel['StylesPropertyPanel']">
+    <item oor:path="/org.openoffice.Office.UI.Sidebar/Content/PanelList/org.openoffice.Office.UI.Sidebar:Panel['ScAlignmentPropertyPanel']">
+        <prop oor:name="ContextList" oor:op="fuse">
+            <value>
+                <it>com.sun.star.sheet.SpreadsheetDocument, Auditing, visible, .uno:Hyphenate</it>
+                <it>com.sun.star.sheet.SpreadsheetDocument, Cell, visible, .uno:Hyphenate</it>
+                <it>com.sun.star.sheet.SpreadsheetDocument, default, visible, .uno:Hyphenate</it>
+                <it>com.sun.star.sheet.SpreadsheetDocument, EditCell, visible, .uno:Hyphenate</it>
+                <it>com.sun.star.sheet.SpreadsheetDocument, Pivot, visible, .uno:Hyphenate</it>
+                <it>com.sun.star.sheet.SpreadsheetDocument, Sparkline, visible, .uno:Hyphenate</it>
+            </value>
+        </prop>
+    </item>
+    <item oor:path="/org.openoffice.Office.UI.Sidebar/Content/PanelList/org.openoffice.Office.UI.Sidebar:Panel['ScCellAppearancePropertyPanel']">
+        <prop oor:name="ContextList" oor:op="fuse">
+            <value>
+                <it>com.sun.star.sheet.SpreadsheetDocument, Auditing, visible, .uno:FormatCellDialog</it>
+                <it>com.sun.star.sheet.SpreadsheetDocument, Cell, visible, .uno:FormatCellDialog</it>
+                <it>com.sun.star.sheet.SpreadsheetDocument, EditCell, visible, .uno:FormatCellDialog</it>
+                <it>com.sun.star.sheet.SpreadsheetDocument, default, visible, .uno:FormatCellDialog</it>
+                <it>com.sun.star.sheet.SpreadsheetDocument, Pivot, visible, .uno:FormatCellDialog</it>
+                <it>com.sun.star.sheet.SpreadsheetDocument, Sparkline, visible, .uno:FormatCellDialog</it>
+            </value>
+        </prop>
+    </item>
+    <item oor:path="/org.openoffice.Office.UI.Sidebar/Content/PanelList/org.openoffice.Office.UI.Sidebar:Panel['ScNumberFormatPropertyPanel']">
+        <prop oor:name="ContextList" oor:op="fuse">
+            <value>
+                <it>com.sun.star.sheet.SpreadsheetDocument, Auditing, visible, .uno:FormatCellDialog</it>
+                <it>com.sun.star.sheet.SpreadsheetDocument, Cell, visible, .uno:FormatCellDialog</it>
+                <it>com.sun.star.sheet.SpreadsheetDocument, EditCell, visible, .uno:FormatCellDialog</it>
+                <it>com.sun.star.sheet.SpreadsheetDocument, default, visible, .uno:FormatCellDialog</it>
+                <it>com.sun.star.sheet.SpreadsheetDocument, Pivot, visible, .uno:FormatCellDialog</it>
+                <it>com.sun.star.sheet.SpreadsheetDocument, Sparkline, visible, .uno:FormatCellDialog</it>
+            </value>
+        </prop>
+    </item>
+    <item oor:path="/org.openoffice.Office.UI.Sidebar/Content/PanelList/org.openoffice.Office.UI.Sidebar:Panel['StylesPropertyPanel']">
         <prop oor:name="ContextList" oor:op="fuse">
             <value>
                 <it>com.sun.star.text.TextDocument, Annotation, visible, .uno:EditStyle</it>
@@ -347,8 +495,7 @@
             </value>
         </prop>
     </item>
-    <item
-        oor:path="/org.openoffice.Office.UI.Sidebar/Content/PanelList/org.openoffice.Office.UI.Sidebar:Panel['TextPropertyPanel']">
+    <item oor:path="/org.openoffice.Office.UI.Sidebar/Content/PanelList/org.openoffice.Office.UI.Sidebar:Panel['TextPropertyPanel']">
         <prop oor:name="ContextList" oor:op="fuse">
             <value>
                 <it>com.sun.star.sheet.SpreadsheetDocument, Auditing, visible, .uno:CellTextDlg</it>
@@ -362,24 +509,19 @@
                 <it>com.sun.star.drawing.DrawingDocument, Draw, hidden, .uno:FontDialog</it>
                 <it>com.sun.star.presentation.PresentationDocument, Draw, hidden, .uno:FontDialog</it>
                 <it>com.sun.star.drawing.DrawingDocument, DrawFontwork, hidden, .uno:FontDialog</it>
-                <it>com.sun.star.presentation.PresentationDocument, DrawFontwork, hidden,
-                    .uno:FontDialog</it>
+                <it>com.sun.star.presentation.PresentationDocument, DrawFontwork, hidden, .uno:FontDialog</it>
                 <it>com.sun.star.drawing.DrawingDocument, DrawText, visible, .uno:FontDialog</it>
-                <it>com.sun.star.presentation.PresentationDocument, DrawText, visible,
-                    .uno:FontDialog</it>
+                <it>com.sun.star.presentation.PresentationDocument, DrawText, visible, .uno:FontDialog</it>
                 <it>com.sun.star.drawing.DrawingDocument, DrawLine, hidden, .uno:FontDialog</it>
-                <it>com.sun.star.presentation.PresentationDocument, DrawLine, hidden,
-                    .uno:FontDialog</it>
+                <it>com.sun.star.presentation.PresentationDocument, DrawLine, hidden, .uno:FontDialog</it>
                 <it>com.sun.star.drawing.DrawingDocument, Graphic, hidden, .uno:FontDialog</it>
                 <it>com.sun.star.presentation.PresentationDocument, Graphic, hidden, .uno:FontDialog</it>
                 <it>com.sun.star.drawing.DrawingDocument, OutlineText, visible, .uno:FontDialog</it>
-                <it>com.sun.star.presentation.PresentationDocument, OutlineText, visible,
-                    .uno:FontDialog</it>
+                <it>com.sun.star.presentation.PresentationDocument, OutlineText, visible, .uno:FontDialog</it>
                 <it>com.sun.star.drawing.DrawingDocument, Table, visible, .uno:FontDialog</it>
                 <it>com.sun.star.presentation.PresentationDocument, Table, visible, .uno:FontDialog</it>
                 <it>com.sun.star.drawing.DrawingDocument, TextObject, visible, .uno:FontDialog</it>
-                <it>com.sun.star.presentation.PresentationDocument, TextObject, visible,
-                    .uno:FontDialog</it>
+                <it>com.sun.star.presentation.PresentationDocument, TextObject, visible, .uno:FontDialog</it>
                 <it>com.sun.star.text.TextDocument, Annotation, visible, .uno:FontDialog</it>
                 <it>com.sun.star.text.GlobalDocument, Annotation, visible, .uno:FontDialog</it>
                 <it>com.sun.star.text.WebDocument, Annotation, visible, .uno:FontDialog</it>
@@ -415,349 +557,56 @@
     </item>
     <item oor:path="/org.openoffice.Office.UI.ToolbarMode">
         <prop oor:name="ActiveCalc" oor:op="fuse">
-            <value>Default</value>
+            <value>notebookbar.ui</value>
         </prop>
     </item>
     <item oor:path="/org.openoffice.Office.UI.ToolbarMode">
         <prop oor:name="ActiveDraw" oor:op="fuse">
-            <value>Default</value>
+            <value>notebookbar.ui</value>
         </prop>
     </item>
     <item oor:path="/org.openoffice.Office.UI.ToolbarMode">
         <prop oor:name="ActiveImpress" oor:op="fuse">
-            <value>Default</value>
+            <value>notebookbar.ui</value>
         </prop>
     </item>
     <item oor:path="/org.openoffice.Office.UI.ToolbarMode">
         <prop oor:name="ActiveWriter" oor:op="fuse">
-            <value>Default</value>
+            <value>notebookbar.ui</value>
         </prop>
     </item>
-    <item
-        oor:path="/org.openoffice.Office.UI.ToolbarMode/Applications/org.openoffice.Office.UI.ToolbarMode:Application['Calc']">
+    <item oor:path="/org.openoffice.Office.UI.ToolbarMode/Applications/org.openoffice.Office.UI.ToolbarMode:Application['Calc']">
         <prop oor:name="Active" oor:op="fuse">
-            <value>Default</value>
+            <value>notebookbar.ui</value>
         </prop>
     </item>
-    <item
-        oor:path="/org.openoffice.Office.UI.ToolbarMode/Applications/org.openoffice.Office.UI.ToolbarMode:Application['Draw']">
-        <prop oor:name="Active" oor:op="fuse">
-            <value>Default</value>
-        </prop>
-    </item>
-    <item
-        oor:path="/org.openoffice.Office.UI.ToolbarMode/Applications/org.openoffice.Office.UI.ToolbarMode:Application['Impress']">
-        <prop oor:name="Active" oor:op="fuse">
-            <value>Default</value>
-        </prop>
-    </item>
-    <item
-        oor:path="/org.openoffice.Office.UI.ToolbarMode/Applications/org.openoffice.Office.UI.ToolbarMode:Application['Writer']">
-        <prop oor:name="Active" oor:op="fuse">
-            <value>Default</value>
-        </prop>
-    </item>
-    <item
-        oor:path="/org.openoffice.Office.UI.ToolbarMode/Applications/org.openoffice.Office.UI.ToolbarMode:Application['Writer']/Modes/org.openoffice.Office.UI.ToolbarMode:ModeEntry['Default']">
+    <item oor:path="/org.openoffice.Office.UI.ToolbarMode/Applications/org.openoffice.Office.UI.ToolbarMode:Application['Calc']/Modes/org.openoffice.Office.UI.ToolbarMode:ModeEntry['Default']">
         <prop oor:name="UserToolbars" oor:op="fuse">
             <value>
                 <it>private:resource/toolbar/standardbar</it>
-                <it>private:resource/toolbar/textobjectbar</it>
+                <it>private:resource/toolbar/formatobjectbar</it>
             </value>
         </prop>
     </item>
-    <item
-        oor:path="/org.openoffice.Office.UI.ToolbarMode/Applications/org.openoffice.Office.UI.ToolbarMode:Application['Writer']/Modes/org.openoffice.Office.UI.ToolbarMode:ModeEntry['Tabbed']">
+    <item oor:path="/org.openoffice.Office.UI.ToolbarMode/Applications/org.openoffice.Office.UI.ToolbarMode:Application['Calc']/Modes/org.openoffice.Office.UI.ToolbarMode:ModeEntry['Tabbed']">
         <prop oor:name="HasMenubar" oor:op="fuse">
             <value>true</value>
         </prop>
     </item>
-    <item
-        oor:path="/org.openoffice.Office.UI.ToolbarMode/Applications/org.openoffice.Office.UI.ToolbarMode:Application['Writer']/Modes/org.openoffice.Office.UI.ToolbarMode:ModeEntry['Tabbed']">
-        <prop oor:name="UserToolbars" oor:op="fuse">
-            <value></value>
+    <item oor:path="/org.openoffice.Office.UI.ToolbarMode/Applications/org.openoffice.Office.UI.ToolbarMode:Application['Draw']">
+        <prop oor:name="Active" oor:op="fuse">
+            <value>notebookbar.ui</value>
         </prop>
     </item>
-    <item
-        oor:path="/org.openoffice.Office.UI.WriterWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/addon_LibreLogo.OfficeToolBar']">
-        <prop oor:name="ContextActive" oor:op="fuse">
-            <value>true</value>
+    <item oor:path="/org.openoffice.Office.UI.ToolbarMode/Applications/org.openoffice.Office.UI.ToolbarMode:Application['Impress']">
+        <prop oor:name="Active" oor:op="fuse">
+            <value>notebookbar.ui</value>
         </prop>
     </item>
-    <item
-        oor:path="/org.openoffice.Office.UI.WriterWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/addon_LibreLogo.OfficeToolBar']">
-        <prop oor:name="ContextSensitive" oor:op="fuse">
-            <value>false</value>
+    <item oor:path="/org.openoffice.Office.UI.ToolbarMode/Applications/org.openoffice.Office.UI.ToolbarMode:Application['Writer']">
+        <prop oor:name="Active" oor:op="fuse">
+            <value>notebookbar.ui</value>
         </prop>
-    </item>
-    <item
-        oor:path="/org.openoffice.Office.UI.WriterWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/addon_LibreLogo.OfficeToolBar']">
-        <prop oor:name="DockPos" oor:op="fuse">
-            <value>0,0</value>
-        </prop>
-    </item>
-    <item
-        oor:path="/org.openoffice.Office.UI.WriterWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/addon_LibreLogo.OfficeToolBar']">
-        <prop oor:name="Docked" oor:op="fuse">
-            <value>true</value>
-        </prop>
-    </item>
-    <item
-        oor:path="/org.openoffice.Office.UI.WriterWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/addon_LibreLogo.OfficeToolBar']">
-        <prop oor:name="DockingArea" oor:op="fuse">
-            <value>0</value>
-        </prop>
-    </item>
-    <item
-        oor:path="/org.openoffice.Office.UI.WriterWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/addon_LibreLogo.OfficeToolBar']">
-        <prop oor:name="HideFromToolbarMenu" oor:op="fuse">
-            <value>false</value>
-        </prop>
-    </item>
-    <item
-        oor:path="/org.openoffice.Office.UI.WriterWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/addon_LibreLogo.OfficeToolBar']">
-        <prop oor:name="Locked" oor:op="fuse">
-            <value>true</value>
-        </prop>
-    </item>
-    <item
-        oor:path="/org.openoffice.Office.UI.WriterWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/addon_LibreLogo.OfficeToolBar']">
-        <prop oor:name="NoClose" oor:op="fuse">
-            <value>false</value>
-        </prop>
-    </item>
-    <item
-        oor:path="/org.openoffice.Office.UI.WriterWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/addon_LibreLogo.OfficeToolBar']">
-        <prop oor:name="Pos" oor:op="fuse">
-            <value>2147483647,2147483647</value>
-        </prop>
-    </item>
-    <item
-        oor:path="/org.openoffice.Office.UI.WriterWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/addon_LibreLogo.OfficeToolBar']">
-        <prop oor:name="Size" oor:op="fuse">
-            <value>0,0</value>
-        </prop>
-    </item>
-    <item
-        oor:path="/org.openoffice.Office.UI.WriterWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/addon_LibreLogo.OfficeToolBar']">
-        <prop oor:name="SoftClose" oor:op="fuse">
-            <value>false</value>
-        </prop>
-    </item>
-    <item
-        oor:path="/org.openoffice.Office.UI.WriterWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/addon_LibreLogo.OfficeToolBar']">
-        <prop oor:name="Style" oor:op="fuse">
-            <value>0</value>
-        </prop>
-    </item>
-    <item
-        oor:path="/org.openoffice.Office.UI.WriterWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/addon_LibreLogo.OfficeToolBar']/UIName">
-        <value xml:lang="en-US">Logo</value>
-    </item>
-    <item
-        oor:path="/org.openoffice.Office.UI.WriterWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/addon_LibreLogo.OfficeToolBar']">
-        <prop oor:name="Visible" oor:op="fuse">
-            <value>false</value>
-        </prop>
-    </item>
-    <item
-        oor:path="/org.openoffice.Office.UI.WriterWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/standardbar']">
-        <prop oor:name="ContextActive" oor:op="fuse">
-            <value>true</value>
-        </prop>
-    </item>
-    <item
-        oor:path="/org.openoffice.Office.UI.WriterWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/standardbar']">
-        <prop oor:name="ContextSensitive" oor:op="fuse">
-            <value>true</value>
-        </prop>
-    </item>
-    <item
-        oor:path="/org.openoffice.Office.UI.WriterWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/standardbar']">
-        <prop oor:name="DockPos" oor:op="fuse">
-            <value>0,0</value>
-        </prop>
-    </item>
-    <item
-        oor:path="/org.openoffice.Office.UI.WriterWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/standardbar']">
-        <prop oor:name="Docked" oor:op="fuse">
-            <value>true</value>
-        </prop>
-    </item>
-    <item
-        oor:path="/org.openoffice.Office.UI.WriterWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/standardbar']">
-        <prop oor:name="DockingArea" oor:op="fuse">
-            <value>0</value>
-        </prop>
-    </item>
-    <item
-        oor:path="/org.openoffice.Office.UI.WriterWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/standardbar']">
-        <prop oor:name="HideFromToolbarMenu" oor:op="fuse">
-            <value>false</value>
-        </prop>
-    </item>
-    <item
-        oor:path="/org.openoffice.Office.UI.WriterWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/standardbar']">
-        <prop oor:name="Locked" oor:op="fuse">
-            <value>true</value>
-        </prop>
-    </item>
-    <item
-        oor:path="/org.openoffice.Office.UI.WriterWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/standardbar']">
-        <prop oor:name="NoClose" oor:op="fuse">
-            <value>false</value>
-        </prop>
-    </item>
-    <item
-        oor:path="/org.openoffice.Office.UI.WriterWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/standardbar']">
-        <prop oor:name="Pos" oor:op="fuse">
-            <value>2147483647,2147483647</value>
-        </prop>
-    </item>
-    <item
-        oor:path="/org.openoffice.Office.UI.WriterWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/standardbar']">
-        <prop oor:name="Size" oor:op="fuse">
-            <value>0,0</value>
-        </prop>
-    </item>
-    <item
-        oor:path="/org.openoffice.Office.UI.WriterWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/standardbar']">
-        <prop oor:name="SoftClose" oor:op="fuse">
-            <value>false</value>
-        </prop>
-    </item>
-    <item
-        oor:path="/org.openoffice.Office.UI.WriterWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/standardbar']">
-        <prop oor:name="Style" oor:op="fuse">
-            <value>0</value>
-        </prop>
-    </item>
-    <item
-        oor:path="/org.openoffice.Office.UI.WriterWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/standardbar']/UIName">
-        <value xml:lang="en-US">Standard</value>
-    </item>
-    <item
-        oor:path="/org.openoffice.Office.UI.WriterWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/standardbar']">
-        <prop oor:name="Visible" oor:op="fuse">
-            <value>true</value>
-        </prop>
-    </item>
-    <item
-        oor:path="/org.openoffice.Office.UI.WriterWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/textobjectbar']">
-        <prop oor:name="ContextActive" oor:op="fuse">
-            <value>true</value>
-        </prop>
-    </item>
-    <item
-        oor:path="/org.openoffice.Office.UI.WriterWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/textobjectbar']">
-        <prop oor:name="ContextSensitive" oor:op="fuse">
-            <value>true</value>
-        </prop>
-    </item>
-    <item
-        oor:path="/org.openoffice.Office.UI.WriterWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/textobjectbar']">
-        <prop oor:name="DockPos" oor:op="fuse">
-            <value>0,1</value>
-        </prop>
-    </item>
-    <item
-        oor:path="/org.openoffice.Office.UI.WriterWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/textobjectbar']">
-        <prop oor:name="Docked" oor:op="fuse">
-            <value>true</value>
-        </prop>
-    </item>
-    <item
-        oor:path="/org.openoffice.Office.UI.WriterWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/textobjectbar']">
-        <prop oor:name="DockingArea" oor:op="fuse">
-            <value>0</value>
-        </prop>
-    </item>
-    <item
-        oor:path="/org.openoffice.Office.UI.WriterWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/textobjectbar']">
-        <prop oor:name="HideFromToolbarMenu" oor:op="fuse">
-            <value>false</value>
-        </prop>
-    </item>
-    <item
-        oor:path="/org.openoffice.Office.UI.WriterWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/textobjectbar']">
-        <prop oor:name="Locked" oor:op="fuse">
-            <value>true</value>
-        </prop>
-    </item>
-    <item
-        oor:path="/org.openoffice.Office.UI.WriterWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/textobjectbar']">
-        <prop oor:name="NoClose" oor:op="fuse">
-            <value>false</value>
-        </prop>
-    </item>
-    <item
-        oor:path="/org.openoffice.Office.UI.WriterWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/textobjectbar']">
-        <prop oor:name="Pos" oor:op="fuse">
-            <value>2147483647,2147483647</value>
-        </prop>
-    </item>
-    <item
-        oor:path="/org.openoffice.Office.UI.WriterWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/textobjectbar']">
-        <prop oor:name="Size" oor:op="fuse">
-            <value>0,0</value>
-        </prop>
-    </item>
-    <item
-        oor:path="/org.openoffice.Office.UI.WriterWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/textobjectbar']">
-        <prop oor:name="SoftClose" oor:op="fuse">
-            <value>false</value>
-        </prop>
-    </item>
-    <item
-        oor:path="/org.openoffice.Office.UI.WriterWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/textobjectbar']">
-        <prop oor:name="Style" oor:op="fuse">
-            <value>0</value>
-        </prop>
-    </item>
-    <item
-        oor:path="/org.openoffice.Office.UI.WriterWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/textobjectbar']/UIName">
-        <value xml:lang="en-US">Formatting</value>
-    </item>
-    <item
-        oor:path="/org.openoffice.Office.UI.WriterWindowState/UIElements/States/org.openoffice.Office.UI.WindowState:WindowStateType['private:resource/toolbar/textobjectbar']">
-        <prop oor:name="Visible" oor:op="fuse">
-            <value>true</value>
-        </prop>
-    </item>
-    <item oor:path="/org.openoffice.Office.Views/Dialogs">
-        <node oor:name="FileDialog" oor:op="replace">
-            <node oor:name="UserData">
-                <prop oor:name="UserData" oor:op="fuse" oor:type="xs:string">
-                    <value>1;1;1;180;2;140;3;80;4;1000000000</value>
-                </prop>
-            </node>
-            <prop oor:name="WindowState" oor:op="fuse">
-                <value>112,76,592,428;1;,,,;</value>
-            </prop>
-        </node>
-    </item>
-    <item oor:path="/org.openoffice.Office.Views/TabDialogs">
-        <node oor:name="cui/ui/customizedialog/CustomizeDialog" oor:op="replace">
-            <prop oor:name="PageID" oor:op="fuse">
-                <value>menus</value>
-            </prop>
-            <node oor:name="UserData"></node>
-            <prop oor:name="WindowState" oor:op="fuse">
-                <value xsi:nil="true" />
-            </prop>
-        </node>
-    </item>
-    <item oor:path="/org.openoffice.Office.Views/TabPages">
-        <node oor:name="10249" oor:op="replace">
-            <node oor:name="UserData">
-                <prop oor:name="page data" oor:op="fuse" oor:type="xs:string">
-                    <value>0</value>
-                </prop>
-            </node>
-            <prop oor:name="WindowState" oor:op="fuse">
-                <value xsi:nil="true" />
-            </prop>
-        </node>
     </item>
     <item oor:path="/org.openoffice.Office.Views/Windows">
         <node oor:name="SplitWindow0" oor:op="replace">
@@ -796,7 +645,7 @@
             </prop>
             <node oor:name="UserData">
                 <prop oor:name="UserItem" oor:op="fuse" oor:type="xs:string">
-                    <value>V1,2,1,10336</value>
+                    <value>V1,0,1,0,10336</value>
                 </prop>
             </node>
             <prop oor:name="WindowState" oor:op="fuse">
@@ -819,14 +668,52 @@
             </prop>
         </node>
     </item>
-    <item
-        oor:path="/org.openoffice.Office.Views/Windows/org.openoffice.Office.Views:WindowType['swriter/10336']/UserData">
+    <item oor:path="/org.openoffice.Office.Views/Windows/org.openoffice.Office.Views:WindowType['scalc/10336']/UserData">
         <prop oor:name="Data" oor:op="fuse" oor:type="xs:string">
-            <value>V2,V,0,AL:(5,16,0/0/35/450,35;660)</value>
+            <value>V2,V,0,AL:(5,16,0/0/48/450,48;450)</value>
         </prop>
     </item>
-    <item
-        oor:path="/org.openoffice.Office.Views/Windows/org.openoffice.Office.Views:WindowType['swriter/10336']">
+    <item oor:path="/org.openoffice.Office.Views/Windows/org.openoffice.Office.Views:WindowType['scalc/10336']">
+        <prop oor:name="WindowState" oor:op="fuse">
+            <value></value>
+        </prop>
+    </item>
+    <item oor:path="/org.openoffice.Office.Views/Windows">
+        <node oor:name="scalc/10365" oor:op="replace">
+            <prop oor:name="Visible" oor:op="fuse">
+                <value xsi:nil="true" />
+            </prop>
+            <node oor:name="UserData">
+                <prop oor:name="Data" oor:op="fuse" oor:type="xs:string">
+                    <value>V2,V,128</value>
+                </prop>
+            </node>
+            <prop oor:name="WindowState" oor:op="fuse">
+                <value></value>
+            </prop>
+        </node>
+    </item>
+    <item oor:path="/org.openoffice.Office.Views/Windows">
+        <node oor:name="scalc/26100" oor:op="replace">
+            <prop oor:name="Visible" oor:op="fuse">
+                <value xsi:nil="true" />
+            </prop>
+            <node oor:name="UserData">
+                <prop oor:name="Data" oor:op="fuse" oor:type="xs:string">
+                    <value>V2,V,20</value>
+                </prop>
+            </node>
+            <prop oor:name="WindowState" oor:op="fuse">
+                <value></value>
+            </prop>
+        </node>
+    </item>
+    <item oor:path="/org.openoffice.Office.Views/Windows/org.openoffice.Office.Views:WindowType['swriter/10336']/UserData">
+        <prop oor:name="Data" oor:op="fuse" oor:type="xs:string">
+            <value>V2,V,0,AL:(5,16,0/0/48/450,48;450)</value>
+        </prop>
+    </item>
+    <item oor:path="/org.openoffice.Office.Views/Windows/org.openoffice.Office.Views:WindowType['swriter/10336']">
         <prop oor:name="WindowState" oor:op="fuse">
             <value></value>
         </prop>
@@ -851,26 +738,24 @@
             <value>en-US</value>
         </prop>
     </item>
-    <item
-        oor:path="/org.openoffice.Setup/Office/Factories/org.openoffice.Setup:Factory['com.sun.star.frame.StartModule']">
+    <item oor:path="/org.openoffice.Setup/Office/Factories/org.openoffice.Setup:Factory['com.sun.star.frame.StartModule']">
         <prop oor:name="ooSetupFactoryWindowAttributes" oor:op="fuse">
-            <value>0,21,982,766;53;0,21,982,766;</value>
+            <value>0,23,2,2;5;0,23,1921,915;</value>
         </prop>
     </item>
-    <item
-        oor:path="/org.openoffice.Setup/Office/Factories/org.openoffice.Setup:Factory['com.sun.star.text.TextDocument']">
+    <item oor:path="/org.openoffice.Setup/Office/Factories/org.openoffice.Setup:Factory['com.sun.star.sheet.SpreadsheetDocument']">
         <prop oor:name="ooSetupFactoryWindowAttributes" oor:op="fuse">
-            <value>0,21,816,539;53;0,21,816,539;</value>
+            <value>0,23,2,2;5;0,23,1921,915;</value>
+        </prop>
+    </item>
+    <item oor:path="/org.openoffice.Setup/Office/Factories/org.openoffice.Setup:Factory['com.sun.star.text.TextDocument']">
+        <prop oor:name="ooSetupFactoryWindowAttributes" oor:op="fuse">
+            <value>0,23,1921,915;5;0,23,1921,915;</value>
         </prop>
     </item>
     <item oor:path="/org.openoffice.Setup/Office">
         <prop oor:name="LastCompatibilityCheckID" oor:op="fuse">
-            <value>50(Build:2)</value>
-        </prop>
-    </item>
-    <item oor:path="/org.openoffice.Setup/Office">
-        <prop oor:name="OfficeRestartInProgress" oor:op="fuse">
-            <value>false</value>
+            <value>60(Build:2)</value>
         </prop>
     </item>
     <item oor:path="/org.openoffice.Setup/Office">
@@ -880,17 +765,17 @@
     </item>
     <item oor:path="/org.openoffice.Setup/Product">
         <prop oor:name="LastTimeDonateShown" oor:op="fuse">
-            <value>1687969812</value>
+            <value>1726761789</value>
         </prop>
     </item>
     <item oor:path="/org.openoffice.Setup/Product">
         <prop oor:name="LastTimeGetInvolvedShown" oor:op="fuse">
-            <value>1687969812</value>
+            <value>1726761789</value>
         </prop>
     </item>
     <item oor:path="/org.openoffice.Setup/Product">
         <prop oor:name="ooSetupLastVersion" oor:op="fuse">
-            <value>7.5</value>
+            <value>7.6</value>
         </prop>
     </item>
     <item oor:path="/org.openoffice.UserProfile/Data">
@@ -915,7 +800,7 @@
     </item>
     <item oor:path="/org.openoffice.UserProfile/Data">
         <prop oor:name="givenname" oor:op="fuse">
-            <value>Libre</value>
+            <value></value>
         </prop>
     </item>
     <item oor:path="/org.openoffice.UserProfile/Data">
@@ -925,7 +810,7 @@
     </item>
     <item oor:path="/org.openoffice.UserProfile/Data">
         <prop oor:name="initials" oor:op="fuse">
-            <value>LD</value>
+            <value></value>
         </prop>
     </item>
     <item oor:path="/org.openoffice.UserProfile/Data">
@@ -960,7 +845,7 @@
     </item>
     <item oor:path="/org.openoffice.UserProfile/Data">
         <prop oor:name="sn" oor:op="fuse">
-            <value>Developer</value>
+            <value></value>
         </prop>
     </item>
     <item oor:path="/org.openoffice.UserProfile/Data">
