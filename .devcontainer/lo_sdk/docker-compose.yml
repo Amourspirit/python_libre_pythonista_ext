@@ -41,8 +41,8 @@ services:
         target: /workspace/python_libre_pythonista_ext/.venv
     
     ports:
-      - 3102:3002
-      - 3103:3003
+      - 3102:3000
+      - 3103:3001
     restart: unless-stopped
 
 volumes:
