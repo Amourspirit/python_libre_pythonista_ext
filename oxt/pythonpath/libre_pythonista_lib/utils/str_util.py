@@ -1,4 +1,6 @@
 from __future__ import annotations
+import tokenize
+from io import BytesIO
 
 
 def remove_trailing_whitespaces(s: str) -> str:
@@ -44,7 +46,7 @@ def clean_string(s: str) -> str:
     return s
 
 
-def remove_comments(s: str, commenter: str = "#") -> str:
+def remove_comments(s: str) -> str:
     """
     Removes comments from a string.
 
@@ -54,16 +56,15 @@ def remove_comments(s: str, commenter: str = "#") -> str:
     Returns:
         str: The string with comments removed.
     """
-    lines = s.split("\n")
-    cleaned_lines = []
-    for line in lines:
-        if line.lstrip().startswith(commenter):
-            continue
-        if commenter in line:
-            cleaned_lines.append(line.split(commenter)[0])
-        else:
-            cleaned_lines.append(line)
-    return "\n".join(cleaned_lines)
+    if not s:
+        return ""
+
+    result = []
+    tokens = tokenize.tokenize(BytesIO(s.encode("utf-8")).readline)
+    for token in tokens:
+        if token.type != tokenize.COMMENT:
+            result.append(token)
+    return tokenize.untokenize(result).decode("utf-8")
 
 
 def get_last_line(s: str) -> str:
