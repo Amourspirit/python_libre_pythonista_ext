@@ -32,6 +32,7 @@ from ..const import (
     UNO_DISPATCH_ABOUT,
     UNO_DISPATCH_LOG_WIN,
     UNO_DISPATCH_CELL_CTl_UPDATE,
+    UNO_DISPATCH_INSTALL_PIP_PKG,
 )
 from ..const.event_const import GBL_DOC_CLOSING
 
@@ -50,6 +51,8 @@ from .dispatch_edit_py_cell_mb import DispatchEditPyCellMb
 from .dispatch_log_window import DispatchLogWindow
 from .dispatch_cell_select_recalc import DispatchCellSelectRecalc
 from .dispatch_ctl_update import DispatchCtlUpdate
+
+from .dispatch_install_pkg import DispatchInstallPkg
 
 # from .listen.edit_status_listener import EditStatusListener
 from ..log.log_inst import LogInst
@@ -239,6 +242,11 @@ class DispatchProviderInterceptor(unohelper.Base, XDispatchProviderInterceptor):
                     args = self._convert_query_to_dict(url.Arguments)
                     log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchCtlUpdate")
                 return DispatchCtlUpdate(sheet=args["sheet"], cell=args["cell"])
+        elif url.Main == UNO_DISPATCH_INSTALL_PIP_PKG:
+            with contextlib.suppress(Exception):
+                with log.indent(True):
+                    log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchAbout")
+                return DispatchInstallPkg()
 
         return self._slave.queryDispatch(url, target_frame_name, search_flags)
 

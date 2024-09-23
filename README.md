@@ -29,8 +29,9 @@ LibrePythonista comes with a core set of Python libraries. Use Python librarie
 
 ## Watch the Introduction Video
 
-[![Watch the video](https://i.ytimg.com/vi/AQLuSNHhUY4/hq720.jpg)](https://youtu.be/AQLuSNHhUY4?si=VMTHh-0UNGFCLnQd)
-
+<a href="https://youtu.be/AQLuSNHhUY4?si=VMTHh-0UNGFCLnQd" target="_blank">
+ <img src="https://i.ytimg.com/vi/AQLuSNHhUY4/hq720.jpg" alt="Watch the Introduction Video" width="600" />
+</a>
 
 ## Start using Python
 

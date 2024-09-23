@@ -29,9 +29,9 @@ if TYPE_CHECKING:
     from .....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
     from .....___lo_pip___.lo_util.resource_resolver import ResourceResolver
 else:
+    from ___lo_pip___.config import Config
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
     from ___lo_pip___.lo_util.resource_resolver import ResourceResolver
-    from ___lo_pip___.config import Config
 
 # endregion Imports
 

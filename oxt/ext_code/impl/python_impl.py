@@ -46,7 +46,12 @@ if TYPE_CHECKING:
     from ooo.dyn.awt.message_box_type import MessageBoxType
     from ooodev.dialog.msgbox import MsgBox
     from ...___lo_pip___.oxt_logger.oxt_logger import OxtLogger
-    from ...pythonpath.libre_pythonista_lib.const import UNO_DISPATCH_ABOUT, UNO_DISPATCH_LOG_WIN, FORMULA_PYC
+    from ...pythonpath.libre_pythonista_lib.const import (
+        UNO_DISPATCH_ABOUT,
+        UNO_DISPATCH_LOG_WIN,
+        FORMULA_PYC,
+        UNO_DISPATCH_INSTALL_PIP_PKG,
+    )
     from ...pythonpath.libre_pythonista_lib.const.event_const import PYC_FORMULA_INSERTING, PYC_FORMULA_INSERTED
 else:
     _CONDITIONS_MET = _conditions_met()
@@ -65,7 +70,12 @@ else:
         from libre_pythonista_lib.code.py_source_mgr import PyInstance
         from libre_pythonista_lib.log.py_logger import PyLogger
         from libre_pythonista_lib.event.shared_event import SharedEvent
-        from libre_pythonista_lib.const import UNO_DISPATCH_ABOUT, UNO_DISPATCH_LOG_WIN, FORMULA_PYC
+        from libre_pythonista_lib.const import (
+            UNO_DISPATCH_ABOUT,
+            UNO_DISPATCH_LOG_WIN,
+            FORMULA_PYC,
+            UNO_DISPATCH_INSTALL_PIP_PKG,
+        )
         from libre_pythonista_lib.const.event_const import PYC_FORMULA_INSERTING, PYC_FORMULA_INSERTED
 
     from ___lo_pip___.lo_util.resource_resolver import ResourceResolver
@@ -101,6 +111,14 @@ class PythonImpl(unohelper.Base, XJobExecutor):
                 _ = Lo.current_doc
                 Lo.dispatch_cmd(cmd=UNO_DISPATCH_ABOUT)
                 self._log.debug(f"About, Dispatched {UNO_DISPATCH_ABOUT}")
+            except Exception as e:
+                self._log.exception(f"Error dispatching")
+        elif event == "install_pip_pkg":
+            try:
+                self._log.debug(f"Install Pkg, Dispatching {UNO_DISPATCH_INSTALL_PIP_PKG}")
+                _ = Lo.current_doc
+                Lo.dispatch_cmd(cmd=UNO_DISPATCH_INSTALL_PIP_PKG)
+                self._log.debug(f"Install Pkg, Dispatched {UNO_DISPATCH_INSTALL_PIP_PKG}")
             except Exception as e:
                 self._log.exception(f"Error dispatching")
         elif event == "log_window":
