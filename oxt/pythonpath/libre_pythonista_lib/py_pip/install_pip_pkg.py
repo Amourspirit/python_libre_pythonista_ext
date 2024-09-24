@@ -1,5 +1,6 @@
 from __future__ import annotations
-from typing import Tuple, TYPE_CHECKING
+from typing import Any, cast, Dict, Tuple, TYPE_CHECKING
+import threading
 import re
 import urllib.request
 import urllib.error
@@ -15,14 +16,22 @@ if TYPE_CHECKING:
     from ....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
     from ....___lo_pip___.install.install_pkg import InstallPkg
     from ....___lo_pip___.lo_util.resource_resolver import ResourceResolver
-
+    from ....___lo_pip___.config import Config
     from ....___lo_pip___.install.download import Download
+    from ....___lo_pip___.events.named_events import GenNamedEvent
+    from ....___lo_pip___.events.lo_events import LoEvents
+    from ....___lo_pip___.events.args.event_args import EventArgs
+    from ....___lo_pip___.install.progress_window.progress_dialog_true import ProgressDialogTrue
 else:
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
     from ___lo_pip___.install.install_pkg import InstallPkg
-
+    from ___lo_pip___.config import Config
     from ___lo_pip___.install.download import Download
     from ___lo_pip___.lo_util.resource_resolver import ResourceResolver
+    from ___lo_pip___.events.named_events import GenNamedEvent
+    from ___lo_pip___.events.lo_events import LoEvents
+    from ___lo_pip___.events.args.event_args import EventArgs
+    from ___lo_pip___.install.progress_window.progress_dialog_true import ProgressDialogTrue
 
 
 class InstallPipPkg:
@@ -31,6 +40,25 @@ class InstallPipPkg:
         self._log = OxtLogger(log_name=self.__class__.__name__)
         self._ctx = Lo.get_context()
         self._rr = ResourceResolver(self._ctx)
+        self._config = Config()
+        self._events = LoEvents()
+        self._init_events()
+
+    def _init_events(self) -> None:
+        # By default no progress window will be displayed without this rule.
+        # The display window is part of the original install process
+        # and does not contains a rule that checks if the window is available.
+        # This class is expected to be called only from the main window via dispatch command.
+        # By hooking the event we can add the rule to the list of rules that will be checked.
+        # This will allow a dialog progress window to be displayed.
+        self._fn_on_progress_rules_event = self._on_progress_rules_event
+        self._events.on(GenNamedEvent.PROGRESS_RULES_EVENT, self._fn_on_progress_rules_event)
+
+    def _on_progress_rules_event(self, args: Any, event_arg: EventArgs) -> None:
+        # add the ProgressDialogTrue rule to the rules list to get the progress dialog to display
+        d_args = cast(Dict[str, Any], event_arg.event_data)
+        rules = cast(list, d_args["rules"])
+        rules.append(ProgressDialogTrue)
 
     def install(self) -> None:
         """Install pip packages."""
@@ -57,7 +85,11 @@ class InstallPipPkg:
                 )
                 self._log.warning(f"Package {name} not found.")
                 return
-            self._install_pkg(name, ver, dlg.force_install)
+            # self._install_pkg(name, ver, dlg.force_install)
+            # Run _install_pkg in a separate thread
+            force_install = dlg.force_install
+            thread = threading.Thread(target=self._install_pkg, args=(name, ver, force_install), daemon=True)
+            thread.start()
         else:
             self._log.debug("User cancelled the install package operation.")
             return
@@ -101,6 +133,7 @@ class InstallPipPkg:
         install = InstallPkg(ctx=self._ctx)
         result = install.install(req={name: version}, force=force)
         if result:
+            self._post_install()
             MsgBox.msgbox(
                 self._rr.resolve_string("msg13").format(name),  # Package {} installed successfully
                 title=self._rr.resolve_string("title02"),
@@ -115,3 +148,26 @@ class InstallPipPkg:
             )
             self._log.error(f"Package {name} installation failed.")
         self._log.debug("InstallPipPkg._install_pkg() completed.")
+
+    def _post_install(self) -> None:
+        self._log.debug("Post Install starting")
+        if not self._config.sym_link_cpython:
+            self._log.debug(
+                "Not creating CPython link because configuration has it turned off. Skipping post install."
+            )
+            return
+        if not self._config.is_mac and not self._config._is_app_image:
+            self._log.debug("Not Mac or AppImage. Skipping post install.")
+            return
+        try:
+            if TYPE_CHECKING:
+                from ....___lo_pip___.install.post.cpython_link import CPythonLink
+            else:
+                from ___lo_pip___.install.post.cpython_link import CPythonLink
+
+            link = CPythonLink()
+            link.link()
+        except Exception as err:
+            self._log.error(err, exc_info=True)
+            return
+        self._log.debug("Post Install Done")

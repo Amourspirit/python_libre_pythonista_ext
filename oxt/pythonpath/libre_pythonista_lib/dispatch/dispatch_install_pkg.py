@@ -9,7 +9,7 @@ from ooo.dyn.frame.feature_state_event import FeatureStateEvent
 
 from ooodev.loader import Lo
 
-from ..install.install_pip_pkg import InstallPipPkg
+from ..py_pip.install_pip_pkg import InstallPipPkg
 
 if TYPE_CHECKING:
     from com.sun.star.frame import XStatusListener

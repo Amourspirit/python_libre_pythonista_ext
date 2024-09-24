@@ -160,7 +160,7 @@ class RemoteDlgInput:
 
     def on_check_changed(self, src: Any, event: EventArgs, control_src: CtlCheckBox, *args, **kwargs) -> None:
         self._log.debug(f"Check Changed: {control_src.state}")
-        self._force_install = control_src.state
+        self._tri_force_install = control_src.state
 
     def _clean_pkg_name(self, pkg_name: str) -> str:
         """Remove any leading and trailing spaces and quotes."""

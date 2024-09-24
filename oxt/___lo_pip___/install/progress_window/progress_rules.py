@@ -1,11 +1,14 @@
 from __future__ import annotations
-from typing import List, Type
+from typing import List, Type, Any
 from .progress_t import ProgressT
 from .gnome_terminal import GnomeTerminal
 from .win_terminal import WindowsTerminal
 from .mac_terminal import MacTerminal
 from .progress_dialog import ProgressDialog
 from ...config import Config
+from ...events.lo_events import LoEvents
+from ...events.args.event_args import EventArgs
+from ...events.named_events import GenNamedEvent
 
 
 class ProgressRules:
@@ -21,11 +24,28 @@ class ProgressRules:
         self._rules: List[Type[ProgressT]] = []
         if auto_register:
             self._register_known_rules()
+        self._rules_event()
 
     def __len__(self) -> int:
         return len(self._rules)
 
     # region Methods
+
+    def _rules_event(self) -> None:
+        self._fn__on_rules_event = self._on_rules_event
+        events = LoEvents()
+        events.on(GenNamedEvent.PROGRESS_RULES_EVENT, self._fn__on_rules_event)
+        eargs = EventArgs(self)
+        eargs.event_data = {"rules": []}
+        events.trigger(GenNamedEvent.PROGRESS_RULES_EVENT, eargs)
+
+    def _on_rules_event(self, source: Any, event: EventArgs) -> None:
+        try:
+            rules = event.event_data["rules"]
+            for rule in rules:
+                self.register_rule(rule)
+        except Exception:
+            pass
 
     def register_rule(self, rule: Type[ProgressT]) -> None:
         """
@@ -57,6 +77,8 @@ class ProgressRules:
             raise ValueError(msg) from e
 
     def _reg_rule(self, rule: Type[ProgressT]):
+        if rule in self._rules:
+            return
         self._rules.append(rule)
 
     def _register_known_rules(self):
