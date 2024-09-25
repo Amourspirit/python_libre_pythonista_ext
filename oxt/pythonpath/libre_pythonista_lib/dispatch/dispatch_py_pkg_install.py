@@ -18,8 +18,8 @@ else:
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
 
 
-class DispatchInstallPkg(unohelper.Base, XDispatch):
-    """If the View is not in PY_OBJ state the it is switched into PY_OBJ State."""
+class DispatchPyPkgInstall(unohelper.Base, XDispatch):
+    """Displays Dialog to install a pip package."""
 
     def __init__(self):
         super().__init__()

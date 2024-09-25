@@ -38,7 +38,7 @@ class RemoteDlgInput:
         self._calc_props = CalcProps(self._doc)
         self._border_kind = BorderKind.BORDER_SIMPLE
         self._width = 400
-        self._height = 150
+        self._height = 120
         self._btn_width = 100
         self._btn_height = 30
         self._margin = 6

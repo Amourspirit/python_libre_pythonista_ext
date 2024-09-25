@@ -32,27 +32,26 @@ from ..const import (
     UNO_DISPATCH_ABOUT,
     UNO_DISPATCH_LOG_WIN,
     UNO_DISPATCH_CELL_CTl_UPDATE,
-    UNO_DISPATCH_INSTALL_PIP_PKG,
+    UNO_DISPATCH_PIP_PKG_INSTALL,
+    UNO_DISPATCH_PIP_PKG_INSTALLED,
 )
 from ..const.event_const import GBL_DOC_CLOSING
 
-from .dispatch_about import DispatchAbout
-from .dispatch_edit_py_cell import DispatchEditPyCell
-from .dispatch_toggle_df_state import DispatchToggleDfState
+# region Dispatch Imports
+# Most imports are lazy imports to avoid potential failure.
+# If not lazy import then a failing import could cause all dispatches here to fail.
+# Also many commands import other modules that may not be common, so lazy import is used to avoid unnecessary imports.
 from .dispatch_toggle_data_tbl_state import DispatchToggleDataTblState
-from .dispatch_toggle_series_state import DispatchToggleSeriesState
-from .dispatch_del_py_cell import DispatchDelPyCell
 from .dispatch_py_obj_state import DispatchPyObjState
 from .dispatch_cell_select import DispatchCellSelect
 from .dispatch_card_df import DispatchCardDf
-from .dispatch_card_tbl_data import DispatchCardTblData
 from .dispatch_rng_select_popup import DispatchRngSelectPopup
-from .dispatch_edit_py_cell_mb import DispatchEditPyCellMb
-from .dispatch_log_window import DispatchLogWindow
 from .dispatch_cell_select_recalc import DispatchCellSelectRecalc
 from .dispatch_ctl_update import DispatchCtlUpdate
 
-from .dispatch_install_pkg import DispatchInstallPkg
+# endregion Dispatch Imports
+
+# from .dispatch_install_pkg import DispatchInstallPkg
 
 # from .listen.edit_status_listener import EditStatusListener
 from ..log.log_inst import LogInst
@@ -113,23 +112,23 @@ class DispatchProviderInterceptor(unohelper.Base, XDispatchProviderInterceptor):
         """
         return self._slave
 
-    def setMasterDispatchProvider(self, new_supplier: XDispatchProvider) -> None:
+    def setMasterDispatchProvider(self, NewSupplier: XDispatchProvider) -> None:
         """
         sets the master XDispatchProvider, which may forward calls to its XDispatchProvider.queryDispatch() to this dispatch provider.
         """
-        self._master = new_supplier
+        self._master = NewSupplier
 
-    def setSlaveDispatchProvider(self, new_dispatch_provider: XDispatchProvider) -> None:
+    def setSlaveDispatchProvider(self, NewDispatchProvider: XDispatchProvider) -> None:
         """
         sets the slave XDispatchProvider to which calls to XDispatchProvider.queryDispatch() can be forwarded under control of this dispatch provider.
         """
-        self._slave = new_dispatch_provider
+        self._slave = NewDispatchProvider
 
-    def queryDispatch(self, url: URL, target_frame_name: str, search_flags: int) -> XDispatch | None:
+    def queryDispatch(self, URL: URL, TargetFrameName: str, SearchFlags: int) -> XDispatch | None:  # type: ignore
         """
         Searches for an XDispatch for the specified URL within the specified target frame.
         """
-        if url.Protocol == "slot:":
+        if URL.Protocol == "slot:":
             # not really sure if this is necessary but there have been reports in the past
             # of crashes without this check.
             return None
@@ -145,112 +144,176 @@ class DispatchProviderInterceptor(unohelper.Base, XDispatchProviderInterceptor):
         # 2024-06-19 21:23:54,873 - libre_pythonista - DEBUG - DispatchProviderInterceptor.queryDispatch: .uno:SafeMode
         # 2024-06-19 21:23:54,874 - libre_pythonista - DEBUG - DispatchProviderInterceptor.queryDispatch: .uno:DevelopmentToolsDockingWindow
 
-        if url.Main == UNO_DISPATCH_CODE_EDIT:
+        if URL.Main == UNO_DISPATCH_CODE_EDIT:
+            try:
+                from .dispatch_edit_py_cell import DispatchEditPyCell
+            except ImportError:
+                log.exception("DispatchEditPyCell import error")
+                raise
             with contextlib.suppress(Exception):
-                args = self._convert_query_to_dict(url.Arguments)
+
+                args = self._convert_query_to_dict(URL.Arguments)
                 with log.indent(True):
                     log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchEditPyCell")
                 result = DispatchEditPyCell(sheet=args["sheet"], cell=args["cell"])
                 return result
-        elif url.Main == UNO_DISPATCH_CODE_EDIT_MB:
+        elif URL.Main == UNO_DISPATCH_CODE_EDIT_MB:
+            try:
+                from .dispatch_edit_py_cell_mb import DispatchEditPyCellMb
+            except ImportError:
+                log.exception("DispatchEditPyCellMb import error")
+                raise
             with contextlib.suppress(Exception):
-                args = self._convert_query_to_dict(url.Arguments)
+
+                args = self._convert_query_to_dict(URL.Arguments)
                 with log.indent(True):
                     log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchEditPyCellMb")
                 in_thread = args.get("in_thread", "0") == "1"
                 result = DispatchEditPyCellMb(sheet=args["sheet"], cell=args["cell"], in_thread=in_thread)
                 return result
-        elif url.Main == UNO_DISPATCH_LOG_WIN:
+        elif URL.Main == UNO_DISPATCH_LOG_WIN:
+            try:
+                from .dispatch_log_window import DispatchLogWindow
+            except ImportError:
+                log.exception("DispatchLogWindow import error")
+                raise
             with contextlib.suppress(Exception):
-                args = self._convert_query_to_dict(url.Arguments)
+
+                args = self._convert_query_to_dict(URL.Arguments)
                 with log.indent(True):
                     log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchLogWindow")
                 in_thread = args.get("in_thread", "0") == "1"
                 result = DispatchLogWindow(in_thread=in_thread)
                 return result
-        elif url.Main == UNO_DISPATCH_DF_STATE:
+        elif URL.Main == UNO_DISPATCH_DF_STATE:
+            try:
+                from .dispatch_toggle_df_state import DispatchToggleDfState
+            except ImportError:
+                log.exception("DispatchToggleDfState import error")
+                raise
             with contextlib.suppress(Exception):
-                args = self._convert_query_to_dict(url.Arguments)
+
+                args = self._convert_query_to_dict(URL.Arguments)
                 with log.indent(True):
                     log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchToggleDfState")
                 return DispatchToggleDfState(sheet=args["sheet"], cell=args["cell"])
-        elif url.Main == UNO_DISPATCH_DS_STATE:
+        elif URL.Main == UNO_DISPATCH_DS_STATE:
+            try:
+                from .dispatch_toggle_series_state import DispatchToggleSeriesState
+            except ImportError:
+                log.exception("DispatchToggleSeriesState import error")
+                raise
             with contextlib.suppress(Exception):
-                args = self._convert_query_to_dict(url.Arguments)
+
+                args = self._convert_query_to_dict(URL.Arguments)
                 with log.indent(True):
                     log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchToggleSeriesState")
                 return DispatchToggleSeriesState(sheet=args["sheet"], cell=args["cell"])
-        elif url.Main == UNO_DISPATCH_DATA_TBL_STATE:
+        elif URL.Main == UNO_DISPATCH_DATA_TBL_STATE:
             with contextlib.suppress(Exception):
-                args = self._convert_query_to_dict(url.Arguments)
+                args = self._convert_query_to_dict(URL.Arguments)
                 with log.indent(True):
                     log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchToggleDataTblState")
                 return DispatchToggleDataTblState(sheet=args["sheet"], cell=args["cell"])
-        elif url.Main == UNO_DISPATCH_CODE_DEL:
+        elif URL.Main == UNO_DISPATCH_CODE_DEL:
+            try:
+                from .dispatch_del_py_cell import DispatchDelPyCell
+            except ImportError:
+                log.exception("DispatchDelPyCell import error")
+                raise
             with contextlib.suppress(Exception):
-                args = self._convert_query_to_dict(url.Arguments)
+
+                args = self._convert_query_to_dict(URL.Arguments)
                 with log.indent(True):
                     log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchDelPyCell")
                 return DispatchDelPyCell(sheet=args["sheet"], cell=args["cell"])
-        elif url.Main == UNO_DISPATCH_PY_OBJ_STATE:
+        elif URL.Main == UNO_DISPATCH_PY_OBJ_STATE:
             with contextlib.suppress(Exception):
-                args = self._convert_query_to_dict(url.Arguments)
+                args = self._convert_query_to_dict(URL.Arguments)
                 with log.indent(True):
                     log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchPyObjState")
                 return DispatchPyObjState(sheet=args["sheet"], cell=args["cell"])
-        elif url.Main == UNO_DISPATCH_CELL_SELECT:
+        elif URL.Main == UNO_DISPATCH_CELL_SELECT:
             with contextlib.suppress(Exception):
-                args = self._convert_query_to_dict(url.Arguments)
+                args = self._convert_query_to_dict(URL.Arguments)
                 with log.indent(True):
                     log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchCellSelect")
                 return DispatchCellSelect(sheet=args["sheet"], cell=args["cell"])
-        elif url.Main == UNO_DISPATCH_CELL_SELECT_RECALC:
+        elif URL.Main == UNO_DISPATCH_CELL_SELECT_RECALC:
             with contextlib.suppress(Exception):
-                args = self._convert_query_to_dict(url.Arguments)
+                args = self._convert_query_to_dict(URL.Arguments)
                 with log.indent(True):
                     log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchCellSelectRecalc")
                 return DispatchCellSelectRecalc(sheet=args["sheet"], cell=args["cell"])
-        elif url.Main == UNO_DISPATCH_DF_CARD:
+        elif URL.Main == UNO_DISPATCH_DF_CARD:
             with contextlib.suppress(Exception):
-                args = self._convert_query_to_dict(url.Arguments)
+                args = self._convert_query_to_dict(URL.Arguments)
                 with log.indent(True):
                     log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchCardDf")
                 return DispatchCardDf(sheet=args["sheet"], cell=args["cell"])
-        elif url.Main == UNO_DISPATCH_DATA_TBL_CARD:
+        elif URL.Main == UNO_DISPATCH_DATA_TBL_CARD:
+            try:
+                from .dispatch_card_tbl_data import DispatchCardTblData
+            except ImportError:
+                log.exception("DispatchCardTblData import error")
+                raise
             with contextlib.suppress(Exception):
-                args = self._convert_query_to_dict(url.Arguments)
+
+                args = self._convert_query_to_dict(URL.Arguments)
                 with log.indent(True):
                     log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchCardTblData")
                 return DispatchCardTblData(sheet=args["sheet"], cell=args["cell"])
-        elif url.Main == UNO_DISPATCH_SEL_RNG:
+        elif URL.Main == UNO_DISPATCH_SEL_RNG:
             with contextlib.suppress(Exception):
-                if url.Arguments:
-                    args = self._convert_query_to_dict(url.Arguments)
+                if URL.Arguments:
+                    args = self._convert_query_to_dict(URL.Arguments)
                 else:
                     args = {}
                 with log.indent(True):
                     log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchRngSelectPopup")
                 return DispatchRngSelectPopup(**args)
-        elif url.Main == UNO_DISPATCH_ABOUT:
+        elif URL.Main == UNO_DISPATCH_ABOUT:
+            try:
+                from .dispatch_about import DispatchAbout
+            except ImportError:
+                log.exception("DispatchAbout import error")
+                raise
             with contextlib.suppress(Exception):
+
                 with log.indent(True):
                     log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchAbout")
                 return DispatchAbout()
-        elif url.Main == UNO_DISPATCH_CELL_CTl_UPDATE:
+        elif URL.Main == UNO_DISPATCH_CELL_CTl_UPDATE:
             with contextlib.suppress(Exception):
                 with log.indent(True):
-                    args = self._convert_query_to_dict(url.Arguments)
+                    args = self._convert_query_to_dict(URL.Arguments)
                     log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchCtlUpdate")
                 return DispatchCtlUpdate(sheet=args["sheet"], cell=args["cell"])
-        elif url.Main == UNO_DISPATCH_INSTALL_PIP_PKG:
+        elif URL.Main == UNO_DISPATCH_PIP_PKG_INSTALL:
+            try:
+                from .dispatch_py_pkg_install import DispatchPyPkgInstall
+            except ImportError:
+                log.exception("DispatchPyPkgInstall import error")
+                raise
             with contextlib.suppress(Exception):
                 with log.indent(True):
-                    log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchAbout")
-                return DispatchInstallPkg()
+                    log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchPyPkgInstall")
+                return DispatchPyPkgInstall()
 
-        return self._slave.queryDispatch(url, target_frame_name, search_flags)
+        elif URL.Main == UNO_DISPATCH_PIP_PKG_INSTALLED:
+            try:
+                from .dispatch_py_pkg_installed import DispatchPyPkgInstalled
+            except ImportError:
+                log.exception("DispatchPyPkgInstalled import error")
+                raise
+            with contextlib.suppress(Exception):
+                with log.indent(True):
+                    log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchPyPkgInstalled")
+                return DispatchPyPkgInstalled()
 
-    def queryDispatches(self, requests: Tuple[DispatchDescriptor, ...]) -> Tuple[XDispatch, ...]:
+        return self._slave.queryDispatch(URL, TargetFrameName, SearchFlags)
+
+    def queryDispatches(self, Requests: Tuple[DispatchDescriptor, ...]) -> Tuple[XDispatch, ...]:
         """
         Actually this method is redundant to XDispatchProvider.queryDispatch() to avoid multiple remote calls.
 

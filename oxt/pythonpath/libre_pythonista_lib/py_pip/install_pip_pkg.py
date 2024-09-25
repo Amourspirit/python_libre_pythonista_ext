@@ -9,7 +9,7 @@ import uno
 from ooodev.loader import Lo
 from ooodev.dialog.msgbox import MessageBoxResultsEnum, MessageBoxType, MsgBox
 
-from ..dialog.install.remote_dlg_input import RemoteDlgInput
+from ..dialog.py_pip.remote_dlg_input import RemoteDlgInput
 
 
 if TYPE_CHECKING:

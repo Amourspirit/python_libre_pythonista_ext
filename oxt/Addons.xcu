@@ -141,6 +141,19 @@
 							<value>_self</value>
 						</prop>
 					</node>
+					<node oor:name="m006" oor:op="replace">
+						<prop oor:name="URL" oor:type="xs:string">
+							<value>service:___lo_identifier___.impl?installed_pip_pkg</value>
+						</prop>
+						<prop oor:name="Title" oor:type="xs:string">
+							<value>Package Info</value>
+							<value xml:lang="fr">Informations sur le paquet</value>
+							<value xml:lang="en-US">Package Info</value>
+						</prop>
+						<prop oor:name="Target" oor:type="xs:string">
+							<value>_self</value>
+						</prop>
+					</node>
 					<node oor:name="m098"
 						oor:op="replace">
 						<prop oor:name="URL" oor:type="xs:string">
