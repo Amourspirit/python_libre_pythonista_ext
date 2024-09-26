@@ -43,22 +43,23 @@ class ProgressRules:
         try:
             rules = event.event_data["rules"]
             for rule in rules:
-                self.register_rule(rule)
+                self.register_rule(rule, 0)
         except Exception:
             pass
 
-    def register_rule(self, rule: Type[ProgressT]) -> None:
+    def register_rule(self, rule: Type[ProgressT], idx: int = -1) -> None:
         """
         Register rule
 
         Args:
             rule (ProgressT): Rule to register
+            idx (int, optional): Index to insert rule. A value of -1 means append. Defaults to -1.
         """
         if rule in self._rules:
             # msg = f"{self.__class__.__name__}.register_rule() Rule is already registered"
             # log.logger.warning(msg)
             return
-        self._reg_rule(rule=rule)
+        self._reg_rule(rule=rule, idx=idx)
 
     def unregister_rule(self, rule: Type[ProgressT]):
         """
@@ -76,10 +77,15 @@ class ProgressRules:
             msg = f"{self.__class__.__name__}.unregister_rule() Unable to unregister rule."
             raise ValueError(msg) from e
 
-    def _reg_rule(self, rule: Type[ProgressT]):
+    def _reg_rule(self, rule: Type[ProgressT], idx: int = 1) -> None:
         if rule in self._rules:
             return
-        self._rules.append(rule)
+        if idx < 0:
+            self._rules.append(rule)
+        else:
+            if idx > len(self._rules):
+                idx = len(self._rules)
+            self._rules.insert(idx, rule)
 
     def _register_known_rules(self):
         cfg = Config()

@@ -33,6 +33,7 @@ from ..const import (
     UNO_DISPATCH_LOG_WIN,
     UNO_DISPATCH_CELL_CTl_UPDATE,
     UNO_DISPATCH_PIP_PKG_INSTALL,
+    UNO_DISPATCH_PIP_PKG_UNINSTALL,
     UNO_DISPATCH_PIP_PKG_INSTALLED,
 )
 from ..const.event_const import GBL_DOC_CLOSING
@@ -299,6 +300,17 @@ class DispatchProviderInterceptor(unohelper.Base, XDispatchProviderInterceptor):
                 with log.indent(True):
                     log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchPyPkgInstall")
                 return DispatchPyPkgInstall()
+
+        elif URL.Main == UNO_DISPATCH_PIP_PKG_UNINSTALL:
+            try:
+                from .dispatch_py_pkg_uninstall import DispatchPyPkgUninstall
+            except ImportError:
+                log.exception("DispatchPyPkgUninstall import error")
+                raise
+            with contextlib.suppress(Exception):
+                with log.indent(True):
+                    log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchPyPkgUninstall")
+                return DispatchPyPkgUninstall()
 
         elif URL.Main == UNO_DISPATCH_PIP_PKG_INSTALLED:
             try:

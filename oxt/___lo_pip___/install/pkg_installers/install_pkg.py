@@ -167,7 +167,7 @@ class InstallPkg:
 
         return result
 
-    def _uninstall_pkg(self, pkg: str) -> bool:
+    def uninstall_pkg(self, pkg: str) -> bool:
         # pip uninstall -y package1 package2 package3
         cmd = ["uninstall", "-y"]
         cmd = self._cmd_pip(*[*cmd, pkg])
@@ -221,7 +221,7 @@ class InstallPkg:
     def _uninstall_allowed(self, pkg_name: str) -> bool:
         """Check if a package can be uninstalled."""
         # don't uninstall pip no matter what.
-        if pkg_name.lower() == "pip":
+        if pkg_name in self._config.no_pip_remove:
             return False
         return True
 
@@ -262,7 +262,7 @@ class InstallPkg:
                 pkg_ver = self.get_package_version(name)
                 if pkg_ver:
                     try:
-                        if not self._uninstall_pkg(name):
+                        if not self.uninstall_pkg(name):
                             return False
                     except PermissionError as e:
                         if self.config.install_on_no_uninstall_permission:

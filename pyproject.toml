@@ -40,6 +40,7 @@ unload_after_install = false
 run_imports = ["ooodev", "verr", "sortedcontainers"]
 # when log_indent is set indent_str can be used in the format str - "%(asctime)s %(levelname)s - %(indent_str)s%(name)s: %(message)s"
 log_indent = 0 # set to 0 or less to disable; Ignored in windows. Should be set to 0 for production.
+no_pip_remove = ["pip", "setuptools", "wheel", "pandas", "matplotlib", "numpy", "seaborn", "odfpy", "ooo-dev-tools", "typing-extensions", "sortedcontainers"]
 
 [tool.oxt.token]
 # in the form of "token_name": "token_value"

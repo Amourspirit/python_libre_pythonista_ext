@@ -51,6 +51,7 @@ if TYPE_CHECKING:
         UNO_DISPATCH_LOG_WIN,
         FORMULA_PYC,
         UNO_DISPATCH_PIP_PKG_INSTALL,
+        UNO_DISPATCH_PIP_PKG_UNINSTALL,
         UNO_DISPATCH_PIP_PKG_INSTALLED,
     )
     from ...pythonpath.libre_pythonista_lib.const.event_const import PYC_FORMULA_INSERTING, PYC_FORMULA_INSERTED
@@ -76,6 +77,7 @@ else:
             UNO_DISPATCH_LOG_WIN,
             FORMULA_PYC,
             UNO_DISPATCH_PIP_PKG_INSTALL,
+            UNO_DISPATCH_PIP_PKG_UNINSTALL,
             UNO_DISPATCH_PIP_PKG_INSTALLED,
         )
         from libre_pythonista_lib.const.event_const import PYC_FORMULA_INSERTING, PYC_FORMULA_INSERTED
@@ -123,6 +125,14 @@ class PythonImpl(unohelper.Base, XJobExecutor):
                 self._log.debug(f"Install Pkg, Dispatched {UNO_DISPATCH_PIP_PKG_INSTALL}")
             except Exception as e:
                 self._log.exception(f"Error dispatching")
+        elif event == "uninstall_pip_pkg":
+            try:
+                self._log.debug(f"Installed Pkg, Dispatching {UNO_DISPATCH_PIP_PKG_UNINSTALL}")
+                _ = Lo.current_doc
+                Lo.dispatch_cmd(cmd=UNO_DISPATCH_PIP_PKG_UNINSTALL)
+                self._log.debug(f"Installed Pkg, Dispatched {UNO_DISPATCH_PIP_PKG_UNINSTALL}")
+            except Exception as e:
+                self._log.exception(f"Error dispatching")
         elif event == "installed_pip_pkg":
             try:
                 self._log.debug(f"Installed Pkg, Dispatching {UNO_DISPATCH_PIP_PKG_INSTALLED}")
@@ -131,6 +141,7 @@ class PythonImpl(unohelper.Base, XJobExecutor):
                 self._log.debug(f"Installed Pkg, Dispatched {UNO_DISPATCH_PIP_PKG_INSTALLED}")
             except Exception as e:
                 self._log.exception(f"Error dispatching")
+
         elif event == "log_window":
             try:
                 self._log.debug(f"Log Window, Dispatching {UNO_DISPATCH_LOG_WIN}")

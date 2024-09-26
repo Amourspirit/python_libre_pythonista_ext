@@ -1,5 +1,6 @@
 from __future__ import annotations
 from typing import Any, cast, Dict, Tuple, TYPE_CHECKING
+import importlib.util
 import threading
 import re
 import urllib.request
@@ -7,9 +8,11 @@ import urllib.error
 import uno
 
 from ooodev.loader import Lo
-from ooodev.dialog.msgbox import MessageBoxResultsEnum, MessageBoxType, MsgBox
+from ooodev.dialog.msgbox import MessageBoxResultsEnum, MessageBoxType, MsgBox, MessageBoxButtonsEnum
+from ooodev.dialog.input import Input
 
 from ..dialog.py_pip.remote_dlg_input import RemoteDlgInput
+from .pkg_info import PkgInfo
 
 
 if TYPE_CHECKING:
@@ -41,6 +44,7 @@ class InstallPipPkg:
         self._ctx = Lo.get_context()
         self._rr = ResourceResolver(self._ctx)
         self._config = Config()
+        self._pk_info = PkgInfo()
         self._events = LoEvents()
         self._init_events()
 
@@ -94,6 +98,56 @@ class InstallPipPkg:
             self._log.debug("User cancelled the install package operation.")
             return
 
+    def uninstall(self) -> None:
+        self._log.debug("InstallPipPkg.uninstall()")
+        pkg_name = Input.get_input(
+            title=self._rr.resolve_string("strPackageName"),
+            msg=self._rr.resolve_string("strPackageNameUninstall"),
+            ok_lbl=self._rr.resolve_string("dlg01"),
+            cancel_lbl=self._rr.resolve_string("dlg02"),
+        )
+        self._log.debug(f"uninstall() Package name: {pkg_name}")
+        pkg_name = pkg_name.strip()
+        if not pkg_name:
+            self._log.debug("uninstall() No input.")
+            MsgBox.msgbox(
+                self._rr.resolve_string("mbmsg008"),
+                title=self._rr.resolve_string("mbtitle008"),
+                boxtype=MessageBoxType.INFOBOX,
+            )
+            return
+        if pkg_name in self._config.no_pip_remove:
+            MsgBox.msgbox(
+                self._rr.resolve_string("msg17").format(pkg_name),  # Package {} is protected and can not be removed
+                title=self._rr.resolve_string("msg01"),
+                boxtype=MessageBoxType.ERRORBOX,
+            )
+            self._log.info(f"Package {pkg_name} cannot be removed.")
+            return
+        if not self.is_package_installed(pkg_name):
+            MsgBox.msgbox(
+                self._rr.resolve_string("mbmsg010").format(pkg_name),  # Package {} is not installed
+                title=self._rr.resolve_string("msg01"),  # Error
+                boxtype=MessageBoxType.ERRORBOX,
+            )
+            self._log.info(f"Package {pkg_name} is not installed.")
+            return
+        # display a message box ask the user to confirm the uninstall
+        result = MsgBox.msgbox(
+            self._rr.resolve_string("msg18").format(pkg_name),  # Are your sure you want to remove {}
+            title=self._rr.resolve_string("title14"),  # Confirm
+            boxtype=MessageBoxType.QUERYBOX,
+            buttons=MessageBoxButtonsEnum.BUTTONS_YES_NO,
+        )
+        if result == MessageBoxResultsEnum.YES.value:
+            # Run _un_install_pkg in a separate thread
+            thread = threading.Thread(target=self._un_install_pkg, args=(pkg_name,), daemon=True)
+            thread.start()
+
+    def is_package_installed(self, pkg_name: str) -> bool:
+        """Check if a package is installed."""
+        return self._pk_info.is_package_installed(pkg_name)
+
     def _is_internet_connected(self) -> bool:
         """Check if the internet is connected."""
         return Download().is_internet
@@ -102,10 +156,7 @@ class InstallPipPkg:
         # Define the regex pattern to match the package name and version specifier
         pattern = r"^([a-zA-Z0-9\-_]+)(.*)$"
 
-        # Search for the pattern in the input string
-        match = re.match(pattern, pip_string)
-
-        if match:
+        if match := re.match(pattern, pip_string):
             # Extract the package name and the remaining string
             package_name = match.group(1)
             version_specifier = match.group(2).strip()
@@ -148,6 +199,26 @@ class InstallPipPkg:
             )
             self._log.error(f"Package {name} installation failed.")
         self._log.debug("InstallPipPkg._install_pkg() completed.")
+
+    def _un_install_pkg(self, name: str) -> None:
+        """Install a package using pip."""
+        self._log.debug(f"InstallPipPkg._un_install_pkg({name})")
+        install = InstallPkg(ctx=self._ctx)
+        if result := install.uninstall(name):
+            MsgBox.msgbox(
+                self._rr.resolve_string("msg15").format(name),  # Package {} removed successfully
+                title=self._rr.resolve_string("title02"),
+                boxtype=MessageBoxType.INFOBOX,
+            )
+            self._log.info(f"Package {name} removed successfully.")
+        else:
+            MsgBox.msgbox(
+                self._rr.resolve_string("msg16").format(name),  # Package {} removal failed
+                title=self._rr.resolve_string("msg01"),
+                boxtype=MessageBoxType.ERRORBOX,
+            )
+            self._log.error(f"Package {name} removal failed.")
+        self._log.debug("InstallPipPkg._un_install_pkg() completed.")
 
     def _post_install(self) -> None:
         self._log.debug("Post Install starting")

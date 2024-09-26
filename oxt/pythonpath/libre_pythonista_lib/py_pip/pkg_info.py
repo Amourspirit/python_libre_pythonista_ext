@@ -1,11 +1,14 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
-import importlib.util
+from typing import List, Dict, TYPE_CHECKING
+import os
+import sys
+import subprocess
 import uno
 
 from ooodev.loader import Lo
 from ooodev.dialog.msgbox import MessageBoxType, MsgBox
 from ooodev.dialog.input import Input
+from ooodev.globals import GTC
 
 
 if TYPE_CHECKING:
@@ -26,12 +29,57 @@ class PkgInfo:
         self._rr = ResourceResolver(self._ctx)
         self._config = Config()
 
+    def get_env(self) -> Dict[str, str]:
+        """
+        Gets Environment used for subprocess.
+        """
+        cache = GTC()
+        key = f"{self.__class__.__module__}.py_subprocess_env"
+        if key in cache:
+            if self._log.is_debug:
+                self._log.debug(f"Cache hit: {key}")
+            return cache[key]
+        my_env = os.environ.copy()
+        py_path = ""
+        p_sep = ";" if os.name == "nt" else ":"
+        for d in sys.path:
+            py_path = py_path + d + p_sep
+        my_env["PYTHONPATH"] = py_path
+        cache[key] = my_env
+        return my_env
+
+    def get_cmd_pip(self, *args: str) -> List[str]:
+        """
+        Gets the command to run pip in a subprocess.
+
+        Returns:
+            List[str]: Command to run pip.
+        """
+        cmd: List[str] = [str(self._config.python_path), "-m", "pip", *args]
+        if self._config.log_pip_installs and self._config.log_file:
+            log_file = self._config.log_file
+
+            if " " in log_file:
+                log_file = f'"{log_file}"'
+            cmd.append(f"--log={log_file}")
+        return cmd
+
+    def is_package_installed(self, pkg_name: str) -> bool:
+        """Check if a package is installed."""
+        result = subprocess.run(
+            self.get_cmd_pip("show", pkg_name),
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            env=self.get_env(),
+        )
+        return result.returncode == 0
+
     def show_installed(self) -> None:
         """Install pip packages."""
         self._log.debug("InstallPipPkg.show_installed()")
         pkg_name = Input.get_input(
-            title="Package Check",
-            msg="Enter the package name",
+            title=self._rr.resolve_string("strPackageName"),
+            msg=self._rr.resolve_string("strPackageNameInstallChk"),
             ok_lbl=self._rr.resolve_string("dlg01"),
             cancel_lbl=self._rr.resolve_string("dlg02"),
         )
@@ -47,8 +95,7 @@ class PkgInfo:
             return
 
         if self.is_package_installed(pkg_name):
-            ver = self.get_package_version(pkg_name)
-            if ver:
+            if ver := self.get_package_version(pkg_name):
                 msg = self._rr.resolve_string("mbmsg011").format(pkg_name, ver)  # Package {} version {} is installed
             else:
                 msg = self._rr.resolve_string("mbmsg009").format(pkg_name)  # Package {} is installed
@@ -66,22 +113,18 @@ class PkgInfo:
             )
             self._log.info(f"Package {pkg_name} is not installed.")
 
-    def is_package_installed(self, package_name: str) -> bool:
-        """Check if a package is installed."""
-        package_spec = importlib.util.find_spec(package_name)
-        if self._log.is_debug and package_spec:
-            self._log.debug(f"Package {package_name} spec. {package_spec}")
-        return package_spec is not None
+    def get_package_version(self, pkg_name: str) -> str:
+        result = subprocess.run(
+            self.get_cmd_pip("show", pkg_name),
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            env=self.get_env(),
+        )
+        if result.returncode != 0:
+            return ""
 
-    def get_package_version(self, package_name: str) -> str:
-        try:
-            import pkg_resources
-        except ImportError:
-            self._log.exception("get_package_version() Package not found: pkg_resources")
-            return ""
-        try:
-            version = pkg_resources.get_distribution(package_name).version
-            return version
-        except pkg_resources.DistributionNotFound:
-            self._log.debug(f"get_package_version() Package {package_name} not found")
-            return ""
+        return next(
+            (line.split(":", 1)[1].strip() for line in result.stdout.splitlines() if line.startswith("Version:")),
+            "",
+        )

@@ -613,6 +613,17 @@ class Config(metaclass=Singleton):
         return self._basic_config.isolate_windows
 
     @property
+    def no_pip_remove(self) -> Set[str]:
+        """
+        Gets the pip packages that are not allowed to be removed.
+
+        The value for this property can be set in pyproject.toml (tool.oxt.config.no_pip_remove)
+
+        This is the packages that are not allowd to be removed by the installer.
+        """
+        return self._basic_config.no_pip_remove
+
+    @property
     def sym_link_cpython(self) -> bool:
         """
         Gets the flag indicating if CPython files should be symlinked on Linux AppImage and Mac OS.

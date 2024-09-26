@@ -143,6 +143,19 @@
 					</node>
 					<node oor:name="m006" oor:op="replace">
 						<prop oor:name="URL" oor:type="xs:string">
+							<value>service:___lo_identifier___.impl?uninstall_pip_pkg</value>
+						</prop>
+						<prop oor:name="Title" oor:type="xs:string">
+							<value>Uninstall Pip Package</value>
+							<value xml:lang="fr">Désinstaller le paquet Pip</value>
+							<value xml:lang="en-US">Uninstall Pip Package</value>
+						</prop>
+						<prop oor:name="Target" oor:type="xs:string">
+							<value>_self</value>
+						</prop>
+					</node>
+					<node oor:name="m007" oor:op="replace">
+						<prop oor:name="URL" oor:type="xs:string">
 							<value>service:___lo_identifier___.impl?installed_pip_pkg</value>
 						</prop>
 						<prop oor:name="Title" oor:type="xs:string">
