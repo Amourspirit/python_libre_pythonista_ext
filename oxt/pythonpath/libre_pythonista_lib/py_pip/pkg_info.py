@@ -20,6 +20,13 @@ else:
     from ___lo_pip___.config import Config
     from ___lo_pip___.lo_util.resource_resolver import ResourceResolver
 
+# silent subprocess
+if os.name == "nt":
+    STARTUP_INFO = subprocess.STARTUPINFO()
+    STARTUP_INFO.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+else:
+    STARTUP_INFO = None
+
 
 class PkgInfo:
 
@@ -66,12 +73,22 @@ class PkgInfo:
 
     def is_package_installed(self, pkg_name: str) -> bool:
         """Check if a package is installed."""
-        result = subprocess.run(
-            self.get_cmd_pip("show", pkg_name),
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            env=self.get_env(),
-        )
+
+        if STARTUP_INFO:
+            result = subprocess.run(
+                self.get_cmd_pip("show", pkg_name),
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                env=self.get_env(),
+                startupinfo=STARTUP_INFO,
+            )
+        else:
+            result = subprocess.run(
+                self.get_cmd_pip("show", pkg_name),
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                env=self.get_env(),
+            )
         return result.returncode == 0
 
     def show_installed(self) -> None:
@@ -114,13 +131,23 @@ class PkgInfo:
             self._log.info(f"Package {pkg_name} is not installed.")
 
     def get_package_version(self, pkg_name: str) -> str:
-        result = subprocess.run(
-            self.get_cmd_pip("show", pkg_name),
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-            env=self.get_env(),
-        )
+        if STARTUP_INFO:
+            result = subprocess.run(
+                self.get_cmd_pip("show", pkg_name),
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                env=self.get_env(),
+                startupinfo=STARTUP_INFO,
+            )
+        else:
+            result = subprocess.run(
+                self.get_cmd_pip("show", pkg_name),
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                env=self.get_env(),
+            )
         if result.returncode != 0:
             return ""
 

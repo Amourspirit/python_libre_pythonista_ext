@@ -1,6 +1,5 @@
 from __future__ import annotations
 from typing import Any, cast, Dict, Tuple, TYPE_CHECKING
-import importlib.util
 import threading
 import re
 import urllib.request
