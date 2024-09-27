@@ -8,8 +8,10 @@ import uno
 
 from ooodev.loader import Lo
 from ooodev.dialog.msgbox import MessageBoxResultsEnum, MessageBoxType, MsgBox, MessageBoxButtonsEnum
-from ooodev.dialog.input import Input
 
+# from ooodev.dialog.input import Input
+
+from ..dialog.user_input.input import Input
 from ..dialog.py_pip.remote_dlg_input import RemoteDlgInput
 from .pkg_info import PkgInfo
 

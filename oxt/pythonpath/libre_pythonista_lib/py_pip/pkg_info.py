@@ -7,9 +7,11 @@ import uno
 
 from ooodev.loader import Lo
 from ooodev.dialog.msgbox import MessageBoxType, MsgBox
-from ooodev.dialog.input import Input
+
+# from ooodev.dialog.input import Input
 from ooodev.globals import GTC
 
+from ..dialog.user_input.input import Input
 
 if TYPE_CHECKING:
     from ....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
@@ -79,6 +81,8 @@ class PkgInfo:
                 self.get_cmd_pip("show", pkg_name),
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
+                encoding="utf-8",  # Specify encoding
+                errors="replace",  # Handle decoding errors
                 env=self.get_env(),
                 startupinfo=STARTUP_INFO,
             )
@@ -87,6 +91,8 @@ class PkgInfo:
                 self.get_cmd_pip("show", pkg_name),
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
+                encoding="utf-8",  # Specify encoding
+                errors="replace",  # Handle decoding errors
                 env=self.get_env(),
             )
         return result.returncode == 0
@@ -131,27 +137,35 @@ class PkgInfo:
             self._log.info(f"Package {pkg_name} is not installed.")
 
     def get_package_version(self, pkg_name: str) -> str:
-        if STARTUP_INFO:
-            result = subprocess.run(
-                self.get_cmd_pip("show", pkg_name),
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True,
-                env=self.get_env(),
-                startupinfo=STARTUP_INFO,
-            )
-        else:
-            result = subprocess.run(
-                self.get_cmd_pip("show", pkg_name),
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True,
-                env=self.get_env(),
-            )
-        if result.returncode != 0:
-            return ""
+        try:
+            if STARTUP_INFO:
+                result = subprocess.run(
+                    self.get_cmd_pip("show", pkg_name),
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True,
+                    encoding="utf-8",
+                    errors="replace",
+                    env=self.get_env(),
+                    startupinfo=STARTUP_INFO,
+                )
+            else:
+                result = subprocess.run(
+                    self.get_cmd_pip("show", pkg_name),
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True,
+                    encoding="utf-8",
+                    errors="replace",
+                    env=self.get_env(),
+                )
+            if result.returncode != 0:
+                return ""
 
-        return next(
-            (line.split(":", 1)[1].strip() for line in result.stdout.splitlines() if line.startswith("Version:")),
-            "",
-        )
+            return next(
+                (line.split(":", 1)[1].strip() for line in result.stdout.splitlines() if line.startswith("Version:")),
+                "",
+            )
+        except UnicodeDecodeError as e:
+            self._log.error(f"Unicode Decode Error Error decoding output: {e}")
+            return ""
