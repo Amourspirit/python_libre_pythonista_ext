@@ -35,6 +35,7 @@ from ooodev.loader import Lo
 from ooodev.loader.inst.doc_type import DocType
 from ooodev.utils.color import StandardColor
 from ooodev.utils.partial.the_dictionary_partial import TheDictionaryPartial
+from ooodev.utils.sys_info import SysInfo
 
 from ...const import UNO_DISPATCH_PY_CODE_VALIDATE, UNO_DISPATCH_SEL_RNG, UNO_DISPATCH_SEL_LP_FN
 from .dialog_mb_window_listener import DialogMbWindowListener
@@ -88,6 +89,7 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
         TheDictionaryPartial.__init__(self)
         XTopWindowListener.__init__(self)
         unohelper.Base.__init__(self)
+        self._platform = SysInfo.get_platform()
         self._dialog_result = MessageBoxResultsEnum.CANCEL
         self._is_shown = False
         self._closing_triggered = False
@@ -182,7 +184,10 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
             dialog_peer = self.tk.createWindow(desc)
 
             self._dialog = cast("WindowType", dialog_peer)
-            self._dialog.setVisible(False)
+            if self._platform == SysInfo.PlatformEnum.MAC:
+                self._dialog.setVisible(True)
+            else:
+                self._dialog.setVisible(False)
             self._dialog.setOutputSize(Size(rect.Width, rect.Height))
 
             # self._dialog.setBackground(get_bg_color(self._dialog, 0xFAFAFA))
@@ -426,7 +431,10 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
         # self._code.add_event_key_pressed(self._fn_on_code_key_pressed)  # type: ignore
         self._code.add_event_focus_gained(self._fn_on_code_focus_gained)  # type: ignore
         self._code.add_event_focus_lost(self._fn_on_code_focus_lost)  # type: ignore
-        self._code.view.setFocus()
+        if self._platform != SysInfo.PlatformEnum.MAC:
+            # Only mac is reporting error:
+            # uno.com.sun.star.uno.RuntimeException: C++ code threw unknown exception:
+            self._code.view.setFocus()
 
     def _init_info_label(self) -> None:
         """Add a fixed text label to the dialog control"""
@@ -765,6 +773,11 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
         self._dialog_result = MessageBoxResultsEnum.CANCEL
         self._dialog.setVisible(True)
         self.set_focus()
+        try:
+            # it seems only macOs needs this
+            self.resize()
+        except Exception:
+            self._log.exception("Failed to resize.")
         # Start a new thread to wait for the dialog to close
         wait_thread = Thread(target=self._wait_for_hide)
         wait_thread.start()

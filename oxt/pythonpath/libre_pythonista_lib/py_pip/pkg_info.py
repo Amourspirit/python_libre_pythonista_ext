@@ -7,11 +7,10 @@ import uno
 
 from ooodev.loader import Lo
 from ooodev.dialog.msgbox import MessageBoxType, MsgBox
-
-# from ooodev.dialog.input import Input
+from ooodev.dialog.input import Input
 from ooodev.globals import GTC
 
-from ..dialog.user_input.input import Input
+# from ..dialog.user_input.input import Input
 
 if TYPE_CHECKING:
     from ....___lo_pip___.oxt_logger.oxt_logger import OxtLogger

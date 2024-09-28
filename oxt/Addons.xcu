@@ -87,6 +87,11 @@
                   </prop>
                </node>
                <node oor:name="m004" oor:op="replace">
+                  <prop oor:name="URL" oor:type="xs:string">
+                     <value>private:separator</value>
+                  </prop>
+               </node>
+               <node oor:name="m005" oor:op="replace">
                   <prop oor:name="Context" oor:type="xs:string">
                      <value>com.sun.star.sheet.SpreadsheetDocument</value>
                   </prop>
@@ -107,7 +112,12 @@
                      <value>_self</value>
                   </prop>
                </node>
-               <node oor:name="m005" oor:op="replace">
+               <node oor:name="m006" oor:op="replace">
+                  <prop oor:name="URL" oor:type="xs:string">
+                     <value>private:separator</value>
+                  </prop>
+               </node>
+               <node oor:name="m007" oor:op="replace">
                   <prop oor:name="Context" oor:type="xs:string">
                      <value />
                   </prop>
@@ -117,7 +127,7 @@
                      <value xml:lang="fr">pip</value>
                   </prop>
                   <node oor:name="Submenu">
-                     <node oor:name="m006" oor:op="replace">
+                     <node oor:name="m008" oor:op="replace">
                         <prop oor:name="URL" oor:type="xs:string">
                            <value>service:___lo_identifier___.impl?installed_pip_pkg</value>
                         </prop>
@@ -135,7 +145,7 @@
                            <value>_self</value>
                         </prop>
                      </node>
-                     <node oor:name="m007" oor:op="replace">
+                     <node oor:name="m009" oor:op="replace">
                         <prop oor:name="URL" oor:type="xs:string">
                            <value>service:___lo_identifier___.impl?install_pip_pkg</value>
                         </prop>
@@ -153,7 +163,7 @@
                            <value>_self</value>
                         </prop>
                      </node>
-                     <node oor:name="m008" oor:op="replace">
+                     <node oor:name="m010" oor:op="replace">
                         <prop oor:name="URL" oor:type="xs:string">
                            <value>service:___lo_identifier___.impl?uninstall_pip_pkg</value>
                         </prop>
@@ -174,12 +184,12 @@
 
                   </node>
                </node>
-               <node oor:name="m098" oor:op="replace">
+               <node oor:name="m011" oor:op="replace">
                   <prop oor:name="URL" oor:type="xs:string">
                      <value>private:separator</value>
                   </prop>
                </node>
-               <node oor:name="m099" oor:op="replace">
+               <node oor:name="m012" oor:op="replace">
                   <prop oor:name="URL" oor:type="xs:string">
                      <value>service:___lo_identifier___.impl?about</value>
                   </prop>
