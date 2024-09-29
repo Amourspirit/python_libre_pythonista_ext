@@ -16,7 +16,7 @@ py_script_sheet_on_calculate = "share_event.py"
 [tool.oxt.config]
 auto_install_in_site_packages = true # https://tinyurl.com/ymeh4c9j#auto_install_in_site_packages
 build_dir = "build" # https://tinyurl.com/ymeh4c9j#build_dir
-dist_dir = "tmp_dist" # "dist" https://tinyurl.com/ymeh4c9j#dist_dir should be changed to someting like dist, tmp_dist is not included in git
+dist_dir = "dist" # "dist" https://tinyurl.com/ymeh4c9j#dist_dir should be changed to someting like dist, tmp_dist is not included in git
 install_wheel = true # https://tinyurl.com/ymeh4c9j#install_wheel
 oxt_name = "LibrePythonista" # https://tinyurl.com/ymeh4c9j#oxt_name
 py_pkg_dir = "py_pkgs" # https://tinyurl.com/ymeh4c9j#py_pkg_dir
@@ -40,18 +40,18 @@ unload_after_install = false
 run_imports = ["ooodev", "verr", "sortedcontainers"]
 # when log_indent is set indent_str can be used in the format str - "%(asctime)s %(levelname)s - %(indent_str)s%(name)s: %(message)s"
 log_indent = 0 # set to 0 or less to disable; Ignored in windows. Should be set to 0 for production.
-no_pip_remove = ["pip", "setuptools", "wheel", "pandas", "matplotlib", "numpy", "seaborn", "odfpy", "ooo-dev-tools", "typing-extensions", "sortedcontainers"]
+no_pip_remove = ["pip", "setuptools", "wheel"]
 
 [tool.oxt.token]
 # in the form of "token_name": "token_value"
 # in the files the token will have a prefix and suffix of ___
-pip_wheel_url = "https://files.pythonhosted.org/packages/50/c2/e06851e8cc28dcad7c155f4753da8833ac06a5c704c109313b8d5a62968a/pip-23.2.1-py3-none-any.whl" # https://tinyurl.com/ymeh4c9j#pip_wheel_url
+pip_wheel_url = "https://files.pythonhosted.org/packages/d4/55/90db48d85f7689ec6f81c0db0622d704306c5284850383c090e6c7195a5c/pip-24.2-py3-none-any.whl" # https://tinyurl.com/ymeh4c9j#pip_wheel_url
 test_internet_url = "https://duckduckgo.com" # https://tinyurl.com/ymeh4c9j#test_internet_url
 log_pip_installs = false # https://tinyurl.com/ymeh4c9j#log_pip_installs
 lo_identifier = "com.github.amourspirit.extensions.librepythonista" # https://tinyurl.com/ymeh4c9j#lo_identifier
 lo_implementation_name = "LibrePythonista" # https://tinyurl.com/ymeh4c9j#lo_implementation_name
 display_name = "LibrePythonista" # https://tinyurl.com/ymeh4c9j#display_name
-description = "Extension for adding Python inside of LibreOffice Calc" # https://tinyurl.com/ymeh4c9j#description
+description = "Extension for adding Python and Pip package management inside of LibreOffice" # https://tinyurl.com/ymeh4c9j#description
 publisher = "AmourSpirit" # https://tinyurl.com/ymeh4c9j#publisher
 publisher_url = "https://github.com/Amourspirit/python_libreoffice_ext" # https://tinyurl.com/ymeh4c9j#publisher_url
 update_url_xml = "https://raw.githubusercontent.com/Amourspirit/python_libreoffice_ext/main/___dist_dir___/___update_file___" # https://tinyurl.com/ymeh4c9j#update_url_xml
@@ -60,7 +60,7 @@ url_pip = 'https://bootstrap.pypa.io/get-pip.py' # https://tinyurl.com/ymeh4c9j#
 # set log_file to "" to disable logging
 log_file = "libre_pythonista.log" # https://tinyurl.com/ymeh4c9j#log_file
 log_name = "LibrePythonista Installer" # https://tinyurl.com/ymeh4c9j#log_name
-log_level = "DEBUG" # NONE, DEBUG, INFO, WARNING, ERROR, CRITICAL https://tinyurl.com/ymeh4c9j#log_level
+log_level = "INFO" # NONE, DEBUG, INFO, WARNING, ERROR, CRITICAL https://tinyurl.com/ymeh4c9j#log_level
 log_format = "%(asctime)s - %(levelname)s - %(name)s: %(message)s" # https://tinyurl.com/ymeh4c9j#log_format
 # log_format = "%(asctime)s - %(levelname)s - %(indent_str)s%(name)s: %(message)s"
 log_add_console = true # should be false for production # https://tinyurl.com/ymeh4c9j#log_add_console
@@ -84,6 +84,7 @@ matplotlib = ">=3.7.5"
 seaborn = ">=0.13"
 sortedcontainers = ">=2.4.0"
 
+
 [tool.oxt.isolate]
 # https://tinyurl.com/ymeh4c9j#tooloxtisolate
 windows = ["pandas", "matplotlib", "seaborn"]
@@ -100,18 +101,18 @@ fr = { name = "AmourEsprit", url="___publisher_url___/fr" }
 [tool.oxt.locale.name]
 # https://tinyurl.com/ymeh4c9j#tooloxtlocalename
 en = "___display_name___"
-fr = "Modèle LibreOffice Python Pip"
-de = "LibreOffice Python Pip Vorlage"
-pt = "Modelo LibreOffice Python Pip"
-es = "Plantilla LibreOffice Python Pip"
+fr = "Modèle LibrePythonista"
+de = "LibrePythonista Vorlage"
+pt = "Modelo LibrePythonista"
+es = "Plantilla LibrePythonista"
 
 [tool.oxt.locale.desc]
 # https://tinyurl.com/ymeh4c9j#tooloxtlocaledesc
 en = "___description___"
-fr = "Modèle pour créer des extensions basées sur pip pour LibreOffice"
-de = "Vorlage zum Erstellen von pip-basierten Erweiterungen für LibreOffice"
-pt = "Modelo para criar extensões baseadas em pip para o LibreOffice"
-es = "Plantilla para crear extensiones basadas en pip para LibreOffice"
+fr = "Extension pour ajouter la gestion des packages Python et Pip à l'intérieur de LibreOffice"
+de = "rweiterung zur Verwaltung von Python- und Pip-Paketen in LibreOffice"
+pt = "Extensão para adicionar gerenciamento de pacotes Python e Pip dentro do LibreOffice"
+es = "Extensión para agregar administración de paquetes Python y Pip dentro de LibreOffice"
 
 
 [tool.oxt.bz2.32_bit]

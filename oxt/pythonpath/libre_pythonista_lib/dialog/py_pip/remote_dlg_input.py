@@ -12,6 +12,7 @@ from ooodev.loader import Lo
 from ooodev.utils.kind.tri_state_kind import TriStateKind
 from ooodev.utils.info import Info
 from ooodev.utils.color import StandardColor
+from ooodev.utils.sys_info import SysInfo
 
 from ...doc_props.calc_props import CalcProps
 
@@ -36,19 +37,26 @@ class RemoteDlgInput:
         self._cfg = Config()  # singleton
         self._rr = ResourceResolver(ctx=self._doc.lo_inst.get_context())
         self._calc_props = CalcProps(self._doc)
+        self._platform = SysInfo.get_platform()
         self._border_kind = BorderKind.BORDER_SIMPLE
-        self._width = 400
-        self._height = 120
-        self._btn_width = 100
-        self._btn_height = 30
-        self._margin = 6
-        self._box_height = 16
-        self._title = self._rr.resolve_string("title13")  # Install Pip Package
-
         if self._border_kind != BorderKind.BORDER_3D:
             self._padding = 8
         else:
             self._padding = 12
+
+        if self._platform == SysInfo.PlatformEnum.MAC:
+            self._height = 150
+            self._box_height = 30
+            self._padding += 4
+        else:
+            self._height = 120
+            self._box_height = 16
+
+        self._width = 400
+        self._btn_width = 100
+        self._btn_height = 30
+        self._margin = 6
+        self._title = self._rr.resolve_string("title13")  # Install Pip Package
 
         fd = Info.get_font_descriptor("Liberation Serif", "Regular")
         if fd is None:

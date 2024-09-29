@@ -3,6 +3,8 @@ from typing import List, Dict, TYPE_CHECKING
 import os
 import sys
 import subprocess
+import contextlib
+from importlib.metadata import PackageNotFoundError, version
 import uno
 
 from ooodev.loader import Lo
@@ -75,26 +77,30 @@ class PkgInfo:
     def is_package_installed(self, pkg_name: str) -> bool:
         """Check if a package is installed."""
 
-        if STARTUP_INFO:
-            result = subprocess.run(
-                self.get_cmd_pip("show", pkg_name),
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                encoding="utf-8",  # Specify encoding
-                errors="replace",  # Handle decoding errors
-                env=self.get_env(),
-                startupinfo=STARTUP_INFO,
-            )
-        else:
-            result = subprocess.run(
-                self.get_cmd_pip("show", pkg_name),
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                encoding="utf-8",  # Specify encoding
-                errors="replace",  # Handle decoding errors
-                env=self.get_env(),
-            )
-        return result.returncode == 0
+        # if STARTUP_INFO:
+        #     result = subprocess.run(
+        #         self.get_cmd_pip("show", pkg_name),
+        #         stdout=subprocess.PIPE,
+        #         stderr=subprocess.PIPE,
+        #         encoding="utf-8",  # Specify encoding
+        #         errors="replace",  # Handle decoding errors
+        #         env=self.get_env(),
+        #         startupinfo=STARTUP_INFO,
+        #     )
+        # else:
+        #     result = subprocess.run(
+        #         self.get_cmd_pip("show", pkg_name),
+        #         stdout=subprocess.PIPE,
+        #         stderr=subprocess.PIPE,
+        #         encoding="utf-8",  # Specify encoding
+        #         errors="replace",  # Handle decoding errors
+        #         env=self.get_env(),
+        #     )
+        # return result.returncode == 0
+        with contextlib.suppress(PackageNotFoundError):
+            if ver := version(pkg_name):
+                return True
+        return False
 
     def show_installed(self) -> None:
         """Install pip packages."""
@@ -135,7 +141,7 @@ class PkgInfo:
             )
             self._log.info(f"Package {pkg_name} is not installed.")
 
-    def get_package_version(self, pkg_name: str) -> str:
+    def _get_package_version_sub(self, pkg_name: str) -> str:
         try:
             if STARTUP_INFO:
                 result = subprocess.run(
@@ -167,4 +173,22 @@ class PkgInfo:
             )
         except UnicodeDecodeError as e:
             self._log.error(f"Unicode Decode Error Error decoding output: {e}")
+            return ""
+
+    def get_package_version(self, pkg_name: str) -> str:
+        """
+        Get the version of a package.
+
+        Args:
+            pkg_name (str): The name of the package such as ``verr``
+
+        Returns:
+            str: The version of the package or an empty string if the package is not installed.
+        """
+        try:
+            return version(pkg_name)
+        except PackageNotFoundError:
+            return self._get_package_version_sub(pkg_name)
+        except Exception as e:
+            self._log.error(f"Error getting package version: {e}")
             return ""

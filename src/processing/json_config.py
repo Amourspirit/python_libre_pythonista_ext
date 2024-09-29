@@ -256,7 +256,7 @@ class JsonConfig(metaclass=Singleton):
         assert isinstance(self._cell_custom_prop_codename, str), "cell_custom_prop_codename must be a string"
         assert isinstance(self._general_codename, str), "general_codename must be a string"
         assert isinstance(self._general_codename, str), "general_codename must be a string"
-        assert isinstance(self._lp_default_log_format, str), "extension_version must be a string"
+        assert isinstance(self._lp_default_log_format, str), "log format must be a string"
         assert self._lp_default_log_format, "lp_default_log_format must not be an empty string"
         # validate the extension version is a valid python version
         assert self._extension_version.count(".") == 2, "extension_version must contain two periods"

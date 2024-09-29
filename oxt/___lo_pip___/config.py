@@ -619,7 +619,7 @@ class Config(metaclass=Singleton):
 
         The value for this property can be set in pyproject.toml (tool.oxt.config.no_pip_remove)
 
-        This is the packages that are not allowd to be removed by the installer.
+        This is the packages that are not allowed to be removed by the installer.
         """
         return self._basic_config.no_pip_remove
 
