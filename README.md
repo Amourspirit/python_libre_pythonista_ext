@@ -5,7 +5,7 @@
 [![License](https://img.shields.io/badge/License-Apache2-blue.svg)](https://opensource.org/license/apache-2-0)
 
 
-LibrePythonista is an extension for LibreOffice Calc. The extension allows Interactive Python code to be run directly in a spreadsheet.
+LibrePythonista is an extension for LibreOffice Calc. The extension allows Interactive Python code to be run directly in a spreadsheet. LibrePythonista has its own PIP package manager to install additional Python packages.
 
 LibrePythonista is currently in beta and is subject to change based on feedback. 
 
@@ -21,11 +21,27 @@ LibrePythonista is built using [OOO Development Tools](https://python-ooo-dev-to
 
 ## What is LibrePythonista?
 
+### Intro
+
 LibrePythonista brings the power of Python analytics into LibreOffice Calc. Use it to process data in Calc with Python code. You type Python directly into a cell via the code edit window, the Python calculations runs locally, and your results are displayed in the sheet.
 
 ![500](https://github.com/user-attachments/assets/0493c94f-4cbf-4262-bc2f-f28ed4082906)
 
 LibrePythonista comes with a core set of Python libraries. Use Python libraries to simplify your data analysis, find patterns and hidden insights, and visualize your data with plots.
+
+### Features
+
+LibrePythonista is a powerful tool for data analysis and visualization in LibreOffice Calc. It allows you to:
+
+- Run Python code directly in a Calc cell
+- Use Python libraries like Pandas, Matplotlib, and NumPy
+- Install other python packages using a built-in package manager
+- Create Data frames and Series
+- Create custom graphs and charts
+- Use Python to process data in Calc
+- Use Python to automate tasks in Calc
+- Use Python to create custom functions in Calc
+- And much more
 
 ## Watch the Introduction Video
 
