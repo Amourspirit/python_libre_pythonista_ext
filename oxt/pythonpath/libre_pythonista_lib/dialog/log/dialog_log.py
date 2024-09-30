@@ -26,12 +26,12 @@ from ooodev.dialog import BorderKind
 from ooodev.dialog.dl_control import CtlTextEdit
 from ooodev.dialog.msgbox import MsgBox, MessageBoxResultsEnum, MessageBoxType, MessageBoxButtonsEnum
 from ooodev.events.args.event_args import EventArgs
-from ooodev.events.args.event_args import EventArgs
 from ooodev.events.lo_events import LoEvents
 from ooodev.gui.menu.popup_menu import PopupMenu
 from ooodev.loader import Lo
 from ooodev.utils.color import StandardColor
 from ooodev.utils.partial.the_dictionary_partial import TheDictionaryPartial
+from ooodev.utils.sys_info import SysInfo
 
 from ...dialog.options.log_opt import LogOpt
 from ...config.dialog.log_cfg import LogCfg
@@ -96,6 +96,7 @@ class DialogLog(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
         XTopWindowListener.__init__(self)
         unohelper.Base.__init__(self)
         self.runtime_uid: str
+        self._platform = SysInfo.get_platform()
         self._ctx = ctx
         self._is_visible = True
         self._closing_triggered = False
@@ -195,7 +196,10 @@ class DialogLog(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
             self._log.debug("Error setting dialog title")
 
         self._dialog = cast("WindowType", dialog_peer)
-        self._dialog.setVisible(False)
+        if self._platform == SysInfo.PlatformEnum.MAC:
+            self._dialog.setVisible(True)
+        else:
+            self._dialog.setVisible(False)
         self._dialog.setOutputSize(Size(rect.Width, rect.Height))
 
     def _init_handlers(self) -> None:
@@ -453,8 +457,19 @@ class DialogLog(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
     # region Dialog Methods
 
     def show(self) -> None:
-        self.visible = True
-        self.set_focus()
+        if not self._dialog.isVisible():
+            try:
+                self._dialog.setVisible(True)
+            except Exception:
+                self._log.exception("Failed to set Window visible")
+                raise
+        if not self._dialog.hasFocus():
+            self.set_focus()
+        try:
+            # it seems only macOs needs this
+            self.resize()
+        except Exception:
+            self._log.exception("Failed to resize.")
 
     def dispose(self):
         self._log.debug("Dispose Called")

@@ -30,7 +30,7 @@ class DispatchAbout(unohelper.Base, XDispatch):
         self._log = OxtLogger(log_name=self.__class__.__name__)
         self._status_listeners: Dict[str, XStatusListener] = {}
 
-    def addStatusListener(self, control: XStatusListener, url: URL) -> None:
+    def addStatusListener(self, Control: XStatusListener, URL: URL) -> None:
         """
         registers a listener of a control for a specific URL at this object to receive status events.
 
@@ -41,17 +41,17 @@ class DispatchAbout(unohelper.Base, XDispatch):
         """
         # https://wiki.openoffice.org/wiki/Documentation/DevGuide/WritingUNO/Implementation
         with self._log.indent(True):
-            if url.Complete in self._status_listeners:
-                self._log.debug(f"addStatusListener(): url={url.Main} already exists.")
+            if URL.Complete in self._status_listeners:
+                self._log.debug(f"addStatusListener(): url={URL.Main} already exists.")
             else:
                 # setting IsEnable=False here does not disable the dispatch command
                 # setting State will affect how the control is displayed in menus.
                 # State=True may cause the menu items to be displayed as checked.
-                fe = FeatureStateEvent(FeatureURL=url, IsEnabled=True, State=None)
-                control.statusChanged(fe)
-                self._status_listeners[url.Complete] = control
+                fe = FeatureStateEvent(FeatureURL=URL, IsEnabled=True, State=None)
+                Control.statusChanged(fe)
+                self._status_listeners[URL.Complete] = Control
 
-    def dispatch(self, url: URL, args: Tuple[PropertyValue, ...]) -> None:
+    def dispatch(self, URL: URL, Arguments: Tuple[PropertyValue, ...]) -> None:
         """
         Dispatches (executes) a URL
 
@@ -64,7 +64,7 @@ class DispatchAbout(unohelper.Base, XDispatch):
         """
         with self._log.indent(True):
             try:
-                self._log.debug(f"dispatch(): url={url.Main}")
+                self._log.debug(f"dispatch(): url={URL.Main}")
                 _ = Lo.current_doc
                 rr = ResourceResolver(Lo.get_context())
                 cfg = Config()
@@ -91,9 +91,9 @@ class DispatchAbout(unohelper.Base, XDispatch):
                 self._log.error(f"Error: {e}", exc_info=True)
                 return
 
-    def removeStatusListener(self, control: XStatusListener, url: URL) -> None:
+    def removeStatusListener(self, Control: XStatusListener, URL: URL) -> None:
         """
         Un-registers a listener from a control.
         """
-        if url.Complete in self._status_listeners:
-            del self._status_listeners[url.Complete]
+        if URL.Complete in self._status_listeners:
+            del self._status_listeners[URL.Complete]

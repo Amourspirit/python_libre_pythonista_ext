@@ -1,148 +1,214 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<oor:component-data
-	xmlns:oor="http://openoffice.org/2001/registry"
-	xmlns:xs="http://www.w3.org/2001/XMLSchema"
-	oor:name="Addons"
-	oor:package="org.openoffice.Office">
-	<node oor:name="AddonUI">
-		<node oor:name="Images">
-			<node oor:name="___lo_identifier___.___lo_implementation_name___.img_code" oor:op="replace">
-				<prop oor:name="URL" oor:type="xs:string">
-					<value>service:___lo_identifier___.impl?pyc_formula_with_dependent</value>
-				</prop>
-				<node oor:name="UserDefinedImages">
-					<prop oor:name="ImageSmallURL">
-						<value>%origin%/images/code_16.png</value>
-					</prop>
-					<prop oor:name="ImageBigURL">
-						<value>%origin%/images/code_26.png</value>
-					</prop>
-				</node>
-			</node>
-			<node oor:name="___lo_identifier___.___lo_implementation_name___.img_log"
-				oor:op="replace">
-				<prop oor:name="URL" oor:type="xs:string">
-					<value>service:___lo_identifier___.impl?log_window</value>
-				</prop>
-				<node oor:name="UserDefinedImages">
-					<prop oor:name="ImageSmallURL">
-						<value>%origin%/images/log_16.png</value>
-					</prop>
-					<prop oor:name="ImageBigURL">
-						<value>%origin%/images/log_26.png</value>
-					</prop>
-				</node>
-			</node>
-		</node>
-		<node oor:name="OfficeMenuBar">
-			<node oor:name="___lo_identifier___.___lo_implementation_name___.calc.menu"
-				oor:op="replace">
-				<prop oor:name="Title" oor:type="xs:string">
-					<value />
-					<value xml:lang="en-US">~LibrePy</value>
-					<value xml:lang="fr">~LibrePy</value>
-				</prop>
-				<prop oor:name="Context" oor:type="xs:string">
-					<value>com.sun.star.sheet.SpreadsheetDocument</value>
-				</prop>
-				<node oor:name="Submenu">
-					<node oor:name="m001"
-						oor:op="replace">
-						<prop oor:name="URL" oor:type="xs:string">
-							<value>service:___lo_identifier___.impl?pyc_formula_with_dependent</value>
-						</prop>
-						<prop oor:name="Title" oor:type="xs:string">
-							<value>Insert Python</value>
-						</prop>
-						<prop oor:name="Target" oor:type="xs:string">
-							<value>_self</value>
-						</prop>
-						<!-- <prop oor:name="ImageIdentifier" oor:type="xs:string">
-							<value>%origin%/images/code</value>
-						</prop> -->
-					</node>
-					<node oor:name="m003"
-						oor:op="replace">
-						<prop oor:name="URL" oor:type="xs:string">
-							<value>private:separator</value>
-						</prop>
-					</node>
-					<!-- <node oor:name="m003"
-						oor:op="replace">
-						<prop oor:name="URL" oor:type="xs:string">
-							<value>service:___lo_identifier___.Switcher</value>
-						</prop>
-						<prop oor:name="Title" oor:type="xs:string">
-							<value>Toggle Log</value>
-						</prop>
-						<prop oor:name="Target" oor:type="xs:string">
-							<value>_self</value>
-						</prop>
-					</node>
-					<node oor:name="m004"
-						oor:op="replace">
-						<prop oor:name="URL" oor:type="xs:string">
-							<value>service:___lo_identifier___.LogViewLoader</value>
-						</prop>
-						<prop oor:name="Title" oor:type="xs:string">
-							<value>LogViewLoader</value>
-						</prop>
-						<prop oor:name="Target" oor:type="xs:string">
-							<value>_self</value>
-						</prop>
-					</node> -->
-					<node oor:name="m003"
-						oor:op="replace">
-						<prop oor:name="URL" oor:type="xs:string">
-							<!--
-							<value>.uno:libre_pythonista.calc.log_window&amp;in_thread=0</value> -->
-							<value>service:___lo_identifier___.impl?log_window</value>
-						</prop>
-						<prop oor:name="Title" oor:type="xs:string">
-							<value>Log Window</value>
-							<value xml:lang="en-US">Log Window</value>
-							<value xml:lang="fr">Fenêtre de journalisation</value>
-						</prop>
-						<prop oor:name="Target" oor:type="xs:string">
-							<value>_self</value>
-						</prop>
-					</node>
-					<node oor:name="m004"
-						oor:op="replace">
-						<prop oor:name="Context" oor:type="xs:string">
-							<value>com.sun.star.sheet.SpreadsheetDocument</value>
-						</prop>
-						<prop oor:name="URL" oor:type="xs:string">
-							<value>service:___lo_identifier___.impl?debug_dump_module_to_log</value>
-						</prop>
-						<prop oor:name="Title" oor:type="xs:string">
-							<value>Debug - Log Module</value>
-						</prop>
-						<prop oor:name="Target" oor:type="xs:string">
-							<value>_self</value>
-						</prop>
-					</node>
-					<node oor:name="m098"
-						oor:op="replace">
-						<prop oor:name="URL" oor:type="xs:string">
-							<value>private:separator</value>
-						</prop>
-					</node>
-					<node oor:name="m099" oor:op="replace">
-						<prop oor:name="URL" oor:type="xs:string">
-							<value>service:___lo_identifier___.impl?about</value>
-						</prop>
-						<prop oor:name="Title" oor:type="xs:string">
-							<value>About ___display_name___</value>
-							<value xml:lang="fr">À propos ___display_name___</value>
-							<value xml:lang="en-US">About ___display_name___</value>
-						</prop>
-						<prop oor:name="Target" oor:type="xs:string">
-							<value>_self</value>
-						</prop>
-					</node>
-				</node>
-			</node>
-		</node>
-	</node>
+<?xml version="1.0" encoding="UTF-8"?>
+<oor:component-data xmlns:oor="http://openoffice.org/2001/registry" xmlns:xs="http://www.w3.org/2001/XMLSchema" oor:name="Addons" oor:package="org.openoffice.Office">
+   <node oor:name="AddonUI">
+      <node oor:name="Images">
+         <node oor:name="___lo_identifier___.___lo_implementation_name___.img_code" oor:op="replace">
+            <prop oor:name="URL" oor:type="xs:string">
+               <value>service:___lo_identifier___.impl?pyc_formula_with_dependent</value>
+            </prop>
+            <node oor:name="UserDefinedImages">
+               <prop oor:name="ImageSmallURL">
+                  <value>%origin%/images/code_16.png</value>
+               </prop>
+               <prop oor:name="ImageBigURL">
+                  <value>%origin%/images/code_26.png</value>
+               </prop>
+            </node>
+         </node>
+         <node oor:name="___lo_identifier___.___lo_implementation_name___.img_log" oor:op="replace">
+            <prop oor:name="URL" oor:type="xs:string">
+               <value>service:___lo_identifier___.impl?log_window</value>
+            </prop>
+            <node oor:name="UserDefinedImages">
+               <prop oor:name="ImageSmallURL">
+                  <value>%origin%/images/log_16.png</value>
+               </prop>
+               <prop oor:name="ImageBigURL">
+                  <value>%origin%/images/log_26.png</value>
+               </prop>
+            </node>
+         </node>
+      </node>
+      <node oor:name="OfficeMenuBar">
+         <node oor:name="___lo_identifier___.___lo_implementation_name___.calc.menu" oor:op="replace">
+            <prop oor:name="Title" oor:type="xs:string">
+               <value />
+               <value xml:lang="en-US">~LibrePy</value>
+               <value xml:lang="fr">~LibrePy</value>
+               <value xml:lang="de">~LibrePy</value>
+               <value xml:lang="it">~LibrePy</value>
+               <value xml:lang="es">~LibrePy</value>
+               <value xml:lang="pt">~LibrePy</value>
+               <value xml:lang="el">~LibrePy</value>
+            </prop>
+            <prop oor:name="Context" oor:type="xs:string">
+               <value>com.sun.star.sheet.SpreadsheetDocument</value>
+            </prop>
+            <node oor:name="Submenu">
+               <node oor:name="m001" oor:op="replace">
+                  <prop oor:name="URL" oor:type="xs:string">
+                     <value>service:___lo_identifier___.impl?pyc_formula_with_dependent</value>
+                  </prop>
+                  <prop oor:name="Title" oor:type="xs:string">
+                     <value>Insert Python</value>
+                     <value xml:lang="en-US">Insert Python</value>
+                     <value xml:lang="fr">Insérer Python</value>
+                     <value xml:lang="de">Python einfügen</value>
+                     <value xml:lang="it">Inserisci Python</value>
+                     <value xml:lang="es">Insertar Python</value>
+                     <value xml:lang="pt">Inserir Python</value>
+                     <value xml:lang="el">Εισαγωγή Python</value>
+                  </prop>
+                  <prop oor:name="Target" oor:type="xs:string">
+                     <value>_self</value>
+                  </prop>
+               </node>
+               <node oor:name="m003" oor:op="replace">
+                  <prop oor:name="URL" oor:type="xs:string">
+                     <value>private:separator</value>
+                  </prop>
+               </node>
+               <node oor:name="m003" oor:op="replace">
+                  <prop oor:name="URL" oor:type="xs:string">
+                     <value>service:___lo_identifier___.impl?log_window</value>
+                  </prop>
+                  <prop oor:name="Title" oor:type="xs:string">
+                     <value>Log Window</value>
+                     <value xml:lang="en-US">Log Window</value>
+                     <value xml:lang="fr">Fenêtre de journalisation</value>
+                     <value xml:lang="de">Protokollfenster</value>
+                     <value xml:lang="it">Finestra di log</value>
+                     <value xml:lang="es">Ventana de registro</value>
+                     <value xml:lang="pt">Janela de log</value>
+                     <value xml:lang="el">Παράθυρο καταγραφής</value>
+                  </prop>
+                  <prop oor:name="Target" oor:type="xs:string">
+                     <value>_self</value>
+                  </prop>
+               </node>
+               <node oor:name="m004" oor:op="replace">
+                  <prop oor:name="URL" oor:type="xs:string">
+                     <value>private:separator</value>
+                  </prop>
+               </node>
+               <node oor:name="m005" oor:op="replace">
+                  <prop oor:name="Context" oor:type="xs:string">
+                     <value>com.sun.star.sheet.SpreadsheetDocument</value>
+                  </prop>
+                  <prop oor:name="URL" oor:type="xs:string">
+                     <value>service:___lo_identifier___.impl?debug_dump_module_to_log</value>
+                  </prop>
+                  <prop oor:name="Title" oor:type="xs:string">
+                     <value>Debug - Log Module</value>
+                     <value xml:lang="en-US">Debug - Log Module</value>
+                     <value xml:lang="fr">Module de journalisation de débogage</value>
+                     <value xml:lang="de">Debug - Log Modul</value>
+                     <value xml:lang="it">Debug - Log Modulo</value>
+                     <value xml:lang="es">Módulo de registro de depuración</value>
+                     <value xml:lang="pt">Módulo de log de depuração</value>
+                     <value xml:lang="el">Αποσφαλμάτωση - Καταγραφή Μονάδας</value>
+                  </prop>
+                  <prop oor:name="Target" oor:type="xs:string">
+                     <value>_self</value>
+                  </prop>
+               </node>
+               <node oor:name="m006" oor:op="replace">
+                  <prop oor:name="URL" oor:type="xs:string">
+                     <value>private:separator</value>
+                  </prop>
+               </node>
+               <node oor:name="m007" oor:op="replace">
+                  <prop oor:name="Context" oor:type="xs:string">
+                     <value />
+                  </prop>
+                  <prop oor:name="Title" oor:type="xs:string">
+                     <value>Pip</value>
+                     <value xml:lang="en-US”">Pip</value>
+                     <value xml:lang="fr">pip</value>
+                  </prop>
+                  <node oor:name="Submenu">
+                     <node oor:name="m008" oor:op="replace">
+                        <prop oor:name="URL" oor:type="xs:string">
+                           <value>service:___lo_identifier___.impl?installed_pip_pkg</value>
+                        </prop>
+                        <prop oor:name="Title" oor:type="xs:string">
+                           <value>Package Info</value>
+                           <value xml:lang="en-US">Package Info</value>
+                           <value xml:lang="fr">Informations sur le paquet</value>
+                           <value xml:lang="de">Paketinformationen</value>
+                           <value xml:lang="it">Informazioni sul pacchetto</value>
+                           <value xml:lang="es">Información del paquete</value>
+                           <value xml:lang="pt">Informações do pacote</value>
+                           <value xml:lang="el">Πληροφορίες πακέτου</value>
+                        </prop>
+                        <prop oor:name="Target" oor:type="xs:string">
+                           <value>_self</value>
+                        </prop>
+                     </node>
+                     <node oor:name="m009" oor:op="replace">
+                        <prop oor:name="URL" oor:type="xs:string">
+                           <value>service:___lo_identifier___.impl?install_pip_pkg</value>
+                        </prop>
+                        <prop oor:name="Title" oor:type="xs:string">
+                           <value>Install Pip Package</value>
+                           <value xml:lang="en-US">Install Pip Package</value>
+                           <value xml:lang="fr">Installer le paquet Pip</value>
+                           <value xml:lang="de">Pip-Paket installieren</value>
+                           <value xml:lang="it">Installare il pacchetto Pip</value>
+                           <value xml:lang="es">Instalar paquete Pip</value>
+                           <value xml:lang="pt">Instalar pacote Pip</value>
+                           <value xml:lang="el">Εγκατάσταση πακέτου Pip</value>
+                        </prop>
+                        <prop oor:name="Target" oor:type="xs:string">
+                           <value>_self</value>
+                        </prop>
+                     </node>
+                     <node oor:name="m010" oor:op="replace">
+                        <prop oor:name="URL" oor:type="xs:string">
+                           <value>service:___lo_identifier___.impl?uninstall_pip_pkg</value>
+                        </prop>
+                        <prop oor:name="Title" oor:type="xs:string">
+                           <value>Uninstall Pip Package</value>
+                           <value xml:lang="en-US">Uninstall Pip Package</value>
+                           <value xml:lang="fr">Désinstaller le paquet Pip</value>
+                           <value xml:lang="de">Pip-Paket deinstallieren</value>
+                           <value xml:lang="it">Disinstallare il pacchetto Pip</value>
+                           <value xml:lang="es">Desinstalar paquete Pip</value>
+                           <value xml:lang="pt">Desinstalar pacote Pip</value>
+                           <value xml:lang="el">Απεγκατάσταση πακέτου Pip</value>
+                        </prop>
+                        <prop oor:name="Target" oor:type="xs:string">
+                           <value>_self</value>
+                        </prop>
+                     </node>
+
+                  </node>
+               </node>
+               <node oor:name="m011" oor:op="replace">
+                  <prop oor:name="URL" oor:type="xs:string">
+                     <value>private:separator</value>
+                  </prop>
+               </node>
+               <node oor:name="m012" oor:op="replace">
+                  <prop oor:name="URL" oor:type="xs:string">
+                     <value>service:___lo_identifier___.impl?about</value>
+                  </prop>
+                  <prop oor:name="Title" oor:type="xs:string">
+                     <value>About ___display_name___</value>
+                     <value xml:lang="en-US">About ___display_name___</value>
+                     <value xml:lang="fr">À propos ___display_name___</value>
+                     <value xml:lang="de">Über ___display_name___</value>
+                     <value xml:lang="it">Informazioni su ___display_name___</value>
+                     <value xml:lang="es">Acerca de ___display_name___</value>
+                     <value xml:lang="pt">Sobre ___display_name___</value>
+                     <value xml:lang="el">Σχετικά με ___display_name___</value>
+                  </prop>
+                  <prop oor:name="Target" oor:type="xs:string">
+                     <value>_self</value>
+                  </prop>
+               </node>
+            </node>
+         </node>
+      </node>
+   </node>
 </oor:component-data>

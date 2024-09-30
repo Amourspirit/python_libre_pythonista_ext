@@ -15,6 +15,9 @@ UNO_DISPATCH_DF_CARD = ".uno:libre_pythonista.calc.cell.df_card"
 UNO_DISPATCH_DATA_TBL_CARD = ".uno:libre_pythonista.calc.cell.data_tbl_card"
 UNO_DISPATCH_ABOUT = ".uno:libre_pythonista.ext.about"
 UNO_DISPATCH_LOG_WIN = ".uno:libre_pythonista.calc.log_window"
+UNO_DISPATCH_PIP_PKG_INSTALL = ".uno:libre_pythonista.ext.pip_pkg_install"
+UNO_DISPATCH_PIP_PKG_UNINSTALL = ".uno:libre_pythonista.ext.pip_pkg_uninstall"
+UNO_DISPATCH_PIP_PKG_INSTALLED = ".uno:libre_pythonista.ext.pkg_pkg_installed"
 
 
 def _get_formula_pyimpl():

@@ -8,13 +8,14 @@ from ooo.dyn.awt.push_button_type import PushButtonType
 from ooo.dyn.awt.pos_size import PosSize
 from ooo.dyn.awt.font_descriptor import FontDescriptor
 
-from ooodev.dialog.msgbox import MessageBoxResultsEnum, MessageBoxType, MessageBoxButtonsEnum
 from ooodev.dialog import BorderKind
+from ooodev.dialog.msgbox import MessageBoxResultsEnum, MessageBoxType, MessageBoxButtonsEnum
 from ooodev.events.args.event_args import EventArgs
 from ooodev.loader import Lo
-from ooodev.utils.kind.tri_state_kind import TriStateKind
-from ooodev.utils.info import Info
 from ooodev.utils.color import StandardColor
+from ooodev.utils.info import Info
+from ooodev.utils.kind.tri_state_kind import TriStateKind
+from ooodev.utils.sys_info import SysInfo
 
 from ...doc_props.calc_props import CalcProps
 from ...event.shared_event import SharedEvent
@@ -29,9 +30,9 @@ if TYPE_CHECKING:
     from .....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
     from .....___lo_pip___.lo_util.resource_resolver import ResourceResolver
 else:
+    from ___lo_pip___.config import Config
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
     from ___lo_pip___.lo_util.resource_resolver import ResourceResolver
-    from ___lo_pip___.config import Config
 
 # endregion Imports
 
@@ -43,16 +44,22 @@ class LogOpt:
         self._doc = Lo.current_doc
         self._log = OxtLogger(log_name=self.__class__.__name__)
         self._log.debug("Init Class")
+        self._platform = SysInfo.get_platform()
         self._cfg = Config()  # singleton
         self._rr = ResourceResolver(ctx=self._doc.lo_inst.get_context())
         self._calc_props = CalcProps(self._doc)
         self._border_kind = BorderKind.BORDER_SIMPLE
+        if self._platform == SysInfo.PlatformEnum.MAC:
+            self._box_height = 30
+            self._height = 370
+        else:
+            self._box_height = 16
+            self._height = 320
+
         self._width = 400
-        self._height = 320
         self._btn_width = 100
         self._btn_height = 30
         self._margin = 6
-        self._box_height = 16
         self._title = self._rr.resolve_string("title11")  # Logging Options
         self._msg = self._rr.resolve_string("strDocLogOptMsg")
         if self._border_kind != BorderKind.BORDER_3D:
@@ -158,10 +165,14 @@ class LogOpt:
     def _init_group_boxes(self) -> None:
         # self._ctl_format_text
         sz = self._ctl_format_text.view.getPosSize()
+        if self._platform == SysInfo.PlatformEnum.MAC:
+            height = 160
+        else:
+            height = 140
         self._ctl_gb1 = self._dialog.insert_group_box(
             x=self._margin,
             y=self._padding + sz.Y + sz.Height,
-            height=140,  # self._height - (sz_lbl.X + sz_lbl.Height) - self._btn_height - (self._padding * 3),
+            height=height,  # self._height - (sz_lbl.X + sz_lbl.Height) - self._btn_height - (self._padding * 3),
             width=self._width - (self._margin * 2),
             label=self._rr.resolve_string("log01"),
         )
@@ -268,7 +279,7 @@ class LogOpt:
         self._rb1 = self._dialog.insert_radio_button(
             label=labels[0],
             x=sz_gb1.X + self._margin,
-            y=sz_gb1.Y + self._box_height,
+            y=sz_gb1.Y + 16,
             width=sz_gb1.Width - (self._margin * 2),
             height=20,
         )

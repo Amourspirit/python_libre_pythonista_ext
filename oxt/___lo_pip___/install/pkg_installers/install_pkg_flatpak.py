@@ -52,6 +52,16 @@ class InstallPkgFlatpak(InstallPkg):
             msg = f"Pip Install success for: {pkg_cmd}"
             err_msg = f"Pip Install failed for: {pkg_cmd}"
 
+        site_packages_dir = self._get_site_packages_dir(pkg)
+        if pkg in self.no_pip_remove:  # ignore pip
+            is_ignore = True
+            before_dirs = []
+            before_files = []
+        else:
+            is_ignore = False
+            before_dirs = self._get_directory_names(site_packages_dir)
+            before_files = self._get_file_names(site_packages_dir)
+
         progress: Progress | None = None
         if self._config.show_progress and self.show_progress:
             # display a terminal window to show progress
@@ -65,21 +75,44 @@ class InstallPkgFlatpak(InstallPkg):
 
         if STARTUP_INFO:
             process = subprocess.run(
-                cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=self._get_env(), startupinfo=STARTUP_INFO
+                cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                encoding="utf-8",
+                errors="replace",
+                text=True,
+                env=self._get_env(),
+                startupinfo=STARTUP_INFO,
             )
         else:
-            process = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=self._get_env())
+            process = subprocess.run(
+                cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                encoding="utf-8",
+                errors="replace",
+                text=True,
+                env=self._get_env(),
+            )
 
         if progress:
             self._logger.debug("Ending Progress Window")
             progress.kill()
         if process.returncode == 0:
+            if not is_ignore:
+                self._delete_json_file(site_packages_dir, pkg)
+                after_dirs = self._get_directory_names(site_packages_dir)
+                after_files = self._get_file_names(site_packages_dir)
+                self._save_changed(
+                    pkg=pkg,
+                    pth=site_packages_dir,
+                    before_files=before_files,
+                    after_files=after_files,
+                    before_dirs=before_dirs,
+                    after_dirs=after_dirs,
+                )
             self._logger.info(msg)
             return True
         else:
             self._logger.error(err_msg)
         return False
-
-    def _uninstall_allowed(self, pkg_name: str) -> bool:
-        """Check if a package can be uninstalled."""
-        return super()._uninstall_allowed(pkg_name)

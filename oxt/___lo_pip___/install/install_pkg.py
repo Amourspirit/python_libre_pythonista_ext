@@ -59,6 +59,29 @@ class InstallPkg:
             self._logger.error("Not all package were installed!")
         return result
 
+    def uninstall(self, pkg: str) -> bool:
+        """
+        Uninstall a package.
+
+        Args:
+            pkg (str): The name of the package to uninstall.
+
+        Returns:
+            bool: True if successful, False otherwise.
+        """
+        if self._config.is_flatpak:
+            self._logger.info("Flatpak detected, uninstalling packages via Flatpak installer")
+            result = self._un_install_flatpak(pkg)
+            if not result:
+                self._logger.error("Not all package were uninstalled!")
+            return result
+
+        self._logger.info("Uninstalling packages via default installer")
+        result = self._un_install_default(pkg)
+        if not result:
+            self._logger.error("Not all package were uninstalled!")
+        return result
+
     def install_file(self, pth: str | Path, force: bool = False) -> bool:
         """
         Install a package from a file.
@@ -82,6 +105,12 @@ class InstallPkg:
         installer = InstallPkg(ctx=self.ctx, flag_upgrade=self._flag_upgrade)
         return installer.install(req=req, force=force)
 
+    def _un_install_default(self, pkg: str) -> bool:
+        from .pkg_installers.install_pkg import InstallPkg
+
+        installer = InstallPkg(ctx=self.ctx, flag_upgrade=self._flag_upgrade)
+        return installer.uninstall_pkg(pkg)
+
     def _install_default_file(self, pth: str | Path, force: bool = False) -> bool:
         from .pkg_installers.install_pkg import InstallPkg
 
@@ -93,6 +122,12 @@ class InstallPkg:
 
         installer = InstallPkgFlatpak(ctx=self.ctx, flag_upgrade=self._flag_upgrade)
         return installer.install(req=req, force=force)
+
+    def _un_install_flatpak(self, pkg: str) -> bool:
+        from .pkg_installers.install_pkg_flatpak import InstallPkgFlatpak
+
+        installer = InstallPkgFlatpak(ctx=self.ctx, flag_upgrade=self._flag_upgrade)
+        return installer.uninstall_pkg(pkg)
 
     def _install_flatpak_file(self, pth: str | Path, force: bool = False) -> bool:
         from .pkg_installers.install_pkg_flatpak import InstallPkgFlatpak

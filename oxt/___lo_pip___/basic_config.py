@@ -55,6 +55,7 @@ class BasicConfig(metaclass=ConfigMeta):
 
         self._py_script_sheet_ctl_click = str(kwargs["py_script_sheet_ctl_click"])
         self._py_script_sheet_on_calculate = str(kwargs["py_script_sheet_on_calculate"])
+        self._no_pip_remove = set(kwargs["no_pip_remove"])
         # endregion tool.libre_pythonista.config
 
         if "requirements" not in kwargs:
@@ -214,6 +215,17 @@ class BasicConfig(metaclass=ConfigMeta):
         The value for this property can be set in pyproject.toml (tool.libre_pythonista.macro_sheet_on_calculate)
         """
         return self._macro_sheet_on_calculate
+
+    @property
+    def no_pip_remove(self) -> Set[str]:
+        """
+        Gets the pip packages that are not allowed to be removed.
+
+        The value for this property can be set in pyproject.toml (tool.oxt.config.no_pip_remove)
+
+        This is the packages that are not allowd to be removed by the installer.
+        """
+        return self._no_pip_remove
 
     @property
     def oxt_name(self) -> str:

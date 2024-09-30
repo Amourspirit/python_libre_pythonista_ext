@@ -159,6 +159,11 @@ class JsonConfig(metaclass=Singleton):
             self._author_names = self._get_author_names(self._cfg)
         except Exception:
             self._author_names = []
+
+        try:
+            self._no_pip_remove = cast(list, self._cfg["tool"]["oxt"]["config"]["no_pip_remove"])
+        except Exception:
+            self._no_pip_remove = ["pip", "setuptools", "wheel"]
         # endregion tool.libre_pythonista.config
         self._validate()
         self._warnings()
@@ -216,6 +221,7 @@ class JsonConfig(metaclass=Singleton):
         json_config["macro_sheet_on_calculate"] = self._macro_sheet_on_calculate
         json_config["py_script_sheet_ctl_click"] = self._py_script_sheet_ctl_click
         json_config["py_script_sheet_on_calculate"] = self._py_script_sheet_on_calculate
+        json_config["no_pip_remove"] = self._no_pip_remove
         # endregion tool.libre_pythonista.config
 
         # save the file
@@ -250,10 +256,11 @@ class JsonConfig(metaclass=Singleton):
         assert isinstance(self._cell_custom_prop_codename, str), "cell_custom_prop_codename must be a string"
         assert isinstance(self._general_codename, str), "general_codename must be a string"
         assert isinstance(self._general_codename, str), "general_codename must be a string"
-        assert isinstance(self._lp_default_log_format, str), "extension_version must be a string"
+        assert isinstance(self._lp_default_log_format, str), "log format must be a string"
         assert self._lp_default_log_format, "lp_default_log_format must not be an empty string"
         # validate the extension version is a valid python version
         assert self._extension_version.count(".") == 2, "extension_version must contain two periods"
+        assert isinstance(self._no_pip_remove, list), "no_pip_remove must be a list"
         # endregion tool.libre_pythonista.config
 
     def _warnings(self) -> None:
