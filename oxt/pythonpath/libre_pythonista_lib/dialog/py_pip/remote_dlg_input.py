@@ -40,9 +40,9 @@ class RemoteDlgInput:
         self._platform = SysInfo.get_platform()
         self._border_kind = BorderKind.BORDER_SIMPLE
         if self._border_kind != BorderKind.BORDER_3D:
-            self._padding = 8
+            self._padding = 10
         else:
-            self._padding = 12
+            self._padding = 14
 
         if self._platform == SysInfo.PlatformEnum.MAC:
             self._height = 150
@@ -50,7 +50,7 @@ class RemoteDlgInput:
             self._padding += 4
         else:
             self._height = 120
-            self._box_height = 16
+            self._box_height = 20
 
         self._width = 400
         self._btn_width = 100

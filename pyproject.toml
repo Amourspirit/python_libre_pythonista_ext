@@ -87,7 +87,7 @@ sortedcontainers = ">=2.4.0"
 
 [tool.oxt.isolate]
 # https://tinyurl.com/ymeh4c9j#tooloxtisolate
-windows = ["pandas", "matplotlib", "seaborn"]
+windows = ["pandas", "matplotlib", "seaborn", "lxml", "pillow", "numpy"]
 
 [tool.oxt.preinstall.pure]
 # https://tinyurl.com/ymeh4c9j#tooloxtpreinstallpure

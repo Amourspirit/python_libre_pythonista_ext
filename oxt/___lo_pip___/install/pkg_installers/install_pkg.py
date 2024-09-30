@@ -3,7 +3,6 @@ import os
 import sys
 import shutil
 import subprocess
-import pkg_resources
 import glob
 import json
 from pathlib import Path
@@ -11,6 +10,7 @@ from typing import Any, Dict, List, Tuple
 
 
 # import pkg_resources
+import importlib.metadata
 from importlib.metadata import PackageNotFoundError, version
 from ...config import Config
 from ...lo_util.resource_resolver import ResourceResolver
@@ -394,13 +394,6 @@ class InstallPkg:
         my_env["PYTHONPATH"] = py_path
         return my_env
 
-    # def _uninstall_allowed(self, pkg_name: str) -> bool:
-    #     """Check if a package can be uninstalled."""
-    #     # don't uninstall pip no matter what.
-    #     if pkg_name in self._config.no_pip_remove:
-    #         return False
-    #     return True
-
     def install(self, req: Dict[str, str] | None = None, force: bool = False) -> bool:
         """
         Install all the packages in the configuration if they are not already installed and meet requirements.
@@ -534,33 +527,22 @@ class InstallPkg:
         Returns:
             str: The path to the dist-info folder, or an empty string if not found.
         """
+        # do not use pkg_resources as it is deprecated and does not work on windows.
 
-        # result = os.path.join(target, pkg)
-        # self._logger.debug(f"find_dist_info() result: {result}")
-        # return result
-        # return self._target_path.get_package_target(pkg)
         def convert_to_local(pth: Path) -> Path:
             return Path(target, pth.name)
 
         try:
-            distribution = pkg_resources.get_distribution(pkg)
-            if not distribution.egg_info:
-                self._logger.debug(f"find_dist_info() Package {pkg} has no egg_info")
-                return ""
-            dist_info_path = Path(target, distribution.egg_info)
-            result = convert_to_local(dist_info_path)
-            if result.exists():
-                self.log.debug(f"find_dist_info() Found dist-info for {pkg} at {result}")
-                return str(result)
-            if distribution.location:
-                dist_info_path = Path(target, distribution.location)
-                result = convert_to_local(dist_info_path)
-                if result.exists():
-                    self.log.debug(f"find_dist_info() Found dist-info for {pkg} at {result}")
-                    return str(result)
-        except pkg_resources.DistributionNotFound:
-            self.log.exception(f"find_dist_info() Package {pkg} not found")
-        return ""
+            dist = importlib.metadata.distribution(pkg)
+            location = dist.locate_file("")
+            dist_info_folder = f"{pkg.replace('-', '_')}-{dist.version}.dist-info"
+            dist_info_path = Path(location, dist_info_folder)
+            dist_info_path = convert_to_local(dist_info_path)
+            if dist_info_path.exists():
+                return str(dist_info_path)
+            return ""
+        except importlib.metadata.PackageNotFoundError:
+            return ""
 
     def get_package_installation_dir(self, pkg: str) -> str:
         """
