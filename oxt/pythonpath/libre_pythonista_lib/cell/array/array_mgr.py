@@ -42,8 +42,15 @@ class ArrayMgr:
         return results
 
     def _has_array_ability(self, cell: CalcCell) -> bool:
-        key = self._key_maker.cell_array_ability_key
-        return cell.get_custom_property(key, False)
+        try:
+            key = self._key_maker.cell_array_ability_key
+            if self._log.is_debug:
+                self._log.debug(f"_has_array_ability() Key: {key}")
+                self._log.debug(f"_has_array_ability() Cell: {cell.cell_obj}, Sheet {cell.calc_sheet.name}")
+            return cell.get_custom_property(key, False)
+        except Exception:
+            self._log.exception(f"_has_array_ability()")
+        return False
 
     def update_array_cells(self):
         """

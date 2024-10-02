@@ -90,7 +90,7 @@ class DispatchEditPyCellMb(XDispatch, EventsPartial, unohelper.Base):
         self._log.debug(f"init: sheet={sheet}, cell={cell}")
         self._status_listeners: Dict[str, XStatusListener] = {}
 
-    def addStatusListener(self, control: XStatusListener, url: URL) -> None:
+    def addStatusListener(self, Control: XStatusListener, URL: URL) -> None:
         """
         registers a listener of a control for a specific URL at this object to receive status events.
 
@@ -99,17 +99,17 @@ class DispatchEditPyCellMb(XDispatch, EventsPartial, unohelper.Base):
         Note: Notifications can't be guaranteed! This will be a part of interface XNotifyingDispatch.
         """
         with self._log.indent(True):
-            self._log.debug(f"addStatusListener(): url={url.Main}")
-            if url.Complete in self._status_listeners:
-                self._log.debug(f"addStatusListener(): url={url.Main} already exists.")
+            self._log.debug(f"addStatusListener(): url={URL.Main}")
+            if URL.Complete in self._status_listeners:
+                self._log.debug(f"addStatusListener(): url={URL.Main} already exists.")
             else:
                 # setting IsEnable=False here does not disable the dispatch command
                 # State=True may cause the menu items to be displayed as checked.
-                fe = FeatureStateEvent(FeatureURL=url, IsEnabled=True, State=None)
-                control.statusChanged(fe)
-                self._status_listeners[url.Complete] = control
+                fe = FeatureStateEvent(FeatureURL=URL, IsEnabled=True, State=None)
+                Control.statusChanged(fe)
+                self._status_listeners[URL.Complete] = Control
 
-    def dispatch(self, url: URL, args: Tuple[PropertyValue, ...]) -> None:
+    def dispatch(self, URL: URL, Arguments: Tuple[PropertyValue, ...]) -> None:
         """
         Dispatches (executes) a URL
         """
@@ -142,7 +142,7 @@ class DispatchEditPyCellMb(XDispatch, EventsPartial, unohelper.Base):
                 return
             if self._inst_id not in _THREADS_DICT:
                 # Wrap the original function
-                target_func = lambda: thread_wrapper(self._inst_id, cell, url, dispatch_in_thread)
+                target_func = lambda: thread_wrapper(self._inst_id, cell, URL, dispatch_in_thread)
                 t = Thread(target=target_func, daemon=True)
 
                 # Add the thread to the dictionary
@@ -167,14 +167,14 @@ class DispatchEditPyCellMb(XDispatch, EventsPartial, unohelper.Base):
                 self._log.error("Error getting cell information", exc_info=True)
             return
 
-    def removeStatusListener(self, control: XStatusListener, url: URL) -> None:
+    def removeStatusListener(self, Control: XStatusListener, URL: URL) -> None:
         """
         Un-registers a listener from a control.
         """
         with self._log.indent(True):
-            self._log.debug(f"removeStatusListener(): url={url.Main}")
-            if url.Complete in self._status_listeners:
-                del self._status_listeners[url.Complete]
+            self._log.debug(f"removeStatusListener(): url={URL.Main}")
+            if URL.Complete in self._status_listeners:
+                del self._status_listeners[URL.Complete]
 
 
 class DispatchWorker(EventsPartial):
@@ -266,11 +266,12 @@ class DispatchWorker(EventsPartial):
         py_inst = PyInstance(doc)  # singleton
         if DialogMb.has_instance(self._inst_id):
             mb = DialogMb.get_instance(self._inst_id)
+            code = mb.text
         else:
             py_src = py_inst[cell_obj]
             code = py_src.source_code
             py_src = None
-            mb = DialogMb(ctx, self._inst_id)
+            mb = DialogMb(ctx=ctx, inst_id=self._inst_id, cell=self._cell)
             mb.text = code
             mb.info = str(self._cell.cell_obj)
         _ACTIVE_WINDOWS[self._inst_id] = mb

@@ -24,7 +24,7 @@ from ooo.dyn.style.vertical_alignment import VerticalAlignment
 # from com.sun.star.beans import NamedValue
 # from com.sun.star.lang import XSingleServiceFactory
 
-from ooodev.calc import CalcDoc, RangeObj
+from ooodev.calc import CalcDoc, RangeObj, CalcCell
 from ooodev.dialog import BorderKind
 from ooodev.dialog.dl_control import CtlButton, CtlTextEdit, CtlFixedText
 from ooodev.dialog.msgbox import MessageBoxResultsEnum, MessageBoxType
@@ -77,13 +77,13 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
     MIN_HEIGHT = HEADER + FOOTER + 30
     MIN_WIDTH = 225
 
-    def __new__(cls, ctx: Any, inst_id: str):
+    def __new__(cls, ctx: Any, inst_id: str, cell: CalcCell):
         if inst_id not in cls._instances:
             cls._instances[inst_id] = super(DialogMb, cls).__new__(cls)
             cls._instances[inst_id]._is_init = False
         return cls._instances[inst_id]
 
-    def __init__(self, ctx: Any, inst_id: str) -> None:
+    def __init__(self, ctx: Any, inst_id: str, cell: CalcCell) -> None:
         if getattr(self, "_is_init", False):
             return
         TheDictionaryPartial.__init__(self)
@@ -99,7 +99,8 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
         self._log.debug("Init")
         self._cfg = CodeCfg()
         self._rr = ResourceResolver(Lo.get_context())
-        self._doc = Lo.current_doc
+        self._calc_cell = cell
+        self._doc = self._calc_cell.calc_doc
         self._disposed = False
         if self._cfg.has_size():
             self._log.debug("Config Has Size")
@@ -464,6 +465,8 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
 
         x = btn_x - DialogMb.BUTTON_WIDTH - self._margin
         self._ctl_btn_ok.view.setPosSize(x, btn_y, DialogMb.BUTTON_WIDTH, DialogMb.BUTTON_HEIGHT, PosSize.POSSIZE)
+        # ok button is sometime buggy on resize.
+        self._ctl_btn_ok.view.setVisible(True)
 
     def resize_code(self, sz: Rectangle) -> None:
         txt_sz = self._code.view.getPosSize()
@@ -584,15 +587,43 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
                 return
             log.debug(f"_on_menu_range_select_result {event.event_data.rng_obj}")
             try:
-                view = event.event_data.view
-                # doc = view.calc_doc
-                # doc.msgbox(f"Selection made {event.event_data.rng_obj}")
                 self._dialog.toFront()
                 self._dialog.setFocus()
 
                 sel = self._code.view.getSelection()
                 # self._write(, (sel.Min, sel.Max))
-                self._write(str(event.event_data.rng_obj), (sel.Min, sel.Max))
+                try:
+                    range_obj = cast(RangeObj, event.event_data.rng_obj.copy())
+                    
+                    self._log.debug(f"_on_menu_range_select_result() Range Selection: {range_obj.to_string(True)}")
+                    calc_doc = cast(CalcDoc, self._doc)
+
+                    if range_obj.sheet_idx == self._calc_cell.cell_obj.sheet_idx:
+                        if range_obj.is_single_cell():
+                            self._write(str(range_obj.cell_start), (sel.Min, sel.Max))
+                        else:
+                            self._write(str(range_obj), (sel.Min, sel.Max))
+                    else:
+                        if range_obj.is_single_cell():
+                            self._write(f"{range_obj.cell_start.to_string(True)}", (sel.Min, sel.Max))
+                        else:
+                            self._write(f"{range_obj.to_string(True)}", (sel.Min, sel.Max))
+                except Exception:
+                    log.exception(f"Error writing range selection using default.")
+                    self._write(str(event.event_data.rng_obj), (sel.Min, sel.Max))
+                try:
+                    if self._log.is_debug:
+                        self._log.debug(
+                            f"_on_menu_range_select_result() Range Selection: {event.event_data.rng_obj.to_string(True)}"
+                        )
+                        self._log.debug(
+                            f"_on_menu_range_select_result() Setting Sheet Active: {self._calc_cell.calc_sheet.sheet_name}"
+                        )
+                    self._doc.activate()
+                    self._doc.sheets.set_active_sheet(self._calc_cell.calc_sheet)
+                    self._dialog.setFocus()
+                except Exception:
+                    log.exception("_on_menu_range_select_result() Error setting active sheet and focus. Not critical.")
             except Exception:
                 log.error("_on_menu_range_select_result", exc_info=True)
 
@@ -611,7 +642,7 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
                 return
             log.debug(f"_on_menu_insert_lp_fn {event.event_data.rng_obj}")
             try:
-                view = event.event_data.view
+                # view = event.event_data.view
                 # doc = view.calc_doc
                 # doc.msgbox(f"Selection made {event.event_data.rng_obj}")
                 self._dialog.toFront()
@@ -619,13 +650,24 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
 
                 sel = self._code.view.getSelection()
                 # self._write(, (sel.Min, sel.Max))
-                doc = CalcDoc.from_current_doc()
-                ro = cast(RangeObj, event.event_data.rng_obj)
+                doc = self._doc
+                ro = cast(RangeObj, event.event_data.rng_obj.copy())
                 sheet = doc.sheets[ro.sheet_idx]
                 calc_cell_rng = sheet.get_range(range_obj=ro)
-                af = AutoFn(calc_cell_rng)
+                af = AutoFn(cell_rng=calc_cell_rng, orig_sheet_idx=self._calc_cell.cell_obj.sheet_idx)
                 fn_str = af.generate_fn()
                 self._write(fn_str, (sel.Min, sel.Max))
+                try:
+                    if self._log.is_debug:
+                        self._log.debug(f"_on_menu_insert_lp_fn() Range Selection: {ro.to_string(True)}")
+                        self._log.debug(
+                            f"_on_menu_insert_lp_fn() Setting Sheet Active: {self._calc_cell.calc_sheet.sheet_name}"
+                        )
+                    self._doc.activate()
+                    self._doc.sheets.set_active_sheet(self._calc_cell.calc_sheet)
+                    self._dialog.setFocus()
+                except Exception:
+                    log.exception("_on_menu_insert_lp_fn() Error setting active sheet and focus. Not critical.")
             except Exception:
                 log.error("_on_menu_insert_lp_fn", exc_info=True)
 

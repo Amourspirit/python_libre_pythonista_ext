@@ -33,6 +33,7 @@ class PandasDataObj:
         with self._log.indent(True):
             if self._log.is_debug:
                 self._log.debug(f"init: {cell_rng.range_obj}")
+                self._log.debug(f"current sheet {self._sheet.name}")
             self._data_info = TblDataObj(cell_rng)
             if col_types:
                 self._process_column_types(col_types)
@@ -62,28 +63,33 @@ class PandasDataObj:
         return self._sheet.get_array(range_obj=self._cell_rng.range_obj)
 
     def _process_df_with_headers(self, df: pd.DataFrame):
+
         with self._log.indent(True):
-            self._log.debug("_process_df_with_headers() Entered.")
-            date_col_names = set(self._data_info.get_date_column_names())
-            if self._log.is_debug:
-                self._log.debug(f"_process_df_with_headers() - Date Column Names Set: {date_col_names}")
-            for name in self._date_column_names:
-                date_col_names.add(name)
-            for index in self._date_column_indexes:
-                name = self.get_column_name(index)
-                date_col_names.add(name)
-            actual_columns = set(self._data_info.headers)
-            if self._log.is_debug:
-                self._log.debug(f"_process_df_with_headers() - Actual Columns: {actual_columns}")
-            # if any name in date_col_names is not in the actual columns then remove it
-            names = [name for name in date_col_names if name in actual_columns]
-            if names:
-                self._log.debug(f"_process_df_with_headers() - Converting to Date Columns: {names}")
-                PandasUtil.convert_lo_to_pandas_date_columns(df, *names)
-            else:
-                self._log.debug("_process_df_with_headers() - No Date Columns to Convert.")
-            self._log.debug("_process_df_with_headers() Exiting.")
-            return df
+            try:
+                self._log.debug("_process_df_with_headers() Entered.")
+                date_col_names = set(self._data_info.get_date_column_names())
+                if self._log.is_debug:
+                    self._log.debug(f"_process_df_with_headers() - Date Column Names Set: {date_col_names}")
+                for name in self._date_column_names:
+                    date_col_names.add(name)
+                for index in self._date_column_indexes:
+                    name = self.get_column_name(index)
+                    date_col_names.add(name)
+                actual_columns = set(self._data_info.headers)
+                if self._log.is_debug:
+                    self._log.debug(f"_process_df_with_headers() - Actual Columns: {actual_columns}")
+                # if any name in date_col_names is not in the actual columns then remove it
+                names = [name for name in date_col_names if name in actual_columns]
+                if names:
+                    self._log.debug(f"_process_df_with_headers() - Converting to Date Columns: {names}")
+                    PandasUtil.convert_lo_to_pandas_date_columns(df, *names)
+                else:
+                    self._log.debug("_process_df_with_headers() - No Date Columns to Convert.")
+                self._log.debug("_process_df_with_headers() Exiting.")
+                return df
+            except Exception:
+                self._log.exception("_process_df_with_headers()")
+                raise
 
     def _process_df_no_headers(self, df: pd.DataFrame):
         with self._log.indent(True):
@@ -120,16 +126,19 @@ class PandasDataObj:
             try:
                 data = self._get_data()
                 data_len = len(data)
+                self._log.debug(f"get_data_frame() Data Length: {data_len}")
                 if data_len == 0:
                     return pd.DataFrame()
 
                 if self._data_info.has_headers:
+                    self._log.debug("get_data_frame() Has Headers.")
                     if data_len == 1:
                         self._log.debug("get_data_frame() Exiting. No data. Only Headers")
                         return pd.DataFrame([], columns=data[0])
                     df = pd.DataFrame(data[1:], columns=data[0])
                     self._process_df_with_headers(df)
                 else:
+                    self._log.debug("get_data_frame() No Headers.")
                     df = pd.DataFrame(data)
                     self._process_df_no_headers(df)
                 self._log.debug("get_data_frame() Exiting.")

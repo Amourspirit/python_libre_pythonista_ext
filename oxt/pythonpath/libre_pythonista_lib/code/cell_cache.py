@@ -148,6 +148,7 @@ class CellCache(SingletonBase):
 
     def _ensure_sheet_index(self, sheet_idx: int) -> None:
         with self._log.indent(True):
+            self._log.debug(f"_ensure_sheet_index() Sheet Index: {sheet_idx}")
             if sheet_idx < 0:
                 self._log.error("_ensure_sheet_index() Sheet index not set")
                 raise ValueError("Sheet index not set")
@@ -302,6 +303,8 @@ class CellCache(SingletonBase):
             if sheet_idx < 0:
                 self._log.error("get_by_index() Sheet index not set")
                 raise ValueError("Sheet index not set")
+            if self._log.is_debug:
+                self._log.debug(f"get_by_index() Index: {index} - Sheet Index: {sheet_idx}")
             self._ensure_sheet_index(sheet_idx)
             indexes = self._get_indexes(sheet_idx)
             if self._log.is_debug:

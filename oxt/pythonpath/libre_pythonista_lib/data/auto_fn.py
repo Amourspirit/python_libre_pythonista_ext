@@ -13,7 +13,7 @@ else:
 class AutoFn:
     """Class that generates the lp function"""
 
-    def __init__(self, cell_rng: CalcCellRange):
+    def __init__(self, cell_rng: CalcCellRange, orig_sheet_idx: int):
         """
         Constructor
 
@@ -22,8 +22,9 @@ class AutoFn:
         """
         self._log = OxtLogger(log_name=self.__class__.__name__)
         if self._log.is_debug:
-            self._log.debug(f"init: {cell_rng.range_obj}")
+            self._log.debug(f"init cell range: {cell_rng.range_obj}, Original Sheet Index: {orig_sheet_idx}")
         self._cell_rng = cell_rng
+        self._orig_sheet_idx = orig_sheet_idx
         self._data_info = TblDataObj(cell_rng)
         self._log.debug("init complete.")
 
@@ -31,7 +32,20 @@ class AutoFn:
         """Generates the lp function"""
         self._log.debug("generate_fn() Entered")
 
-        s = f'lp("{self._cell_rng.range_obj}"'
+        s = ""
+        if self._cell_rng.range_obj.is_single_cell():
+            if self._orig_sheet_idx == self._cell_rng.range_obj.sheet_idx:
+                s += f'lp("{self._cell_rng.range_obj.cell_start}")'
+            else:
+                s += f'lp("{self._cell_rng.range_obj.cell_start.to_string(True)}")'
+            # single cell return the value
+            self._log.debug(f"generate_fn() returning '{s}'")
+            return s
+        else:
+            if self._orig_sheet_idx == self._cell_rng.range_obj.sheet_idx:
+                s += f'lp("{self._cell_rng.range_obj}"'
+            else:
+                s += f'lp("{self._cell_rng.range_obj.to_string(True)}"'
         if self._data_info.has_headers:
             # headers = self._data_info.headers
             s += ", headers=True"
