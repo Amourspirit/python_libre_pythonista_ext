@@ -202,8 +202,9 @@ class CellMgr(SingletonBase):
                 self._log.error("Cell cache is None")
                 raise ValueError("Cell cache is None")
             try:
-                idx = self._cell_cache.get_cell_index(cell.cell_obj, cell.cell_obj.sheet_idx)
-                count = self._cell_cache.get_cell_complete_count()
+                idx = self._cell_cache.get_cell_count(cell.cell_obj.sheet_idx)
+                # count = self._cell_cache.get_cell_complete_count()
+                count = self._cell_cache.get_cell_count(cell.cell_obj.sheet_idx)
                 self._log.debug(f"Index: {idx} Count: {count}")
                 cells = [cell]
                 idx += 1
