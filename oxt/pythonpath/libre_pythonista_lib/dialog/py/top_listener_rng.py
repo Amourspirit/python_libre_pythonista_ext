@@ -19,7 +19,7 @@ else:
 # region DocWindow Class
 
 
-class TopListenerRng(unohelper.Base, XTopWindowListener):
+class TopListenerRng(XTopWindowListener, unohelper.Base):
     """
     This listener is automatically attached to active spreadsheet by the DialogPython class.
     It is attached when the Dialog select cell range is invoked.
@@ -42,11 +42,11 @@ class TopListenerRng(unohelper.Base, XTopWindowListener):
         except Exception:
             self._log.error("Error add listener to calc doc.", exc_info=True)
 
-    def windowOpened(self, event: EventObject) -> None:
+    def windowOpened(self, e: EventObject) -> None:
         """is invoked when a window is activated."""
         pass
 
-    def windowActivated(self, event: EventObject) -> None:
+    def windowActivated(self, e: EventObject) -> None:
         """is invoked when a window is activated."""
         with self._log.indent(True):
             self._log.debug("Window Activated")
@@ -61,22 +61,22 @@ class TopListenerRng(unohelper.Base, XTopWindowListener):
             except Exception:
                 self._log.error("Error getting range from popup.", exc_info=True)
 
-    def windowDeactivated(self, event: EventObject) -> None:
+    def windowDeactivated(self, e: EventObject) -> None:
         """is invoked when a window is deactivated."""
         with self._log.indent(True):
             self._log.debug("Window De-activated")
 
-    def windowMinimized(self, event: EventObject) -> None:
+    def windowMinimized(self, e: EventObject) -> None:
         """Is invoked when a window is iconified."""
         with self._log.indent(True):
             self._log.debug("Window Minimized")
 
-    def windowNormalized(self, event: EventObject) -> None:
+    def windowNormalized(self, e: EventObject) -> None:
         """is invoked when a window is deiconified."""
         with self._log.indent(True):
             self._log.debug("Window Normalized")
 
-    def windowClosing(self, event: EventObject) -> None:
+    def windowClosing(self, e: EventObject) -> None:
         """
         is invoked when a window is in the process of being closed.
 
@@ -85,12 +85,12 @@ class TopListenerRng(unohelper.Base, XTopWindowListener):
         with self._log.indent(True):
             self._log.debug("Window Closing")
 
-    def windowClosed(self, event: EventObject) -> None:
+    def windowClosed(self, e: EventObject) -> None:
         """is invoked when a window has been closed."""
         with self._log.indent(True):
             self._log.debug("Window Closed")
 
-    def disposing(self, event: EventObject) -> None:
+    def disposing(self, Source: EventObject) -> None:
         """
         gets called when the broadcaster is about to be disposed.
 
