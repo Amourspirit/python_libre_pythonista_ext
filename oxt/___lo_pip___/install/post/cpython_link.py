@@ -7,6 +7,7 @@ This class creates symlinks for all .so files in site-packages that match the cu
 For example a file named ``indexers.cpython-38-x86_64-linux-gnu.so`` would be symlinked to ``indexers.cpython-3.8.so``.
 This renaming allows the python interpreter to find the import.
 """
+
 from __future__ import annotations
 from typing import List
 from pathlib import Path
@@ -25,7 +26,7 @@ class CPythonLink:
             overwrite (bool, optional): Override any existing sys links. Defaults to False.
         """
         self._overwrite = overwrite
-        self._logger = OxtLogger(log_name=__name__)
+        self._logger = OxtLogger(log_name=self.__class__.__name__)
         self._current_suffix = self._get_current_suffix()
         self._logger.debug("CPythonLink.__init__")
         # self._suffix = self._get_current_suffix()
@@ -44,6 +45,18 @@ class CPythonLink:
                 # remove leading . and trailing .so
                 return suffix[1:][:-3]
         return ""
+
+    def get_needs_linking(self) -> bool:
+        """Gets if the files need linking to fix .cpython issue."""
+        # for normal installs the suffix will be something like cpython-312-x86_64-linux-gnu
+        # for other embedded it will be something like .cpython-3.9
+        # If the number of - occurrences are greater then 1 then linking should not be needed
+        suffix = self._get_current_suffix()
+        if not suffix:
+            self._logger.warning("get_needs_linking() No suffix found for cpython")
+            return False
+        count = suffix.count("-")
+        return count <= 1
 
     def _get_all_files(self, path: Path) -> List[Path]:
         return [p for p in path.glob(f"**/*{self._file_suffix}.so") if p.is_file()]
