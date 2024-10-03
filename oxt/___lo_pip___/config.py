@@ -105,11 +105,12 @@ class Config(metaclass=Singleton):
                 self._python_path = Path(self.join(util.config("Module"), "python"))
                 self._site_packages = self._get_default_site_packages_dir()
             else:
-                self._python_path = Path(sys.executable)
+                self._python_path = self.get_path_default()  # Path(sys.executable)
                 if self._is_flatpak:
                     self._site_packages = self._get_flatpak_site_packages_dir()
                 else:
                     self._site_packages = self._get_default_site_packages_dir()
+            self._logger.debug(f"Python Path: {self._python_path}")
         except Exception as err:
             self._logger.error(f"Error initializing config: {err}", exc_info=True)
             raise
@@ -118,6 +119,27 @@ class Config(metaclass=Singleton):
     # endregion Init
 
     # region Methods
+    def get_path_default(self) -> Path:
+        # sys.executable is not reliable if working in an embedded python environment. My suggestions is to deduce it from os.__file__
+        # https://stackoverflow.com/questions/749711/how-to-get-the-python-exe-location-programmatically
+        # try and find path from os
+        p = self.find_program_directory(os.__file__)
+        if p is None:
+            return Path(sys.executable)
+        pp = p / "python"
+        if pp.exists() and pp.is_file():
+            return pp
+        pp = p / "bin" / "python"
+        if pp.exists() and pp.is_file():
+            return pp
+        return Path(sys.executable)
+
+    def find_program_directory(self, start_path: str) -> Path | None:
+        path = Path(start_path)
+        for parent in path.parents:
+            if parent.name == "program":
+                return parent
+        return None
 
     def join(self, *paths: str):
         return str(Path(paths[0]).joinpath(*paths[1:]))
