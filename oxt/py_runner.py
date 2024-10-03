@@ -622,9 +622,10 @@ class ___lo_implementation_name___(unohelper.Base, XJob):
                 "Not creating CPython link because configuration has it turned off. Skipping post install."
             )
             return
-        if not self._config.is_mac and not self._config._is_app_image:
-            self._logger.debug("Not Mac or AppImage. Skipping post install.")
+        if self._config.is_win:
+            self._logger.debug("Windows, skipping post install.")
             return
+
         try:
             if TYPE_CHECKING:
                 from .___lo_pip___.install.post.cpython_link import CPythonLink
@@ -632,6 +633,19 @@ class ___lo_implementation_name___(unohelper.Base, XJob):
                 from ___lo_pip___.install.post.cpython_link import CPythonLink
 
             link = CPythonLink()
+            if self._config.is_mac or self._config._is_app_image:
+                self._logger.debug("Mac or AppImage, linking needed.")
+            else:
+                self._logger.debug("Not Mac or AppImage, checking if needs linking")
+                # mac and app image are known to need linking.
+                # There are rare cases that linking is still needed.
+                # Such as when deb files are download directly from LibreOffice and installed.
+                # In this case LibreOffice use an embedded python similar to AppImage
+                if link.get_needs_linking():
+                    self._logger.debug("Linking needed.")
+                else:
+                    self._logger.debug("No linking needed. Skipping post install.")
+                    return
             link.link()
         except Exception as err:
             self._logger.error(err, exc_info=True)

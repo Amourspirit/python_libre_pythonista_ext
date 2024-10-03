@@ -131,7 +131,7 @@ es = "Extensión para agregar administración de paquetes Python y Pip dentro de
 
 [tool.poetry]
 name = "LibrePythonista"
-version = "0.3.0"
+version = "0.3.1"
 description = "Python For LibreOffice Calc"
 authors = [":Barry-Thomas-Paul: Moss <4193389+Amourspirit@users.noreply.github.com>"]
 license = "Apache"

@@ -97,26 +97,6 @@ class InstallPipPkg:
             self._log.debug(f"Subprocess command error: {result.stderr}")
         return result
 
-    # def _un_install_pkg(self, pkg: str) -> None:
-    #     """Uninstall a package using pip."""
-    #     self._log.debug(f"InstallPipPkg._un_install_pkg({pkg})")
-    #     result = self._run_subprocess([str(self._path_python), "-m", "pip", "uninstall", "-y", "--user", pkg])
-    #     if result.returncode == 0:
-    #         MsgBox.msgbox(
-    #             self._rr.resolve_string("msg15").format(pkg),  # Package {} removed successfully
-    #             title=self._rr.resolve_string("title02"),
-    #             boxtype=MessageBoxType.INFOBOX,
-    #         )
-    #         self._log.info(f"Package {pkg} removed successfully.")
-    #     else:
-    #         MsgBox.msgbox(
-    #             self._rr.resolve_string("msg16").format(pkg),  # Package {} removal failed
-    #             title=self._rr.resolve_string("msg01"),
-    #             boxtype=MessageBoxType.ERRORBOX,
-    #         )
-    #         self._log.error(f"Package {pkg} removal failed: {result.stderr}")
-    #     self._log.debug("InstallPipPkg._un_install_pkg() completed.")
-
     def install(self) -> None:
         """Install pip packages."""
         self._log.debug("InstallPipPkg.install()")
@@ -311,9 +291,10 @@ class InstallPipPkg:
                 "Not creating CPython link because configuration has it turned off. Skipping post install."
             )
             return
-        if not self._config.is_mac and not self._config._is_app_image:
-            self._log.debug("Not Mac or AppImage. Skipping post install.")
+        if self._config.is_win:
+            self._log.debug("Windows, skipping post install.")
             return
+
         try:
             if TYPE_CHECKING:
                 from ....___lo_pip___.install.post.cpython_link import CPythonLink
@@ -321,6 +302,21 @@ class InstallPipPkg:
                 from ___lo_pip___.install.post.cpython_link import CPythonLink
 
             link = CPythonLink()
+            if self._config.is_mac or self._config._is_app_image:
+                self._log.debug("_post_install() Linking needed")
+            else:
+                # mac and app image are known to need linking.
+                # There are rare cases that linking is still needed.
+                # Such as when deb files are download directly from LibreOffice and installed.
+                # In this case LibreOffice use an embedded python similar to AppImage
+                self._log.debug("Not Mac or AppImage, checking if needs linking")
+
+                if link.get_needs_linking():
+                    self._log.debug("Linking needed.")
+                else:
+                    self._log.debug("No linking needed. Skipping post install.")
+                    return
+
             link.link()
         except Exception as err:
             self._log.error(err, exc_info=True)
