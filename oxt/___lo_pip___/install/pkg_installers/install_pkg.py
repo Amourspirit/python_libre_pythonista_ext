@@ -208,66 +208,6 @@ class InstallPkg:
 
         return result
 
-    def _old_uninstall_pkg(self, pkg: str) -> bool:
-        # pip uninstall -y package1 package2 package3
-        cmd = ["uninstall", "-y"]
-        auto_target = False
-        if self.config.auto_install_in_site_packages and self.config.site_packages:
-            auto_target = True
-        if auto_target:
-            cmd.append(f"--target={self._target_path.get_package_target(pkg)}")
-
-        cmd = self._cmd_pip(*[*cmd, pkg])
-        self._logger.debug(f"Running command {cmd}")
-        self._logger.info(f"Uninstalling package {pkg}")
-        msg = f"Pip Uninstall success for: {pkg}"
-        err_msg = f"Pip Uninstall failed for: {pkg}"
-        if STARTUP_INFO:
-            process = subprocess.run(
-                cmd,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                encoding="utf-8",
-                errors="replace",
-                text=True,
-                env=self._get_env(),
-                startupinfo=STARTUP_INFO,
-            )
-        else:
-            process = subprocess.run(
-                cmd,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                encoding="utf-8",
-                errors="replace",
-                text=True,
-                env=self._get_env(),
-            )
-        result = False
-        if process.returncode == 0:
-            self._logger.info(msg)
-            result = True
-        else:
-            self._logger.error(err_msg)
-            try:
-                # if permission denied then raise exception.
-                error_msg = process.stderr  # .decode("utf-8")
-                last_line = error_msg.strip().split("\n")[-1]
-                start_err = ("ERROR: Cannot uninstall", "error: externally-managed-environment")
-                if error_msg.startswith(start_err) or last_line.startswith(
-                    "PermissionError: [Errno 13] Permission denied:"
-                ):
-                    raise PermissionError(last_line)
-                else:
-                    self._logger.error(error_msg)
-            except PermissionError:
-                self._logger.debug("_uninstall_pkg() Permission Error has been raised.")
-                raise
-            except Exception as err:
-                self._logger.error(f"_uninstall_pkg() Error decoding stderr: {err}")
-
-        return result
-
     def uninstall_pkg(self, pkg: str, target: str = "") -> bool:
         """
         Uninstall a package by manually removing its directory and dist-info folder from the target location.
@@ -505,7 +445,7 @@ class InstallPkg:
             return 1, rules
 
         rules_pass = self._ver_rules.get_installed_is_valid_by_rules(rules=rules, check_version=pkg_ver)
-        if rules_pass == False:
+        if not rules_pass:
             self._logger.info(
                 f"Package {name} {pkg_ver} already installed. It does not meet requirements specified by: {ver}, but will be upgraded."
             )
@@ -536,7 +476,7 @@ class InstallPkg:
             dist = importlib.metadata.distribution(pkg)
             location = dist.locate_file("")
             dist_info_folder = f"{pkg.replace('-', '_')}-{dist.version}.dist-info"
-            dist_info_path = Path(location, dist_info_folder)
+            dist_info_path = Path(str(location), dist_info_folder)
             dist_info_path = convert_to_local(dist_info_path)
             if dist_info_path.exists():
                 return str(dist_info_path)
