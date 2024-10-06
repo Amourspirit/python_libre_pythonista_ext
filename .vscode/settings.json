@@ -11,15 +11,15 @@
     "autoDocstring.docstringFormat": "google",
     "workbench.colorCustomizations": {
         "[Monokai]": {
-            "titleBar.activeBackground": "#054602",
+            "titleBar.activeBackground": "#030c4e",
             "titleBar.activeForeground": "#e49df4"
         },
         "[Default Dark+]": {
-            "titleBar.activeBackground": "#054602",
+            "titleBar.activeBackground": "#030c4e",
             "titleBar.activeForeground": "#e49df4"
         },
         "[Visual Studio Dark]": {
-            "titleBar.activeBackground": "#054602",
+            "titleBar.activeBackground": "#030c4e",
             "titleBar.activeForeground": "#e49df4"
         }
     },
@@ -101,6 +101,5 @@
     "cSpell.words": [
         "Addin"
     ],
-    "python.analysis.typeCheckingMode": "basic",
     "xml.format.maxLineWidth": 0
 }

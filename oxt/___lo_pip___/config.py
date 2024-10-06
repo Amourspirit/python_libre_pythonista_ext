@@ -3,7 +3,7 @@
 from __future__ import annotations
 from pathlib import Path
 from typing import Dict, List, Set, TYPE_CHECKING
-import json
+import uno
 import os
 import sys
 import platform
@@ -123,7 +123,10 @@ class Config(metaclass=Singleton):
         # sys.executable is not reliable if working in an embedded python environment. My suggestions is to deduce it from os.__file__
         # https://stackoverflow.com/questions/749711/how-to-get-the-python-exe-location-programmatically
         # try and find path from os
-        p = self.find_program_directory(os.__file__)
+        # uno.__file__ is also a good candidate and usually exist in the program directory.
+        p = self.find_program_directory(uno.__file__)
+        if p is None:
+            p = self.find_program_directory(os.__file__)
         if p is None:
             return Path(sys.executable)
         pp = p / "python"

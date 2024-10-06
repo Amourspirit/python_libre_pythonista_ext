@@ -33,6 +33,7 @@ if TYPE_CHECKING:
     from ....___lo_pip___.events.args.event_args import EventArgs
     from ....___lo_pip___.install.progress_window.progress_dialog_true import ProgressDialogTrue
     from ....___lo_pip___.lo_util.target_path import TargetPath
+    from ....___lo_pip___.install.progress import Progress
 else:
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
     from ___lo_pip___.install.install_pkg import InstallPkg
@@ -44,6 +45,7 @@ else:
     from ___lo_pip___.events.args.event_args import EventArgs
     from ___lo_pip___.install.progress_window.progress_dialog_true import ProgressDialogTrue
     from ___lo_pip___.lo_util.target_path import TargetPath
+    from ___lo_pip___.install.progress import Progress
 
 
 class InstallPipPkg:
@@ -294,7 +296,7 @@ class InstallPipPkg:
         if self._config.is_win:
             self._log.debug("Windows, skipping post install.")
             return
-
+        progress: Progress | None = None
         try:
             if TYPE_CHECKING:
                 from ....___lo_pip___.install.post.cpython_link import CPythonLink
@@ -316,11 +318,18 @@ class InstallPipPkg:
                 else:
                     self._log.debug("No linking needed. Skipping post install.")
                     return
-
+            if self._config.show_progress:
+                msg = self._rr.resolve_string("msg19")
+                title = self._rr.resolve_string("title03")
+                progress = Progress(start_msg=msg, title=title)
+                progress.start()
             link.link()
         except Exception as err:
             self._log.error(err, exc_info=True)
             return
+        finally:
+            if progress:
+                progress.kill()
         self._log.debug("Post Install Done")
 
     # region Json directory methods
