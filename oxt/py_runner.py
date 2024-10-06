@@ -148,6 +148,9 @@ class ___lo_implementation_name___(unohelper.Base, XJob):
     def execute(self, *args: Tuple[NamedValue, ...]) -> None:
         # make sure our pythonpath is in sys.path
         self._start_time = time.time()
+        self._logger.info(
+            f"{self._config.extension_display_name} version {self._config.extension_version} execute starting"
+        )
         self._logger.debug("___lo_implementation_name___ executing")
         try:
             self._job_event_name = self._get_event_name(args)
@@ -617,6 +620,7 @@ class ___lo_implementation_name___(unohelper.Base, XJob):
     # region Post Install
     def _post_install(self) -> None:
         self._logger.debug("Post Install starting")
+        progress: Progress | None = None
         if not self._config.sym_link_cpython:
             self._logger.debug(
                 "Not creating CPython link because configuration has it turned off. Skipping post install."
@@ -629,8 +633,10 @@ class ___lo_implementation_name___(unohelper.Base, XJob):
         try:
             if TYPE_CHECKING:
                 from .___lo_pip___.install.post.cpython_link import CPythonLink
+                from .___lo_pip___.install.progress import Progress
             else:
                 from ___lo_pip___.install.post.cpython_link import CPythonLink
+                from ___lo_pip___.install.progress import Progress
 
             link = CPythonLink()
             if self._config.is_mac or self._config._is_app_image:
@@ -646,10 +652,19 @@ class ___lo_implementation_name___(unohelper.Base, XJob):
                 else:
                     self._logger.debug("No linking needed. Skipping post install.")
                     return
+
+            if self._config.show_progress:
+                msg = self.resource_resolver.resolve_string("msg19")
+                title = self.resource_resolver.resolve_string("title03")
+                progress = Progress(start_msg=msg, title=title)
+                progress.start()
             link.link()
         except Exception as err:
             self._logger.error(err, exc_info=True)
             return
+        finally:
+            if progress:
+                progress.kill()
         self._logger.debug("Post Install Done")
 
     # endregion Post Install
