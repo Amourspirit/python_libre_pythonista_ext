@@ -86,6 +86,11 @@ class JsonConfig(metaclass=Singleton):
             self._run_imports = []
 
         try:
+            self._run_imports2 = cast(list, self._cfg["tool"]["oxt"]["config"]["run_imports2"])
+        except Exception:
+            self._run_imports2 = []
+
+        try:
             self._log_indent = cast(int, self._cfg["tool"]["oxt"]["config"]["log_indent"])
         except Exception:
             self._log_indent = False
@@ -203,6 +208,7 @@ class JsonConfig(metaclass=Singleton):
         json_config["install_on_no_uninstall_permission"] = self._install_on_no_uninstall_permission
         json_config["unload_after_install"] = self._unload_after_install
         json_config["run_imports"] = self._run_imports
+        json_config["run_imports2"] = self._run_imports2
         # json_config["log_pip_installs"] = self._log_pip_installs
         json_config["log_indent"] = self._log_indent
         # update the requirements
@@ -251,6 +257,7 @@ class JsonConfig(metaclass=Singleton):
             self._install_on_no_uninstall_permission, bool
         ), "_install_on_no_uninstall_permission must be a bool"
         assert isinstance(self._run_imports, list), "run_imports must be a list"
+        assert isinstance(self._run_imports2, list), "run_imports2 must be a list"
         # region tool.libre_pythonista.config
         assert isinstance(self._cell_custom_prop_prefix, str), "cell_custom_prop_prefix must be a string"
         assert isinstance(self._cell_custom_prop_codename, str), "cell_custom_prop_codename must be a string"

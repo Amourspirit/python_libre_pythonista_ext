@@ -29,6 +29,7 @@ if TYPE_CHECKING:
     from ...pythonpath.libre_pythonista_lib.event.shared_event import SharedEvent
     from ...pythonpath.libre_pythonista_lib.const.event_const import DOCUMENT_SAVING
     from ...pythonpath.libre_pythonista_lib.doc_props.calc_props import CalcProps
+    from ...pythonpath.libre_pythonista_lib.state.calc_state_mgr import CalcStateMgr
 
 else:
     _CONDITIONS_MET = _conditions_met()
@@ -40,6 +41,7 @@ else:
         from libre_pythonista_lib.const.event_const import DOCUMENT_SAVING
         from libre_pythonista_lib.event.shared_event import SharedEvent
         from libre_pythonista_lib.doc_props.calc_props import CalcProps
+        from libre_pythonista_lib.state.calc_state_mgr import CalcStateMgr
 # endregion imports
 
 
@@ -89,6 +91,12 @@ class SavingJob(XJob, unohelper.Base):
                 self._logger.debug("Document Saving is a spreadsheet")
                 if _CONDITIONS_MET:
                     doc = CalcDoc.get_doc_from_component(self.document)
+
+                    state_mgr = CalcStateMgr(doc)
+                    if not state_mgr.is_imports2_ready:
+                        self._log.debug("Imports2 is not ready. Returning.")
+                        return
+
                     try:
                         cfg = Config()
                         ver = doc.get_custom_property("LIBRE_PYTHONISTA_VERSION", "")

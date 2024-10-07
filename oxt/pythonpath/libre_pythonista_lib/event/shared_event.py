@@ -2,7 +2,6 @@ from __future__ import annotations
 from typing import Any, Dict, TYPE_CHECKING
 
 from ooodev.loader import Lo
-from ooodev.events.partial.events_partial import EventsPartial
 from ooodev.events.lo_events import LoEvents
 from ooodev.events.args.event_args import EventArgs
 from ..const.event_const import GBL_DOC_CLOSING

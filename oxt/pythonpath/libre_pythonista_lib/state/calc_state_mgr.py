@@ -14,8 +14,10 @@ from ..event.shared_event import SharedEvent
 
 if TYPE_CHECKING:
     from ....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from ....___lo_pip___.config import Config
 else:
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from ___lo_pip___.config import Config
 
 
 # sheet.listen.sheet_activation_listener.SheetActivationListener triggers the event
@@ -32,6 +34,7 @@ class CalcStateMgr(SingletonBase):
         self._log = OxtLogger(log_name=self.__class__.__name__)
         with self._log.noindent():
             self._log.debug(f"Initializing {self.__class__.__name__}")
+        self._config = Config()
         self._doc = doc
         self._props: Dict[str, Any] = {}
         self._se = SharedEvent(doc)
@@ -86,6 +89,13 @@ class CalcStateMgr(SingletonBase):
         for key in keys:
             del self._props[key]
 
+    def is_import_available(self, module_name: str) -> bool:
+        try:
+            __import__(module_name)
+        except (ModuleNotFoundError, ImportError):
+            return False
+        return True
+
     @property
     def is_view_loaded(self) -> bool:
         key = self._make_key("new_view")
@@ -109,3 +119,11 @@ class CalcStateMgr(SingletonBase):
         else:
             if key in self._props:
                 del self._props[key]
+
+    @property
+    def is_imports2_ready(self) -> bool:
+        try:
+            return self._imports2_ready
+        except AttributeError:
+            self._imports2_ready = all(self.is_import_available(imp) for imp in self._config.run_imports2)
+        return self._imports2_ready

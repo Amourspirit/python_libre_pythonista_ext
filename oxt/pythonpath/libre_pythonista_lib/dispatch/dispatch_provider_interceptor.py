@@ -35,27 +35,15 @@ from ..const import (
     UNO_DISPATCH_PIP_PKG_INSTALL,
     UNO_DISPATCH_PIP_PKG_UNINSTALL,
     UNO_DISPATCH_PIP_PKG_INSTALLED,
+    UNO_DISPATCH_PIP_PKG_LINK,
+    UNO_DISPATCH_PIP_PKG_UNLINK,
 )
 from ..const.event_const import GBL_DOC_CLOSING
+from ..log.log_inst import LogInst
 
-# region Dispatch Imports
-# Most imports are lazy imports to avoid potential failure.
+# Imports are lazy imports to avoid potential failure, especially during startup when the secondary required modules may not be loaded.
 # If not lazy import then a failing import could cause all dispatches here to fail.
 # Also many commands import other modules that may not be common, so lazy import is used to avoid unnecessary imports.
-from .dispatch_toggle_data_tbl_state import DispatchToggleDataTblState
-from .dispatch_py_obj_state import DispatchPyObjState
-from .dispatch_cell_select import DispatchCellSelect
-from .dispatch_card_df import DispatchCardDf
-from .dispatch_rng_select_popup import DispatchRngSelectPopup
-from .dispatch_cell_select_recalc import DispatchCellSelectRecalc
-from .dispatch_ctl_update import DispatchCtlUpdate
-
-# endregion Dispatch Imports
-
-# from .dispatch_install_pkg import DispatchInstallPkg
-
-# from .listen.edit_status_listener import EditStatusListener
-from ..log.log_inst import LogInst
 
 
 class DispatchProviderInterceptor(unohelper.Base, XDispatchProviderInterceptor):
@@ -211,6 +199,11 @@ class DispatchProviderInterceptor(unohelper.Base, XDispatchProviderInterceptor):
                     log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchToggleSeriesState")
                 return DispatchToggleSeriesState(sheet=args["sheet"], cell=args["cell"])
         elif URL.Main == UNO_DISPATCH_DATA_TBL_STATE:
+            try:
+                from .dispatch_toggle_data_tbl_state import DispatchToggleDataTblState
+            except ImportError:
+                log.exception("DispatchToggleDataTblState import error")
+                raise
             with contextlib.suppress(Exception):
                 args = self._convert_query_to_dict(URL.Arguments)
                 with log.indent(True):
@@ -229,24 +222,44 @@ class DispatchProviderInterceptor(unohelper.Base, XDispatchProviderInterceptor):
                     log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchDelPyCell")
                 return DispatchDelPyCell(sheet=args["sheet"], cell=args["cell"])
         elif URL.Main == UNO_DISPATCH_PY_OBJ_STATE:
+            try:
+                from .dispatch_py_obj_state import DispatchPyObjState
+            except ImportError:
+                log.exception("DispatchPyObjState import error")
+                raise
             with contextlib.suppress(Exception):
                 args = self._convert_query_to_dict(URL.Arguments)
                 with log.indent(True):
                     log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchPyObjState")
                 return DispatchPyObjState(sheet=args["sheet"], cell=args["cell"])
         elif URL.Main == UNO_DISPATCH_CELL_SELECT:
+            try:
+                from .dispatch_cell_select import DispatchCellSelect
+            except ImportError:
+                log.exception("DispatchCellSelect import error")
+                raise
             with contextlib.suppress(Exception):
                 args = self._convert_query_to_dict(URL.Arguments)
                 with log.indent(True):
                     log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchCellSelect")
                 return DispatchCellSelect(sheet=args["sheet"], cell=args["cell"])
         elif URL.Main == UNO_DISPATCH_CELL_SELECT_RECALC:
+            try:
+                from .dispatch_cell_select_recalc import DispatchCellSelectRecalc
+            except ImportError:
+                log.exception("DispatchCellSelectRecalc import error")
+                raise
             with contextlib.suppress(Exception):
                 args = self._convert_query_to_dict(URL.Arguments)
                 with log.indent(True):
                     log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchCellSelectRecalc")
                 return DispatchCellSelectRecalc(sheet=args["sheet"], cell=args["cell"])
         elif URL.Main == UNO_DISPATCH_DF_CARD:
+            try:
+                from .dispatch_card_df import DispatchCardDf
+            except ImportError:
+                log.exception("DispatchCardDf import error")
+                raise
             with contextlib.suppress(Exception):
                 args = self._convert_query_to_dict(URL.Arguments)
                 with log.indent(True):
@@ -265,6 +278,11 @@ class DispatchProviderInterceptor(unohelper.Base, XDispatchProviderInterceptor):
                     log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchCardTblData")
                 return DispatchCardTblData(sheet=args["sheet"], cell=args["cell"])
         elif URL.Main == UNO_DISPATCH_SEL_RNG:
+            try:
+                from .dispatch_rng_select_popup import DispatchRngSelectPopup
+            except ImportError:
+                log.exception("DispatchRngSelectPopup import error")
+                raise
             with contextlib.suppress(Exception):
                 if URL.Arguments:
                     args = self._convert_query_to_dict(URL.Arguments)
@@ -285,6 +303,12 @@ class DispatchProviderInterceptor(unohelper.Base, XDispatchProviderInterceptor):
                     log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchAbout")
                 return DispatchAbout()
         elif URL.Main == UNO_DISPATCH_CELL_CTl_UPDATE:
+            try:
+                from .dispatch_ctl_update import DispatchCtlUpdate
+            except ImportError:
+                log.exception("DispatchCtlUpdate import error")
+                raise
+
             with contextlib.suppress(Exception):
                 with log.indent(True):
                     args = self._convert_query_to_dict(URL.Arguments)
@@ -296,6 +320,7 @@ class DispatchProviderInterceptor(unohelper.Base, XDispatchProviderInterceptor):
             except ImportError:
                 log.exception("DispatchPyPkgInstall import error")
                 raise
+
             with contextlib.suppress(Exception):
                 with log.indent(True):
                     log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchPyPkgInstall")
@@ -322,6 +347,27 @@ class DispatchProviderInterceptor(unohelper.Base, XDispatchProviderInterceptor):
                 with log.indent(True):
                     log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchPyPkgInstalled")
                 return DispatchPyPkgInstalled()
+
+        elif URL.Main == UNO_DISPATCH_PIP_PKG_LINK:
+            try:
+                from .dispatch_py_link import DispatchPyLink
+            except ImportError:
+                log.exception("DispatchPyLink import error")
+                raise
+            with contextlib.suppress(Exception):
+                with log.indent(True):
+                    log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchPyLink")
+                return DispatchPyLink()
+        elif URL.Main == UNO_DISPATCH_PIP_PKG_UNLINK:
+            try:
+                from .dispatch_py_unlink import DispatchPyUnlink
+            except ImportError:
+                log.exception("DispatchPyUnlink import error")
+                raise
+            with contextlib.suppress(Exception):
+                with log.indent(True):
+                    log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchPyUnlink")
+                return DispatchPyUnlink()
 
         return self._slave.queryDispatch(URL, TargetFrameName, SearchFlags)
 

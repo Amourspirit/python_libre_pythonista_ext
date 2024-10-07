@@ -43,6 +43,7 @@ class BasicConfig(metaclass=ConfigMeta):
         self._unload_after_install = bool(kwargs["unload_after_install"])
         self._log_indent = int(kwargs.get("log_indent", 0))
         self._run_imports = set(kwargs["run_imports"])
+        self._run_imports2 = set(kwargs["run_imports2"])
         self._oxt_name = str(kwargs["oxt_name"])
 
         # region tool.libre_pythonista.config
@@ -303,6 +304,15 @@ class BasicConfig(metaclass=ConfigMeta):
         The value for this property can be set in pyproject.toml (tool.oxt.isolate.run_imports)
         """
         return self._run_imports
+
+    @property
+    def run_imports2(self) -> Set[str]:
+        """
+        Gets the set of imports that are required to run the seconded level of this extension.
+
+        The value for this property can be set in pyproject.toml (tool.oxt.isolate.run_imports2)
+        """
+        return self._run_imports2
 
     @property
     def sym_link_cpython(self) -> bool:

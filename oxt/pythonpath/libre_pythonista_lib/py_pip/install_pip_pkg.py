@@ -4,7 +4,6 @@ from typing import Any, cast, Dict, List, Tuple, TYPE_CHECKING
 import os
 import shutil
 import threading
-import subprocess
 import re
 import urllib.request
 import urllib.error
@@ -78,26 +77,6 @@ class InstallPipPkg:
         d_args = cast(Dict[str, Any], event_arg.event_data)
         rules = cast(list, d_args["rules"])
         rules.append(ProgressDialogTrue)
-
-    def _run_subprocess(self, command: list) -> subprocess.CompletedProcess:
-        """
-        Run a subprocess command and return the result.
-
-        Args:
-            command (list): The command to run as a list of strings.
-
-        Returns:
-            subprocess.CompletedProcess: The result of the subprocess run.
-        """
-        self._log.debug(f"Running subprocess command: {' '.join(command)}")
-        result = subprocess.run(
-            command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, encoding="utf-8", errors="replace"
-        )
-        if result.stdout:
-            self._log.debug(f"Subprocess command output: {result.stdout}")
-        if result.stderr:
-            self._log.debug(f"Subprocess command error: {result.stderr}")
-        return result
 
     def install(self) -> None:
         """Install pip packages."""

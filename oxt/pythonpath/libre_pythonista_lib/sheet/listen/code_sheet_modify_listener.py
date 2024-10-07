@@ -5,11 +5,9 @@ import uno
 import unohelper
 from com.sun.star.util import XModifyListener
 from ooodev.loader import Lo
-from ooodev.calc import CalcDoc
 from ooodev.events.lo_events import LoEvents
 from ooodev.events.args.event_args import EventArgs
 from ooodev.utils.helper.dot_dict import DotDict
-from ...cell.cell_mgr import CellMgr
 from ...const.event_const import GBL_DOC_CLOSING
 from ...event.shared_event import SharedEvent
 from ...const.event_const import SHEET_MODIFIED

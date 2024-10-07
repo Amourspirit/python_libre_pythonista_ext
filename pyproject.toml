@@ -37,7 +37,8 @@ install_on_no_uninstall_permission = true # https://tinyurl.com/ymeh4c9j#install
 oo_types_uno = ""
 oo_types_office = ""
 unload_after_install = false
-run_imports = ["ooodev", "verr", "sortedcontainers"]
+run_imports = ["ooodev", "verr", "sortedcontainers"] # These are required for LibrePythonista dispataches to work.
+run_imports2 = ["pandas", "numpy", "matplotlib"] # second level imports. These are required for LibrePythonista to work
 # when log_indent is set indent_str can be used in the format str - "%(asctime)s %(levelname)s - %(indent_str)s%(name)s: %(message)s"
 log_indent = 0 # set to 0 or less to disable; Ignored in windows. Should be set to 0 for production.
 no_pip_remove = ["pip", "setuptools", "wheel"]
@@ -131,7 +132,7 @@ es = "Extensión para agregar administración de paquetes Python y Pip dentro de
 
 [tool.poetry]
 name = "LibrePythonista"
-version = "0.3.2"
+version = "0.4.0"
 description = "Python For LibreOffice Calc"
 authors = [":Barry-Thomas-Paul: Moss <4193389+Amourspirit@users.noreply.github.com>"]
 license = "Apache"
