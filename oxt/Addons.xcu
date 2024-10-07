@@ -181,15 +181,73 @@
                            <value>_self</value>
                         </prop>
                      </node>
+                     <node oor:name="m011" oor:op="replace">
+                        <prop oor:name="URL" oor:type="xs:string">
+                           <value>private:separator</value>
+                        </prop>
+                     </node>
+                     <node oor:name="m012" oor:op="replace">
+                        <prop oor:name="Context" oor:type="xs:string">
+                           <value />
+                        </prop>
+                        <prop oor:name="Title" oor:type="xs:string">
+                           <value>Linking</value>
+                           <value xml:lang="en-US”">Linking</value>
+                           <value xml:lang="fr">Linking</value>
+                           <value xml:lang="de">Verknüpfung</value>
+                           <value xml:lang="it">Collegamento</value>
+                           <value xml:lang="es">Vinculación</value>
+                           <value xml:lang="pt">Vinculação</value>
+                           <value xml:lang="el">Σύνδεση</value>
+                        </prop>
+                        <node oor:name="Submenu">
+                           <node oor:name="m013" oor:op="replace">
+                              <prop oor:name="URL" oor:type="xs:string">
+                                 <value>service:___lo_identifier___.impl?link_python</value>
+                              </prop>
+                              <prop oor:name="Title" oor:type="xs:string">
+                                 <value>Link Binary Files</value>
+                                 <value xml:lang="en-US">Link Binary Files</value>
+                                 <value xml:lang="fr">Lier les fichiers binaires</value>
+                                 <value xml:lang="de">Binärdateien verknüpfen</value>
+                                 <value xml:lang="it">Collega file binari</value>
+                                 <value xml:lang="es">Vincular archivos binarios</value>
+                                 <value xml:lang="pt">Vincular arquivos binários</value>
+                                 <value xml:lang="el">Σύνδεση δυαδικών αρχείων</value>
+                              </prop>
+                              <prop oor:name="Target" oor:type="xs:string">
+                                 <value>_self</value>
+                              </prop>
+                           </node>
+                           <node oor:name="m014" oor:op="replace">
+                              <prop oor:name="URL" oor:type="xs:string">
+                                 <value>service:___lo_identifier___.impl?unlink_python</value>
+                              </prop>
+                              <prop oor:name="Title" oor:type="xs:string">
+                                 <value>Unlink Binary Files</value>
+                                 <value xml:lang="en-US">Unlink Binary Files</value>
+                                 <value xml:lang="fr">Dissocier les fichiers binaires</value>
+                                 <value xml:lang="de">Binärdateien trennen</value>
+                                 <value xml:lang="it">Scollega file binari</value>
+                                 <value xml:lang="es">Desvincular archivos binarios</value>
+                                 <value xml:lang="pt">Desvincular arquivos binários</value>
+                                 <value xml:lang="el">Αποσύνδεση δυαδικών αρχείων</value>
+                              </prop>
+                              <prop oor:name="Target" oor:type="xs:string">
+                                 <value>_self</value>
+                              </prop>
+                           </node>
+                        </node>
+                     </node>
 
                   </node>
                </node>
-               <node oor:name="m011" oor:op="replace">
+               <node oor:name="m015" oor:op="replace">
                   <prop oor:name="URL" oor:type="xs:string">
                      <value>private:separator</value>
                   </prop>
                </node>
-               <node oor:name="m012" oor:op="replace">
+               <node oor:name="m016" oor:op="replace">
                   <prop oor:name="URL" oor:type="xs:string">
                      <value>service:___lo_identifier___.impl?about</value>
                   </prop>

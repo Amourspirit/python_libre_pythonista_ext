@@ -76,6 +76,7 @@ class LpFnObj:
                 log.debug(f"LpFnObj - get_is_match() has headers: {dd.headers}")
 
             else:
+                dd = None
                 log.debug("LpFnObj - get_is_match() lp_mod is NOT in module")
             self._result = dd
         except Exception as e:

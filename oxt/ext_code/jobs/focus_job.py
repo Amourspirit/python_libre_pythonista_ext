@@ -9,7 +9,7 @@ from com.sun.star.task import XJob
 
 def _conditions_met() -> bool:
     with contextlib.suppress(Exception):
-        from ___lo_pip___.install.requirements_check import RequirementsCheck
+        from ___lo_pip___.install.requirements_check import RequirementsCheck  # type: ignore
 
         return RequirementsCheck().run_imports_ready()
     return False
@@ -26,6 +26,7 @@ if TYPE_CHECKING:
     from ...___lo_pip___.oxt_logger import OxtLogger
     from ...pythonpath.libre_pythonista_lib.event.shared_event import SharedEvent
     from ...pythonpath.libre_pythonista_lib.event.shared_cb import SharedCb
+    from ...pythonpath.libre_pythonista_lib.state.calc_state_mgr import CalcStateMgr
     from ...pythonpath.libre_pythonista_lib.const.event_const import (
         DOCUMENT_FOCUS_GAINED,
         DOCUMENT_FOCUS_LOST,
@@ -42,6 +43,7 @@ else:
         from ooodev.utils.helper.dot_dict import DotDict
         from libre_pythonista_lib.event.shared_event import SharedEvent
         from libre_pythonista_lib.event.shared_cb import SharedCb
+        from libre_pythonista_lib.state.calc_state_mgr import CalcStateMgr
         from libre_pythonista_lib.const.event_const import (
             DOCUMENT_FOCUS_GAINED,
             DOCUMENT_FOCUS_LOST,
@@ -75,7 +77,7 @@ class CalcDocFocusJob(XJob, unohelper.Base):
     # endregion Init
 
     # region execute
-    def execute(self, args: Any) -> None:
+    def execute(self, args: Any) -> None:  # type: ignore
         self._log.debug("execute")
         try:
             # loader = Lo.load_office()
@@ -97,10 +99,15 @@ class CalcDocFocusJob(XJob, unohelper.Base):
                 return
             run_id = self.document.RuntimeUID
             self._log.debug(f"Got Focus for Run ID: {run_id}")
-            if not _CONDITIONS_MET:
+            if _CONDITIONS_MET:
+                self._log.debug("Conditions met. Continuing ...")
+            else:
                 self._log.debug("Conditions not met. Returning.")
                 return
-            if Lo.current_lo:  # might not be init yet
+            if Lo.current_lo is None:  # might not be init yet
+                self._log.debug("Current Lo not found. Returning")
+                return
+            else:
                 Lo.current_lo.current_doc = self.document
                 if self._log.is_debug:
                     lo_doc = cast(CalcDoc, Lo.current_doc)
@@ -108,6 +115,10 @@ class CalcDocFocusJob(XJob, unohelper.Base):
                     are_equal = lo_doc.component == self.document
                     self._log.debug(f"Are Equal: {are_equal}")
                 doc = CalcDoc.get_doc_from_component(self.document)
+                state_mgr = CalcStateMgr(doc)
+                if not state_mgr.is_imports2_ready:
+                    self._log.debug("Imports2 is not ready. Returning.")
+                    return
 
                 sc = SharedCb()
                 if CB_DOC_FOCUS_GAINED in sc:

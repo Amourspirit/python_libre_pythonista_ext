@@ -34,6 +34,7 @@ if TYPE_CHECKING:
     from ...pythonpath.libre_pythonista_lib.cell.cell_mgr import CellMgr
     from ...pythonpath.libre_pythonista_lib.dispatch import dispatch_mgr  # type: ignore
     from ...pythonpath.libre_pythonista_lib.const.event_const import GBL_DOC_CLOSING
+    from ...pythonpath.libre_pythonista_lib.state.calc_state_mgr import CalcStateMgr
 else:
     _CONDITIONS_MET = _conditions_met()
     if _CONDITIONS_MET:
@@ -47,6 +48,7 @@ else:
         from libre_pythonista_lib.cell.cell_mgr import CellMgr
         from libre_pythonista_lib.dispatch import dispatch_mgr  # type: ignore
         from libre_pythonista_lib.const.event_const import GBL_DOC_CLOSING
+        from libre_pythonista_lib.state.calc_state_mgr import CalcStateMgr
 # endregion imports
 
 
@@ -103,7 +105,14 @@ class UnLoadingJob(XJob, unohelper.Base):
 
                         # doc = CalcDoc.from_current_doc()
                         doc = CalcDoc.get_doc_from_component(self.document)
+
                         dispatch_mgr.unregister_interceptor(doc)
+
+                        state_mgr = CalcStateMgr(doc)
+                        if not state_mgr.is_imports2_ready:
+                            self._log.debug("Imports2 is not ready. Returning.")
+                            return
+
                         CellMgr.reset_instance(doc)
                         view = doc.get_view()
                         view.component.addActivationEventListener(CodeSheetActivationListener())
