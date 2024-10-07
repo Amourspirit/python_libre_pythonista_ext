@@ -27,7 +27,7 @@ class CPythonLink:
         """
         self._overwrite = overwrite
         self._logger = OxtLogger(log_name=self.__class__.__name__)
-        self._current_suffix = self._get_current_suffix()
+        self._current_suffix = self._get_current_suffix()  # .cpython-3.8.so
         self._logger.debug("CPythonLink.__init__")
         # self._suffix = self._get_current_suffix()
         self._config = Config()
@@ -51,12 +51,25 @@ class CPythonLink:
         # for normal installs the suffix will be something like cpython-312-x86_64-linux-gnu
         # for other embedded it will be something like .cpython-3.9
         # If the number of - occurrences are greater then 1 then linking should not be needed
-        suffix = self._get_current_suffix()
-        if not suffix:
-            self._logger.warning("get_needs_linking() No suffix found for cpython")
+        if not self._site_packages:
+            self._logger.debug("get_needs_linking() No site-packages found")
             return False
-        count = suffix.count("-")
-        return count <= 1
+        if not self._file_suffix:
+            self._logger.debug("get_needs_linking() No current file suffix found")
+            return False
+        if not self._site_packages.exists():
+            self._logger.debug(f"get_needs_linking() Site-packages does not exist {self._site_packages}")
+            return False
+        cp_old = self._file_suffix
+        cp_new = self._current_suffix
+        return cp_old != cp_new
+
+        # suffix = self._get_current_suffix()
+        # if not suffix:
+        #     self._logger.warning("get_needs_linking() No suffix found for cpython")
+        #     return False
+        # count = suffix.count("-")
+        # return count <= 1
 
     def _get_all_files(self, path: Path) -> List[Path]:
         return [p for p in path.glob(f"**/*{self._file_suffix}.so") if p.is_file()]
@@ -95,26 +108,26 @@ class CPythonLink:
         """
         Creates symlinks for all .so files in site-packages that match the current suffix.
         """
-        self._logger.debug("CPythonLink.link starting")
+        self._logger.debug("link() starting")
         if not self._site_packages:
-            self._logger.debug("No site-packages found")
+            self._logger.debug("link() No site-packages found")
             return
         if not self._file_suffix:
-            self._logger.debug("No current file suffix found")
+            self._logger.debug("link() No current file suffix found")
             return
         if not self._site_packages.exists():
-            self._logger.debug(f"Site-packages does not exist {self._site_packages}")
+            self._logger.debug(f"link() Site-packages does not exist {self._site_packages}")
             return
-        self._logger.debug(f"Python current suffix: {self._current_suffix}")
-        self._logger.debug(f"Found file suffix: {self._file_suffix}")
+        self._logger.debug(f"link() Python current suffix: {self._current_suffix}")
+        self._logger.debug(f"link() Found file suffix: {self._file_suffix}")
         files = self._get_all_files(self._site_packages)
         if not files:
-            self._logger.debug(f"No files found in {self._site_packages}")
+            self._logger.debug(f"link() No files found in {self._site_packages}")
             return
         cp_old = self._file_suffix
         cp_new = self._current_suffix
         if cp_old == cp_new:
-            self._logger.debug(f"Suffixes match, no need to link: {cp_old} == {cp_new}")
+            self._logger.debug(f"link() Suffixes match, no need to link: {cp_old} == {cp_new}")
             return
 
         for file in files:
@@ -124,7 +137,35 @@ class CPythonLink:
                 src = file.resolve()
             dst = src.parent / ln_name
             self._create_symlink(src, dst)
-        self._logger.debug("CPythonLink.link done")
+        self._logger.debug("link() done")
+
+    def unlink(self) -> None:
+        """
+        Removes all symlinks that match the current suffix.
+        """
+        self._logger.debug("link remove_cpython_so_links()")
+        if not self.get_needs_linking():
+            return
+        root_dir = self._site_packages
+        if root_dir is None:
+            return
+        is_db = self._logger.is_debug
+        for path in Path(root_dir).rglob(f"*{self._current_suffix}.so"):
+            if path.is_symlink():
+                try:
+                    path.unlink()
+                except Exception as e:
+                    self._logger.error(f"link unlink() Error removing symlink: {path} {e}")
+                if is_db:
+                    self._logger.debug(f"link unlink() Removed symbolic link: {path}")
+            else:
+                if is_db:
+                    self._logger.debug(f"link unlink() Skipped (not a symbolic link): {path}")
+        else:
+            if is_db:
+                self._logger.debug(
+                    f"link unlink() No symbolic links found in '{root_dir}' for '*{self._current_suffix}'"
+                )
 
     # region Properties
     @property

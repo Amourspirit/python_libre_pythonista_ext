@@ -1,18 +1,17 @@
 from __future__ import annotations
 from typing import Any, TYPE_CHECKING
-import threading
+
+# import importlib
 import types
 from ooodev.utils.helper.dot_dict import DotDict
+
+# from ooodev.utils.builder.dynamic_importer import DynamicImporter
 from ..utils import str_util
 from .rules.code_rules import CodeRules
 
 from .mod_helper.lplog import LpLog as LibrePythonistaLog
 from ..cell.errors.general_error import GeneralError
 
-try:
-    from .mod_helper import lp_plot
-except ImportError:
-    lp_plot = None
 
 if TYPE_CHECKING:
     from ....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
@@ -20,34 +19,64 @@ else:
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
 
 
+def is_import_available(module_name: str, class_name: str = "", alias: str = "") -> bool:
+    try:
+        __import__(module_name)
+    except (ModuleNotFoundError, ImportError):
+        return False
+    return True
+    # importer = DynamicImporter(module_name=module_name, class_name=class_name, alias=alias)
+    # if importer.is_module_existing_import():
+    #     return True
+    # return importer.load_module() is not None
+
+
+try:
+    if is_import_available("matplotlib"):
+        from .mod_helper import lp_plot
+    else:
+        lp_plot = None
+except ImportError:
+    lp_plot = None
+
+
 def get_module_init_code() -> str:
     # See https://matplotlib.org/stable/users/explain/figure/backends.html
     # for more information on the matplotlib backend.
-    return """from __future__ import annotations
-from typing import Any, cast, TYPE_CHECKING
-import matplotlib
-matplotlib.use('svg')
-# matplotlib.use('agg')
-from matplotlib import pyplot as plt
-import pandas as pd
-import numpy as np
-pd.options.plotting.backend = 'matplotlib'
-from ooodev.loader import Lo
-from ooodev.calc import CalcDoc
-from ooodev.calc import CalcSheet
-from ooodev.utils.data_type.cell_obj import CellObj
-from ooodev.utils.data_type.range_obj import RangeObj
-from ___lo_pip___.oxt_logger import OxtLogger
-from libre_pythonista_lib.log.log_inst import LogInst
-from libre_pythonista_lib.code.mod_helper import lp_mod
-from libre_pythonista_lib.code.mod_helper.lp_mod import lp
-from libre_pythonista_lib.code.mod_helper.lplog import StaticLpLog as lp_log, LpLog as LibrePythonistaLog
-from libre_pythonista_lib.code.mod_helper import lp_plot
-PY_ARGS = None
-CURRENT_CELL_OBJ = None
-CURRENT_CELL_ID = ""
-DUMMY_LAST_VALUE = None
-    """
+    pre_lines = [
+        "from __future__ import annotations",
+        "from typing import Any, cast, TYPE_CHECKING",
+    ]
+    code_lines = []
+    if is_import_available("matplotlib"):
+        code_lines.append("import matplotlib")
+        code_lines.append("matplotlib.use('svg')")
+        # code_lines.append("matplotlib.use('agg')")
+        code_lines.append("from matplotlib import pyplot as plt")
+    if is_import_available("pandas"):
+        code_lines.append("import pandas as pd")
+        code_lines.append("pd.options.plotting.backend = 'matplotlib'")
+    if is_import_available("numpy"):
+        code_lines.append("import numpy as np")
+    post_lines = [
+        "from ooodev.loader import Lo",
+        "from ooodev.calc import CalcDoc",
+        "from ooodev.calc import CalcSheet",
+        "from ooodev.utils.data_type.cell_obj import CellObj",
+        "from ooodev.utils.data_type.range_obj import RangeObj",
+        "from ___lo_pip___.oxt_logger import OxtLogger",
+        "from libre_pythonista_lib.log.log_inst import LogInst",
+        "from libre_pythonista_lib.code.mod_helper import lp_mod",
+        "from libre_pythonista_lib.code.mod_helper.lp_mod import lp",
+        "from libre_pythonista_lib.code.mod_helper.lplog import StaticLpLog as lp_log, LpLog as LibrePythonistaLog",
+        "from libre_pythonista_lib.code.mod_helper import lp_plot",
+        "PY_ARGS = None",
+        "CURRENT_CELL_OBJ = None",
+        "CURRENT_CELL_ID = ''",
+        "DUMMY_LAST_VALUE = None",
+    ]
+    lines = pre_lines + code_lines + post_lines
+    return "\n".join(lines)
 
 
 class PyModule:

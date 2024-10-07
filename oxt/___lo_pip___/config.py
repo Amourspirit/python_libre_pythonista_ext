@@ -669,6 +669,15 @@ class Config(metaclass=Singleton):
         return self._basic_config.run_imports
 
     @property
+    def run_imports2(self) -> Set[str]:
+        """
+        Gets the set of imports that are required to run the seconded level of this extension.
+
+        The value for this property can be set in pyproject.toml (tool.oxt.isolate.run_imports2)
+        """
+        return self._basic_config.run_imports2
+
+    @property
     def extension_version(self) -> str:
         """
         Gets extension version.

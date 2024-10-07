@@ -24,8 +24,6 @@ if TYPE_CHECKING:
     from ooodev.loader import Lo
     from ooodev.calc import CalcDoc
     from ...___lo_pip___.oxt_logger import OxtLogger
-    from ...pythonpath.libre_pythonista_lib.oxt_init import oxt_init
-    from ...pythonpath.libre_pythonista_lib.state.calc_state_mgr import CalcStateMgr
 
     # from ...pythonpath.libre_pythonista_lib.sheet.listen.sheet_calculation_event_listener import (
     #     SheetCalculationEventListener,
@@ -35,8 +33,6 @@ else:
     if _CONDITIONS_MET:
         from ooodev.loader import Lo
         from ooodev.calc import CalcDoc
-        from libre_pythonista_lib.oxt_init import oxt_init
-        from libre_pythonista_lib.state.calc_state_mgr import CalcStateMgr
 # endregion imports
 
 
@@ -88,6 +84,7 @@ class ViewJob(unohelper.Base, XJob):
                 self._log.debug(f"Added {key} to environment variables")
                 if _CONDITIONS_MET:
                     try:
+                        self._log.debug("Conditions met. Continuing ...")
                         _ = Lo.load_office()
                         doc = CalcDoc.get_doc_from_component(self.document)
                         t = threading.Thread(target=_init_with_state, args=(doc, self._log), daemon=True)
@@ -98,7 +95,6 @@ class ViewJob(unohelper.Base, XJob):
                         self._log.error("Error setting components on view.", exc_info=True)
                 else:
                     self._log.debug("Conditions not met to register dispatch manager")
-                self._log.debug("Dispatch manager registered")
             else:
                 self._log.debug("Document is not a spreadsheet")
 
@@ -124,11 +120,31 @@ def _init_with_state(doc: CalcDoc, log: OxtLogger):
     # This crash does not give any information in the logs.
     # After much testing and debugging I discovered that crash can be avoided if this code is run in a thread.
     # The crash did not happen Flatpak version, Snap Version, Windows version or Docker version. Only on Ubuntu 20.04 when apt installed so far.
+    log.debug("_init_with_state()")
+    if TYPE_CHECKING:
+        from ...pythonpath.libre_pythonista_lib.oxt_init import oxt_init
+        from ...pythonpath.libre_pythonista_lib.state.calc_state_mgr import CalcStateMgr
+    else:
+        try:
+            from libre_pythonista_lib.oxt_init import oxt_init
+            from libre_pythonista_lib.state.calc_state_mgr import CalcStateMgr
+
+            log.debug("Imported oxt_init and CalcStateMgr")
+        except ImportError:
+            log.error("Error importing oxt_init and/or CalcStateMgr", exc_info=True)
+            return
+
     try:
+        log.debug("Creating an instance of CalcStateMgr")
         state_mgr = CalcStateMgr(doc)
-        if not state_mgr.is_oxt_init:
-            oxt_init(doc.component, log)
+        log.debug("Document Loaded State Manager")
+        if state_mgr.is_oxt_init:
+            log.debug("oxt_init() state_mgr reports already init")
+        else:
+            log.debug("Running oxt_init()")
+            oxt_init(doc.component, log, state_mgr)
             state_mgr.is_oxt_init = True
+            log.debug("oxt_init() done.")
     except Exception:
         log.error("Error _init_with_state()", exc_info=True)
 

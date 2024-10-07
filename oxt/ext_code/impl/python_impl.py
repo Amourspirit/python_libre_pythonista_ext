@@ -53,6 +53,8 @@ if TYPE_CHECKING:
         UNO_DISPATCH_PIP_PKG_INSTALL,
         UNO_DISPATCH_PIP_PKG_UNINSTALL,
         UNO_DISPATCH_PIP_PKG_INSTALLED,
+        UNO_DISPATCH_PIP_PKG_LINK,
+        UNO_DISPATCH_PIP_PKG_UNLINK,
     )
     from ...pythonpath.libre_pythonista_lib.const.event_const import PYC_FORMULA_INSERTING, PYC_FORMULA_INSERTED
 else:
@@ -79,6 +81,8 @@ else:
             UNO_DISPATCH_PIP_PKG_INSTALL,
             UNO_DISPATCH_PIP_PKG_UNINSTALL,
             UNO_DISPATCH_PIP_PKG_INSTALLED,
+            UNO_DISPATCH_PIP_PKG_LINK,
+            UNO_DISPATCH_PIP_PKG_UNLINK,
         )
         from libre_pythonista_lib.const.event_const import PYC_FORMULA_INSERTING, PYC_FORMULA_INSERTED
 
@@ -149,6 +153,24 @@ class PythonImpl(unohelper.Base, XJobExecutor):
                 # in_thread=1 to wait for thread to join else thread is not joined.
                 Lo.dispatch_cmd(cmd=UNO_DISPATCH_LOG_WIN + "?in_thread=0", in_thread=True)
                 self._log.debug(f"Log Window, Dispatched {UNO_DISPATCH_LOG_WIN}")
+            except Exception:
+                self._log.exception(f"Error dispatching")
+        elif event == "link_python":
+            try:
+                self._log.debug(f"Dispatching {UNO_DISPATCH_PIP_PKG_LINK}")
+                _ = Lo.current_doc
+                # in_thread=1 to wait for thread to join else thread is not joined.
+                Lo.dispatch_cmd(cmd=UNO_DISPATCH_PIP_PKG_LINK)
+                self._log.debug(f"Dispatched {UNO_DISPATCH_PIP_PKG_LINK}")
+            except Exception:
+                self._log.exception(f"Error dispatching")
+        elif event == "unlink_python":
+            try:
+                self._log.debug(f"Dispatching {UNO_DISPATCH_PIP_PKG_UNLINK}")
+                _ = Lo.current_doc
+                # in_thread=1 to wait for thread to join else thread is not joined.
+                Lo.dispatch_cmd(cmd=UNO_DISPATCH_PIP_PKG_UNLINK)
+                self._log.debug(f"Dispatched {UNO_DISPATCH_PIP_PKG_UNLINK}")
             except Exception:
                 self._log.exception(f"Error dispatching")
         else:

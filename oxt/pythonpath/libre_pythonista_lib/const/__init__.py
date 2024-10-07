@@ -18,6 +18,8 @@ UNO_DISPATCH_LOG_WIN = ".uno:libre_pythonista.calc.log_window"
 UNO_DISPATCH_PIP_PKG_INSTALL = ".uno:libre_pythonista.ext.pip_pkg_install"
 UNO_DISPATCH_PIP_PKG_UNINSTALL = ".uno:libre_pythonista.ext.pip_pkg_uninstall"
 UNO_DISPATCH_PIP_PKG_INSTALLED = ".uno:libre_pythonista.ext.pkg_pkg_installed"
+UNO_DISPATCH_PIP_PKG_LINK = ".uno:libre_pythonista.ext.pkg_pkg_link"
+UNO_DISPATCH_PIP_PKG_UNLINK = ".uno:libre_pythonista.ext.pkg_pkg_unlink"
 
 
 def _get_formula_pyimpl():
