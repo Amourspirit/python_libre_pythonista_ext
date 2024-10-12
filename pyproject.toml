@@ -80,7 +80,7 @@ typing-extensions = ">=4.12.2"
 verr = ">=1.1.2"
 pandas = ">=2"
 odfpy = ">=1.4"
-ooo-dev-tools = ">=0.47.17"
+ooo-dev-tools = ">=0.48.00"
 matplotlib = ">=3.7.5"
 seaborn = ">=0.13"
 sortedcontainers = ">=2.4.0"
@@ -132,7 +132,7 @@ es = "Extensión para agregar administración de paquetes Python y Pip dentro de
 
 [tool.poetry]
 name = "LibrePythonista"
-version = "0.4.0"
+version = "0.4.1"
 description = "Python For LibreOffice Calc"
 authors = [":Barry-Thomas-Paul: Moss <4193389+Amourspirit@users.noreply.github.com>"]
 license = "Apache"
@@ -143,7 +143,7 @@ packages = [{ include = "src" }]
 python = "^3.8"
 toml = "^0.10.2"
 typing-extensions = ">=4.12.2"
-ooo-dev-tools = ">=0.47.17"
+ooo-dev-tools = ">=0.48.0"
 sortedcontainers = ">=2.4.0"
 oooenv = ">=0.2.4"
 
