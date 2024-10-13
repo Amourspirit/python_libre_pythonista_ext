@@ -1,5 +1,12 @@
 from __future__ import annotations
 from typing import Dict, Tuple, TYPE_CHECKING
+
+try:
+    # python 3.12+
+    from typing import override  # type: ignore
+except ImportError:
+    from typing_extensions import override
+
 import uno
 import unohelper
 from com.sun.star.frame import XDispatch
@@ -29,6 +36,7 @@ class DispatchCellSelect(unohelper.Base, XDispatch):
         self._log.debug(f"init: sheet={sheet}, cell={cell}")
         self._status_listeners: Dict[str, XStatusListener] = {}
 
+    @override
     def addStatusListener(self, Control: XStatusListener, URL: URL) -> None:
         """
         registers a listener of a control for a specific URL at this object to receive status events.
@@ -60,6 +68,7 @@ class DispatchCellSelect(unohelper.Base, XDispatch):
             rv = RangeValues(col_start=cv.col, row_start=cv.row, col_end=cv.col, row_end=cv.row)
         return rv
 
+    @override
     def dispatch(self, URL: URL, Arguments: Tuple[PropertyValue, ...]) -> None:
         """
         Dispatches (executes) a URL
@@ -88,6 +97,7 @@ class DispatchCellSelect(unohelper.Base, XDispatch):
                 self._log.error(f"Error: {e}", exc_info=True)
                 return
 
+    @override
     def removeStatusListener(self, Control: XStatusListener, URL: URL) -> None:
         """
         Un-registers a listener from a control.

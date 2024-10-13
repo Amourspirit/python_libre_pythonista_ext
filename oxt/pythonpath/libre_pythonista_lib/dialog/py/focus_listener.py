@@ -1,5 +1,12 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
+
+try:
+    # python 3.12+
+    from typing import override  # type: ignore
+except ImportError:
+    from typing_extensions import override
+
 import uno
 from com.sun.star.awt import XFocusListener
 from ..listener.listener_base import ListenerBase
@@ -10,8 +17,10 @@ if TYPE_CHECKING:
 
 
 class FocusListener(ListenerBase["DialogPython"], XFocusListener):
-    def focusGained(self, event: FocusEvent):
+    @override
+    def focusGained(self, e: FocusEvent):
         self.component.tk.addKeyHandler(self.component.keyhandler)
 
-    def focusLost(self, event: FocusEvent):
+    @override
+    def focusLost(self, e: FocusEvent):
         self.component.tk.removeKeyHandler(self.component.keyhandler)

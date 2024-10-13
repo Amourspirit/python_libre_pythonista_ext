@@ -1,5 +1,12 @@
 from __future__ import annotations
 from typing import Any, Callable, TYPE_CHECKING
+
+try:
+    # python 3.12+
+    from typing import override  # type: ignore
+except ImportError:
+    from typing_extensions import override
+
 import uno
 import unohelper
 from com.sun.star.util import XModifyListener
@@ -49,18 +56,19 @@ class CodeCellListener(unohelper.Base, XModifyListener, EventsPartial):
             self._log.error("_get_sheet_name() error.", exc_info=True)
             raise
 
-    def modified(self, event: EventObject) -> None:
+    @override
+    def modified(self, aEvent: EventObject) -> None:
         try:
-            ci = CellInfo(cell=event.Source)  # type: ignore
+            ci = CellInfo(cell=aEvent.Source)  # type: ignore
             if ci.is_cell_deleted():
                 self._log.debug("modified: Cell is deleted")
                 # cell is deleted
-                calc_cell = self._get_calc_cell(cell=event.Source)  # type: ignore
+                calc_cell = self._get_calc_cell(cell=aEvent.Source)  # type: ignore
                 eargs = EventArgs(self)
 
                 dd = DotDict(
                     absolute_name=self._absolute_name,
-                    event_obj=event,
+                    event_obj=aEvent,
                     code_name=self.code_name,
                     calc_cell=calc_cell,
                     deleted=True,
@@ -72,13 +80,13 @@ class CodeCellListener(unohelper.Base, XModifyListener, EventsPartial):
                 self.trigger_event("cell_deleted", eargs)
                 # self._log.debug("modified: Cell is deleted")
                 return
-            name = event.Source.AbsoluteName  # type: ignore
+            name = aEvent.Source.AbsoluteName  # type: ignore
             if not ci.is_pyc_formula():
-                calc_cell = self._get_calc_cell(cell=event.Source)  # type: ignore
+                calc_cell = self._get_calc_cell(cell=aEvent.Source)  # type: ignore
 
                 eargs = EventArgs(self)
                 dd = DotDict(
-                    absolute_name=name, event_obj=event, code_name=self.code_name, calc_cell=calc_cell, deleted=False
+                    absolute_name=name, event_obj=aEvent, code_name=self.code_name, calc_cell=calc_cell, deleted=False
                 )
                 eargs.event_data = dd
                 for key, value in dd.items():
@@ -89,11 +97,11 @@ class CodeCellListener(unohelper.Base, XModifyListener, EventsPartial):
                 return
             if name == self._absolute_name:
                 eargs = EventArgs(self)
-                calc_cell = self._get_calc_cell(cell=event.Source)  # type: ignore
+                calc_cell = self._get_calc_cell(cell=aEvent.Source)  # type: ignore
                 cc = CellCache(calc_cell.calc_doc)
                 dd = DotDict(
                     absolute_name=self._absolute_name,
-                    event_obj=event,
+                    event_obj=aEvent,
                     code_name=self.code_name,
                     calc_cell=calc_cell,
                     deleted=False,
@@ -134,11 +142,11 @@ class CodeCellListener(unohelper.Base, XModifyListener, EventsPartial):
                 # self._log.debug("CodeCellListener: modified: Cell is the same")
             else:
                 eargs = EventArgs(self)
-                calc_cell = self._get_calc_cell(cell=event.Source)  # type: ignore
+                calc_cell = self._get_calc_cell(cell=aEvent.Source)  # type: ignore
                 eargs.event_data = DotDict(
                     absolute_name=self._absolute_name,
                     old_name=self._absolute_name,
-                    event_obj=event,
+                    event_obj=aEvent,
                     code_name=self.code_name,
                     deleted=False,
                     calc_cell=calc_cell,
@@ -150,9 +158,10 @@ class CodeCellListener(unohelper.Base, XModifyListener, EventsPartial):
             self._log.exception("modified() error.")
             raise
 
-    def disposing(self, event: EventObject) -> None:
+    @override
+    def disposing(self, Source: EventObject) -> None:
         eargs = EventArgs(self)
-        eargs.event_data = DotDict(absolute_name=self._absolute_name, event_obj=event, code_name=self.code_name)
+        eargs.event_data = DotDict(absolute_name=self._absolute_name, event_obj=Source, code_name=self.code_name)
         self.trigger_event("cell_disposing", eargs)
         self._log.debug("disposing")
         self._absolute_name = ""

@@ -2,6 +2,13 @@ from __future__ import annotations
 from typing import Any, cast, Tuple
 from urllib.parse import parse_qs
 import contextlib
+
+try:
+    # python 3.12+
+    from typing import override  # type: ignore
+except ImportError:
+    from typing_extensions import override
+
 import uno
 import unohelper
 from com.sun.star.frame import XDispatchProviderInterceptor
@@ -89,30 +96,35 @@ class DispatchProviderInterceptor(unohelper.Base, XDispatchProviderInterceptor):
         query_dict = parse_qs(query)
         return {k: v[0] for k, v in query_dict.items()}
 
+    @override
     def getMasterDispatchProvider(self) -> XDispatchProvider:
         """
         access to the master XDispatchProvider of this interceptor
         """
         return self._master
 
+    @override
     def getSlaveDispatchProvider(self) -> XDispatchProvider:
         """
         access to the slave XDispatchProvider of this interceptor
         """
         return self._slave
 
+    @override
     def setMasterDispatchProvider(self, NewSupplier: XDispatchProvider) -> None:
         """
         sets the master XDispatchProvider, which may forward calls to its XDispatchProvider.queryDispatch() to this dispatch provider.
         """
         self._master = NewSupplier
 
+    @override
     def setSlaveDispatchProvider(self, NewDispatchProvider: XDispatchProvider) -> None:
         """
         sets the slave XDispatchProvider to which calls to XDispatchProvider.queryDispatch() can be forwarded under control of this dispatch provider.
         """
         self._slave = NewDispatchProvider
 
+    @override
     def queryDispatch(self, URL: URL, TargetFrameName: str, SearchFlags: int) -> XDispatch | None:  # type: ignore
         """
         Searches for an XDispatch for the specified URL within the specified target frame.

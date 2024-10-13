@@ -2,6 +2,12 @@ from __future__ import annotations
 from typing import Dict, Tuple, TYPE_CHECKING
 from threading import Thread
 
+try:
+    # python 3.12+
+    from typing import override  # type: ignore
+except ImportError:
+    from typing_extensions import override
+
 import uno
 import unohelper
 from com.sun.star.frame import XDispatch
@@ -80,7 +86,8 @@ class DispatchLogWindow(XDispatch, EventsPartial, unohelper.Base):
         self._log.debug(f"init")
         self._status_listeners: Dict[str, XStatusListener] = {}
 
-    def addStatusListener(self, control: XStatusListener, url: URL) -> None:
+    @override
+    def addStatusListener(self, Control: XStatusListener, URL: URL) -> None:
         """
         registers a listener of a control for a specific URL at this object to receive status events.
 
@@ -89,17 +96,18 @@ class DispatchLogWindow(XDispatch, EventsPartial, unohelper.Base):
         Note: Notifications can't be guaranteed! This will be a part of interface XNotifyingDispatch.
         """
         with self._log.indent(True):
-            self._log.debug(f"addStatusListener(): url={url.Main}")
-            if url.Complete in self._status_listeners:
-                self._log.debug(f"addStatusListener(): url={url.Main} already exists.")
+            self._log.debug(f"addStatusListener(): url={URL.Main}")
+            if URL.Complete in self._status_listeners:
+                self._log.debug(f"addStatusListener(): url={URL.Main} already exists.")
             else:
                 # setting IsEnable=False here does not disable the dispatch command
                 # State=True may cause the menu items to be displayed as checked.
-                fe = FeatureStateEvent(FeatureURL=url, IsEnabled=True, State=None)
-                control.statusChanged(fe)
-                self._status_listeners[url.Complete] = control
+                fe = FeatureStateEvent(FeatureURL=URL, IsEnabled=True, State=None)
+                Control.statusChanged(fe)
+                self._status_listeners[URL.Complete] = Control
 
-    def dispatch(self, url: URL, args: Tuple[PropertyValue, ...]) -> None:
+    @override
+    def dispatch(self, URL: URL, Arguments: Tuple[PropertyValue, ...]) -> None:
         """
         Dispatches (executes) a URL
         """
@@ -136,7 +144,7 @@ class DispatchLogWindow(XDispatch, EventsPartial, unohelper.Base):
                 return
             if self._uid not in _THREADS_DICT:
                 # Wrap the original function
-                target_func = lambda: thread_wrapper(self._uid, url, dispatch_in_thread)
+                target_func = lambda: thread_wrapper(self._uid, URL, dispatch_in_thread)
                 t = Thread(target=target_func, daemon=True)
 
                 # Add the thread to the dictionary
@@ -161,14 +169,15 @@ class DispatchLogWindow(XDispatch, EventsPartial, unohelper.Base):
                 self._log.error("Error getting cell information", exc_info=True)
             return
 
-    def removeStatusListener(self, control: XStatusListener, url: URL) -> None:
+    @override
+    def removeStatusListener(self, Control: XStatusListener, URL: URL) -> None:
         """
         Un-registers a listener from a control.
         """
         with self._log.indent(True):
-            self._log.debug(f"removeStatusListener(): url={url.Main}")
-            if url.Complete in self._status_listeners:
-                del self._status_listeners[url.Complete]
+            self._log.debug(f"removeStatusListener(): url={URL.Main}")
+            if URL.Complete in self._status_listeners:
+                del self._status_listeners[URL.Complete]
 
 
 class DispatchWorker:

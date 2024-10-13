@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from typing import Any, cast, TYPE_CHECKING, Tuple
-import re
 import contextlib
+
 import uno
 from ooo.dyn.ui.context_menu_interceptor_action import (
     ContextMenuInterceptorAction as ContextMenuAction,

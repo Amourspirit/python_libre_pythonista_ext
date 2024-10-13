@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Dict, TYPE_CHECKING
+from typing import TYPE_CHECKING
 import logging
 from .custom_props_base import CustomPropsBase
 

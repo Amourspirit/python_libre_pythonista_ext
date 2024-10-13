@@ -57,7 +57,7 @@ class LoadingJob(XJob, unohelper.Base):
     # endregion Init
 
     # region execute
-    def execute(self, args: Any) -> None:
+    def execute(self, args: Any) -> None:  # type: ignore
         self._logger.debug("execute")
         try:
             # loader = Lo.load_office()
@@ -74,11 +74,6 @@ class LoadingJob(XJob, unohelper.Base):
                 return
             if self.document.supportsService("com.sun.star.sheet.SpreadsheetDocument"):
                 self._logger.debug("Document Loading is a spreadsheet")
-                # if _CONDITIONS_MET:
-                # _ = Lo.load_office()
-                # doc = CalcDoc.get_doc_from_component(self.document)
-                # state_mgr = CalcStateMgr(doc)
-                # self._logger.debug(f"Document Loading State Manager.is_doc_loaded: {state_mgr.is_doc_loaded}")
             else:
                 self._logger.debug("Document Loading not a spreadsheet")
 
@@ -91,7 +86,7 @@ class LoadingJob(XJob, unohelper.Base):
     # region Logging
 
     def _get_local_logger(self) -> OxtLogger:
-        from ___lo_pip___.oxt_logger import OxtLogger
+        from ___lo_pip___.oxt_logger import OxtLogger  # type: ignore
 
         return OxtLogger(log_name="LoadingJob")
 

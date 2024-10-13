@@ -57,7 +57,7 @@ class ViewJob(unohelper.Base, XJob):
     # endregion Init
 
     # region execute
-    def execute(self, args: Any) -> None:
+    def execute(self, args: Any) -> None:  # type: ignore
         # This job may be executed more then once.
         # When a spreadsheet is put into print preview this is fired.
         # When the print preview is closed this is fired again.

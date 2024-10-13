@@ -3,6 +3,12 @@ from typing import Any, cast, TYPE_CHECKING, Tuple
 import time
 from threading import Thread
 
+try:
+    # python 3.12+
+    from typing import override  # type: ignore
+except ImportError:
+    from typing_extensions import override
+
 import uno
 import unohelper
 
@@ -284,32 +290,38 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
         self._frame = frame
 
     # region XTopWindowListener
-    def windowOpened(self, event: EventObject) -> None:
+    @override
+    def windowOpened(self, e: EventObject) -> None:
         """is invoked when a window is activated."""
         with self._log.indent(True):
             self._log.debug("Window Opened")
 
-    def windowActivated(self, event: EventObject) -> None:
+    @override
+    def windowActivated(self, e: EventObject) -> None:
         """is invoked when a window is activated."""
         with self._log.indent(True):
             self._log.debug("Window Activated")
 
-    def windowDeactivated(self, event: EventObject) -> None:
+    @override
+    def windowDeactivated(self, e: EventObject) -> None:
         """is invoked when a window is deactivated."""
         with self._log.indent(True):
             self._log.debug("Window De-activated")
 
-    def windowMinimized(self, event: EventObject) -> None:
+    @override
+    def windowMinimized(self, e: EventObject) -> None:
         """Is invoked when a window is iconified."""
         with self._log.indent(True):
             self._log.debug("Window Minimized")
 
-    def windowNormalized(self, event: EventObject) -> None:
+    @override
+    def windowNormalized(self, e: EventObject) -> None:
         """is invoked when a window is deiconified."""
         with self._log.indent(True):
             self._log.debug("Window Normalized")
 
-    def windowClosing(self, event: EventObject) -> None:
+    @override
+    def windowClosing(self, e: EventObject) -> None:
         """
         is invoked when a window is in the process of being closed.
 
@@ -323,16 +335,18 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
                 self._closing_triggered = True
                 try:
                     self._update_config()
-                except Exception as e:
-                    self._log.exception(f"Error saving configuration: {e}")
+                except Exception as err:
+                    self._log.exception(f"Error saving configuration: {err}")
 
-    def windowClosed(self, event: EventObject) -> None:
+    @override
+    def windowClosed(self, e: EventObject) -> None:
         """is invoked when a window has been closed."""
         with self._log.indent(True):
             self._log.debug("Window Closed")
             DialogMb.reset_inst(self._inst_id)
 
-    def disposing(self, event: EventObject) -> None:
+    @override
+    def disposing(self, Source: EventObject) -> None:
         with self._log.indent(True):
             self._log.debug("Disposing")
             if not self._disposed:
@@ -344,7 +358,7 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
                     self._dialog.setMenuBar(None)  # type: ignore
                     self._mb = None
                     self._dialog.dispose()
-                except Exception as e:
+                except Exception:
                     self._log.error("Error in disposing", exc_info=True)
 
     # endregion XTopWindowListener
@@ -594,7 +608,7 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
                 # self._write(, (sel.Min, sel.Max))
                 try:
                     range_obj = cast(RangeObj, event.event_data.rng_obj.copy())
-                    
+
                     self._log.debug(f"_on_menu_range_select_result() Range Selection: {range_obj.to_string(True)}")
                     calc_doc = cast(CalcDoc, self._doc)
 

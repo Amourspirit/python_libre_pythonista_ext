@@ -1,6 +1,12 @@
 from __future__ import annotations
 from typing import Any, TYPE_CHECKING
 
+try:
+    # python 3.12+
+    from typing import override  # type: ignore
+except ImportError:
+    from typing_extensions import override
+
 import uno
 import unohelper
 from com.sun.star.sheet import XActivationEventListener
@@ -49,7 +55,8 @@ class SheetActivationListener(XActivationEventListener, unohelper.Base):
         self._log = OxtLogger(log_name=self.__class__.__name__)
         self._is_init = True
 
-    def activeSpreadsheetChanged(self, event: ActivationEvent) -> None:
+    @override
+    def activeSpreadsheetChanged(self, aEvent: ActivationEvent) -> None:
         """
         Is called whenever data or a selection changed.
 
@@ -61,11 +68,12 @@ class SheetActivationListener(XActivationEventListener, unohelper.Base):
         """
         self._log.debug("activeSpreadsheetChanged")
         eargs = EventArgs(self)
-        eargs.event_data = DotDict(sheet=event.ActiveSheet, event=event)
+        eargs.event_data = DotDict(sheet=aEvent.ActiveSheet, event=aEvent)
         se = SharedEvent()
         se.trigger_event(SHEET_ACTIVATION, eargs)
 
-    def disposing(self, event: EventObject) -> None:
+    @override
+    def disposing(self, Source: EventObject) -> None:
         """
         gets called when the broadcaster is about to be disposed.
 

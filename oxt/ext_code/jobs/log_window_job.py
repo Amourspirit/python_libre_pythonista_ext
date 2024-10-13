@@ -65,7 +65,7 @@ class LogWindowJob(XJob, unohelper.Base):
     # endregion Init
 
     # region execute
-    def execute(self, args: Any) -> None:
+    def execute(self, args: Any) -> None:  # type: ignore
         # print("LibrePythonistaLogWindowJob execute")
         global RES_LOG_WIN_URL
         self._logger.debug("execute")

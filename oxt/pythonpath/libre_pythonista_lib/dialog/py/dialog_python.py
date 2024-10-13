@@ -2,6 +2,13 @@
 from __future__ import annotations
 import time
 from typing import Any, cast, TYPE_CHECKING, Tuple
+
+try:
+    # python 3.12+
+    from typing import override  # type: ignore
+except ImportError:
+    from typing_extensions import override
+
 import uno
 import unohelper
 from com.sun.star.awt import XTopWindowListener
@@ -105,7 +112,7 @@ class DialogPython(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
 
         self.parent = self.get_parent()
         self.tk = self.parent.Toolkit  # type: ignore
-        self.keyhandler = KeyHandler(self)
+        self.keyhandler = KeyHandler(self)  # type: ignore
         self.code_focused = False
         self._mnu = DialogMenu(self)
         self._init_dialog()
@@ -190,32 +197,38 @@ class DialogPython(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
         self._fn_on_menu_range_select_result = self._on_menu_range_select_result
 
     # region XTopWindowListener
-    def windowOpened(self, event: EventObject) -> None:
+    @override
+    def windowOpened(self, e: EventObject) -> None:
         """is invoked when a window is activated."""
         with self._log.indent(True):
             self._log.debug("Window Opened")
 
-    def windowActivated(self, event: EventObject) -> None:
+    @override
+    def windowActivated(self, e: EventObject) -> None:
         """is invoked when a window is activated."""
         with self._log.indent(True):
             self._log.debug("Window Activated")
 
-    def windowDeactivated(self, event: EventObject) -> None:
+    @override
+    def windowDeactivated(self, e: EventObject) -> None:
         """is invoked when a window is deactivated."""
         with self._log.indent(True):
             self._log.debug("Window De-activated")
 
-    def windowMinimized(self, event: EventObject) -> None:
+    @override
+    def windowMinimized(self, e: EventObject) -> None:
         """Is invoked when a window is iconified."""
         with self._log.indent(True):
             self._log.debug("Window Minimized")
 
-    def windowNormalized(self, event: EventObject) -> None:
+    @override
+    def windowNormalized(self, e: EventObject) -> None:
         """is invoked when a window is deiconified."""
         with self._log.indent(True):
             self._log.debug("Window Normalized")
 
-    def windowClosing(self, event: EventObject) -> None:
+    @override
+    def windowClosing(self, e: EventObject) -> None:
         """
         is invoked when a window is in the process of being closed.
 
@@ -225,12 +238,14 @@ class DialogPython(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
             self._log.debug("Window Closing")
             self._is_shown = False
 
-    def windowClosed(self, event: EventObject) -> None:
+    @override
+    def windowClosed(self, e: EventObject) -> None:
         """is invoked when a window has been closed."""
         with self._log.indent(True):
             self._log.debug("Window Closed")
 
-    def disposing(self, event: EventObject) -> None:
+    @override
+    def disposing(self, Source: EventObject) -> None:
         with self._log.indent(True):
             self._log.debug("Disposing")
 
