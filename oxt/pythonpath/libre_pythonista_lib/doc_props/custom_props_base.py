@@ -56,7 +56,7 @@ class CustomPropsBase:
         """
         with self._log.indent(True):
             if not self._json_doc.file_exist(self._name):
-                self._log.debug(f"File does not exist: {self._name}. Creating empty dictionary.")
+                self._log.debug(f"File does not exist: {self._name}. Returning empty dictionary.")
                 return {}
             try:
                 result = self._json_doc.read_json(self._name)
@@ -197,3 +197,8 @@ class CustomPropsBase:
     def log(self) -> OxtLogger:
         """Class Logger"""
         return self._log
+
+    @property
+    def config(self) -> Config:
+        """Config"""
+        return self._cfg

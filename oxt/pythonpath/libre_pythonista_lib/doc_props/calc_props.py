@@ -23,8 +23,6 @@ class CalcProps(CustomPropsBase):
         Args:
             doc (Any): The document.
         """
-        if getattr(self, "_is_init", False):
-            return
 
         cfg = Config()
         file_name = f"{cfg.general_code_name}_calc_props.json"
@@ -35,20 +33,19 @@ class CalcProps(CustomPropsBase):
                 self._log.debug(f"Setting log_format: {self.log_format}")
                 self._log.debug(f"Setting log_to_console: {self.log_to_console}")
                 self._log.debug(f"Setting include_extra_err_info: {self.include_extra_err_info}")
-        self._is_init = True
         # please the type checker
 
     def update_doc_ext_location(self) -> None:
         """
         Update the document extension location from the config.
         """
-        self.doc_ext_location = "user" if self._cfg.is_user_installed else "share"
+        self.doc_ext_location = "user" if self.config.is_user_installed else "share"
 
     # region Properties
     @property
     def doc_ext_location(self) -> str:
         """Gets/sets the document extension location. Must be ``share`` or ``user``."""
-        if self._cfg.is_shared_installed:
+        if self.config.is_shared_installed:
             location = "share"
         else:
             location = "user"
@@ -70,7 +67,7 @@ class CalcProps(CustomPropsBase):
 
     @property
     def log_format(self) -> str:
-        return self.get_custom_property("log_format", self._cfg.lp_default_log_format)
+        return self.get_custom_property("log_format", self.config.lp_default_log_format)
 
     @log_format.setter
     def log_format(self, value: str) -> None:

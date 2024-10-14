@@ -3,6 +3,13 @@ from __future__ import unicode_literals, annotations
 from typing import Any, TYPE_CHECKING
 import os
 import contextlib
+
+try:
+    # python 3.12+
+    from typing import override  # type: ignore
+except ImportError:
+    from typing_extensions import override
+
 import uno
 import unohelper
 
@@ -75,12 +82,13 @@ class UnLoadingJob(XJob, unohelper.Base):
     # endregion Init
 
     # region execute
-    def execute(self, args: Any) -> None:  # type: ignore
+    @override
+    def execute(self, Arguments: Any) -> None:
         self._log.debug("execute")
         try:
             # loader = Lo.load_office()
-            self._log.debug(f"Args Length: {len(args)}")
-            arg1 = args[0]
+            self._log.debug(f"Args Length: {len(Arguments)}")
+            arg1 = Arguments[0]
 
             for struct in arg1.Value:
                 self._log.debug(f"Struct: {struct.Name}")

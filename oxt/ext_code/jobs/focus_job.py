@@ -2,6 +2,13 @@
 from __future__ import annotations
 from typing import Any, cast, TYPE_CHECKING, Type
 import contextlib
+
+try:
+    # python 3.12+
+    from typing import override  # type: ignore
+except ImportError:
+    from typing_extensions import override
+
 import uno
 import unohelper
 from com.sun.star.task import XJob
@@ -77,12 +84,13 @@ class CalcDocFocusJob(XJob, unohelper.Base):
     # endregion Init
 
     # region execute
-    def execute(self, args: Any) -> None:  # type: ignore
+    @override
+    def execute(self, Arguments: Any) -> None:
         self._log.debug("execute")
         try:
             # loader = Lo.load_office()
-            self._log.debug(f"Args Length: {len(args)}")
-            arg1 = args[0]
+            self._log.debug(f"Args Length: {len(Arguments)}")
+            arg1 = Arguments[0]
 
             for struct in arg1.Value:
                 self._log.debug(f"Struct: {struct.Name}")
@@ -164,12 +172,13 @@ class CalcDocUnFocusJob(unohelper.Base, XJob):
     # endregion Init
 
     # region execute
-    def execute(self, args: Any) -> None:
+    @override
+    def execute(self, Arguments: Any) -> None:
         self._log.debug("execute")
         try:
             # loader = Lo.load_office()
-            self._log.debug(f"Args Length: {len(args)}")
-            arg1 = args[0]
+            self._log.debug(f"Args Length: {len(Arguments)}")
+            arg1 = Arguments[0]
 
             for struct in arg1.Value:
                 self._log.debug(f"Struct: {struct.Name}")
