@@ -1,6 +1,5 @@
 from __future__ import annotations
 from typing import Any, TYPE_CHECKING
-from ooodev.loader import Lo
 from ooodev.calc import CalcDoc
 from ooodev.exceptions import ex as mEx
 from ooodev.events.args.event_args import EventArgs

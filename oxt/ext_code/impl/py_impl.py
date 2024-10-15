@@ -37,12 +37,11 @@ if TYPE_CHECKING:
     from ...___lo_pip___.oxt_logger.oxt_logger import OxtLogger
     from ...___lo_pip___.config import Config
     from ...pythonpath.libre_pythonista_lib.cell.cell_mgr import CellMgr
-    from ...pythonpath.libre_pythonista_lib.state.calc_state_mgr import CalcStateMgr
     from ...pythonpath.libre_pythonista_lib.code.cell_cache import CellCache
     from ...pythonpath.libre_pythonista_lib.cell.result_action.pyc.rules.pyc_rules import PycRules
     from ...pythonpath.libre_pythonista_lib.cell.lpl_cell import LplCell
     from ...pythonpath.libre_pythonista_lib.event.shared_event import SharedEvent
-    from ...pythonpath.libre_pythonista_lib.const.event_const import PYC_RULE_MATCH_DONE
+    from ...pythonpath.libre_pythonista_lib.const.event_const import PYC_RULE_MATCH_DONE, PYC_FORMULA_ENTER
 
 else:
     _CONDITIONS_MET = _conditions_met()
@@ -53,11 +52,10 @@ else:
         from ooodev.utils.helper.dot_dict import DotDict
         from ooodev.utils.data_type.col_obj import ColObj
         from libre_pythonista_lib.cell.cell_mgr import CellMgr
-        from libre_pythonista_lib.state.calc_state_mgr import CalcStateMgr
         from libre_pythonista_lib.cell.result_action.pyc.rules.pyc_rules import PycRules
         from libre_pythonista_lib.event.shared_event import SharedEvent
         from libre_pythonista_lib.code.cell_cache import CellCache
-        from libre_pythonista_lib.const.event_const import PYC_RULE_MATCH_DONE
+        from libre_pythonista_lib.const.event_const import PYC_RULE_MATCH_DONE, PYC_FORMULA_ENTER
     from ___lo_pip___.config import Config
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
 
@@ -107,15 +105,6 @@ class PyImpl(unohelper.Base, XPy):
             )
             return None
 
-        # try:
-        #     state_mgr = CalcStateMgr(doc)
-        #     if not state_mgr.is_view_loaded:
-        #         self._logger.debug("pyc - View not loaded. Returning.")
-        #         return None
-        # except Exception:
-        #     self._logger.warning("pyc - Could not get CalcStateMgr")
-        #     return None
-
         result = None
         try:
             self._logger.debug(f"pyc - Doc UID: {doc.runtime_uid}")
@@ -127,6 +116,8 @@ class PyImpl(unohelper.Base, XPy):
                 CellMgr.reset_instance(doc)
                 return None  # type: ignore
             cm = CellMgr(doc)
+            shared_event = SharedEvent(doc)
+
             # cm.set_global_var("PY_ARGS", args)
             # cc = CellCache(doc)
             sheet_idx = sheet_num - 1
@@ -141,6 +132,10 @@ class PyImpl(unohelper.Base, XPy):
             self._logger.debug(
                 f"pyc - Cell {cell.cell_obj} for sheet index {cell.cell_obj.sheet_idx} has custom properties: {cell.has_custom_properties()}"
             )
+            dd = DotDict(sheet=sheet, cell=cell, event_name=PYC_FORMULA_ENTER)
+            eargs = EventArgs(self)
+            eargs.event_data = dd
+            shared_event.trigger_event(PYC_FORMULA_ENTER, eargs)
 
             if not cm.has_cell(cell_obj=cell.cell_obj):
 
@@ -201,7 +196,6 @@ class PyImpl(unohelper.Base, XPy):
                 rule_result = matched_rule.action()
                 cm.add_cell_control_from_pyc_rule(rule=matched_rule)
 
-                shared_event = SharedEvent(doc)
                 cell_cache = CellCache(doc)
                 dd = DotDict(matched_rule=matched_rule, rule_result=rule_result, calc_cell=cell)
                 dd.is_first_cell = cell_cache.is_first_cell(cell=cell.cell_obj, sheet_idx=sheet_idx)

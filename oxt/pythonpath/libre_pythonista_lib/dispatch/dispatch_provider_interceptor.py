@@ -43,6 +43,8 @@ from ..const import (
     UNO_DISPATCH_PIP_PKG_INSTALLED,
     UNO_DISPATCH_PIP_PKG_LINK,
     UNO_DISPATCH_PIP_PKG_UNLINK,
+    UNO_DISPATCH_PYC_FORMULA,
+    UNO_DISPATCH_PYC_FORMULA_DEP,
 )
 
 from ..const.event_const import GBL_DOC_CLOSING, LP_DISPATCHED_CMD
@@ -151,8 +153,39 @@ class DispatchProviderInterceptor(unohelper.Base, XDispatchProviderInterceptor):
         # 2024-06-19 21:23:54,874 - libre_pythonista - DEBUG - DispatchProviderInterceptor.queryDispatch: .uno:DevelopmentToolsDockingWindow
 
         se = SharedEvent(doc=self._doc)
+        if URL.Main == UNO_DISPATCH_PYC_FORMULA_DEP:
+            try:
+                from .dispatch_pyc_formula_dep import DispatchPycFormulaDep
+            except ImportError:
+                log.exception("DispatchPycFormulaDep import error")
+                raise
+            with contextlib.suppress(Exception):
+                with log.indent(True):
+                    log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchPycFormulaDep")
+                result = DispatchPycFormulaDep()
 
-        if URL.Main == UNO_DISPATCH_CODE_EDIT:
+                eargs = EventArgs(self)
+                eargs.event_data = DotDict(dispatch=result, cmd=UNO_DISPATCH_PYC_FORMULA_DEP, doc=self._doc)
+                se.trigger_event(LP_DISPATCHED_CMD, eargs)
+                return result
+
+        elif URL.Main == UNO_DISPATCH_PYC_FORMULA:
+            try:
+                from .dispatch_pyc_formula import DispatchPycFormula
+            except ImportError:
+                log.exception("DispatchPycFormula import error")
+                raise
+            with contextlib.suppress(Exception):
+                with log.indent(True):
+                    log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchPycFormula")
+                result = DispatchPycFormula()
+
+                eargs = EventArgs(self)
+                eargs.event_data = DotDict(dispatch=result, cmd=UNO_DISPATCH_PYC_FORMULA, doc=self._doc)
+                se.trigger_event(LP_DISPATCHED_CMD, eargs)
+                return result
+
+        elif URL.Main == UNO_DISPATCH_CODE_EDIT:
             try:
                 from .dispatch_edit_py_cell import DispatchEditPyCell
             except ImportError:

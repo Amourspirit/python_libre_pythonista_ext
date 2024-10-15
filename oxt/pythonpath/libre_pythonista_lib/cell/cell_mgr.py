@@ -131,10 +131,13 @@ class CellMgr(SingletonBase):
             self._log.debug(f"_on_calc_formulas_calculated() Done.")
 
     def _on_calc_pyc_formula_inserted(self, src: Any, event: EventArgs) -> None:
-        with self._log.noindent():
-            self._log.debug(f"_on_calc_pyc_formula_inserted() Entering.")
-            self._sheet_mgr.ensure_sheet_calculate_event()
-            self._log.debug(f"_on_calc_pyc_formula_inserted() Done.")
+        pass
+        # SheetMgr subscribes to this event and ensures that the sheet calculate event is set.
+
+        # with self._log.noindent():
+        #     self._log.debug(f"_on_calc_pyc_formula_inserted() Entering.")
+        #     self._sheet_mgr.ensure_sheet_calculate_event()
+        #     self._log.debug(f"_on_calc_pyc_formula_inserted() Done.")
 
     # endregion Events Sheet
 
@@ -355,6 +358,7 @@ class CellMgr(SingletonBase):
 
         """
         with self._log.indent(True):
+            dd = DotDict(absolute_name="UNKNOWN")
             try:
                 self._log.debug("on_cell_pyc_formula_removed() Entering.")
                 dd = cast(DotDict, event.event_data)
@@ -912,6 +916,8 @@ class CellMgr(SingletonBase):
         """
 
         self._log.debug(f"Listener context for cell: {cell.AbsoluteName}")
+        listener = None
+        code_name = ""
         try:
             self._log.indent(False)
             # get the code name
@@ -924,7 +930,6 @@ class CellMgr(SingletonBase):
 
             icp = self._cell_cache.get_index_cell_props(cell=cell_obj, sheet_idx=cell_obj.sheet_idx)
             code_name = icp.code_name
-            listener = None
             if code_name in self._listeners:
                 self._log.debug(f"Un-subscribing listeners for cell: {cell.AbsoluteName}")
                 listener = self._listeners[code_name]
