@@ -1,6 +1,12 @@
 from __future__ import annotations
 from typing import Any, TYPE_CHECKING
 
+try:
+    # python 3.12+
+    from typing import override  # type: ignore
+except ImportError:
+    from typing_extensions import override
+
 import uno
 import unohelper
 from com.sun.star.document import XDocumentEventListener
@@ -49,7 +55,8 @@ class DocumentEventListener(XDocumentEventListener, unohelper.Base):
         self._shared_event = SharedEvent()
         self._is_init = True
 
-    def documentEventOccured(self, event: DocumentEvent) -> None:
+    @override
+    def documentEventOccured(self, Event: DocumentEvent) -> None:
         """
         Is called whenever a document event occurred
         """
@@ -64,13 +71,14 @@ class DocumentEventListener(XDocumentEventListener, unohelper.Base):
         # - OnUnfocus
         # - OnTitleChanged
         # and more. See: https://ask.libreoffice.org/t/extension-run-on-libreoffice-startup/94512
-        self._log.debug(f"Document Event Occurred: {event.EventName}")
+        self._log.debug(f"Document Event Occurred: {Event.EventName}")
         eargs = EventArgs(self)
-        dd = DotDict(run_id=self._uid, event_name=event.EventName)
+        dd = DotDict(run_id=self._uid, event_name=Event.EventName)
         eargs.event_data = dd
         self._shared_event.trigger_event(DOCUMENT_EVENT, eargs)
 
-    def disposing(self, event: EventObject) -> None:
+    @override
+    def disposing(self, Source: EventObject) -> None:
         """
         gets called when the broadcaster is about to be disposed.
 

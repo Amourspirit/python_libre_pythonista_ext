@@ -1,6 +1,12 @@
 from __future__ import annotations
 from typing import Any, TYPE_CHECKING
 
+try:
+    # python 3.12+
+    from typing import override  # type: ignore
+except ImportError:
+    from typing_extensions import override
+
 import uno
 import unohelper
 from com.sun.star.sheet import XActivationEventListener
@@ -44,9 +50,10 @@ class SheetCalculationEventListener(unohelper.Base, XActivationEventListener):
         self._log = OxtLogger(log_name=self.__class__.__name__)
         self._is_init = True
 
-    def activeSpreadsheetChanged(self, event: ActivationEvent) -> None:
+    @override
+    def activeSpreadsheetChanged(self, aEvent: ActivationEvent) -> None:
         """
-        is called whenever data or a selection changed.
+        Is called whenever data or a selection changed.
 
         This interface must be implemented by components that wish to get notified of changes of the active Spreadsheet. They can be registered at an XSpreadsheetViewEventProvider component.
 
@@ -61,7 +68,8 @@ class SheetCalculationEventListener(unohelper.Base, XActivationEventListener):
         except Exception as e:
             self._log.error("Error setting document sheets calculate event", exc_info=True)
 
-    def disposing(self, event: EventObject) -> None:
+    @override
+    def disposing(self, Source: EventObject) -> None:
         """
         gets called when the broadcaster is about to be disposed.
 

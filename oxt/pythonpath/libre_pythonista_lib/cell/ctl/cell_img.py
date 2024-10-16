@@ -1,10 +1,15 @@
 from __future__ import annotations
 from typing import Any, TYPE_CHECKING, Tuple
 import contextlib
+
+try:
+    # python 3.12+
+    from typing import override  # type: ignore
+except ImportError:
+    from typing_extensions import override
+
 import uno
 from com.sun.star.drawing import XShape
-from com.sun.star.container import NoSuchElementException
-from ooo.dyn.drawing.text_vertical_adjust import TextVerticalAdjust
 from ooodev.calc.controls.sheet_control_base import SheetControlBase
 from ooodev.calc.partial.calc_sheet_prop_partial import CalcSheetPropPartial
 from ooodev.events.args.cancel_event_args import CancelEventArgs
@@ -18,7 +23,6 @@ from ...ex import CustomPropertyMissingError
 from ...log.log_inst import LogInst
 
 if TYPE_CHECKING:
-    from com.sun.star.sheet import Shape  # service
     from ooodev.calc import CalcCell, CalcSheet
     from ooodev.loader.inst.lo_inst import LoInst
     from ooodev.calc.calc_form import CalcForm
@@ -49,7 +53,8 @@ class CellImg(SheetControlBase):
     def _init_calc_sheet_prop(self) -> None:
         CalcSheetPropPartial.__init__(self, self.calc_obj.calc_sheet)
 
-    def _get_pos_size(self) -> Tuple[UnitMM100, UnitMM100, UnitMM100, UnitMM100]:
+    @override
+    def _get_pos_size(self) -> Tuple[UnitMM100, UnitMM100, UnitMM100, UnitMM100]:  # type: ignore
         if self.calc_obj.component.IsMerged:  # type: ignore
             self.__log.debug(f"CellControl: _get_pos_size(): Cell is merged")
             cursor = self.calc_obj.calc_sheet.create_cursor_by_range(cell_obj=self.calc_obj.cell_obj)
@@ -63,6 +68,7 @@ class CellImg(SheetControlBase):
             size = self.calc_obj.component.Size
         return (UnitMM100(ps.X), UnitMM100(ps.Y), UnitMM100(size.Width), UnitMM100(size.Height))
 
+    @override
     def _get_form(self) -> CalcForm:
         sheet = self.calc_sheet
         if len(sheet.draw_page.forms) == 0:
@@ -72,6 +78,7 @@ class CellImg(SheetControlBase):
             sheet.draw_page.forms.add_form(self._form_name)
         return sheet.draw_page.forms.get_by_name(self._form_name)
 
+    @override
     def _find_current_control(self) -> Any:
         with self.__log.indent(True):
             self.__log.debug(f"CellControl: _find_current_control(): Entered")
@@ -97,6 +104,7 @@ class CellImg(SheetControlBase):
             x_shape = Lo.qi(XShape, shape.component)
             return x_shape
 
+    @override
     def _set_shape_props(self, shape: XShape) -> None:
         event_data = DotDict(
             Anchor=self.calc_obj.component,

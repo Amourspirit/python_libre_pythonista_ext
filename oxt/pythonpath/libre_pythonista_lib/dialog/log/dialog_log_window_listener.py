@@ -1,5 +1,12 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
+
+try:
+    # python 3.12+
+    from typing import override  # type: ignore
+except ImportError:
+    from typing_extensions import override
+
 import uno
 from com.sun.star.awt import XWindowListener
 from ..listener.listener_base import ListenerBase
@@ -16,7 +23,8 @@ if TYPE_CHECKING:
 class DialogLogWindowListener(ListenerBase["DialogLog"], XWindowListener):
     """WindowListener for DialogLog."""
 
-    def windowResized(self, event: WindowEvent) -> None:
+    @override
+    def windowResized(self, e: WindowEvent) -> None:
         # src = cast("WindowType", event.Source)
         # size = src.Size
         # margin = self.component.MARGIN

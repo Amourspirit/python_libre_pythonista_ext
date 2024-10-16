@@ -4,6 +4,13 @@ from typing import Any, TYPE_CHECKING
 import threading
 import contextlib
 import os
+
+try:
+    # python 3.12+
+    from typing import override  # type: ignore
+except ImportError:
+    from typing_extensions import override
+
 import uno
 import unohelper
 
@@ -57,7 +64,8 @@ class ViewJob(unohelper.Base, XJob):
     # endregion Init
 
     # region execute
-    def execute(self, args: Any) -> None:
+    @override
+    def execute(self, Arguments: Any) -> None:
         # This job may be executed more then once.
         # When a spreadsheet is put into print preview this is fired.
         # When the print preview is closed this is fired again.
@@ -65,8 +73,8 @@ class ViewJob(unohelper.Base, XJob):
         self._log.debug("ViewJob execute")
         try:
             # loader = Lo.load_office()
-            self._log.debug(f"Args Length: {len(args)}")
-            arg1 = args[0]
+            self._log.debug(f"Args Length: {len(Arguments)}")
+            arg1 = Arguments[0]
 
             for struct in arg1.Value:
                 self._log.debug(f"Struct: {struct.Name}")

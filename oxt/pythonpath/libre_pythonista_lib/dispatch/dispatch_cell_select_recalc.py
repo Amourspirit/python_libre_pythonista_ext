@@ -1,5 +1,12 @@
 from __future__ import annotations
 from typing import Dict, Tuple, TYPE_CHECKING
+
+try:
+    # python 3.12+
+    from typing import override  # type: ignore
+except ImportError:
+    from typing_extensions import override
+
 import uno
 import unohelper
 from com.sun.star.frame import XDispatch
@@ -30,7 +37,8 @@ class DispatchCellSelectRecalc(unohelper.Base, XDispatch):
         self._log.debug(f"init: sheet={sheet}, cell={cell}")
         self._status_listeners: Dict[str, XStatusListener] = {}
 
-    def addStatusListener(self, control: XStatusListener, url: URL) -> None:
+    @override
+    def addStatusListener(self, Control: XStatusListener, URL: URL) -> None:
         """
         registers a listener of a control for a specific URL at this object to receive status events.
 
@@ -40,14 +48,14 @@ class DispatchCellSelectRecalc(unohelper.Base, XDispatch):
         Note: Notifications can't be guaranteed! This will be a part of interface XNotifyingDispatch.
         """
         with self._log.indent(True):
-            if url.Complete in self._status_listeners:
-                self._log.debug(f"addStatusListener(): url={url.Main} already exists.")
+            if URL.Complete in self._status_listeners:
+                self._log.debug(f"addStatusListener(): url={URL.Main} already exists.")
             else:
                 # setting IsEnable=False here does not disable the dispatch command
                 # State=True may cause the menu items to be displayed as checked.
-                fe = FeatureStateEvent(FeatureURL=url, IsEnabled=True, State=None)
-                control.statusChanged(fe)
-                self._status_listeners[url.Complete] = control
+                fe = FeatureStateEvent(FeatureURL=URL, IsEnabled=True, State=None)
+                Control.statusChanged(fe)
+                self._status_listeners[URL.Complete] = Control
 
     def _get_range_obj(self, cell: CalcCell) -> RangeValues:
         if cell.component.IsMerged:  # type: ignore
@@ -61,7 +69,8 @@ class DispatchCellSelectRecalc(unohelper.Base, XDispatch):
             rv = RangeValues(col_start=cv.col, row_start=cv.row, col_end=cv.col, row_end=cv.row)
         return rv
 
-    def dispatch(self, url: URL, args: Tuple[PropertyValue, ...]) -> None:
+    @override
+    def dispatch(self, URL: URL, Arguments: Tuple[PropertyValue, ...]) -> None:
         """
         Dispatches (executes) a URL
 
@@ -74,7 +83,7 @@ class DispatchCellSelectRecalc(unohelper.Base, XDispatch):
         """
         with self._log.indent(True):
             try:
-                self._log.debug(f"dispatch(): url={url.Main}")
+                self._log.debug(f"dispatch(): url={URL.Main}")
                 doc = CalcDoc.from_current_doc()
                 sheet = doc.sheets[self._sheet]
                 cell = sheet[self._cell]
@@ -91,9 +100,10 @@ class DispatchCellSelectRecalc(unohelper.Base, XDispatch):
                 self._log.error(f"Error: {e}", exc_info=True)
                 return
 
-    def removeStatusListener(self, control: XStatusListener, url: URL) -> None:
+    @override
+    def removeStatusListener(self, Control: XStatusListener, URL: URL) -> None:
         """
         Un-registers a listener from a control.
         """
-        if url.Complete in self._status_listeners:
-            del self._status_listeners[url.Complete]
+        if URL.Complete in self._status_listeners:
+            del self._status_listeners[URL.Complete]

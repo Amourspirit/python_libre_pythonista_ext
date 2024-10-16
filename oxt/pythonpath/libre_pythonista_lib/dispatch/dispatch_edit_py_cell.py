@@ -1,5 +1,12 @@
 from __future__ import annotations
 from typing import cast, Dict, Tuple, TYPE_CHECKING
+
+try:
+    # python 3.12+
+    from typing import override  # type: ignore
+except ImportError:
+    from typing_extensions import override
+
 import uno
 import unohelper
 from com.sun.star.frame import XDispatch
@@ -42,7 +49,8 @@ class DispatchEditPyCell(XDispatch, EventsPartial, unohelper.Base):
         self._log.debug(f"init: sheet={sheet}, cell={cell}")
         self._status_listeners: Dict[str, XStatusListener] = {}
 
-    def addStatusListener(self, control: XStatusListener, url: URL) -> None:
+    @override
+    def addStatusListener(self, Control: XStatusListener, URL: URL) -> None:
         """
         registers a listener of a control for a specific URL at this object to receive status events.
 
@@ -51,17 +59,18 @@ class DispatchEditPyCell(XDispatch, EventsPartial, unohelper.Base):
         Note: Notifications can't be guaranteed! This will be a part of interface XNotifyingDispatch.
         """
         with self._log.indent(True):
-            self._log.debug(f"addStatusListener(): url={url.Main}")
-            if url.Complete in self._status_listeners:
-                self._log.debug(f"addStatusListener(): url={url.Main} already exists.")
+            self._log.debug(f"addStatusListener(): url={URL.Main}")
+            if URL.Complete in self._status_listeners:
+                self._log.debug(f"addStatusListener(): url={URL.Main} already exists.")
             else:
                 # setting IsEnable=False here does not disable the dispatch command
                 # State=True may cause the menu items to be displayed as checked.
-                fe = FeatureStateEvent(FeatureURL=url, IsEnabled=True, State=None)
-                control.statusChanged(fe)
-                self._status_listeners[url.Complete] = control
+                fe = FeatureStateEvent(FeatureURL=URL, IsEnabled=True, State=None)
+                Control.statusChanged(fe)
+                self._status_listeners[URL.Complete] = Control
 
-    def dispatch(self, url: URL, args: Tuple[PropertyValue, ...]) -> None:
+    @override
+    def dispatch(self, URL: URL, Arguments: Tuple[PropertyValue, ...]) -> None:
         """
         Dispatches (executes) a URL
 
@@ -74,21 +83,21 @@ class DispatchEditPyCell(XDispatch, EventsPartial, unohelper.Base):
         """
         with self._log.indent(True):
             try:
-                self._log.debug(f"dispatch(): url={url.Main}")
+                self._log.debug(f"dispatch(): url={URL.Main}")
                 doc = CalcDoc.from_current_doc()
                 sheet = doc.sheets[self._sheet]
                 cell = sheet[self._cell]
                 cargs = CancelEventArgs(self)
                 cargs.event_data = DotDict(
-                    url=url,
-                    args=args,
+                    url=URL,
+                    args=Arguments,
                     doc=doc,
                     sheet=sheet,
                     cell=cell,
                 )
-                self.trigger_event(f"{url.Main}_before_dispatch", cargs)
+                self.trigger_event(f"{URL.Main}_before_dispatch", cargs)
                 if cargs.cancel:
-                    self._log.debug(f"Event {url.Main}_before_dispatch was cancelled.")
+                    self._log.debug(f"Event {URL.Main}_before_dispatch was cancelled.")
                     return
 
                 cc = CellCache(doc)  # singleton
@@ -111,7 +120,7 @@ class DispatchEditPyCell(XDispatch, EventsPartial, unohelper.Base):
                                     self._log.error(f"Cell {self._cell} has no formula.")
                                     eargs = EventArgs.from_args(cargs)
                                     eargs.event_data.success = False
-                                    self.trigger_event(f"{url.Main}_after_dispatch", eargs)
+                                    self.trigger_event(f"{URL.Main}_after_dispatch", eargs)
                                     return
                                 # s = s.lstrip("=")  # just in case there are multiple equal signs
                                 is_formula_array = False
@@ -145,21 +154,22 @@ class DispatchEditPyCell(XDispatch, EventsPartial, unohelper.Base):
                                 doc.component.calculate()
                 eargs = EventArgs.from_args(cargs)
                 eargs.event_data.success = True
-                self.trigger_event(f"{url.Main}_after_dispatch", eargs)
+                self.trigger_event(f"{URL.Main}_after_dispatch", eargs)
             except Exception as e:
                 # log the error and do not re-raise it.
                 # re-raising the error may crash the entire LibreOffice app.
                 self._log.error(f"Error: {e}", exc_info=True)
                 return
 
-    def removeStatusListener(self, control: XStatusListener, url: URL) -> None:
+    @override
+    def removeStatusListener(self, Control: XStatusListener, URL: URL) -> None:
         """
         Un-registers a listener from a control.
         """
         with self._log.indent(True):
-            self._log.debug(f"removeStatusListener(): url={url.Main}")
-            if url.Complete in self._status_listeners:
-                del self._status_listeners[url.Complete]
+            self._log.debug(f"removeStatusListener(): url={URL.Main}")
+            if URL.Complete in self._status_listeners:
+                del self._status_listeners[URL.Complete]
 
     def _edit_code(self, doc: CalcDoc, cell_obj: CellObj) -> bool:
         with self._log.indent(True):

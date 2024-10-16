@@ -1,5 +1,12 @@
 from __future__ import annotations
 from typing import Any, TYPE_CHECKING
+
+try:
+    # python 3.12+
+    from typing import override  # type: ignore
+except ImportError:
+    from typing_extensions import override
+
 from ooodev.exceptions import ex as mEx
 from ooo.dyn.awt.size import Size
 from ooo.dyn.awt.point import Point
@@ -14,23 +21,28 @@ if TYPE_CHECKING:
 
 class DataTblCtl(SimpleCtl):
 
+    @override
     def get_rule_name(self) -> str:
         """Gets the rule name for this class instance."""
         return self.key_maker.rule_names.cell_data_type_tbl_data
 
+    @override
     def add_ctl(self) -> Any:
         shape = super().add_ctl()
         return shape
 
+    @override
     def _get_label(self) -> str:
         rs = self.res.resolve_string("ctl003")  # Table Data
         return f"<> {rs}"
 
+    @override
     def _set_size(self, shape: ControlShape) -> None:
         x, y, width, height = self.get_cell_pos_size()
         shape.setSize(Size(width, height))
         shape.setPosition(Point(x, y))
 
+    @override
     def update_ctl(self) -> None:
         with self.log.indent(True):
             self.log.debug(f"{self.__class__.__name__}: update_ctl(): Entered")

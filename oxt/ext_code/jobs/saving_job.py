@@ -3,6 +3,13 @@ from __future__ import unicode_literals, annotations
 from typing import Any, TYPE_CHECKING
 import os
 import contextlib
+
+try:
+    # python 3.12+
+    from typing import override  # type: ignore
+except ImportError:
+    from typing_extensions import override
+
 import uno
 import unohelper
 
@@ -72,12 +79,13 @@ class SavingJob(XJob, unohelper.Base):
         cp.update_doc_ext_location()
 
     # region execute
-    def execute(self, args: Any) -> None:
+    @override
+    def execute(self, Arguments: Any) -> None:
         self._logger.debug("execute")
         try:
             # loader = Lo.load_office()
-            self._logger.debug(f"Args Length: {len(args)}")
-            arg1 = args[0]
+            self._logger.debug(f"Args Length: {len(Arguments)}")
+            arg1 = Arguments[0]
 
             for struct in arg1.Value:
                 self._logger.debug(f"Struct: {struct.Name}")
@@ -94,7 +102,7 @@ class SavingJob(XJob, unohelper.Base):
 
                     state_mgr = CalcStateMgr(doc)
                     if not state_mgr.is_imports2_ready:
-                        self._log.debug("Imports2 is not ready. Returning.")
+                        self._logger.debug("Imports2 is not ready. Returning.")
                         return
 
                     try:

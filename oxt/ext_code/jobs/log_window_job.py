@@ -1,8 +1,14 @@
 # region imports
 from __future__ import unicode_literals, annotations
 from typing import Any, TYPE_CHECKING
-import os
 import contextlib
+
+try:
+    # python 3.12+
+    from typing import override  # type: ignore
+except ImportError:
+    from typing_extensions import override
+
 import uno
 import unohelper
 
@@ -65,14 +71,15 @@ class LogWindowJob(XJob, unohelper.Base):
     # endregion Init
 
     # region execute
-    def execute(self, args: Any) -> None:
+    @override
+    def execute(self, Arguments: Any) -> None:
         # print("LibrePythonistaLogWindowJob execute")
         global RES_LOG_WIN_URL
         self._logger.debug("execute")
         try:
             # can't use args here because this job is also called via dispatch
             # loader = Lo.load_office()
-            self._logger.debug(f"Args Length: {len(args)}")
+            self._logger.debug(f"Args Length: {len(Arguments)}")
 
             doc = Lo.current_doc
             if not doc:

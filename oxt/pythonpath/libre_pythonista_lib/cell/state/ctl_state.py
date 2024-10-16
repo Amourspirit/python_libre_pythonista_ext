@@ -1,5 +1,12 @@
 from __future__ import annotations
 import contextlib
+
+try:
+    # python 3.12+
+    from typing import override  # type: ignore
+except ImportError:
+    from typing_extensions import override
+
 from ooodev.calc import CalcCell
 from .state_base import StateBase
 from .state_kind import StateKind
@@ -18,6 +25,7 @@ class CtlState(StateBase):
         """
         super().__init__(cell)
 
+    @override
     def get_state(self) -> StateKind:
         """
         Gets the state
@@ -32,6 +40,7 @@ class CtlState(StateBase):
 
         return StateKind.PY_OBJ
 
+    @override
     def set_state(self, value: StateKind) -> None:
         """
         Sets the state.

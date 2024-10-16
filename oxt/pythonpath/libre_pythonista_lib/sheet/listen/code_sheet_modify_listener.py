@@ -1,6 +1,12 @@
 from __future__ import annotations
 from typing import Any, TYPE_CHECKING
 
+try:
+    # python 3.12+
+    from typing import override  # type: ignore
+except ImportError:
+    from typing_extensions import override
+
 import uno
 import unohelper
 from com.sun.star.util import XModifyListener
@@ -49,7 +55,8 @@ class CodeSheetModifyListener(XModifyListener, unohelper.Base):
         self._log = OxtLogger(log_name=self.__class__.__name__)
         self._is_init = True
 
-    def modified(self, event: EventObject) -> None:
+    @override
+    def modified(self, aEvent: EventObject) -> None:
         """
         Is called when something changes in the object.
 
@@ -64,10 +71,11 @@ class CodeSheetModifyListener(XModifyListener, unohelper.Base):
         # if self._log.is_debug:
         #     self._log.debug(str(event.Source))
         event_args = EventArgs(self)
-        event_args.event_data = DotDict(src=self, event=event)
+        event_args.event_data = DotDict(src=self, event=aEvent)
         SharedEvent().trigger_event(SHEET_MODIFIED, event_args)
 
-    def disposing(self, event: EventObject) -> None:
+    @override
+    def disposing(self, Source: EventObject) -> None:
         """
         gets called when the broadcaster is about to be disposed.
 

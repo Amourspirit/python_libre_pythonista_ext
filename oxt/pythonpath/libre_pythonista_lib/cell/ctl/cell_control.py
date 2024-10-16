@@ -1,6 +1,13 @@
 from __future__ import annotations
 from typing import Any, TYPE_CHECKING, Tuple
 import contextlib
+
+try:
+    # python 3.12+
+    from typing import override  # type: ignore
+except ImportError:
+    from typing_extensions import override
+
 import uno
 from com.sun.star.drawing import XControlShape
 from com.sun.star.container import NoSuchElementException
@@ -44,11 +51,13 @@ class CellControl(SheetControlBase):
     def _init_calc_sheet_prop(self) -> None:
         CalcSheetPropPartial.__init__(self, self.calc_obj.calc_sheet)
 
+    @override
     def _get_pos_size(self) -> Tuple[int, int, int, int]:
         ps = self.calc_obj.component.Position
         size = self.calc_obj.component.Size
         return (ps.X, ps.Y, size.Width, size.Height)
 
+    @override
     def _get_form(self) -> CalcForm:
         sheet = self.calc_sheet
         if len(sheet.draw_page.forms) == 0:
@@ -58,6 +67,7 @@ class CellControl(SheetControlBase):
             sheet.draw_page.forms.add_form(self._form_name)
         return sheet.draw_page.forms.get_by_name(self._form_name)
 
+    @override
     def _find_current_control(self) -> Any:
         with self.__log.indent(True):
             self.__log.debug(f"CellControl: _find_current_control(): Entered")
@@ -109,6 +119,7 @@ class CellControl(SheetControlBase):
                 )
                 return None
 
+    @override
     def _set_shape_props(self, shape: Shape) -> None:
         event_data = DotDict(
             Anchor=self.calc_obj.component,

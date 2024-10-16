@@ -1,6 +1,12 @@
 from __future__ import annotations
 from typing import Any, TYPE_CHECKING
 
+try:
+    # python 3.12+
+    from typing import override  # type: ignore
+except ImportError:
+    from typing_extensions import override
+
 import uno
 import unohelper
 from com.sun.star.sheet import XActivationEventListener
@@ -43,7 +49,8 @@ class CodeSheetActivationListener(unohelper.Base, XActivationEventListener):
         self._log = OxtLogger(log_name=self.__class__.__name__)
         self._is_init = True
 
-    def activeSpreadsheetChanged(self, event: ActivationEvent) -> None:
+    @override
+    def activeSpreadsheetChanged(self, aEvent: ActivationEvent) -> None:
         """
         is called whenever data or a selection changed.
 
@@ -55,7 +62,7 @@ class CodeSheetActivationListener(unohelper.Base, XActivationEventListener):
         """
         self._log.debug("activeSpreadsheetChanged")
         doc = CalcDoc.from_current_doc()
-        sheet = doc.sheets.get_sheet(event.ActiveSheet)
+        sheet = doc.sheets.get_sheet(aEvent.ActiveSheet)
         unique_id = sheet.unique_id
         if not CodeSheetModifyListener.has_listener(unique_id):
             self._log.debug(f"Adding Modify Listener to sheet with unique id of: {unique_id}")
@@ -64,7 +71,8 @@ class CodeSheetActivationListener(unohelper.Base, XActivationEventListener):
         else:
             self._log.debug(f"Sheet with unique id of: {unique_id} already has a Modify Listener")
 
-    def disposing(self, event: EventObject) -> None:
+    @override
+    def disposing(self, Source: EventObject) -> None:
         """
         gets called when the broadcaster is about to be disposed.
 

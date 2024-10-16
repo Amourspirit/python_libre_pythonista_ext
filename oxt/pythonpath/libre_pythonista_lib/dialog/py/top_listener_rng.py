@@ -1,6 +1,13 @@
 # region Imports
 from __future__ import annotations
 from typing import TYPE_CHECKING
+
+try:
+    # python 3.12+
+    from typing import override  # type: ignore
+except ImportError:
+    from typing_extensions import override
+
 import unohelper
 
 from ooodev.calc import CalcDoc
@@ -42,10 +49,12 @@ class TopListenerRng(XTopWindowListener, unohelper.Base):
         except Exception:
             self._log.error("Error add listener to calc doc.", exc_info=True)
 
+    @override
     def windowOpened(self, e: EventObject) -> None:
         """is invoked when a window is activated."""
         pass
 
+    @override
     def windowActivated(self, e: EventObject) -> None:
         """is invoked when a window is activated."""
         with self._log.indent(True):
@@ -61,21 +70,25 @@ class TopListenerRng(XTopWindowListener, unohelper.Base):
             except Exception:
                 self._log.error("Error getting range from popup.", exc_info=True)
 
+    @override
     def windowDeactivated(self, e: EventObject) -> None:
         """is invoked when a window is deactivated."""
         with self._log.indent(True):
             self._log.debug("Window De-activated")
 
+    @override
     def windowMinimized(self, e: EventObject) -> None:
         """Is invoked when a window is iconified."""
         with self._log.indent(True):
             self._log.debug("Window Minimized")
 
+    @override
     def windowNormalized(self, e: EventObject) -> None:
         """is invoked when a window is deiconified."""
         with self._log.indent(True):
             self._log.debug("Window Normalized")
 
+    @override
     def windowClosing(self, e: EventObject) -> None:
         """
         is invoked when a window is in the process of being closed.
@@ -85,11 +98,13 @@ class TopListenerRng(XTopWindowListener, unohelper.Base):
         with self._log.indent(True):
             self._log.debug("Window Closing")
 
+    @override
     def windowClosed(self, e: EventObject) -> None:
         """is invoked when a window has been closed."""
         with self._log.indent(True):
             self._log.debug("Window Closed")
 
+    @override
     def disposing(self, Source: EventObject) -> None:
         """
         gets called when the broadcaster is about to be disposed.

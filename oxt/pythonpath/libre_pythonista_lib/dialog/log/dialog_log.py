@@ -2,6 +2,13 @@ from __future__ import annotations
 from typing import Any, cast, Dict, TYPE_CHECKING
 import contextlib
 import os
+
+try:
+    # python 3.12+
+    from typing import override  # type: ignore
+except ImportError:
+    from typing_extensions import override
+
 import uno
 import unohelper
 
@@ -520,28 +527,34 @@ class DialogLog(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
     # endregion Key Handlers
 
     # region XTopWindowListener
-    def windowOpened(self, event: EventObject) -> None:
+    @override
+    def windowOpened(self, e: EventObject) -> None:
         """is invoked when a window is activated."""
         self._log.debug("Window Opened")
 
-    def windowActivated(self, event: EventObject) -> None:
+    @override
+    def windowActivated(self, e: EventObject) -> None:
         """is invoked when a window is activated."""
 
         self._log.debug("Window Activated")
 
-    def windowDeactivated(self, event: EventObject) -> None:
+    @override
+    def windowDeactivated(self, e: EventObject) -> None:
         """is invoked when a window is deactivated."""
         self._log.debug("Window De-activated")
 
-    def windowMinimized(self, event: EventObject) -> None:
+    @override
+    def windowMinimized(self, e: EventObject) -> None:
         """Is invoked when a window is iconified."""
         self._log.debug("Window Minimized")
 
-    def windowNormalized(self, event: EventObject) -> None:
+    @override
+    def windowNormalized(self, e: EventObject) -> None:
         """is invoked when a window is deiconified."""
         self._log.debug("Window Normalized")
 
-    def windowClosing(self, event: EventObject) -> None:
+    @override
+    def windowClosing(self, e: EventObject) -> None:
         """
         is invoked when a window is in the process of being closed.
 
@@ -563,11 +576,12 @@ class DialogLog(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
             self._closing_triggered = True
             try:
                 self._update_config()
-            except Exception as e:
-                self._log.exception(f"Error saving configuration: {e}")
+            except Exception as err:
+                self._log.exception(f"Error saving configuration: {err}")
             self.dispose()
 
-    def windowClosed(self, event: EventObject) -> None:
+    @override
+    def windowClosed(self, e: EventObject) -> None:
         """is invoked when a window has been closed."""
         if not self._is_visible:
             self._log.debug("windowClosed() Window is hidden, not terminating.")
@@ -575,7 +589,8 @@ class DialogLog(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
         self._log.debug("Window Closed")
         DialogLog.reset_inst(self.runtime_uid)
 
-    def disposing(self, event: EventObject) -> None:
+    @override
+    def disposing(self, Source: EventObject) -> None:
 
         self._log.debug("Disposing")
         if not self._disposed:
