@@ -1,11 +1,20 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 import logging
+
+try:
+    # python 3.12+
+    from typing import override  # type: ignore
+except ImportError:
+    from typing_extensions import override
+
+from ooodev.calc import CalcDoc
+
 from .custom_props_base import CustomPropsBase
+from ..state.calc_state_mgr import CalcStateMgr
 
 
 if TYPE_CHECKING:
-    from ooodev.proto.office_document_t import OfficeDocumentT
     from ....___lo_pip___.config import Config
 else:
     from ___lo_pip___.config import Config
@@ -16,7 +25,7 @@ class CalcProps(CustomPropsBase):
     Class to add custom properties to a Calc document for LibrePythonista. The properties are stored in a json file embedded in the document.
     """
 
-    def __init__(self, doc: OfficeDocumentT):
+    def __init__(self, doc: CalcDoc):
         """
         Constructor.
 
@@ -25,6 +34,7 @@ class CalcProps(CustomPropsBase):
         """
 
         cfg = Config()
+        self._state_mgr = CalcStateMgr(doc)
         file_name = f"{cfg.general_code_name}_calc_props.json"
         CustomPropsBase.__init__(self, doc=doc, file_name=file_name, props_id="calc_custom_props")
         if self._log.is_debug:
@@ -34,6 +44,16 @@ class CalcProps(CustomPropsBase):
                 self._log.debug(f"Setting log_to_console: {self.log_to_console}")
                 self._log.debug(f"Setting include_extra_err_info: {self.include_extra_err_info}")
         # please the type checker
+
+    @override
+    def _is_doc_props_ready(self) -> bool:
+        """
+        Checks if the document properties are ready.
+
+        Returns:
+            bool: ``True`` if the document properties are ready, otherwise ``False``.
+        """
+        return self._state_mgr.is_pythonista_doc
 
     def update_doc_ext_location(self) -> None:
         """
@@ -88,5 +108,11 @@ class CalcProps(CustomPropsBase):
     @include_extra_err_info.setter
     def include_extra_err_info(self, value: bool) -> None:
         self.set_custom_property("include_extra_err_info", value)
+
+    @property
+    @override
+    def doc(self) -> CalcDoc:
+        """Calc Document"""
+        return super().doc  # type: ignore
 
     # endregion Properties

@@ -1,6 +1,7 @@
 from __future__ import annotations
 from typing import Any, TYPE_CHECKING
 import contextlib
+from abc import abstractmethod
 import uno
 from ooodev.utils.gen_util import NULL_OBJ
 from ooodev.utils.helper.dot_dict import DotDict
@@ -40,7 +41,8 @@ class CustomPropsBase:
         self._log = OxtLogger(log_name=self.__class__.__name__)
         with self._log.indent(True):
             self._log.debug("Init")
-        self._json_doc = DocJsonFile(doc, "json")
+        self._doc = doc
+        self._json_doc = DocJsonFile(self._doc, "json")
         self._props_id = props_id
         if not file_name.endswith(".json"):
             file_name = f"{file_name}.json"
@@ -50,18 +52,28 @@ class CustomPropsBase:
             self._log.debug("End Init")
         # please the type checker
 
+    @abstractmethod
+    def _is_doc_props_ready(self) -> bool:
+        """
+        Checks if the document properties are ready.
+
+        Returns:
+            bool: ``True`` if the document properties are ready, otherwise ``False``.
+        """
+        raise NotImplementedError
+
     def _get_custom_properties(self) -> dict:
         """
         Loads custom properties from the hidden control.
         """
         with self._log.indent(True):
-            if not self._json_doc.file_exist(self._name):
+            if self._is_doc_props_ready() is False or self._json_doc.file_exist(self._name) is False:
                 self._log.debug(f"File does not exist: {self._name}. Returning empty dictionary.")
                 return {}
             try:
                 result = self._json_doc.read_json(self._name)
                 return result.get("data", {})
-            except Exception as e:
+            except Exception:
                 self._log.error(f"Error reading JSON file: {self._name}. Returning empty dictionary.", exc_info=True)
                 return {}
 
@@ -73,6 +85,9 @@ class CustomPropsBase:
             properties (dict): The properties to save.
         """
         with self._log.indent(True):
+            if not self._is_doc_props_ready():
+                self._log.error("_save_properties() Document properties are not ready. Not Saving.")
+                return
             try:
                 json_data = {
                     "id": f"{self._cfg.lo_identifier}.{self._cfg.lo_implementation_name}.{self._props_id}",
@@ -202,3 +217,8 @@ class CustomPropsBase:
     def config(self) -> Config:
         """Config"""
         return self._cfg
+
+    @property
+    def doc(self) -> OfficeDocumentT:
+        """Document"""
+        return self._doc

@@ -11,6 +11,7 @@ from ooodev.utils.helper.dot_dict import DotDict
 from ..const.event_const import OXT_INIT, GBL_DOC_CLOSING, DOCUMENT_EVENT
 from ..utils.singleton_base import SingletonBase
 from ..event.shared_event import SharedEvent
+from ..code.py_source_mgr import PyInstance
 
 if TYPE_CHECKING:
     from ....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
@@ -95,6 +96,12 @@ class CalcStateMgr(SingletonBase):
         except (ModuleNotFoundError, ImportError):
             return False
         return True
+
+    @property
+    def is_pythonista_doc(self) -> bool:
+        """Gets if the document is a Pythonista Document (has code)."""
+        inst = PyInstance(self._doc)
+        return inst.has_code()
 
     @property
     def is_view_loaded(self) -> bool:
