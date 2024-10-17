@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 from typing import Any, cast, TYPE_CHECKING, Tuple
 import contextlib
 

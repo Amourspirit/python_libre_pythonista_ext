@@ -42,12 +42,13 @@ class CustomPropsBase:
         with self._log.indent(True):
             self._log.debug("Init")
         self._doc = doc
-        self._json_doc = DocJsonFile(self._doc, "json")
+        self._json_doc = None
         self._props_id = props_id
         if not file_name.endswith(".json"):
             file_name = f"{file_name}.json"
         self._name = file_name
         self._props = self._get_custom_properties()
+        self._ensure_doc_json_file()
         with self._log.indent(True):
             self._log.debug("End Init")
         # please the type checker
@@ -62,12 +63,28 @@ class CustomPropsBase:
         """
         raise NotImplementedError
 
+    def _ensure_doc_json_file(self) -> None:
+        """
+        Ensures the document JSON file exists.
+        """
+        with self._log.indent(True):
+            if self._is_doc_props_ready() is False:
+                self._log.error("Document properties are not ready. Not Saving.")
+                return
+            try:
+                if self._json_doc is None:
+                    # the creation of DocJsonFile will create the file if it does not exist
+                    self._json_doc = DocJsonFile(self._doc, "json")
+            except Exception:
+                self._log.error(f"Error ensuring JSON file: {self._name}", exc_info=True)
+
     def _get_custom_properties(self) -> dict:
         """
         Loads custom properties from the hidden control.
         """
         with self._log.indent(True):
-            if self._is_doc_props_ready() is False or self._json_doc.file_exist(self._name) is False:
+            self._ensure_doc_json_file()
+            if self._is_doc_props_ready() is False or self._json_doc is None:
                 self._log.debug(f"File does not exist: {self._name}. Returning empty dictionary.")
                 return {}
             try:
@@ -85,7 +102,8 @@ class CustomPropsBase:
             properties (dict): The properties to save.
         """
         with self._log.indent(True):
-            if not self._is_doc_props_ready():
+            self._ensure_doc_json_file()
+            if self._is_doc_props_ready() is False or self._json_doc is None:
                 self._log.error("_save_properties() Document properties are not ready. Not Saving.")
                 return
             try:
@@ -94,6 +112,7 @@ class CustomPropsBase:
                     "version": self._cfg.extension_version,
                     "data": data,
                 }
+                assert self._json_doc is not None
                 self._json_doc.write_json(self._name, json_data)
             except Exception:
                 self._log.error(f"Error writing JSON file: {self._name}", exc_info=True)

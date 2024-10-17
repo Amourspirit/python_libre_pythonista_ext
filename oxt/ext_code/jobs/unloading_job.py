@@ -121,6 +121,10 @@ class UnLoadingJob(XJob, unohelper.Base):
                             self._log.debug("Imports2 is not ready. Returning.")
                             return
 
+                        if not state_mgr.is_pythonista_doc:
+                            self._log.debug("Document not currently a LibrePythonista. Returning.")
+                            return
+
                         CellMgr.reset_instance(doc)
                         view = doc.get_view()
                         view.component.addActivationEventListener(CodeSheetActivationListener())

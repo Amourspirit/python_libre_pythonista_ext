@@ -16,7 +16,7 @@ from ..event.shared_event import SharedEvent
 
 
 from .event_log_handler import EventLogHandler
-from ..doc_props.calc_props import CalcProps
+
 
 if TYPE_CHECKING:
     from ooodev.proto.office_document_t import OfficeDocumentT
@@ -55,6 +55,9 @@ class PyLogger(Logger):
         """
         if getattr(self, "_is_init", False):
             return
+        # avoid circular import
+        from ..doc_props.calc_props import CalcProps
+
         self._uid = doc.runtime_uid
         self._otx_log = OxtLogger(log_name=self.__class__.__name__)
         self._otx_log.debug("Initializing PyLogger")

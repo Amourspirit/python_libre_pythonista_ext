@@ -130,29 +130,35 @@ def _init_with_state(doc: CalcDoc, log: OxtLogger):
     # The crash did not happen Flatpak version, Snap Version, Windows version or Docker version. Only on Ubuntu 20.04 when apt installed so far.
     log.debug("_init_with_state()")
     if TYPE_CHECKING:
-        from ...pythonpath.libre_pythonista_lib.oxt_init import oxt_init
-        from ...pythonpath.libre_pythonista_lib.state.calc_state_mgr import CalcStateMgr
+        from ...pythonpath.libre_pythonista_lib.doc.calc_doc_mgr import CalcDocMgr
+
+        # from ...pythonpath.libre_pythonista_lib.oxt_init import oxt_init
+        # from ...pythonpath.libre_pythonista_lib.state.calc_state_mgr import CalcStateMgr
     else:
         try:
-            from libre_pythonista_lib.oxt_init import oxt_init
-            from libre_pythonista_lib.state.calc_state_mgr import CalcStateMgr
+            from libre_pythonista_lib.doc.calc_doc_mgr import CalcDocMgr
 
-            log.debug("Imported oxt_init and CalcStateMgr")
+            # from libre_pythonista_lib.oxt_init import oxt_init
+            # from libre_pythonista_lib.state.calc_state_mgr import CalcStateMgr
+
+            log.debug("Imported CalcDocMgr")
         except ImportError:
             log.error("Error importing oxt_init and/or CalcStateMgr", exc_info=True)
             return
 
     try:
-        log.debug("Creating an instance of CalcStateMgr")
-        state_mgr = CalcStateMgr(doc)
-        log.debug("Document Loaded State Manager")
-        if state_mgr.is_oxt_init:
-            log.debug("oxt_init() state_mgr reports already init")
-        else:
-            log.debug("Running oxt_init()")
-            oxt_init(doc.component, log, state_mgr)
-            state_mgr.is_oxt_init = True
-            log.debug("oxt_init() done.")
+        log.debug("Creating an instance of CalcDocMgr")
+        _ = CalcDocMgr()
+
+        # state_mgr = CalcStateMgr(doc)
+        # log.debug("Document Loaded State Manager")
+        # if state_mgr.is_oxt_init:
+        #     log.debug("oxt_init() state_mgr reports already init")
+        # else:
+        #     log.debug("Running oxt_init()")
+        #     oxt_init(doc.component, log, state_mgr)
+        #     state_mgr.is_oxt_init = True
+        #     log.debug("oxt_init() done.")
     except Exception:
         log.error("Error _init_with_state()", exc_info=True)
 

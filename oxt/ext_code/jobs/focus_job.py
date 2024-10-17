@@ -1,6 +1,6 @@
 # region imports
 from __future__ import annotations
-from typing import Any, cast, TYPE_CHECKING, Type
+from typing import Any, cast, TYPE_CHECKING
 import contextlib
 
 try:
@@ -126,6 +126,9 @@ class CalcDocFocusJob(XJob, unohelper.Base):
                 state_mgr = CalcStateMgr(doc)
                 if not state_mgr.is_imports2_ready:
                     self._log.debug("Imports2 is not ready. Returning.")
+                    return
+                if not state_mgr.is_pythonista_doc:
+                    self._log.debug("Document not currently a LibrePythonista. Returning.")
                     return
 
                 sc = SharedCb()

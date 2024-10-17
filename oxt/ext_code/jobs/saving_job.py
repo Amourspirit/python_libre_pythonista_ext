@@ -70,7 +70,7 @@ class SavingJob(XJob, unohelper.Base):
         unohelper.Base.__init__(self)
         self.ctx = ctx
         self.document = None
-        self._logger = self._get_local_logger()
+        self._log = self._get_local_logger()
 
     # endregion Init
 
@@ -81,28 +81,32 @@ class SavingJob(XJob, unohelper.Base):
     # region execute
     @override
     def execute(self, Arguments: Any) -> None:
-        self._logger.debug("execute")
+        self._log.debug("execute")
         try:
             # loader = Lo.load_office()
-            self._logger.debug(f"Args Length: {len(Arguments)}")
+            self._log.debug(f"Args Length: {len(Arguments)}")
             arg1 = Arguments[0]
 
             for struct in arg1.Value:
-                self._logger.debug(f"Struct: {struct.Name}")
+                self._log.debug(f"Struct: {struct.Name}")
                 if struct.Name == "Model":
                     self.document = struct.Value
-                    self._logger.debug("Document Found")
+                    self._log.debug("Document Found")
             if self.document is None:
-                self._logger.debug("Document is None")
+                self._log.debug("Document is None")
                 return
             if self.document.supportsService("com.sun.star.sheet.SpreadsheetDocument"):
-                self._logger.debug("Document Saving is a spreadsheet")
+                self._log.debug("Document Saving is a spreadsheet")
                 if _CONDITIONS_MET:
                     doc = CalcDoc.get_doc_from_component(self.document)
 
                     state_mgr = CalcStateMgr(doc)
                     if not state_mgr.is_imports2_ready:
-                        self._logger.debug("Imports2 is not ready. Returning.")
+                        self._log.debug("Imports2 is not ready. Returning.")
+                        return
+
+                    if not state_mgr.is_pythonista_doc:
+                        self._log.debug("Document not currently a LibrePythonista. Returning.")
                         return
 
                     try:
@@ -112,12 +116,12 @@ class SavingJob(XJob, unohelper.Base):
                             doc.set_custom_property("LIBRE_PYTHONISTA_VERSION", cfg.extension_version)
 
                     except Exception as e:
-                        self._logger.error("Error Setting Custom Properties", exc_info=True)
+                        self._log.error("Error Setting Custom Properties", exc_info=True)
 
                     try:
                         self._update_ext_location(doc)
                     except:
-                        self._logger.error("Error Updating Extension Location", exc_info=True)
+                        self._log.error("Error Updating Extension Location", exc_info=True)
 
                     se = SharedEvent()
                     eargs = EventArgs(self)
@@ -125,10 +129,10 @@ class SavingJob(XJob, unohelper.Base):
                     # SheetMgr will remove any unused Formula Calculate events from the sheets.
                     se.trigger_event(DOCUMENT_SAVING, eargs)
             else:
-                self._logger.debug("Document UnLoading not a spreadsheet")
+                self._log.debug("Document UnLoading not a spreadsheet")
 
         except Exception as e:
-            self._logger.error("Error getting current document", exc_info=True)
+            self._log.error("Error getting current document", exc_info=True)
             return
 
     # endregion execute
