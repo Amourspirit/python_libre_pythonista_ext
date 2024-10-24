@@ -41,7 +41,9 @@ if TYPE_CHECKING:
     from ...pythonpath.libre_pythonista_lib.cell.cell_mgr import CellMgr
     from ...pythonpath.libre_pythonista_lib.dispatch import dispatch_mgr  # type: ignore
     from ...pythonpath.libre_pythonista_lib.const.event_const import GBL_DOC_CLOSING
-    from ...pythonpath.libre_pythonista_lib.state.calc_state_mgr import CalcStateMgr
+
+    # from ...pythonpath.libre_pythonista_lib.state.calc_state_mgr import CalcStateMgr
+    from ...pythonpath.libre_pythonista_lib.doc.calc_doc_mgr import CalcDocMgr
 else:
     _CONDITIONS_MET = _conditions_met()
     if _CONDITIONS_MET:
@@ -55,7 +57,9 @@ else:
         from libre_pythonista_lib.cell.cell_mgr import CellMgr
         from libre_pythonista_lib.dispatch import dispatch_mgr  # type: ignore
         from libre_pythonista_lib.const.event_const import GBL_DOC_CLOSING
-        from libre_pythonista_lib.state.calc_state_mgr import CalcStateMgr
+
+        # from libre_pythonista_lib.state.calc_state_mgr import CalcStateMgr
+        from libre_pythonista_lib.doc.calc_doc_mgr import CalcDocMgr
 # endregion imports
 
 
@@ -116,7 +120,12 @@ class UnLoadingJob(XJob, unohelper.Base):
 
                         dispatch_mgr.unregister_interceptor(doc)
 
-                        state_mgr = CalcStateMgr(doc)
+                        doc_mgr = CalcDocMgr()
+                        if not doc_mgr.events_ensured:
+                            self._log.debug("Events not ensured. Returning.")
+                            return
+
+                        state_mgr = doc_mgr.calc_state_mgr
                         if not state_mgr.is_imports2_ready:
                             self._log.debug("Imports2 is not ready. Returning.")
                             return
@@ -153,7 +162,7 @@ class UnLoadingJob(XJob, unohelper.Base):
                     se = SharedEvent()
                     event_args = EventArgs(self)
                     event_args.event_data = DotDict(uid=run_time_id, doc=self.document)
-                    # TODO: check and see if LoEvents is needed
+                    # LoEvents is used to unload various singletons
                     LoEvents().trigger(GBL_DOC_CLOSING, event_args)
 
                     event_args.event_data = DotDict(run_id=run_time_id, doc=self.document)

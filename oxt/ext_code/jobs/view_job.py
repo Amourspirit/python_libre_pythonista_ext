@@ -132,14 +132,9 @@ def _init_with_state(doc: CalcDoc, log: OxtLogger):
     if TYPE_CHECKING:
         from ...pythonpath.libre_pythonista_lib.doc.calc_doc_mgr import CalcDocMgr
 
-        # from ...pythonpath.libre_pythonista_lib.oxt_init import oxt_init
-        # from ...pythonpath.libre_pythonista_lib.state.calc_state_mgr import CalcStateMgr
     else:
         try:
             from libre_pythonista_lib.doc.calc_doc_mgr import CalcDocMgr
-
-            # from libre_pythonista_lib.oxt_init import oxt_init
-            # from libre_pythonista_lib.state.calc_state_mgr import CalcStateMgr
 
             log.debug("Imported CalcDocMgr")
         except ImportError:
@@ -148,17 +143,10 @@ def _init_with_state(doc: CalcDoc, log: OxtLogger):
 
     try:
         log.debug("Creating an instance of CalcDocMgr")
-        _ = CalcDocMgr()
+        doc_mgr = CalcDocMgr()
+        doc_mgr.calc_state_mgr.is_oxt_init = True
+        doc_mgr.ensure_events()  # must be called after is_oxt_init is set to True
 
-        # state_mgr = CalcStateMgr(doc)
-        # log.debug("Document Loaded State Manager")
-        # if state_mgr.is_oxt_init:
-        #     log.debug("oxt_init() state_mgr reports already init")
-        # else:
-        #     log.debug("Running oxt_init()")
-        #     oxt_init(doc.component, log, state_mgr)
-        #     state_mgr.is_oxt_init = True
-        #     log.debug("oxt_init() done.")
     except Exception:
         log.error("Error _init_with_state()", exc_info=True)
 

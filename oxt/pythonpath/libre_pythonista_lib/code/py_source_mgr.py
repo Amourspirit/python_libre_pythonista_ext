@@ -28,12 +28,13 @@ from ..const.event_const import GBL_DOC_CLOSING
 
 if TYPE_CHECKING:
     from ooodev.utils.type_var import EventCallback
-    from logging import Logger
+    from ....___lo_pip___.config import Config
     from ....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
 else:
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from ___lo_pip___.config import Config
 
-_MOD_DIR = "librepythonista"
+# _MOD_DIR = "librepythonista"
 
 
 class PySource:
@@ -173,8 +174,9 @@ class PySourceManager(EventsPartial):
         with self._log.indent(True):
             self._log.debug("Init")
         self._sfa = Sfa()
+        self._config = Config()
 
-        self._root_uri = f"vnd.sun.star.tdoc:/{self._doc.runtime_uid}/{_MOD_DIR}"
+        self._root_uri = f"vnd.sun.star.tdoc:/{self._doc.runtime_uid}/{self._config.lp_code_dir}"
         # if not self._sfa.exists(self._root_uri):
         #     self._sfa.inst.create_folder(self._root_uri)
         self._mod = PyModule()

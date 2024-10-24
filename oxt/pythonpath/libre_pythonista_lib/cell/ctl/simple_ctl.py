@@ -115,18 +115,6 @@ class SimpleCtl:
             auto_remove_existing=True,
         )
 
-    # def _remove_ctl_script(self, ctl: FormCtlBase) -> None:
-    #     """
-    #     Sets the actionPerformed script location for the control.
-
-    #     Args:
-    #         ctl (FormCtlBase): Control that has a actionPerformed method.
-    #     """
-    #     try:
-    #         ctl.remove_script(XActionListener, "actionPerformed")  # type: ignore
-    #     except Exception:
-    #         self.log.exception("SimpleCtl: _remove_ctl_script(): Error removing script")
-
     def add_ctl(self) -> Any:
         """
         Adds a control to the cell if it does not already exist.

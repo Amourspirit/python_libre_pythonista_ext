@@ -7,11 +7,13 @@ from typing import Any, cast, Dict, TYPE_CHECKING
 from ooodev.calc import CalcDoc
 from ooodev.events.args.event_args import EventArgs
 from ooodev.utils.helper.dot_dict import DotDict
+from ooodev.io.sfa import Sfa
 
-from ..const.event_const import OXT_INIT, GBL_DOC_CLOSING, DOCUMENT_EVENT
+from ..const.event_const import OXT_INIT, GBL_DOC_CLOSING, DOCUMENT_EVENT, LP_DOC_EVENTS_ENSURED
 from ..utils.singleton_base import SingletonBase
 from ..event.shared_event import SharedEvent
-from ..code.py_source_mgr import PyInstance
+
+# from ..code.py_source_mgr import PyInstance
 
 if TYPE_CHECKING:
     from ....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
@@ -32,14 +34,31 @@ class CalcStateMgr(SingletonBase):
     def __init__(self, doc: CalcDoc):
         if getattr(self, "_is_init", False):
             return
-        self._log = OxtLogger(log_name=self.__class__.__name__)
-        with self._log.noindent():
-            self._log.debug(f"Initializing {self.__class__.__name__}")
-        self._config = Config()
         self._doc = doc
-        self._props: Dict[str, Any] = {}
-        self._se = SharedEvent(doc)
-        self._calc_event_ensured = False
+        # if not hasattr(self, "_props"):
+        #     self._props: Dict[str, Any] = {}
+        # if not hasattr(self, "_log"):
+        #     self._log = OxtLogger(log_name=self.__class__.__name__)
+        # if not hasattr(self, "_config"):
+        #     self._config = Config()
+
+        if not hasattr(self, "_is_first_init"):
+            self._log = OxtLogger(log_name=self.__class__.__name__)
+            with self._log.noindent():
+                self._log.debug(f"Initializing {self.__class__.__name__}")
+            self._config = Config()
+            self._sfa = Sfa()
+            self._lp_code_dir = f"vnd.sun.star.tdoc:/{self._doc.runtime_uid}/{self._config.lp_code_dir}"
+            self._props: Dict[str, Any] = {}
+            self._se = SharedEvent(doc)
+            self._calc_event_ensured = False
+            self._fn_on_lp_doc_events_ensured = self._on_lp_doc_events_ensured
+            # CalcDocMgr is a singleton and it creates and instance of CalcStateMgr.
+            self._se.subscribe_event(LP_DOC_EVENTS_ENSURED, self._fn_on_lp_doc_events_ensured)
+            self._is_first_init = True
+
+    def _init_state_mgr(self) -> None:
+        self._log.debug("_init_state_mgr()")
         self._fn_on_calc_doc_new_view = self._on_calc_doc_new_view
         self._fn_on_calc_doc_closing = self._on_calc_doc_closing
         self._fn_on_calc_doc_event = self._on_calc_doc_event
@@ -50,8 +69,17 @@ class CalcStateMgr(SingletonBase):
 
     def _on_calc_doc_new_view(self, src: Any, event: EventArgs) -> None:
         self._log.debug("_on_calc_doc_new_view() Calc New View")
-        dd = cast(DotDict, event.event_data)
-        uid = dd.run_id
+        if not self._is_init:
+            self._init_state_mgr()
+        self._is_init = True
+
+    def _on_lp_doc_events_ensured(self, src: Any, event: EventArgs) -> None:
+        self._log.debug("_on_lp_doc_events_ensured() Entered.")
+        # runtime_uid
+        if isinstance(event.event_data, DotDict) and hasattr(event.event_data, "run_id"):
+            uid = event.event_data.run_id
+        else:
+            uid = self.runtime_uid  # noqa # type: ignore
         key = self._make_key("new_view", uid)
         self._props[key] = True
 
@@ -79,6 +107,11 @@ class CalcStateMgr(SingletonBase):
             return
 
     def _make_key(self, key: str, uid: str = "") -> str:
+        """
+        Makes a key for the state manager.
+
+        Key is in the format: uid_{uid}_{key} and is different for each document.
+        """
         if uid:
             return f"uid_{uid}_{key}"
 
@@ -100,8 +133,33 @@ class CalcStateMgr(SingletonBase):
     @property
     def is_pythonista_doc(self) -> bool:
         """Gets if the document is a Pythonista Document (has code)."""
-        inst = PyInstance(self._doc)
-        return inst.has_code()
+        # if not getattr(self, "_is_init", False):
+        #     return False
+        key = self._make_key("is_pythonista_doc")
+        if key in self._props:
+            return bool(self._props[key])
+        else:
+            result = self._sfa.exists(self._lp_code_dir)
+            if result:
+                self._log.debug(f"is_pythonista_doc() Code Folder {self._config.lp_code_dir} Exists")
+                self._props[key] = True
+            else:
+                self._log.debug(f"is_pythonista_doc() Code Folder {self._config.lp_code_dir} Does Not Exist")
+            return result
+            # inst = PyInstance(self._doc)
+            # return inst.has_code()
+
+    @is_pythonista_doc.setter
+    def is_pythonista_doc(self, value: bool) -> None:
+        """Sets if the document is a Pythonista Document (has code)."""
+        # if not getattr(self, "_is_init", False):
+        #     return
+        key = self._make_key("is_pythonista_doc")
+        if value:
+            self._props[key] = True
+        else:
+            if key in self._props:
+                del self._props[key]
 
     @property
     def is_view_loaded(self) -> bool:

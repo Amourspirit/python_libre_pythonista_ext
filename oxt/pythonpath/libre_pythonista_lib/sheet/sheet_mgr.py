@@ -14,7 +14,8 @@ from . import calculate as SheetCalculate
 from ..const.event_const import (
     SHEET_ACTIVATION,
     DOCUMENT_SAVING,
-    LP_DISPATCHED_CMD,
+    # LP_DISPATCHED_CMD,
+    LP_DISPATCHING_CMD,
     SHEET_MODIFIED,
     PYC_FORMULA_ENTER,
 )
@@ -56,15 +57,16 @@ class SheetMgr(SingletonBase):
         self._sheet = doc.get_active_sheet()
         self._calc_event_ensured = False
         self._calc_event_chk_code = True
+        self._ensuring_sheet_calculate_event = False
         self._fn_on_calc_sheet_activated = self._on_calc_sheet_activated
         self._fn_on_calc_sheet_saving = self._on_calc_sheet_saving
-        self._fn_on_dispatched_cmd = self._on_dispatched_cmd
+        self._fn_on_dispatching_cmd = self._on_dispatching_cmd
         self._fn_on_calc_sheet_modified = self._on_calc_sheet_modified
         self._fn_on_calc_pyc_formula_enter = self._on_calc_pyc_formula_enter
-        self._ensure_sheet_calculate_event()
+        # self._ensure_sheet_calculate_event()
         self._se.subscribe_event(SHEET_ACTIVATION, self._fn_on_calc_sheet_activated)
         self._se.subscribe_event(SHEET_MODIFIED, self._fn_on_calc_sheet_modified)
-        self._se.subscribe_event(LP_DISPATCHED_CMD, self._fn_on_dispatched_cmd)
+        self._se.subscribe_event(LP_DISPATCHING_CMD, self._fn_on_dispatching_cmd)
         self._se.subscribe_event(DOCUMENT_SAVING, self._fn_on_calc_sheet_saving)
         self._se.subscribe_event(PYC_FORMULA_ENTER, self._fn_on_calc_pyc_formula_enter)
         self._is_init = True
@@ -125,8 +127,8 @@ class SheetMgr(SingletonBase):
             with self._log.noindent():
                 self._log.exception("_on_calc_sheet_modified() Error")
 
-    def _on_dispatched_cmd(self, src: Any, event: EventArgs) -> None:
-        self._log.debug("_on_dispatched_cmd()")
+    def _on_dispatching_cmd(self, src: Any, event: EventArgs) -> None:
+        self._log.debug("_on_dispatching_cmd()")
         try:
             self._calc_event_ensured = False
             self._calc_event_chk_code = False
@@ -164,6 +166,12 @@ class SheetMgr(SingletonBase):
     def _ensure_sheet_calculate_event(self):
         """Make sure the sheet has the calculate event."""
         self._log.debug("_ensure_sheet_calculate_event()")
+        if self._ensuring_sheet_calculate_event:
+            self._log.debug("Already ensuring sheet calculate event")
+            return
+
+        self._ensuring_sheet_calculate_event = True
+
         try:
             if self._calc_event_ensured:
                 self._log.debug("Sheet calculate event already ensured")
@@ -184,6 +192,8 @@ class SheetMgr(SingletonBase):
         except Exception:
             with self._log.noindent():
                 self._log.exception("Error ensuring sheet calculate event")
+        finally:
+            self._ensuring_sheet_calculate_event = False
 
     def ensure_sheet_calculate_event(self):
         """Make sure the sheet has the calculate event."""

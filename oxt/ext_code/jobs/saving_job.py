@@ -36,7 +36,9 @@ if TYPE_CHECKING:
     from ...pythonpath.libre_pythonista_lib.event.shared_event import SharedEvent
     from ...pythonpath.libre_pythonista_lib.const.event_const import DOCUMENT_SAVING
     from ...pythonpath.libre_pythonista_lib.doc_props.calc_props import CalcProps
-    from ...pythonpath.libre_pythonista_lib.state.calc_state_mgr import CalcStateMgr
+
+    # from ...pythonpath.libre_pythonista_lib.state.calc_state_mgr import CalcStateMgr
+    from ...pythonpath.libre_pythonista_lib.doc.calc_doc_mgr import CalcDocMgr
 
 else:
     _CONDITIONS_MET = _conditions_met()
@@ -48,7 +50,9 @@ else:
         from libre_pythonista_lib.const.event_const import DOCUMENT_SAVING
         from libre_pythonista_lib.event.shared_event import SharedEvent
         from libre_pythonista_lib.doc_props.calc_props import CalcProps
-        from libre_pythonista_lib.state.calc_state_mgr import CalcStateMgr
+
+        # from libre_pythonista_lib.state.calc_state_mgr import CalcStateMgr
+        from libre_pythonista_lib.doc.calc_doc_mgr import CalcDocMgr
 # endregion imports
 
 
@@ -100,7 +104,12 @@ class SavingJob(XJob, unohelper.Base):
                 if _CONDITIONS_MET:
                     doc = CalcDoc.get_doc_from_component(self.document)
 
-                    state_mgr = CalcStateMgr(doc)
+                    doc_mgr = CalcDocMgr()
+                    if not doc_mgr.events_ensured:
+                        self._log.debug("Events not ensured. Returning.")
+                        return
+
+                    state_mgr = doc_mgr.calc_state_mgr
                     if not state_mgr.is_imports2_ready:
                         self._log.debug("Imports2 is not ready. Returning.")
                         return
@@ -126,7 +135,6 @@ class SavingJob(XJob, unohelper.Base):
                     se = SharedEvent()
                     eargs = EventArgs(self)
                     eargs.event_data = DotDict(doc=doc)
-                    # SheetMgr will remove any unused Formula Calculate events from the sheets.
                     se.trigger_event(DOCUMENT_SAVING, eargs)
             else:
                 self._log.debug("Document UnLoading not a spreadsheet")
