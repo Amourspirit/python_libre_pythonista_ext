@@ -1,6 +1,6 @@
 # region imports
 from __future__ import annotations
-from typing import Any, cast, TYPE_CHECKING, Type
+from typing import Any, cast, TYPE_CHECKING
 import contextlib
 
 try:
@@ -33,7 +33,9 @@ if TYPE_CHECKING:
     from ...___lo_pip___.oxt_logger import OxtLogger
     from ...pythonpath.libre_pythonista_lib.event.shared_event import SharedEvent
     from ...pythonpath.libre_pythonista_lib.event.shared_cb import SharedCb
-    from ...pythonpath.libre_pythonista_lib.state.calc_state_mgr import CalcStateMgr
+
+    # from ...pythonpath.libre_pythonista_lib.state.calc_state_mgr import CalcStateMgr
+    from ...pythonpath.libre_pythonista_lib.doc.calc_doc_mgr import CalcDocMgr
     from ...pythonpath.libre_pythonista_lib.const.event_const import (
         DOCUMENT_FOCUS_GAINED,
         DOCUMENT_FOCUS_LOST,
@@ -50,7 +52,9 @@ else:
         from ooodev.utils.helper.dot_dict import DotDict
         from libre_pythonista_lib.event.shared_event import SharedEvent
         from libre_pythonista_lib.event.shared_cb import SharedCb
-        from libre_pythonista_lib.state.calc_state_mgr import CalcStateMgr
+
+        # from libre_pythonista_lib.state.calc_state_mgr import CalcStateMgr
+        from libre_pythonista_lib.doc.calc_doc_mgr import CalcDocMgr
         from libre_pythonista_lib.const.event_const import (
             DOCUMENT_FOCUS_GAINED,
             DOCUMENT_FOCUS_LOST,
@@ -123,9 +127,21 @@ class CalcDocFocusJob(XJob, unohelper.Base):
                     are_equal = lo_doc.component == self.document
                     self._log.debug(f"Are Equal: {are_equal}")
                 doc = CalcDoc.get_doc_from_component(self.document)
-                state_mgr = CalcStateMgr(doc)
+                doc_mgr = CalcDocMgr()
+                if doc_mgr.events_ensured:
+                    self._log.debug("Events ensured.")
+                else:
+                    self._log.debug("Events not ensured. Returning.")
+                    return
+                state_mgr = doc_mgr.calc_state_mgr
                 if not state_mgr.is_imports2_ready:
                     self._log.debug("Imports2 is not ready. Returning.")
+                    return
+                if not state_mgr.is_pythonista_doc:
+                    self._log.debug("Document not currently a LibrePythonista. Returning.")
+                    return
+                if not state_mgr.is_oxt_init:
+                    self._log.debug("Oxt is not init. Returning.")
                     return
 
                 sc = SharedCb()

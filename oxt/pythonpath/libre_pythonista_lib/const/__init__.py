@@ -20,6 +20,8 @@ UNO_DISPATCH_PIP_PKG_UNINSTALL = ".uno:libre_pythonista.ext.pip_pkg_uninstall"
 UNO_DISPATCH_PIP_PKG_INSTALLED = ".uno:libre_pythonista.ext.pkg_pkg_installed"
 UNO_DISPATCH_PIP_PKG_LINK = ".uno:libre_pythonista.ext.pkg_pkg_link"
 UNO_DISPATCH_PIP_PKG_UNLINK = ".uno:libre_pythonista.ext.pkg_pkg_unlink"
+UNO_DISPATCH_PYC_FORMULA = ".uno:libre_pythonista.insert_pyc_formula"
+UNO_DISPATCH_PYC_FORMULA_DEP = ".uno:libre_pythonista.insert_pyc_formula_dep"
 
 
 def _get_formula_pyimpl():

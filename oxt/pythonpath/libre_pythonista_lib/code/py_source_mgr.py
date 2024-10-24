@@ -28,12 +28,13 @@ from ..const.event_const import GBL_DOC_CLOSING
 
 if TYPE_CHECKING:
     from ooodev.utils.type_var import EventCallback
-    from logging import Logger
+    from ....___lo_pip___.config import Config
     from ....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
 else:
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from ___lo_pip___.config import Config
 
-_MOD_DIR = "librepythonista"
+# _MOD_DIR = "librepythonista"
 
 
 class PySource:
@@ -64,15 +65,29 @@ class PySource:
 
     def _get_source(self) -> str:
         """Reads the source code from the file. This method does not cache the source code"""
+        self._mgr.log.debug("PySource._get_source() - Getting Source")
+        if not self.exists():
+            self._mgr.log.debug(
+                f"PySource._get_source() - Source file does not exist: {self._uri}. Returning empty string."
+            )
+            return ""
         return self._mgr.sfa.read_text_file(self._uri)
 
     def _set_source(self, code: str, mode: str = "w") -> None:
+        """Writes the source code to the file."""
+        self._mgr.log.debug("PySource._set_source() - Setting Source")
+        self._mgr.ensure_src_folder()
         self._mgr.sfa.write_text_file(self._uri, code, mode)
 
     def del_source(self) -> None:
-        self._mgr.sfa.delete_file(self._uri)
+        """Deletes the source file."""
+        self._mgr.log.debug("PySource.del_source() - Deleting Source")
+        if self.exists():
+            self._mgr.sfa.delete_file(self._uri)
+        else:
+            self._mgr.log.debug("PySource.del_source() - Source folder does not exist.")
 
-    def exit(self) -> bool:
+    def exists(self) -> bool:
         return self._mgr.sfa.exists(self._uri)
 
     # @property
@@ -159,15 +174,25 @@ class PySourceManager(EventsPartial):
         with self._log.indent(True):
             self._log.debug("Init")
         self._sfa = Sfa()
+        self._config = Config()
 
-        self._root_uri = f"vnd.sun.star.tdoc:/{self._doc.runtime_uid}/{_MOD_DIR}"
-        if not self._sfa.exists(self._root_uri):
-            self._sfa.inst.create_folder(self._root_uri)
+        self._root_uri = f"vnd.sun.star.tdoc:/{self._doc.runtime_uid}/{self._config.lp_code_dir}"
+        # if not self._sfa.exists(self._root_uri):
+        #     self._sfa.inst.create_folder(self._root_uri)
         self._mod = PyModule()
         self._data = self._get_sources()
         self._se = SharedEvent(doc)
         self._se.trigger_event("PySourceManagerCreated", EventArgs(self))
         self._is_init = True
+
+    def is_src_folder_exists(self) -> bool:
+        """Checks if the source folder exists."""
+        return self._sfa.exists(self._root_uri)
+
+    def ensure_src_folder(self) -> None:
+        """Ensures the source folder exists."""
+        if not self.is_src_folder_exists():
+            self._sfa.inst.create_folder(self._root_uri)
 
     def dispose(self) -> None:
         if self._se is not None:
@@ -988,6 +1013,10 @@ class PySourceManager(EventsPartial):
     @property
     def py_mod(self) -> PyModule:
         return self._mod
+
+    @property
+    def log(self) -> OxtLogger:
+        return self._log
 
     # endregion Properties
 

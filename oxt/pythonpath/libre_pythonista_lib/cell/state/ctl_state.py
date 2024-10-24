@@ -10,7 +10,6 @@ except ImportError:
 from ooodev.calc import CalcCell
 from .state_base import StateBase
 from .state_kind import StateKind
-from ...const import UNO_DISPATCH_DF_STATE, UNO_DISPATCH_DS_STATE
 
 
 class CtlState(StateBase):

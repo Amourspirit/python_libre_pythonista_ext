@@ -10,7 +10,19 @@ LOG_PY_LOGGER_RESET = "py_logger_reset"
 SHEET_MODIFIED = "calc_sheet_modified"
 SHEET_ACTIVATION = "calc_sheet_activation"
 CALC_FORMULAS_CALCULATED = "calc_formulas_calculated"
+"""
+CALC_FORMULAS_CALCULATED event is triggered when the formulas are calculated.
+This only occurs when the share_event.formulas_calc() macro is triggered.
+"""
 PYC_FORMULA_INSERTING = "lp_pyc_formula_inserting"
 PYC_FORMULA_INSERTED = "lp_pyc_formula_inserted"
+PYC_FORMULA_ENTER = "lp_pyc_formula_enter"
 PYC_RULE_MATCH_DONE = "pyc_rule_match_done"
 DOCUMENT_EVENT = "calc_document_event"
+LP_DISPATCHING_CMD = "lp_dispatching_cmd"
+LP_DISPATCHED_CMD = "lp_dispatched_cmd"
+LP_DOC_EVENTS_ENSURED = "lp_doc_events_ensured"
+"""
+LP_DOC_EVENTS_ENSURED event is triggered when the document events are ensured.
+This takes place in the CalcDocMgr._ensure_events() method.
+"""

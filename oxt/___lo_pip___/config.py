@@ -733,6 +733,16 @@ class Config(metaclass=Singleton):
 
     # region tool.libre_pythonista.config
     @property
+    def calc_props_json_name(self) -> str:
+        """
+        Gets the The name of the file that stores the json properties for the extension.
+        This property value is typically prepended with ``general_code_name`` property.
+
+        The value for this property can be set in pyproject.toml (tool.libre_pythonista.config)
+        """
+        return self._basic_config._calc_props_json_name
+
+    @property
     def cell_cp_prefix(self) -> str:
         """
         Gets the custom property prefix for cells.
@@ -767,6 +777,15 @@ class Config(metaclass=Singleton):
         The value for this property can be set in pyproject.toml (tool.libre_pythonista.config)
         """
         return self._basic_config.lp_default_log_format
+
+    @property
+    def lp_code_dir(self) -> str:
+        """
+        Gets name of the directory where LibrePythonista code is stored.
+
+        The value for this property can be set in pyproject.toml (tool.libre_pythonista.config)
+        """
+        return self._basic_config.lp_code_dir
 
     @property
     def py_script_sheet_ctl_click(self) -> str:
