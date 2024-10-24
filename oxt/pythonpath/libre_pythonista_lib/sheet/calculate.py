@@ -38,14 +38,14 @@ def sheet_has_calculate_event(sheet: CalcSheet) -> bool:
                 return value == new_script
         except Exception:
             log = LogInst()
-            log.exception(f"sheet_has_calculate_event() - Sheet {sheet.name}")
+            log.exception(f"calculate.sheet_has_calculate_event() - Sheet {sheet.name}")
 
     return False
 
 
 def set_sheet_calculate_event(sheet: CalcSheet):
     log = LogInst()  # singleton
-    log.debug("set_sheet_calculate_event()")
+    log.debug("calculate.set_sheet_calculate_event()")
     events = cast("XNameReplace", sheet.component.getEvents())  # type: ignore
     if events.hasByName("OnCalculate"):
         try:
@@ -55,16 +55,16 @@ def set_sheet_calculate_event(sheet: CalcSheet):
                 dict_props["Script"] = new_script
                 dict_props["EventType"] = "Script"
                 data = Props.make_props(**dict_props)
-                uno_data = uno.Any("[]com.sun.star.beans.PropertyValue", data)
-                uno.invoke(events, "replaceByName", ("OnCalculate", uno_data))
-                log.debug(f"Sheet {sheet.name} - OnCalculate event replaced")
+                uno_data = uno.Any("[]com.sun.star.beans.PropertyValue", data)  # type: ignore
+                uno.invoke(events, "replaceByName", ("OnCalculate", uno_data))  # type: ignore
+                log.debug(f"calculate.set_sheet_calculate_event() Sheet {sheet.name} - OnCalculate event replaced")
             except Exception:
                 log.exception(f"set_doc_sheets_calculate_event() - Sheet {sheet.name}")
 
         except Exception:
-            log.exception(f"set_sheet_calculate_event() - Sheet {sheet.name}")
+            log.exception(f"calculate.set_sheet_calculate_event() - Sheet {sheet.name}")
     else:
-        log.debug(f"Sheet {sheet.name} does not have OnCalculate event")
+        log.debug(f"calculate.set_sheet_calculate_event() Sheet {sheet.name} does not have OnCalculate event")
 
 
 def set_doc_sheets_calculate_event(doc: CalcDoc):
@@ -81,7 +81,7 @@ def set_doc_sheets_calculate_event(doc: CalcDoc):
         In this case the events will be replaced with the correct version of the script.
     """
     log = LogInst()  # singleton
-    log.debug("set_doc_sheets_calculate_event()")
+    log.debug("calculate.set_doc_sheets_calculate_event()")
     # vnd.sun.star.script:LibrePythonista.oxt|python|scripts|share_event.py$formulas_calc?language=Python&location=user:uno_packages
     new_script = _get_new_script()
     for sheet in doc.sheets:
@@ -97,20 +97,24 @@ def set_doc_sheets_calculate_event(doc: CalcDoc):
                         log.debug(f"Sheet {sheet_name} already has correct OnCalculate event")
                         continue
             except mEx.PropertyError:
-                log.debug(f"set_doc_sheets_calculate_event() - Sheet {sheet_name} - PropertyError Script not found")
+                log.debug(
+                    f"calculate.set_doc_sheets_calculate_event() - Sheet {sheet_name} - PropertyError Script not found"
+                )
 
             try:
                 dict_props = {}
                 dict_props["Script"] = new_script
                 dict_props["EventType"] = "Script"
                 data = Props.make_props(**dict_props)
-                uno_data = uno.Any("[]com.sun.star.beans.PropertyValue", data)
-                uno.invoke(events, "replaceByName", ("OnCalculate", uno_data))
-                log.debug(f"Sheet {sheet_name} - OnCalculate event replaced")
+                uno_data = uno.Any("[]com.sun.star.beans.PropertyValue", data)  # type: ignore
+                uno.invoke(events, "replaceByName", ("OnCalculate", uno_data))  # type: ignore
+                log.debug(
+                    f"calculate.set_doc_sheets_calculate_event() Sheet {sheet_name} - OnCalculate event replaced"
+                )
             except Exception:
-                log.exception(f"set_doc_sheets_calculate_event() - Sheet {sheet_name}")
+                log.exception(f"calculate.set_doc_sheets_calculate_event() - Sheet {sheet_name}")
         else:
-            log.debug(f"Sheet {sheet_name} does not have OnCalculate event")
+            log.debug(f"calculate.set_doc_sheets_calculate_event() Sheet {sheet_name} does not have OnCalculate event")
 
 
 def remove_doc_sheets_calculate_event(doc: CalcDoc):
@@ -124,7 +128,7 @@ def remove_doc_sheets_calculate_event(doc: CalcDoc):
     """
     cfg = Config()
     log = LogInst()  # singleton
-    log.debug("remove_doc_sheets_calculate_event()")
+    log.debug("calculate.remove_doc_sheets_calculate_event()")
     new_script = _get_new_script()
     for sheet in doc.sheets:
         events = cast("XNameReplace", sheet.component.getEvents())  # type: ignore
@@ -137,10 +141,14 @@ def remove_doc_sheets_calculate_event(doc: CalcDoc):
                     value = Props.get_value("Script", current_props)
                     if value == new_script:
                         # make a empty tuple to remove the event
-                        uno_data = uno.Any("[]com.sun.star.beans.PropertyValue", ())
-                        uno.invoke(events, "replaceByName", ("OnCalculate", uno_data))
+                        uno_data = uno.Any("[]com.sun.star.beans.PropertyValue", ())  # type: ignore
+                        uno.invoke(events, "replaceByName", ("OnCalculate", uno_data))  # type: ignore
                         continue
             except mEx.PropertyError:
-                log.debug(f"remove_doc_sheets_calculate_event() - Sheet {sheet_name} - PropertyError Script not found")
+                log.debug(
+                    f"calculate.remove_doc_sheets_calculate_event() - Sheet {sheet_name} - PropertyError Script not found"
+                )
         else:
-            log.debug(f"Sheet {sheet_name} does not have OnCalculate event")
+            log.debug(
+                f"calculate.remove_doc_sheets_calculate_event() Sheet {sheet_name} does not have OnCalculate event"
+            )

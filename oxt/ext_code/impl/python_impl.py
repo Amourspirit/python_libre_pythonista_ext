@@ -2,8 +2,14 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 import contextlib
 from pathlib import Path
-import os
 import sys
+
+try:
+    # python 3.12+
+    from typing import override  # type: ignore
+except ImportError:
+    from typing_extensions import override
+
 import uno
 import unohelper
 from com.sun.star.task import XJobExecutor
@@ -29,14 +35,9 @@ def _conditions_met() -> bool:
 
 if TYPE_CHECKING:
     _CONDITIONS_MET = True
-    from ooodev.events.args.event_args import EventArgs
-    from ooodev.events.args.cancel_event_args import CancelEventArgs
-    from ooodev.utils.helper.dot_dict import DotDict
     from ...___lo_pip___.lo_util.resource_resolver import ResourceResolver
-    from ...pythonpath.libre_pythonista_lib.code.cell_cache import CellCache
     from ...pythonpath.libre_pythonista_lib.code.py_source_mgr import PyInstance
     from ...pythonpath.libre_pythonista_lib.log.py_logger import PyLogger
-    from ...pythonpath.libre_pythonista_lib.event.shared_event import SharedEvent
 
     from ooodev.loader import Lo
     from ooodev.calc import CalcDoc
@@ -55,25 +56,21 @@ if TYPE_CHECKING:
         UNO_DISPATCH_PIP_PKG_INSTALLED,
         UNO_DISPATCH_PIP_PKG_LINK,
         UNO_DISPATCH_PIP_PKG_UNLINK,
+        UNO_DISPATCH_PYC_FORMULA,
+        UNO_DISPATCH_PYC_FORMULA_DEP,
     )
-    from ...pythonpath.libre_pythonista_lib.const.event_const import PYC_FORMULA_INSERTING, PYC_FORMULA_INSERTED
 else:
     _CONDITIONS_MET = _conditions_met()
     if _CONDITIONS_MET:
         from ooodev.loader import Lo
         from ooodev.calc import CalcDoc
-        from ooodev.events.args.event_args import EventArgs
-        from ooodev.events.args.cancel_event_args import CancelEventArgs
-        from ooodev.utils.helper.dot_dict import DotDict
         from ooodev.exceptions.ex import CellError
         from ooo.dyn.awt.message_box_results import MessageBoxResultsEnum
         from ooo.dyn.awt.message_box_buttons import MessageBoxButtonsEnum
         from ooo.dyn.awt.message_box_type import MessageBoxType
         from ooodev.dialog.msgbox import MsgBox
-        from libre_pythonista_lib.code.cell_cache import CellCache
         from libre_pythonista_lib.code.py_source_mgr import PyInstance
         from libre_pythonista_lib.log.py_logger import PyLogger
-        from libre_pythonista_lib.event.shared_event import SharedEvent
         from libre_pythonista_lib.const import (
             UNO_DISPATCH_ABOUT,
             UNO_DISPATCH_LOG_WIN,
@@ -83,8 +80,9 @@ else:
             UNO_DISPATCH_PIP_PKG_INSTALLED,
             UNO_DISPATCH_PIP_PKG_LINK,
             UNO_DISPATCH_PIP_PKG_UNLINK,
+            UNO_DISPATCH_PYC_FORMULA,
+            UNO_DISPATCH_PYC_FORMULA_DEP,
         )
-        from libre_pythonista_lib.const.event_const import PYC_FORMULA_INSERTING, PYC_FORMULA_INSERTED
 
     from ___lo_pip___.lo_util.resource_resolver import ResourceResolver
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
@@ -103,17 +101,25 @@ class PythonImpl(unohelper.Base, XJobExecutor):
         self._log = OxtLogger(log_name=self.__class__.__name__)
         self._res = ResourceResolver(self.ctx)
 
-    def trigger(self, event: str):
-        self._log.debug(f"trigger() event: {event}")
+    @override
+    def trigger(self, Event: str):
+        self._log.debug(f"trigger() event: {Event}")
         if not _CONDITIONS_MET:
             return
-        if event == "testing":
+        if Event == "testing":
             self._do_testing()
-        elif event == "pyc_formula_with_dependent":
-            self._do_pyc_formula_with_dependent()
-        elif event == "debug_dump_module_to_log":
+        elif Event == "pyc_formula_with_dependent":
+            try:
+                self._log.debug(f"PYC Formula with dependent, Dispatching {UNO_DISPATCH_PYC_FORMULA_DEP}")
+                _ = Lo.current_doc
+                Lo.dispatch_cmd(cmd=UNO_DISPATCH_PYC_FORMULA_DEP)
+                self._log.debug(f"PYC Formula with dependent, Dispatched {UNO_DISPATCH_PYC_FORMULA_DEP}")
+            except Exception as e:
+                self._log.exception(f"Error dispatching")
+
+        elif Event == "debug_dump_module_to_log":
             self._debug_dump_module_to_log()
-        elif event == "about":
+        elif Event == "about":
             try:
                 self._log.debug(f"About, Dispatching {UNO_DISPATCH_ABOUT}")
                 _ = Lo.current_doc
@@ -121,7 +127,7 @@ class PythonImpl(unohelper.Base, XJobExecutor):
                 self._log.debug(f"About, Dispatched {UNO_DISPATCH_ABOUT}")
             except Exception as e:
                 self._log.exception(f"Error dispatching")
-        elif event == "install_pip_pkg":
+        elif Event == "install_pip_pkg":
             try:
                 self._log.debug(f"Install Pkg, Dispatching {UNO_DISPATCH_PIP_PKG_INSTALL}")
                 _ = Lo.current_doc
@@ -129,7 +135,7 @@ class PythonImpl(unohelper.Base, XJobExecutor):
                 self._log.debug(f"Install Pkg, Dispatched {UNO_DISPATCH_PIP_PKG_INSTALL}")
             except Exception as e:
                 self._log.exception(f"Error dispatching")
-        elif event == "uninstall_pip_pkg":
+        elif Event == "uninstall_pip_pkg":
             try:
                 self._log.debug(f"Installed Pkg, Dispatching {UNO_DISPATCH_PIP_PKG_UNINSTALL}")
                 _ = Lo.current_doc
@@ -137,7 +143,7 @@ class PythonImpl(unohelper.Base, XJobExecutor):
                 self._log.debug(f"Installed Pkg, Dispatched {UNO_DISPATCH_PIP_PKG_UNINSTALL}")
             except Exception as e:
                 self._log.exception(f"Error dispatching")
-        elif event == "installed_pip_pkg":
+        elif Event == "installed_pip_pkg":
             try:
                 self._log.debug(f"Installed Pkg, Dispatching {UNO_DISPATCH_PIP_PKG_INSTALLED}")
                 _ = Lo.current_doc
@@ -146,7 +152,7 @@ class PythonImpl(unohelper.Base, XJobExecutor):
             except Exception as e:
                 self._log.exception(f"Error dispatching")
 
-        elif event == "log_window":
+        elif Event == "log_window":
             try:
                 self._log.debug(f"Log Window, Dispatching {UNO_DISPATCH_LOG_WIN}")
                 _ = Lo.current_doc
@@ -155,7 +161,7 @@ class PythonImpl(unohelper.Base, XJobExecutor):
                 self._log.debug(f"Log Window, Dispatched {UNO_DISPATCH_LOG_WIN}")
             except Exception:
                 self._log.exception(f"Error dispatching")
-        elif event == "link_python":
+        elif Event == "link_python":
             try:
                 self._log.debug(f"Dispatching {UNO_DISPATCH_PIP_PKG_LINK}")
                 _ = Lo.current_doc
@@ -164,7 +170,7 @@ class PythonImpl(unohelper.Base, XJobExecutor):
                 self._log.debug(f"Dispatched {UNO_DISPATCH_PIP_PKG_LINK}")
             except Exception:
                 self._log.exception(f"Error dispatching")
-        elif event == "unlink_python":
+        elif Event == "unlink_python":
             try:
                 self._log.debug(f"Dispatching {UNO_DISPATCH_PIP_PKG_UNLINK}")
                 _ = Lo.current_doc
@@ -174,123 +180,13 @@ class PythonImpl(unohelper.Base, XJobExecutor):
             except Exception:
                 self._log.exception(f"Error dispatching")
         else:
-            self._do_pyc_formula()
-
-    def _do_pyc_formula(self):
-        global FORMULA_PYC
-        try:
-
-            msg = self._res.resolve_string("title10")
-            self._log.debug(msg)
-            doc = CalcDoc.from_current_doc()
-            sheet = doc.get_active_sheet()
-            sheet_locked = sheet.is_sheet_protected()
             try:
-                cell = sheet.get_selected_cell()
-            except CellError:
-                self._log.error(f"{self.__class__.__name__} - No cell selected")
-                return
-            # https://api.libreoffice.org/docs/idl/ref/namespacecom_1_1sun_1_1star_1_1awt_1_1MessageBoxButtons.html
-            cell_locked = cell.cell_protection.is_locked
-            if cell_locked and sheet_locked:
-                MsgBox.msgbox(
-                    msg=self._res.resolve_string("mbmsg003"),
-                    title=self._res.resolve_string("mbtitle003"),
-                    boxtype=MessageBoxType.INFOBOX,
-                    buttons=MessageBoxButtonsEnum.BUTTONS_OK,
-                )
-                return
-            if cell.value is not None:
-                msg_result = MsgBox.msgbox(
-                    msg=self._res.resolve_string("mbmsg002"),
-                    title=self._res.resolve_string("mbtitle002"),
-                    boxtype=MessageBoxType.QUERYBOX,
-                    buttons=MessageBoxButtonsEnum.BUTTONS_YES_NO,
-                )
-                if msg_result != MessageBoxResultsEnum.YES:
-                    return
-            # cell.component.setFormula("=" + res.resolve_string("fml001"))
-            formula = f'={FORMULA_PYC}(SHEET();CELL("ADDRESS"))'
-            cargs = CancelEventArgs(self)
-            cargs.event_data = DotDict(formula=formula, is_dependent=False)
-            se = SharedEvent()
-            se.trigger_event(PYC_FORMULA_INSERTING, cargs)
-            if cargs.cancel and not cargs.handled:
-                self._log.debug(f"Event {PYC_FORMULA_INSERTING} was cancelled")
-                return
-            cell.component.setFormula(formula.upper())
-            _ = cell.value
-            eargs = EventArgs.from_args(cargs)
-            se.trigger_event(PYC_FORMULA_INSERTED, eargs)
-        except Exception as e:
-            self._log.error(f"{self.__class__.__name__} - Error: {e}")
-
-    def _do_pyc_formula_with_dependent(self):
-        global FORMULA_PYC
-        try:
-
-            msg = self._res.resolve_string("title10")
-            self._log.debug(msg)
-            doc = CalcDoc.from_current_doc()
-            sheet = doc.get_active_sheet()
-            sheet_locked = sheet.is_sheet_protected()
-            try:
-                cell = sheet.get_selected_cell()
-            except CellError:
-                self._log.error(f"{self.__class__.__name__} - No cell selected")
-                return
-            if self._log.is_debug:
-                self._log.debug(f"Selected cell: {cell.cell_obj} with sheet index of {cell.cell_obj.sheet_idx}")
-            # https://api.libreoffice.org/docs/idl/ref/namespacecom_1_1sun_1_1star_1_1awt_1_1MessageBoxButtons.html
-            cell_locked = cell.cell_protection.is_locked
-            if cell_locked and sheet_locked:
-                MsgBox.msgbox(
-                    msg=self._res.resolve_string("mbmsg003"),
-                    title=self._res.resolve_string("mbtitle003"),
-                    boxtype=MessageBoxType.INFOBOX,
-                    buttons=MessageBoxButtonsEnum.BUTTONS_OK,
-                )
-                return
-            if cell.value is not None:
-                msg_result = MsgBox.msgbox(
-                    msg=self._res.resolve_string("mbmsg002"),
-                    title=self._res.resolve_string("mbtitle002"),
-                    boxtype=MessageBoxType.QUERYBOX,
-                    buttons=MessageBoxButtonsEnum.BUTTONS_YES_NO,
-                )
-                if msg_result != MessageBoxResultsEnum.YES:
-                    return
-
-            cc = CellCache(doc)
-
-            formula = f'={FORMULA_PYC}(SHEET();CELL("ADDRESS")'
-            with cc.set_context(cell=cell.cell_obj, sheet_idx=sheet.sheet_index):
-                found = cc.get_cell_before()
-                if found:
-                    formula += ";"
-                    if found.sheet_idx > -1 and found.sheet_idx != cc.current_sheet_index:
-                        with contextlib.suppress(Exception):
-                            # maybe the sheet has been deleted
-                            prev_sheet = doc.get_sheet(cc.previous_sheet_index)
-                            formula += f"${prev_sheet.name}."
-
-                    formula += f"{found.col.upper()}{found.row}"
-                formula += ")"
-
-            cargs = CancelEventArgs(self)
-            cargs.event_data = DotDict(formula=formula, is_dependent=True)
-            se = SharedEvent()
-            se.trigger_event(PYC_FORMULA_INSERTING, cargs)
-            if cargs.cancel and not cargs.handled:
-                self._log.debug(f"Event {PYC_FORMULA_INSERTING} was cancelled")
-                return
-            # cell.component.setFormula("=" + res.resolve_string("fml001"))
-            cell.component.setFormula(formula)
-            _ = cell.value
-            eargs = EventArgs.from_args(cargs)
-            se.trigger_event(PYC_FORMULA_INSERTED, eargs)
-        except Exception as e:
-            self._log.error(f"{self.__class__.__name__} - Error: {e}")
+                self._log.debug(f"PYC Formula, Dispatching {UNO_DISPATCH_PYC_FORMULA}")
+                _ = Lo.current_doc
+                Lo.dispatch_cmd(cmd=UNO_DISPATCH_PYC_FORMULA)
+                self._log.debug(f"PYC Formula, Dispatched {UNO_DISPATCH_PYC_FORMULA}")
+            except Exception as e:
+                self._log.exception(f"Error dispatching")
 
     def _debug_dump_module_to_log(self) -> None:
         doc = CalcDoc.from_current_doc()

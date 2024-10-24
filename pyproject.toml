@@ -12,6 +12,8 @@ macro_lp_sheet_ctl_click = "on_btn_action_preformed"
 macro_sheet_on_calculate = "formulas_calc"
 py_script_sheet_ctl_click = "control_handler.py"
 py_script_sheet_on_calculate = "share_event.py"
+calc_props_json_name = "_calc_props.json" # name of the json file that holds the calc properties an is stored in the document. general_code_name is prepended to the name at runtime.
+lp_code_dir = "librepythonista" # The directory where the libre_pythonista code is stored within the document.
 
 [tool.oxt.config]
 auto_install_in_site_packages = true # https://tinyurl.com/ymeh4c9j#auto_install_in_site_packages
@@ -80,7 +82,7 @@ typing-extensions = ">=4.12.2"
 verr = ">=1.1.2"
 pandas = ">=2"
 odfpy = ">=1.4"
-ooo-dev-tools = ">=0.48.1"
+ooo-dev-tools = ">=0.49.1"
 matplotlib = ">=3.7.5"
 seaborn = ">=0.13"
 sortedcontainers = ">=2.4.0"
@@ -88,7 +90,7 @@ sortedcontainers = ">=2.4.0"
 
 [tool.oxt.isolate]
 # https://tinyurl.com/ymeh4c9j#tooloxtisolate
-windows = ["pandas", "matplotlib", "seaborn", "lxml", "pillow", "numpy"]
+windows = ["pandas", "matplotlib", "seaborn", "lxml", "pillow", "numpy", "kivy"]
 
 [tool.oxt.preinstall.pure]
 # https://tinyurl.com/ymeh4c9j#tooloxtpreinstallpure
@@ -143,7 +145,7 @@ packages = [{ include = "src" }]
 python = "^3.8"
 toml = "^0.10.2"
 typing-extensions = ">=4.12.2"
-ooo-dev-tools = ">=0.48.1"
+ooo-dev-tools = ">=0.49.1"
 sortedcontainers = ">=2.4.0"
 oooenv = ">=0.2.4"
 

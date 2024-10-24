@@ -59,6 +59,7 @@ def on_btn_action_preformed(*args):
         ctl_pop = CtlPopup(cell=calc_cell)
         pm = ctl_pop.get_menu()
         pm.execute(ev_obj.Source.getContext().getPeer(), ev_obj.Source.getPosSize(), 0)  # type: ignore
+        log.debug("button_handler: Menu executed")
 
     except Exception:
         log.error("button_handler: Error", exc_info=True)

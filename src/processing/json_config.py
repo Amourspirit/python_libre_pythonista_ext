@@ -130,6 +130,18 @@ class JsonConfig(metaclass=Singleton):
             self._general_codename = "libre_pythonista"
 
         try:
+            self._calc_props_json_name = cast(
+                str, self._cfg["tool"]["libre_pythonista"]["config"]["calc_props_json_name"]
+            )
+        except Exception:
+            self._calc_props_json_name = "_calc_props.json"
+
+        try:
+            self._lp_code_dir = cast(str, self._cfg["tool"]["libre_pythonista"]["config"]["lp_code_dir"])
+        except Exception:
+            self._lp_code_dir = "librepythonista"
+
+        try:
             self._lp_default_log_format = cast(
                 str, self._cfg["tool"]["libre_pythonista"]["config"]["lp_default_log_format"]
             )
@@ -219,6 +231,8 @@ class JsonConfig(metaclass=Singleton):
         json_config["cell_cp_prefix"] = self._cell_custom_prop_prefix
         json_config["cell_cp_codename"] = f"{self._cell_custom_prop_prefix}{self._cell_custom_prop_codename}"
         json_config["general_code_name"] = self._general_codename
+        json_config["calc_props_json_name"] = self._calc_props_json_name
+        json_config["lp_code_dir"] = self._lp_code_dir
         json_config["lp_default_log_format"] = self._lp_default_log_format
         json_config["extension_version"] = self._extension_version
         json_config["extension_license"] = self._extension_license
@@ -262,7 +276,8 @@ class JsonConfig(metaclass=Singleton):
         assert isinstance(self._cell_custom_prop_prefix, str), "cell_custom_prop_prefix must be a string"
         assert isinstance(self._cell_custom_prop_codename, str), "cell_custom_prop_codename must be a string"
         assert isinstance(self._general_codename, str), "general_codename must be a string"
-        assert isinstance(self._general_codename, str), "general_codename must be a string"
+        assert isinstance(self._calc_props_json_name, str), "calc_props_json_name must be a string"
+        assert isinstance(self._lp_code_dir, str), "lp_code_dir must be a string"
         assert isinstance(self._lp_default_log_format, str), "log format must be a string"
         assert self._lp_default_log_format, "lp_default_log_format must not be an empty string"
         # validate the extension version is a valid python version

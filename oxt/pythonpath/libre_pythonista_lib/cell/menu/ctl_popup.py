@@ -21,48 +21,61 @@ from ...const import (
 from ..state.state_kind import StateKind
 from ..state.ctl_state import CtlState
 from ..lpl_cell import LplCell
-
 from ...log.log_inst import LogInst
 
 if TYPE_CHECKING:
     from com.sun.star.awt import MenuEvent
     from ooodev.events.args.event_args import EventArgs
+    from .....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+else:
+    from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
 
 
 def on_menu_select(src: Any, event: EventArgs, menu: PopupMenu) -> None:
     # print("Menu Selected")
-    me = cast("MenuEvent", event.event_data)
-    command = menu.get_command(me.MenuId)
-    if command:
-        # check if command is a dispatch command
-        # is is very important that UNO_DISPATCH_CODE_EDIT_MB be executed in a thread or it wil block GUI
-        if menu.is_dispatch_cmd(command):
-            if "?" in command:
-                command_main = command.split("?")[0]
-                if command_main in (
-                    UNO_DISPATCH_DF_CARD,
-                    UNO_DISPATCH_CODE_EDIT,
-                    UNO_DISPATCH_CODE_EDIT_MB,
-                    UNO_DISPATCH_DATA_TBL_CARD,
-                ):
-                    menu.execute_cmd(command, in_thread=True)
-                    return
+    log = LogInst()
+    log.debug("on_menu_select() Menu Selected")
+    try:
+        me = cast("MenuEvent", event.event_data)
+        command = menu.get_command(me.MenuId)
+        if command:
+            log.debug(f"on_menu_select() Command: {command}")
+            # check if command is a dispatch command
+            # is is very important that UNO_DISPATCH_CODE_EDIT_MB be executed in a thread or it wil block GUI
+            if menu.is_dispatch_cmd(command):
+                log.debug("on_menu_select() Dispatch Command")
+                if "?" in command:
+                    command_main = command.split("?")[0]
+                    if command_main in (
+                        UNO_DISPATCH_DF_CARD,
+                        UNO_DISPATCH_CODE_EDIT,
+                        UNO_DISPATCH_CODE_EDIT_MB,
+                        UNO_DISPATCH_DATA_TBL_CARD,
+                    ):
+                        menu.execute_cmd(command, in_thread=True)
+                        return
 
-            menu.execute_cmd(command, in_thread=False)
+                menu.execute_cmd(command, in_thread=False)
+            else:
+                log.debug("on_menu_select() Not a Dispatch Command")
+        else:
+            log.debug("on_menu_select() Command not found.")
+    except Exception:
+        log.exception("on_menu_select() Error")
 
 
 class CtlPopup:
 
     def __init__(self, cell: CalcCell) -> None:
+        self._log = OxtLogger(log_name=self.__class__.__name__)
+        with self._log.indent(True):
+            self._log.debug("Init")
         self._cell = cell
         self._res = ResResolver()
         self._sheet_name = self._cell.calc_sheet.name
         self._key_maker = KeyMaker()
         self._ctl_state = CtlState(self._cell)
         self._cps = CellDispatchState(cell=self._cell)
-        self._log = LogInst()
-        with self._log.indent(True):
-            self._log.debug("Init")
         self._lpl_cell = LplCell(self._cell)
 
     def _get_state_menu(self) -> list:
@@ -121,6 +134,7 @@ class CtlPopup:
         recalc_name = self._res.resolve_string("mnuRecalcCell")  # Recalculate
 
         cmd_enabled = self._cps.is_dispatch_enabled(UNO_DISPATCH_CODE_EDIT)
+        self._log.debug(f"_get_popup_menu() Edit Command Enabled: {cmd_enabled}")
         edit_url = f"{UNO_DISPATCH_CODE_EDIT_MB}?sheet={self._sheet_name}&cell={self._cell.cell_obj}&in_thread=1"
         del_url = f"{UNO_DISPATCH_CODE_DEL}?sheet={self._sheet_name}&cell={self._cell.cell_obj}"
         sel_url = f"{UNO_DISPATCH_CELL_SELECT}?sheet={self._sheet_name}&cell={self._cell.cell_obj}"
@@ -146,8 +160,12 @@ class CtlPopup:
         return new_menu
 
     def get_menu(self) -> PopupMenu:
-        creator = PopupCreator()
-        pm = creator.create(self._get_popup_menu())
-        # pm.add_event_item_selected(on_menu_select)
-        pm.subscribe_all_item_selected(on_menu_select)
-        return pm
+        try:
+            creator = PopupCreator()
+            pm = creator.create(self._get_popup_menu())
+            # pm.add_event_item_selected(on_menu_select)
+            pm.subscribe_all_item_selected(on_menu_select)
+            return pm
+        except Exception:
+            self._log.exception("get_menu() Error")
+            raise

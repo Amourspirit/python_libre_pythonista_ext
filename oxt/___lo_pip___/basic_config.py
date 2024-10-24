@@ -50,6 +50,8 @@ class BasicConfig(metaclass=ConfigMeta):
         self._cell_cp_prefix = str(kwargs["cell_cp_prefix"])
         self._cell_cp_codename = str(kwargs["cell_cp_codename"])
         self._general_code_name = str(kwargs["general_code_name"])
+        self._calc_props_json_name = str(kwargs["calc_props_json_name"])
+        self._lp_code_dir = str(kwargs["lp_code_dir"])
         self._lp_default_log_format = str(kwargs["lp_default_log_format"])
         self._macro_lp_sheet_ctl_click = str(kwargs["macro_lp_sheet_ctl_click"])
         self._macro_sheet_on_calculate = str(kwargs["macro_sheet_on_calculate"])
@@ -200,6 +202,15 @@ class BasicConfig(metaclass=ConfigMeta):
         return self._log_indent
 
     @property
+    def lp_code_dir(self) -> str:
+        """
+        Gets name of the directory where LibrePythonista code is stored.
+
+        The value for this property can be set in pyproject.toml (tool.libre_pythonista.config)
+        """
+        return self._lp_code_dir
+
+    @property
     def macro_lp_sheet_ctl_click(self) -> str:
         """
         Gets macro name of the sheet control click.
@@ -224,7 +235,7 @@ class BasicConfig(metaclass=ConfigMeta):
 
         The value for this property can be set in pyproject.toml (tool.oxt.config.no_pip_remove)
 
-        This is the packages that are not allowd to be removed by the installer.
+        This is the packages that are not allowed to be removed by the installer.
         """
         return self._no_pip_remove
 
@@ -362,6 +373,16 @@ class BasicConfig(metaclass=ConfigMeta):
         return self._zipped_preinstall_pure
 
     # region tool.libre_pythonista.config
+    @property
+    def calc_props_json_name(self) -> str:
+        """
+        Gets the The name of the file that stores the json properties for the extension.
+        This property value is typically prepended with ``general_code_name`` property.
+
+        The value for this property can be set in pyproject.toml (tool.libre_pythonista.config)
+        """
+        return self._calc_props_json_name
+
     @property
     def cell_cp_prefix(self) -> str:
         """
