@@ -4,7 +4,6 @@ from pathlib import Path
 import contextlib
 import os
 import sys
-import uno
 import unohelper
 from com.github.amourspirit.extensions.librepythonista import XPy  # type: ignore
 

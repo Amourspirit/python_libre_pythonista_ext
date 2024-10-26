@@ -3,10 +3,19 @@ from typing import Any, cast, TYPE_CHECKING, Tuple
 import contextlib
 from pathlib import Path
 import sys
-import uno
 import unohelper
 from com.sun.star.lang import XServiceInfo
 from com.sun.star.lang import XSingleComponentFactory
+
+try:
+    # python 3.12+
+    from typing import override  # type: ignore
+except ImportError:
+    try:
+        from typing_extensions import override
+    except ImportError:
+        # create a dummy decorator for python 3.6-3.11
+        override = lambda func: func
 
 
 def add_local_path_to_sys_path() -> None:
@@ -30,6 +39,12 @@ def _conditions_met() -> bool:
 
 if TYPE_CHECKING:
     _CONDITIONS_MET = True
+    try:
+        # python 3.12+
+        from typing import override  # type: ignore
+    except ImportError:
+        from typing_extensions import override
+
     from ...___lo_pip___.oxt_logger import OxtLogger
     from com.sun.star.uno import XInterface
     from com.sun.star.uno import XComponentContext
@@ -46,6 +61,7 @@ else:
     from ___lo_pip___.oxt_logger import OxtLogger
 
     _CONDITIONS_MET = _conditions_met()
+    override = lambda func: func
     if _CONDITIONS_MET:
         from ooodev.loader import Lo
         from ooodev.dialog.msgbox import MessageBoxType, MsgBox
@@ -98,7 +114,10 @@ class DockingWindowFactoryImpl(XServiceInfo, XSingleComponentFactory, unohelper.
 
     # region XSingleComponentFactory
 
-    def createInstanceWithArgumentsAndContext(self, args: Tuple[Any, ...], ctx: XComponentContext) -> XInterface:
+    @override
+    def createInstanceWithArgumentsAndContext(
+        self, Arguments: Tuple[Any, ...], Context: XComponentContext
+    ) -> XInterface:  # type: ignore
         """
         Creates an instance of a component and initializes the new instance with the given arguments and context.
 
@@ -111,42 +130,46 @@ class DockingWindowFactoryImpl(XServiceInfo, XSingleComponentFactory, unohelper.
             # doc = desktop.getCurrentComponent()
             # key = f"doc_{doc.RuntimeUID}"
             # self._log.debug(f"Key: {key}")
-            return create_window(ctx, args)
+            return create_window(Context, Arguments)
         except Exception as e:
             self._log.exception("createInstanceWithArgumentsAndContext() Error creating instance")
             # self._display_error(f"Error creating instance:\n{e}")
 
-    def createInstanceWithContext(self, ctx: XComponentContext) -> XInterface:
+    @override
+    def createInstanceWithContext(self, Context: XComponentContext) -> XInterface:
         """
         Creates an instance of a service implementation.
 
         Raises:
             com.sun.star.uno.Exception: ``Exception``
         """
-        return self.createInstanceWithArgumentsAndContext((), ctx)
+        return self.createInstanceWithArgumentsAndContext((), Context)
 
     # endregion XSingleComponentFactory
 
     # region XServiceInfo
+    @override
     def getImplementationName(self) -> str:
         """
         Provides the implementation name of the service implementation.
         """
         return self.IMPLE_NAME
 
+    @override
     def getSupportedServiceNames(self) -> Tuple[str, ...]:
         """
         Provides the supported service names of the implementation, including also indirect service names.
         """
         return self.SERVICE_NAMES
 
-    def supportsService(self, name: str) -> bool:
+    @override
+    def supportsService(self, ServiceName: str) -> bool:
         """
         Tests whether the specified service is supported, i.e.
 
         implemented by the implementation.
         """
-        return name in self.SERVICE_NAMES
+        return ServiceName in self.SERVICE_NAMES
 
     # endregion XServiceInfo
 
@@ -271,24 +294,29 @@ class WindowResizeListener(XWindowListener, unohelper.Base):
         unohelper.Base.__init__(self)
         self.handler = handler
 
-    def disposing(self, ev):
+    @override
+    def disposing(self, Source):
         pass
 
     # XWindowListener
-    def windowMoved(self, ev):
+    @override
+    def windowMoved(self, e):
         pass
 
-    def windowShown(self, ev):
+    @override
+    def windowShown(self, e):
         pass
 
-    def windowHidden(self, ev):
+    @override
+    def windowHidden(self, e):
         pass
 
-    def windowResized(self, ev):
+    @override
+    def windowResized(self, e):
         # extends inner window to match with the outer window
         if self.handler:
-            self.handler.dialog.setPosSize(0, 0, ev.Width, ev.Height, PosSize.SIZE)
-            self.handler.resize(ev.Width, ev.Height)
+            self.handler.dialog.setPosSize(0, 0, e.Width, e.Height, PosSize.SIZE)
+            self.handler.resize(e.Width, e.Height)
             # ToDo: resize dialog elements
 
 
@@ -319,7 +347,8 @@ class Switcher(XJobExecutor, XServiceInfo, unohelper.Base):
         unohelper.Base.__init__(self)
         self.ctx = ctx
 
-    def trigger(self, arg):
+    @override
+    def trigger(self, Event):
         global RES_LOG_WIN_URL
         desktop = create_service(self.ctx, "com.sun.star.frame.Desktop")
         doc = desktop.getCurrentComponent()
@@ -331,12 +360,15 @@ class Switcher(XJobExecutor, XServiceInfo, unohelper.Base):
             layoutmgr.requestElement(RES_LOG_WIN_URL)
 
     # XServiceInfo
+    @override
     def supportedServiceNames(self):
         return self.SERVICE_NAMES
 
-    def supportsService(self, name):
-        return name in self.SERVICE_NAMES
+    @override
+    def supportsService(self, ServiceName):
+        return ServiceName in self.SERVICE_NAMES
 
+    @override
     def getImplementationName(self):
         return self.IMPLE_NAME
 
@@ -360,7 +392,8 @@ class LogViewLoader(XJobExecutor, XServiceInfo, unohelper.Base):
         unohelper.Base.__init__(self)
         self.ctx = ctx
 
-    def trigger(self, arg):
+    @override
+    def trigger(self, Event):
         global RES_LOG_WIN_URL
         desktop = create_service(self.ctx, "com.sun.star.frame.Desktop")
         doc = desktop.getCurrentComponent()
@@ -377,12 +410,15 @@ class LogViewLoader(XJobExecutor, XServiceInfo, unohelper.Base):
         #     layoutmgr.requestElement(RESOURCE_URL)
 
     # XServiceInfo
+    @override
     def supportedServiceNames(self):
         return self.SERVICE_NAMES
 
-    def supportsService(self, name):
-        return name in self.SERVICE_NAMES
+    @override
+    def supportsService(self, ServiceName):
+        return ServiceName in self.SERVICE_NAMES
 
+    @override
     def getImplementationName(self):
         return self.IMPLE_NAME
 

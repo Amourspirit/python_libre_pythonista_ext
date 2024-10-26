@@ -2,14 +2,6 @@
 from __future__ import unicode_literals, annotations
 from typing import Any, TYPE_CHECKING
 import contextlib
-
-try:
-    # python 3.12+
-    from typing import override  # type: ignore
-except ImportError:
-    from typing_extensions import override
-
-import uno
 import unohelper
 
 
@@ -25,6 +17,12 @@ def _conditions_met() -> bool:
 
 
 if TYPE_CHECKING:
+    try:
+        # python 3.12+
+        from typing import override  # type: ignore
+    except ImportError:
+        from typing_extensions import override
+
     # just for design time
     _CONDITIONS_MET = True
     from ooodev.loader import Lo
@@ -35,6 +33,7 @@ if TYPE_CHECKING:
     from ...pythonpath.libre_pythonista_lib.const.event_const import LOG_OPTIONS_CHANGED, LOG_PY_LOGGER_RESET
     from ...pythonpath.libre_pythonista_lib.event.shared_event import SharedEvent
 else:
+    override = lambda func: func
     _CONDITIONS_MET = _conditions_met()
     if _CONDITIONS_MET:
         from ooodev.loader import Lo
