@@ -3,13 +3,6 @@ from __future__ import annotations
 from typing import Any, cast, TYPE_CHECKING
 import contextlib
 
-try:
-    # python 3.12+
-    from typing import override  # type: ignore
-except ImportError:
-    from typing_extensions import override
-
-import uno
 import unohelper
 from com.sun.star.task import XJob
 
@@ -24,6 +17,12 @@ def _conditions_met() -> bool:
 
 if TYPE_CHECKING:
     _CONDITIONS_MET = True
+    try:
+        # python 3.12+
+        from typing import override  # type: ignore
+    except ImportError:
+        from typing_extensions import override
+
     # just for design time
     from ooodev.loader import Lo
     from ooodev.calc import CalcDoc
@@ -43,6 +42,7 @@ if TYPE_CHECKING:
         CB_DOC_FOCUS_LOST,
     )
 else:
+    override = lambda func: func
     _CONDITIONS_MET = _conditions_met()
     if _CONDITIONS_MET:
         from ooodev.loader.inst.lo_loader import LoLoader

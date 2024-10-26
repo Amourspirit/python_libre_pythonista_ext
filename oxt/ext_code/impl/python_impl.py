@@ -4,13 +4,6 @@ import contextlib
 from pathlib import Path
 import sys
 
-try:
-    # python 3.12+
-    from typing import override  # type: ignore
-except ImportError:
-    from typing_extensions import override
-
-import uno
 import unohelper
 from com.sun.star.task import XJobExecutor
 
@@ -35,6 +28,12 @@ def _conditions_met() -> bool:
 
 if TYPE_CHECKING:
     _CONDITIONS_MET = True
+    try:
+        # python 3.12+
+        from typing import override  # type: ignore
+    except ImportError:
+        from typing_extensions import override
+
     from ...___lo_pip___.lo_util.resource_resolver import ResourceResolver
     from ...pythonpath.libre_pythonista_lib.code.py_source_mgr import PyInstance
     from ...pythonpath.libre_pythonista_lib.log.py_logger import PyLogger
@@ -60,6 +59,7 @@ if TYPE_CHECKING:
         UNO_DISPATCH_PYC_FORMULA_DEP,
     )
 else:
+    override = lambda func: func
     _CONDITIONS_MET = _conditions_met()
     if _CONDITIONS_MET:
         from ooodev.loader import Lo

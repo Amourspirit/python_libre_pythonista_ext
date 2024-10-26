@@ -4,16 +4,7 @@ from typing import Any, TYPE_CHECKING
 import os
 import contextlib
 
-try:
-    # python 3.12+
-    from typing import override  # type: ignore
-except ImportError:
-    from typing_extensions import override
-
-import uno
 import unohelper
-
-
 from com.sun.star.task import XJob
 
 
@@ -26,6 +17,12 @@ def _conditions_met() -> bool:
 
 
 if TYPE_CHECKING:
+    try:
+        # python 3.12+
+        from typing import override  # type: ignore
+    except ImportError:
+        from typing_extensions import override
+
     # just for design time
     _CONDITIONS_MET = True
     from ooodev.events.lo_events import LoEvents
@@ -45,6 +42,7 @@ if TYPE_CHECKING:
     # from ...pythonpath.libre_pythonista_lib.state.calc_state_mgr import CalcStateMgr
     from ...pythonpath.libre_pythonista_lib.doc.calc_doc_mgr import CalcDocMgr
 else:
+    override = lambda func: func
     _CONDITIONS_MET = _conditions_met()
     if _CONDITIONS_MET:
         from ooodev.events.lo_events import LoEvents

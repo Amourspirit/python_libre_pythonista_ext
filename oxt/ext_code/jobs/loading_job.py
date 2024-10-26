@@ -2,13 +2,6 @@
 from __future__ import unicode_literals, annotations
 from typing import Any, TYPE_CHECKING
 
-try:
-    # python 3.12+
-    from typing import override  # type: ignore
-except ImportError:
-    from typing_extensions import override
-
-import uno
 import unohelper
 import contextlib
 
@@ -27,11 +20,17 @@ def _conditions_met() -> bool:
 if TYPE_CHECKING:
     # just for design time
     _CONDITIONS_MET = True
+    try:
+        # python 3.12+
+        from typing import override  # type: ignore
+    except ImportError:
+        from typing_extensions import override
     from ooodev.loader import Lo
     from ooodev.calc import CalcDoc
     from ...___lo_pip___.oxt_logger import OxtLogger
     from ...pythonpath.libre_pythonista_lib.state.calc_state_mgr import CalcStateMgr
 else:
+    override = lambda func: func
     _CONDITIONS_MET = _conditions_met()
     if _CONDITIONS_MET:
         from ooodev.loader import Lo

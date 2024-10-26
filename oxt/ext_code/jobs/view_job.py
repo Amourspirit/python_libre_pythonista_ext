@@ -5,15 +5,7 @@ import threading
 import contextlib
 import os
 
-try:
-    # python 3.12+
-    from typing import override  # type: ignore
-except ImportError:
-    from typing_extensions import override
-
-import uno
 import unohelper
-
 from com.sun.star.task import XJob
 
 
@@ -26,6 +18,12 @@ def _conditions_met() -> bool:
 
 
 if TYPE_CHECKING:
+    try:
+        # python 3.12+
+        from typing import override  # type: ignore
+    except ImportError:
+        from typing_extensions import override
+
     # just for design time
     _CONDITIONS_MET = True
     from ooodev.loader import Lo
@@ -36,6 +34,7 @@ if TYPE_CHECKING:
     #     SheetCalculationEventListener,
     # )
 else:
+    override = lambda func: func
     _CONDITIONS_MET = _conditions_met()
     if _CONDITIONS_MET:
         from ooodev.loader import Lo
