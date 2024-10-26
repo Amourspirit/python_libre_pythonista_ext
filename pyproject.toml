@@ -1,3 +1,12 @@
+[tool.poetry]
+name = "LibrePythonista"
+version = "0.5.1"
+description = "Python For LibreOffice Calc"
+authors = [":Barry-Thomas-Paul: Moss <4193389+Amourspirit@users.noreply.github.com>"]
+license = "Apache"
+readme = "README.md"
+packages = [{ include = "src" }]
+
 # See: https://github.com/Amourspirit/python-libreoffice-pip/wiki/pyproject.toml
 [tool.libre_pythonista.config]
 general_code_name = "libre_pythonista"
@@ -131,15 +140,6 @@ es = "Extensión para agregar administración de paquetes Python y Pip dentro de
 "3.10" = { url = "https://www.python.org/ftp/python/3.10.11/python-3.10.11-embed-amd64.zip", md5="f1c0538b060e03cbb697ab3581cb73bc" }
 "3.11" = { url = "https://www.python.org/ftp/python/3.11.6/python-3.11.6-embed-amd64.zip", md5="ff5f34b8d2504c49fc94ffc29998b8a0" }
 "3.12" = { url = "https://www.python.org/ftp/python/3.12.0/python-3.12.0rc3-embed-arm64.zip", md5="728cbbfd0d5fc485233e1aba7884a773" }
-
-[tool.poetry]
-name = "LibrePythonista"
-version = "0.5.0"
-description = "Python For LibreOffice Calc"
-authors = [":Barry-Thomas-Paul: Moss <4193389+Amourspirit@users.noreply.github.com>"]
-license = "Apache"
-readme = "README.md"
-packages = [{ include = "src" }]
 
 [tool.poetry.dependencies]
 python = "^3.8"
