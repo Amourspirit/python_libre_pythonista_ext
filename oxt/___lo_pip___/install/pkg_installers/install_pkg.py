@@ -348,7 +348,14 @@ class InstallPkg:
         """
         self._logger.info("Installing packages…")
 
-        req = req or self._config.requirements
+        if req is None:
+            req = self._config.requirements.copy()
+            if self._config.is_linux:
+                req.update(self._config.requirements_linux)
+            if self._config.is_win:
+                req.update(self._config.requirements_win)
+            if self._config.is_mac:
+                req.update(self._config.requirements_macos)
 
         if not req:
             self._logger.warning("No packages to install.")

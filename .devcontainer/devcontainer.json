@@ -36,11 +36,10 @@
 				"ms-python.python",
 				"ms-python.vscode-pylance",
 				"njpwerner.autodocstring",
-				"ms-python.black-formatter",
 				"ms-vscode.test-adapter-converter",
 				"Phu1237.vs-browser",
 				"streetsidesoftware.code-spell-checker",
-				"bungcip.better-toml"
+				"tamasfe.even-better-toml"
 			],
 			// Adds VS Code settings.json values into the environment.
 			"settings": {

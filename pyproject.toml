@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "LibrePythonista"
-version = "0.5.1"
+version = "0.5.2"
 description = "Python For LibreOffice Calc"
 authors = [":Barry-Thomas-Paul: Moss <4193389+Amourspirit@users.noreply.github.com>"]
 license = "Apache"
@@ -34,7 +34,7 @@ py_pkg_dir = "py_pkgs" # https://tinyurl.com/ymeh4c9j#py_pkg_dir
 py_pkg_files = [] # https://tinyurl.com/ymeh4c9j#py_pkg_files
 py_pkg_names = [] # ["ooodev", "ooo"] https://tinyurl.com/ymeh4c9j#py_pkg_names
 token_file_ext = ["txt", "xml", "xcu", "xcs", "py","components"] # https://tinyurl.com/ymeh4c9j#token_file_ext
-tokes_files = [] # ["python_impl.py", "res_resolver.py", "py_code.py"]
+tokes_files = [] # ["python_impl.py", "res_resolver.py", "py_code.py"] https://tinyurl.com/ymeh4c9j#tokes_files
 update_file = "update.xml" # https://tinyurl.com/ymeh4c9j#update_file
 zip_preinstall_pure = true # https://tinyurl.com/ymeh4c9j#zip_preinstall_pure
 window_timeout = 5 # https://tinyurl.com/ymeh4c9j#window_timeout number of seconds to wait for window to appear
@@ -45,19 +45,22 @@ default_locale = ["en", "US"] # https://tinyurl.com/ymeh4c9j#default_locale
 sym_link_cpython = true # https://tinyurl.com/ymeh4c9j#sym_link_cpython
 uninstall_on_update = true # https://tinyurl.com/ymeh4c9j#uninstall_on_update uninstall previous python packages on update
 install_on_no_uninstall_permission = true # https://tinyurl.com/ymeh4c9j#install_on_no_uninstall_permission
-oo_types_uno = ""
-oo_types_office = ""
-unload_after_install = false
-run_imports = ["ooodev", "verr", "sortedcontainers"] # These are required for LibrePythonista dispataches to work.
+oo_types_uno = "" # https://tinyurl.com/ymeh4c9j#oo_types_uno
+oo_types_office = "" # https://tinyurl.com/ymeh4c9j#oo_types_office
+unload_after_install = false # https://tinyurl.com/ymeh4c9j#unload_after_install
+run_imports = ["ooodev", "verr", "sortedcontainers"] # These are required for LibrePythonista dispataches to work. https://tinyurl.com/ymeh4c9j#run_imports
 run_imports2 = ["pandas", "numpy", "matplotlib"] # second level imports. These are required for LibrePythonista to work
+run_imports_linux = [] # https://tinyurl.com/ymeh4c9j#run_imports_linux
+run_imports_macos = [] # https://tinyurl.com/ymeh4c9j#run_imports_macos
+run_imports_win = [] # https://tinyurl.com/ymeh4c9j#run_imports_win
 # when log_indent is set indent_str can be used in the format str - "%(asctime)s %(levelname)s - %(indent_str)s%(name)s: %(message)s"
 log_indent = 0 # set to 0 or less to disable; Ignored in windows. Should be set to 0 for production.
-no_pip_remove = ["pip", "setuptools", "wheel"]
+no_pip_remove = ["pip", "setuptools", "wheel"] # https://tinyurl.com/ymeh4c9j#no_pip_remove
 
 [tool.oxt.token]
 # in the form of "token_name": "token_value"
 # in the files the token will have a prefix and suffix of ___
-pip_wheel_url = "https://files.pythonhosted.org/packages/d4/55/90db48d85f7689ec6f81c0db0622d704306c5284850383c090e6c7195a5c/pip-24.2-py3-none-any.whl" # https://tinyurl.com/ymeh4c9j#pip_wheel_url
+pip_wheel_url = "https://files.pythonhosted.org/packages/ef/7d/500c9ad20238fcfcb4cb9243eede163594d7020ce87bd9610c9e02771876/pip-24.3.1-py3-none-any.whl" # https://tinyurl.com/ymeh4c9j#pip_wheel_url
 test_internet_url = "https://duckduckgo.com" # https://tinyurl.com/ymeh4c9j#test_internet_url
 log_pip_installs = false # https://tinyurl.com/ymeh4c9j#log_pip_installs
 lo_identifier = "com.github.amourspirit.extensions.librepythonista" # https://tinyurl.com/ymeh4c9j#lo_identifier
@@ -91,11 +94,26 @@ typing-extensions = ">=4.12.2"
 verr = ">=1.1.2"
 pandas = ">=2"
 odfpy = ">=1.4"
-ooo-dev-tools = ">=0.49.1"
+ooo-dev-tools = ">=0.50.0"
 matplotlib = ">=3.7.5"
 seaborn = ">=0.13"
 sortedcontainers = ">=2.4.0"
 
+[tool.oxt.requirements_linux]
+# https://tinyurl.com/ymeh4c9j#tooloxtrequirements_linux
+# any linux specific requirements
+# These requirements take precedence over the general requirements
+requests = ">=2.32.3"
+
+[tool.oxt.requirements_macos]
+# https://tinyurl.com/ymeh4c9j#tooloxtrequirements_macos
+# any macos specific requirements
+# These requirements take precedence over the general requirements
+
+[tool.oxt.requirements_win]
+# https://tinyurl.com/ymeh4c9j#tooloxtrequirements_win
+# any windows specific requirements
+# These requirements take precedence over the general requirements
 
 [tool.oxt.isolate]
 # https://tinyurl.com/ymeh4c9j#tooloxtisolate
@@ -132,20 +150,22 @@ es = "Extensión para agregar administración de paquetes Python y Pip dentro de
 "3.9" = { url = "https://www.python.org/ftp/python/3.9.13/python-3.9.13-embed-win32.zip", md5="fec0bc06857502a56dd1aeaea6488ef8" }
 "3.10" = { url = "https://www.python.org/ftp/python/3.10.11/python-3.10.11-embed-win32.zip", md5="fee70dae06c25c60cbe825d6a1bfda57" }
 "3.11" = { url = "https://www.python.org/ftp/python/3.11.6/python-3.11.6-embed-win32.zip", md5="d035d12d72e2d62b6e5219ea8f3bda39" }
-"3.12" = { url = "https://www.python.org/ftp/python/3.12.0/python-3.12.0rc3-embed-win32.zip", md5="b6ed11598c929af946a110ca4db0d95c" }
+"3.12" = { url = "https://www.python.org/ftp/python/3.12.7/python-3.12.7-embed-win32.zip", md5="21a051ecac4a9a25fab169793ecb6e56" }
+"3.13" = { url = "https://www.python.org/ftp/python/3.13.0/python-3.13.0rc3-embed-win32.zip", md5="02d47e6085ae8921d83fe937ec2c6590" }
 
 [tool.oxt.bz2.64_bit]
 "3.8" = { url = "https://www.python.org/ftp/python/3.8.10/python-3.8.10-embed-amd64.zip", md5="3acb1d7d9bde5a79f840167b166bb633" }
 "3.9" = { url = "https://www.python.org/ftp/python/3.9.13/python-3.9.13-embed-amd64.zip", md5="57731cf80b1c429a0be7133266d7d7cf" }
 "3.10" = { url = "https://www.python.org/ftp/python/3.10.11/python-3.10.11-embed-amd64.zip", md5="f1c0538b060e03cbb697ab3581cb73bc" }
 "3.11" = { url = "https://www.python.org/ftp/python/3.11.6/python-3.11.6-embed-amd64.zip", md5="ff5f34b8d2504c49fc94ffc29998b8a0" }
-"3.12" = { url = "https://www.python.org/ftp/python/3.12.0/python-3.12.0rc3-embed-arm64.zip", md5="728cbbfd0d5fc485233e1aba7884a773" }
+"3.12" = { url = "https://www.python.org/ftp/python/3.12.7/python-3.12.7-embed-amd64.zip", md5="4c0a5a44d4ca1d0bc76fe08ea8b76adc" }
+"3.13" = { url = "https://www.python.org/ftp/python/3.13.0/python-3.13.0rc3-embed-amd64.zip", md5="93d8329cd1c8d09f64c28191942c11ce" }
 
 [tool.poetry.dependencies]
 python = "^3.8"
 toml = "^0.10.2"
 typing-extensions = ">=4.12.2"
-ooo-dev-tools = ">=0.49.1"
+ooo-dev-tools = ">=0.50.0"
 sortedcontainers = ">=2.4.0"
 oooenv = ">=0.2.4"
 

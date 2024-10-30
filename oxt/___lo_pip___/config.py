@@ -349,12 +349,42 @@ class Config(metaclass=Singleton):
         """
         Gets the set of requirements.
 
-        The value for this property can be set in pyproject.toml (tool.oxt.token.requirements)
+        The value for this property can be set in pyproject.toml (tool.oxt.requirements)
 
         The key is the name of the package and the value is the version number.
         Example: {"requests": ">=2.25.1"}
         """
         return self._basic_config.requirements
+
+    @property
+    def requirements_linux(self) -> Dict[str, str]:
+        """
+        Gets the set of requirements for Linux.
+        The value for this property can be set in pyproject.toml (tool.oxt.requirements_linux)
+        The key is the name of the package and the value is the version number.
+        Example: {"requests": ">=2.25.1"}
+        """
+        return self._basic_config.requirements_linux
+
+    @property
+    def requirements_macos(self) -> Dict[str, str]:
+        """
+        Gets the set of requirements for macOS.
+        The value for this property can be set in pyproject.toml (tool.oxt.requirements_macos)
+        The key is the name of the package and the value is the version number.
+        Example: {"requests": ">=2.25.1"}
+        """
+        return self._basic_config.requirements_macos
+
+    @property
+    def requirements_win(self) -> Dict[str, str]:
+        """
+        Gets the set of requirements for Windows.
+        The value for this property can be set in pyproject.toml (tool.oxt.requirements_win)
+        The key is the name of the package and the value is the version number.
+        Example: {"requests": ">=2.25.1"}
+        """
+        return self._basic_config.requirements_win
 
     @property
     def zipped_preinstall_pure(self) -> bool:
@@ -366,6 +396,30 @@ class Config(metaclass=Singleton):
         If this is set to ``True`` then pure python packages will be zipped and installed as a zip file.
         """
         return self._basic_config.zipped_preinstall_pure
+
+    @property
+    def run_imports_linux(self) -> Set[str]:
+        """
+        Gets the set of imports that are required to run this extension on Linux.
+        The value for this property can be set in pyproject.toml (tool.oxt.config.run_imports_linux)
+        """
+        return self._basic_config.run_imports_linux
+
+    @property
+    def run_imports_macos(self) -> Set[str]:
+        """
+        Gets the set of imports that are required to run this extension on macOS.
+        The value for this property can be set in pyproject.toml (tool.oxt.config.run_imports_macos)
+        """
+        return self._basic_config.run_imports_macos
+
+    @property
+    def run_imports_win(self) -> Set[str]:
+        """
+        Gets the set of imports that are required to run this extension on Windows.
+        The value for this property can be set in pyproject.toml (tool.oxt.config.run_imports_win)
+        """
+        return self._basic_config.run_imports_win
 
     @property
     def auto_install_in_site_packages(self) -> bool:
