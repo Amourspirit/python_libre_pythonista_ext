@@ -2,7 +2,7 @@
     "terminal.integrated.shellIntegration.enabled": true,
     "testExplorer.useNativeTesting": false,
     "[python]": {
-        "editor.formatOnPaste": false,
+        "editor.formatOnPaste": true,
         "editor.formatOnSaveMode": "file",
         "editor.formatOnSave": true,
         "editor.defaultFormatter": "ms-python.black-formatter"

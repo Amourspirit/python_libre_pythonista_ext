@@ -44,6 +44,9 @@ class BasicConfig(metaclass=ConfigMeta):
         self._log_indent = int(kwargs.get("log_indent", 0))
         self._run_imports = set(kwargs["run_imports"])
         self._run_imports2 = set(kwargs["run_imports2"])
+        self._run_imports_linux = set(kwargs["run_imports_linux"])
+        self._run_imports_macos = set(kwargs["run_imports_macos"])
+        self._run_imports_win = set(kwargs["run_imports_win"])
         self._oxt_name = str(kwargs["oxt_name"])
 
         # region tool.libre_pythonista.config
@@ -64,6 +67,17 @@ class BasicConfig(metaclass=ConfigMeta):
         if "requirements" not in kwargs:
             kwargs["requirements"] = {}
         self._requirements: Dict[str, str] = dict(**kwargs["requirements"])
+        if "requirements_linux" not in kwargs:
+            kwargs["requirements_linux"] = {}
+        self._requirements_linux: Dict[str, str] = dict(**kwargs["requirements_linux"])
+
+        if "requirements_macos" not in kwargs:
+            kwargs["requirements_macos"] = {}
+        self._requirements_macos: Dict[str, str] = dict(**kwargs["requirements_macos"])
+
+        if "requirements_win" not in kwargs:
+            kwargs["requirements_win"] = {}
+        self._requirements_win: Dict[str, str] = dict(**kwargs["requirements_win"])
 
     # region Properties
     @property
@@ -278,12 +292,42 @@ class BasicConfig(metaclass=ConfigMeta):
         """
         Gets the set of requirements.
 
-        The value for this property can be set in pyproject.toml (tool.oxt.token.requirements)
+        The value for this property can be set in pyproject.toml (tool.oxt.requirements)
 
         The key is the name of the package and the value is the version number.
         Example: {"requests": ">=2.25.1"}
         """
         return self._requirements
+
+    @property
+    def requirements_linux(self) -> Dict[str, str]:
+        """
+        Gets the set of requirements specific to Linux.
+        The value for this property can be set in pyproject.toml (tool.oxt.requirements_linux)
+        The key is the name of the package and the value is the version number.
+        Example: {"requests": ">=2.25.1"}
+        """
+        return self._requirements_linux
+
+    @property
+    def requirements_macos(self) -> Dict[str, str]:
+        """
+        Gets the set of requirements specific to Mac OS.
+        The value for this property can be set in pyproject.toml (tool.oxt.requirements_macos)
+        The key is the name of the package and the value is the version number.
+        Example: {"requests": ">=2.25.1"}
+        """
+        return self._requirements_macos
+
+    @property
+    def requirements_win(self) -> Dict[str, str]:
+        """
+        Gets the set of requirements specific to Windows.
+        The value for this property can be set in pyproject.toml (tool.oxt.requirements_win)
+        The key is the name of the package and the value is the version number.
+        Example: {"requests": ">=2.25.1"}
+        """
+        return self._requirements_win
 
     @property
     def resource_dir_name(self) -> str:
@@ -295,6 +339,30 @@ class BasicConfig(metaclass=ConfigMeta):
         This is the name of the directory containing the resource files.
         """
         return self._resource_dir_name
+
+    @property
+    def run_imports_linux(self) -> Set[str]:
+        """
+        Gets the set of imports that are required to run this extension on Linux.
+        The value for this property can be set in pyproject.toml (tool.oxt.config.run_imports_linux)
+        """
+        return self._run_imports_linux
+
+    @property
+    def run_imports_macos(self) -> Set[str]:
+        """
+        Gets the set of imports that are required to run this extension on Mac OS.
+        The value for this property can be set in pyproject.toml (tool.oxt.config.run_imports_macos)
+        """
+        return self._run_imports_macos
+
+    @property
+    def run_imports_win(self) -> Set[str]:
+        """
+        Gets the set of imports that are required to run this extension on Windows.
+        The value for this property can be set in pyproject.toml (tool.oxt.config.run_imports_win)
+        """
+        return self._run_imports_win
 
     @property
     def resource_properties_prefix(self) -> str:
