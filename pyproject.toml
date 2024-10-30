@@ -103,7 +103,7 @@ sortedcontainers = ">=2.4.0"
 # https://tinyurl.com/ymeh4c9j#tooloxtrequirements_linux
 # any linux specific requirements
 # These requirements take precedence over the general requirements
-requests = ">=2.32.3"
+# requests = ">=2.32.3"
 
 [tool.oxt.requirements_macos]
 # https://tinyurl.com/ymeh4c9j#tooloxtrequirements_macos
