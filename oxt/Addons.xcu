@@ -265,7 +265,7 @@
                      <value>_self</value>
                   </prop>
                </node>
-               <node oor:name="m017" oor:op="replace">
+               <!-- <node oor:name="m017" oor:op="replace">
                   <prop oor:name="URL" oor:type="xs:string">
                      <value>service:___lo_identifier___.impl?wv</value>
                   </prop>
@@ -275,7 +275,7 @@
                   <prop oor:name="Target" oor:type="xs:string">
                      <value>_self</value>
                   </prop>
-               </node>
+               </node> -->
             </node>
          </node>
       </node>

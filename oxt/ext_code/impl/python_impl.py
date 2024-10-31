@@ -181,11 +181,11 @@ class PythonImpl(unohelper.Base, XJobExecutor):
                 self._log.debug(f"Dispatched {UNO_DISPATCH_PIP_PKG_UNLINK}")
             except Exception:
                 self._log.exception(f"Error dispatching")
-        elif Event == "wv":
-            try:
-                wv.main()
-            except Exception:
-                self._log.exception(f"Error importing wv")
+        # elif Event == "wv":
+        #     try:
+        #         wv.main()
+        #     except Exception:
+        #         self._log.exception(f"Error importing wv")
         else:
             try:
                 self._log.debug(f"PYC Formula, Dispatching {UNO_DISPATCH_PYC_FORMULA}")

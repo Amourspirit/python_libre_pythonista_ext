@@ -105,23 +105,23 @@ jedi = "^0.19.1"
 # any linux specific requirements
 # These requirements take precedence over the general requirements
 # requests = ">=2.32.3"
-qtpy = ">=2.4.1"
-PySide2 = ">=5"
-pywebview = ">=5"
+# qtpy = ">=2.4.1"
+# PySide2 = ">=5"
+# pywebview = ">=5"
 
 [tool.oxt.requirements_macos]
 # https://tinyurl.com/ymeh4c9j#tooloxtrequirements_macos
 # any macos specific requirements
 # These requirements take precedence over the general requirements
-pyobjc = ">=10.3.1"
-pywebview = ">=5"
+# pyobjc = ">=10.3.1"
+# pywebview = ">=5"
 
 [tool.oxt.requirements_win]
 # https://tinyurl.com/ymeh4c9j#tooloxtrequirements_win
 # any windows specific requirements
 # These requirements take precedence over the general requirements
-cefpython3=">=66.1"
-pywebview = ">=5"
+# cefpython3=">=66.1"
+# pywebview = ">=5"
 
 [tool.oxt.isolate]
 # https://tinyurl.com/ymeh4c9j#tooloxtisolate
