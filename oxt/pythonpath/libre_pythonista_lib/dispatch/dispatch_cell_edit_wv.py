@@ -29,12 +29,14 @@ else:
     from ___lo_pip___.lo_util.resource_resolver import ResourceResolver
 
 
-class DispatchAbout(unohelper.Base, XDispatch):
-    """Displays the About dialog for the extension."""
+class DispatchCellEditWv(unohelper.Base, XDispatch):
+    """If the View is not in PY_OBJ state the it is switched into PY_OBJ State."""
 
-    def __init__(self):
+    def __init__(self, sheet: str, cell: str):
         XDispatch.__init__(self)
         unohelper.Base.__init__(self)
+        self._sheet = sheet
+        self._cell = cell
         self._log = OxtLogger(log_name=self.__class__.__name__)
         self._status_listeners: Dict[str, XStatusListener] = {}
 

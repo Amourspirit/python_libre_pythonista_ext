@@ -86,6 +86,7 @@ show_progress = true # https://tinyurl.com/ymeh4c9j#show_progress
 delay_startup = true # determines if installing waits fo the window to load before installing https://tinyurl.com/ymeh4c9j#delay_startup
 float_dialog_error = "dialogs/log_dock.xdl"
 float_dialog_error_num = "9809"
+lp_experimental_editor=true
 
 [tool.oxt.requirements]
 # https://tinyurl.com/ymeh4c9j#tooloxtrequirements
@@ -98,13 +99,11 @@ ooo-dev-tools = ">=0.50.0"
 matplotlib = ">=3.7.5"
 seaborn = ">=0.13"
 sortedcontainers = ">=2.4.0"
-jedi = "^0.19.1"
 
 [tool.oxt.requirements_linux]
 # https://tinyurl.com/ymeh4c9j#tooloxtrequirements_linux
 # any linux specific requirements
 # These requirements take precedence over the general requirements
-# requests = ">=2.32.3"
 # qtpy = ">=2.4.1"
 # PySide2 = ">=5"
 # pywebview = ">=5"
@@ -186,13 +185,13 @@ oooscript = "^1.1.3"
 lxml = "^4.9.3"
 sortedcontainers-stubs = "^2.4.2"
 debuggy = "^3.0.1"
-pyobjc = [{version = ">=10.3.1", markers = "sys_platform == 'darwin'"}]
-pywebview = [
-    {extras = ["qt"], version = "^5.3.2", markers = "sys_platform != 'win32'"},
-	{extras = ["cef"], version = "^5.3.2", markers = "sys_platform == 'win32'"},
-    {version = "^5.3.2", markers = "sys_platform == 'darwin'"},
-]
-jedi = "^0.19.1"
+# pyobjc = [{version = ">=10.3.1", markers = "sys_platform == 'darwin'"}]
+# pywebview = [
+#     {extras = ["qt"], version = "^5.3.2", markers = "sys_platform != 'win32'"},
+# 	{extras = ["cef"], version = "^5.3.2", markers = "sys_platform == 'win32'"},
+#     {version = "^5.3.2", markers = "sys_platform == 'darwin'"},
+# ]
+# jedi = "^0.19.1"
 
 [tool.poetry.group.linux.dependencies]
 pandas = ">=2.0.3"

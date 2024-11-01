@@ -37,7 +37,6 @@ if TYPE_CHECKING:
     from ...___lo_pip___.lo_util.resource_resolver import ResourceResolver
     from ...pythonpath.libre_pythonista_lib.code.py_source_mgr import PyInstance
     from ...pythonpath.libre_pythonista_lib.log.py_logger import PyLogger
-    from ...pythonpath.libre_pythonista_lib import wv
 
     from ooodev.loader import Lo
     from ooodev.calc import CalcDoc
@@ -72,7 +71,6 @@ else:
         from ooodev.dialog.msgbox import MsgBox
         from libre_pythonista_lib.code.py_source_mgr import PyInstance
         from libre_pythonista_lib.log.py_logger import PyLogger
-        from libre_pythonista_lib import wv
         from libre_pythonista_lib.const import (
             UNO_DISPATCH_ABOUT,
             UNO_DISPATCH_LOG_WIN,

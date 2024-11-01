@@ -54,6 +54,9 @@ from ..event.shared_event import SharedEvent
 
 if TYPE_CHECKING:
     from ooodev.proto.office_document_t import OfficeDocumentT
+    from ....___lo_pip___.config import Config
+else:
+    from ___lo_pip___.config import Config
 
 # Imports are lazy imports to avoid potential failure, especially during startup when the secondary required modules may not be loaded.
 # If not lazy import then a failing import could cause all dispatches here to fail.
@@ -93,6 +96,7 @@ class DispatchProviderInterceptor(unohelper.Base, XDispatchProviderInterceptor):
             return
         self._master = cast(XDispatchProvider, None)
         self._slave = cast(XDispatchProvider, None)
+        self._config = Config()
         self._initialized = True
         self._key: str
         self._doc = doc
@@ -233,25 +237,79 @@ class DispatchProviderInterceptor(unohelper.Base, XDispatchProviderInterceptor):
                 log.exception(f"Dispatch Error: {URL.Main}")
                 return None
 
+        # elif URL.Main == UNO_DISPATCH_CODE_EDIT_MB:
+        #     try:
+        #         from .dispatch_edit_py_cell_mb import DispatchEditPyCellMb
+        #     except ImportError:
+        #         log.exception("DispatchEditPyCellMb import error")
+        #         raise
+        #     try:
+        #         args = self._convert_query_to_dict(URL.Arguments)
+        #         in_thread = args.pop("in_thread", "0") == "1"
+        #         cargs = CancelEventArgs(self)
+        #         cargs.event_data = DotDict(cmd=UNO_DISPATCH_CODE_EDIT_MB, doc=self._doc, in_thread=in_thread, **args)
+
+        #         se.trigger_event(LP_DISPATCHING_CMD, cargs)
+        #         if cargs.cancel is True and cargs.handled is False:
+        #             return None
+
+        #         with log.indent(True):
+        #             log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchEditPyCellMb")
+        #         result = DispatchEditPyCellMb(sheet=args["sheet"], cell=args["cell"], in_thread=in_thread)
+
+        #         eargs = EventArgs.from_args(cargs)
+        #         eargs.event_data.dispatch = result
+        #         se.trigger_event(LP_DISPATCHED_CMD, eargs)
+        #         return result
+        #     except Exception:
+        #         log.exception(f"Dispatch Error: {URL.Main}")
+        #         return None
+
         elif URL.Main == UNO_DISPATCH_CODE_EDIT_MB:
             try:
-                from .dispatch_edit_py_cell_mb import DispatchEditPyCellMb
-            except ImportError:
-                log.exception("DispatchEditPyCellMb import error")
-                raise
+                wv_edit = self._config.lp_settings.experimental_editor
+            except Exception:
+                log.exception("DispatchProviderInterceptor.queryDispatch: Error getting experimental_editor setting.")
+                wv_edit = False
+
+            if wv_edit:
+                try:
+                    from .dispatch_cell_edit_wv import DispatchCellEditWv
+                except ImportError:
+                    log.exception("DispatchCellEditWv import error")
+                    raise
+            else:
+                try:
+                    from .dispatch_edit_py_cell_mb import DispatchEditPyCellMb
+                except ImportError:
+                    log.exception("DispatchEditPyCellMb import error")
+                    raise
             try:
                 args = self._convert_query_to_dict(URL.Arguments)
-                in_thread = args.pop("in_thread", "0") == "1"
+                if wv_edit:
+                    _ = args.pop("in_thread", "0") == "1"
+                    in_thread = False
+                else:
+                    in_thread = args.pop("in_thread", "0") == "1"
+
                 cargs = CancelEventArgs(self)
-                cargs.event_data = DotDict(cmd=UNO_DISPATCH_CODE_EDIT_MB, doc=self._doc, in_thread=in_thread, **args)
+                cargs.event_data = DotDict(
+                    cmd=UNO_DISPATCH_CODE_EDIT_MB, doc=self._doc, in_thread=in_thread, wev_view_edit=wv_edit, **args
+                )
 
                 se.trigger_event(LP_DISPATCHING_CMD, cargs)
                 if cargs.cancel is True and cargs.handled is False:
                     return None
 
                 with log.indent(True):
-                    log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchEditPyCellMb")
-                result = DispatchEditPyCellMb(sheet=args["sheet"], cell=args["cell"], in_thread=in_thread)
+                    if wv_edit:
+                        log.debug("DispatchProviderInterceptor.queryDispatch: returning DispatchCellEditWv")
+                    else:
+                        log.debug("DispatchProviderInterceptor.queryDispatch: returning DispatchEditPyCellMb")
+                if wv_edit:
+                    result = DispatchCellEditWv(sheet=args["sheet"], cell=args["cell"]) # type: ignore
+                else:
+                    result = DispatchEditPyCellMb(sheet=args["sheet"], cell=args["cell"], in_thread=in_thread) # type: ignore
 
                 eargs = EventArgs.from_args(cargs)
                 eargs.event_data.dispatch = result
