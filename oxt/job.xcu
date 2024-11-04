@@ -44,6 +44,11 @@
         <value>___lo_identifier___.LogWindowJob</value>
       </prop>
     </node>
+    <node oor:name="HtmlPyEdit" oor:op="replace">
+      <prop oor:name="Service">
+        <value>___lo_identifier___.AsyncJobHtmlPyEditor</value>
+      </prop>
+    </node>
   </node>
   <node oor:name="Events">
     <node oor:name="___startup_event___" oor:op="fuse">
@@ -90,6 +95,11 @@
     <node oor:name="OnUnfocus" oor:op="fuse">
       <node oor:name="JobList">
         <node oor:name="CalcDocUnFocusJob" oor:op="fuse" />
+      </node>
+    </node>
+    <node oor:name="HtmlPyEditEvent" oor:op="replace">
+      <node oor:name="JobList">
+        <node oor:name="HtmlPyEdit" oor:op="replace" />
       </node>
     </node>
   </node>

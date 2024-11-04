@@ -56,6 +56,8 @@ class ViewJob(unohelper.Base, XJob):
     # region Init
 
     def __init__(self, ctx):
+        XJob.__init__(self)
+        unohelper.Base.__init__(self)
         self.ctx = ctx
         self.document = None
         self._log = self._get_local_logger()
@@ -94,12 +96,16 @@ class ViewJob(unohelper.Base, XJob):
                         self._log.debug("Conditions met. Continuing ...")
                         _ = Lo.load_office()
                         doc = CalcDoc.get_doc_from_component(self.document)
-                        t = threading.Thread(target=_init_with_state, args=(doc, self._log), daemon=True)
+                        t = threading.Thread(
+                            target=_init_with_state, args=(doc, self._log), daemon=True
+                        )
                         t.start()
                         # t.join() # DO NOT join. Can cause LibreOffice to hang.
 
                     except Exception:
-                        self._log.error("Error setting components on view.", exc_info=True)
+                        self._log.error(
+                            "Error setting components on view.", exc_info=True
+                        )
                 else:
                     self._log.debug("Conditions not met to register dispatch manager")
             else:

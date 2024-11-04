@@ -17,17 +17,19 @@ from ooo.dyn.frame.feature_state_event import FeatureStateEvent
 from ooodev.utils.string.str_list import StrList
 from ooodev.dialog.msgbox import MsgBox, MessageBoxType
 from ooodev.loader import Lo
+from ..dialog.webview.lp_py_editor import editor
 
 if TYPE_CHECKING:
     from com.sun.star.frame import XStatusListener
     from ....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
     from ....___lo_pip___.config import Config
     from ....___lo_pip___.lo_util.resource_resolver import ResourceResolver
+    from ....___lo_pip___.thread.main_loop import add_to_event_queue
 else:
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
     from ___lo_pip___.config import Config
     from ___lo_pip___.lo_util.resource_resolver import ResourceResolver
-
+    from ___lo_pip___.thread.main_loop import add_to_event_queue
 
 class DispatchCellEditWv(unohelper.Base, XDispatch):
     """If the View is not in PY_OBJ state the it is switched into PY_OBJ State."""
@@ -78,24 +80,11 @@ class DispatchCellEditWv(unohelper.Base, XDispatch):
             try:
                 self._log.debug(f"dispatch(): url={URL.Main}")
                 _ = Lo.current_doc
-                rr = ResourceResolver(Lo.get_context())
-                cfg = Config()
-                sl = StrList(sep="\n")
-                for author in cfg.author_names:
-                    sl.append(f"by {author}")
-                msg = f"{cfg.extension_display_name}"
-                msg += "\n" + rr.resolve_string("strVersion")
-                msg += f" {cfg.extension_version}"
-                lic = rr.resolve_string("strExtensionUnderLic").format(cfg.extension_license)
-                msg += "\n" + lic
-                if len(sl) > 0:
-                    msg += "\n" + str(sl)
-                _ = MsgBox.msgbox(
-                    msg=msg,
-                    title=rr.resolve_string("mbTitleAbout"),
-                    boxtype=MessageBoxType.INFOBOX,
-                )
-                return
+                # rr = ResourceResolver(Lo.get_context())
+                # cfg = Config()
+                add_to_event_queue(editor.main)
+                # editor.main()
+                
 
             except Exception as e:
                 # log the error and do not re-raise it.
