@@ -276,6 +276,17 @@
                      <value>_self</value>
                   </prop>
                </node>
+               <node oor:name="m018" oor:op="replace">
+                  <prop oor:name="URL" oor:type="xs:string">
+                     <value>vnd.sun.star.job:service=___lo_identifier___.py_edit_sheet_job</value>
+                  </prop>
+                  <prop oor:name="Title" oor:type="xs:string">
+                     <value>Web Veiw 2</value>
+                  </prop>
+                  <prop oor:name="Target" oor:type="xs:string">
+                     <value>_self</value>
+                  </prop>
+               </node>
             </node>
          </node>
       </node>

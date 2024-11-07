@@ -1,8 +1,7 @@
 from __future__ import annotations
-from typing import cast, Sequence, Tuple, TYPE_CHECKING
+from typing import Any, cast, Sequence, Tuple, TYPE_CHECKING
 import contextlib
 import threading
-# import time
 
 import uno
 import unohelper
@@ -28,8 +27,8 @@ def _conditions_met() -> bool:
 if TYPE_CHECKING:
     _CONDITIONS_MET = True
     from com.sun.star.task import XJobListener
-    from com.sun.star.frame import XFrame
     from ....___lo_pip___.oxt_logger import OxtLogger
+    from ....___lo_pip___.job.async_job_info import AsyncJobInfo
 
     try:
         # python 3.12+
@@ -40,59 +39,8 @@ else:
     override = lambda func: func  # noqa: E731
     _CONDITIONS_MET = _conditions_met()
     if _CONDITIONS_MET:
-        from ___lo_pip___.oxt_logger import OxtLogger
-
-
-class AsyncJobImplInfo:
-    """Store job related info when executeAsync() is called"""
-
-    def __init__(
-        self,
-        env_type: str = "",
-        event_name: str = "",
-        alias: str = "",
-        frame: XFrame | None = None,
-        generic_config_list: str = "",
-        job_config_list: str = "",
-        environment_list: str = "",
-        dynamic_data_list: str = "",
-    ):
-        self.env_type = env_type
-        self.event_name = event_name
-        self.alias = alias
-        self.frame = frame
-        self.generic_config_list = generic_config_list
-        self.job_config_list = job_config_list
-        self.env_list = environment_list
-        self.dynamic_data_list = dynamic_data_list
-
-    def __eq__(self, other):
-        if not isinstance(other, AsyncJobImplInfo):
-            return NotImplemented
-        return (
-            self.env_type == other.env_type
-            and self.event_name == other.event_name
-            and self.alias == other.alias
-            and self.frame == other.frame
-            and self.generic_config_list == other.generic_config_list
-            and self.job_config_list == other.job_config_list
-            and self.env_list == other.env_list
-            and self.dynamic_data_list == other.dynamic_data_list
-        )
-
-    def __hash__(self):
-        return hash(
-            (
-                self.env_type,
-                self.event_name,
-                self.alias,
-                self.frame,
-                self.generic_config_list,
-                self.job_config_list,
-                self.env_list,
-                self.dynamic_data_list,
-            )
-        )
+        from ___lo_pip___.oxt_logger import OxtLogger  # noqa: F401
+        from ___lo_pip___.job.async_job_info import AsyncJobInfo  # noqa: F401
 
 
 class HtmlPyEditor(XServiceInfo, XAsyncJob, unohelper.Base):
@@ -103,7 +51,7 @@ class HtmlPyEditor(XServiceInfo, XAsyncJob, unohelper.Base):
     def get_imple(cls):
         return (cls, cls.IMPLE_NAME, cls.SERVICE_NAMES)
 
-    def __init__(self, ctx):
+    def __init__(self, ctx: Any):
         XServiceInfo.__init__(self)
         XAsyncJob.__init__(self)
         unohelper.Base.__init__(self)
@@ -118,7 +66,8 @@ class HtmlPyEditor(XServiceInfo, XAsyncJob, unohelper.Base):
     ) -> None:
         self._log.debug("HtmlPyEditor.executeAsync()")
         try:
-            job_info = AsyncJobImplInfo()
+            self._log.debug(f"Arguments:{Arguments}")
+            job_info = AsyncJobInfo()
             is_main_thread = threading.current_thread() is threading.main_thread()
             self._log.debug(
                 f"HtmlPyEditor.executeAsync() is_main_thread: {is_main_thread}"
@@ -133,13 +82,12 @@ class HtmlPyEditor(XServiceInfo, XAsyncJob, unohelper.Base):
 
             doc = CalcDoc.from_current_doc()
             sheet = doc.sheets.get_active_sheet()
-            sheet["A1"].value = "HtmlPyEditor.executeAsync()"
+            sheet[0, 0].value = "HtmlPyEditor.executeAsync()"
 
-            # self._log.debug("HtmlPyEditor.executeAsync() 1")
-            # time.sleep(5)
-            # self._log.debug("HtmlPyEditor.executeAsync() 2")
-            # time.sleep(5)
-            # self._log.debug("HtmlPyEditor.executeAsync() 3")
+            import webview
+
+            window = webview.create_window("Woah dude!", "https://example.com")
+            webview.start()
 
             is_dispatch = job_info.env_type == "DISPATCH"
             ret_val = [NamedValue()] if is_dispatch else None
@@ -188,8 +136,8 @@ class HtmlPyEditor(XServiceInfo, XAsyncJob, unohelper.Base):
     def _validate_get_info(
         self,
         Arguments: Tuple[NamedValue, ...],
-        Listener: XJobListener,
-        job_info: AsyncJobImplInfo,
+        Listener: XJobListener | None,
+        job_info: AsyncJobInfo,
     ) -> str:
         """Validate arguments and get job info"""
         if not Listener:
@@ -230,7 +178,7 @@ class HtmlPyEditor(XServiceInfo, XAsyncJob, unohelper.Base):
             elif env.Name == "EventName":
                 job_info.event_name = str(env.Value)  # type: ignore
             elif env.Name == "Frame":
-                job_info.frame = cast("XFrame", env.Value)
+                job_info.frame = str(env.Value)
 
         if not job_info.env_type or job_info.env_type not in ["EXECUTOR", "DISPATCH"]:
             return f'Args : "{job_info.env_type}" isn\'t a valid value for EnvType'

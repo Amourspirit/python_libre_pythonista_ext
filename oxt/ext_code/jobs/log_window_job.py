@@ -30,18 +30,24 @@ if TYPE_CHECKING:
     from ...___lo_pip___.oxt_logger import OxtLogger
     from ...___lo_pip___.config import Config
     from ...pythonpath.libre_pythonista_lib.const.res_const import RES_LOG_WIN_URL
-    from ...pythonpath.libre_pythonista_lib.const.event_const import LOG_OPTIONS_CHANGED, LOG_PY_LOGGER_RESET
+    from ...pythonpath.libre_pythonista_lib.const.event_const import (
+        LOG_OPTIONS_CHANGED,
+        LOG_PY_LOGGER_RESET,
+    )
     from ...pythonpath.libre_pythonista_lib.event.shared_event import SharedEvent
 else:
-    override = lambda func: func
+    override = lambda func: func  # noqa: E731
     _CONDITIONS_MET = _conditions_met()
     if _CONDITIONS_MET:
         from ooodev.loader import Lo
-        from ooodev.events.args.event_args import EventArgs
-        from ___lo_pip___.config import Config
+        from ooodev.events.args.event_args import EventArgs  # noqa: F401
+        from ___lo_pip___.config import Config  # noqa: F401
         from libre_pythonista_lib.const.res_const import RES_LOG_WIN_URL
-        from libre_pythonista_lib.const.event_const import LOG_OPTIONS_CHANGED, LOG_PY_LOGGER_RESET
-        from libre_pythonista_lib.event.shared_event import SharedEvent
+        from libre_pythonista_lib.const.event_const import (
+            LOG_OPTIONS_CHANGED,
+            LOG_PY_LOGGER_RESET,
+        )  # noqa: F401
+        from libre_pythonista_lib.event.shared_event import SharedEvent  # noqa: F401
     else:
         RES_LOG_WIN_URL = ""
 # endregion imports
@@ -93,16 +99,18 @@ class LogWindowJob(XJob, unohelper.Base):
             if _CONDITIONS_MET:
                 try:
                     # Lo.dispatch_cmd(cmd="service:___lo_identifier___.Switcher", in_thread=True)
-                    layout_mgr = document.getCurrentController().getFrame().LayoutManager
+                    layout_mgr = (
+                        document.getCurrentController().getFrame().LayoutManager
+                    )
                     if layout_mgr.isElementVisible(RES_LOG_WIN_URL):
                         layout_mgr.hideElement(RES_LOG_WIN_URL)
                     # SharedEvent().trigger_event(LOG_OPTIONS_CHANGED, EventArgs(self))
                     self._logger.debug("Log Window Job Done")
 
-                except Exception as e:
+                except Exception:
                     self._logger.error("Error Setting Custom Properties", exc_info=True)
 
-        except Exception as e:
+        except Exception:
             self._logger.error("Error getting current document", exc_info=True)
             return
 

@@ -1,7 +1,6 @@
 from __future__ import annotations
-from typing import Any, cast, Tuple, TYPE_CHECKING
+from typing import Any, cast, Dict, Tuple, TYPE_CHECKING
 from urllib.parse import parse_qs
-import contextlib
 
 try:
     # python 3.12+
@@ -9,7 +8,6 @@ try:
 except ImportError:
     from typing_extensions import override
 
-import uno
 import unohelper
 from com.sun.star.frame import XDispatchProviderInterceptor
 from com.sun.star.frame import XDispatchProvider
@@ -84,7 +82,7 @@ class DispatchProviderInterceptor(unohelper.Base, XDispatchProviderInterceptor):
 
         uid = doc.runtime_uid
         key = f"dpi_{uid}"
-        if not key in cls._instances:
+        if key not in cls._instances:
             inst = super(DispatchProviderInterceptor, cls).__new__(cls, *args, **kwargs)
             inst._initialized = False
             inst._key = key
@@ -104,7 +102,7 @@ class DispatchProviderInterceptor(unohelper.Base, XDispatchProviderInterceptor):
     # def _convert_query_to_dict(self, query: str):
     #     return parse_qs(query)
 
-    def _convert_query_to_dict(self, query: str):
+    def _convert_query_to_dict(self, query: str) -> Dict[str, str]:
         query_dict = parse_qs(query)
         return {k: v[0] for k, v in query_dict.items()}
 
@@ -137,7 +135,9 @@ class DispatchProviderInterceptor(unohelper.Base, XDispatchProviderInterceptor):
         self._slave = NewDispatchProvider
 
     @override
-    def queryDispatch(self, URL: URL, TargetFrameName: str, SearchFlags: int) -> XDispatch | None:  # type: ignore
+    def queryDispatch(  # type: ignore
+        self, URL: URL, TargetFrameName: str, SearchFlags: int
+    ) -> XDispatch | None:  # type: ignore
         """
         Searches for an XDispatch for the specified URL within the specified target frame.
         """
@@ -168,13 +168,17 @@ class DispatchProviderInterceptor(unohelper.Base, XDispatchProviderInterceptor):
                 raise
             try:
                 cargs = CancelEventArgs(self)
-                cargs.event_data = DotDict(cmd=UNO_DISPATCH_PYC_FORMULA_DEP, doc=self._doc)
+                cargs.event_data = DotDict(
+                    cmd=UNO_DISPATCH_PYC_FORMULA_DEP, doc=self._doc
+                )
                 se.trigger_event(LP_DISPATCHING_CMD, cargs)
                 if cargs.cancel is True and cargs.handled is False:
                     return None
 
                 with log.indent(True):
-                    log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchPycFormulaDep")
+                    log.debug(
+                        "DispatchProviderInterceptor.queryDispatch: returning DispatchPycFormulaDep"
+                    )
 
                 result = DispatchPycFormulaDep()
                 eargs = EventArgs.from_args(cargs)
@@ -199,7 +203,9 @@ class DispatchProviderInterceptor(unohelper.Base, XDispatchProviderInterceptor):
                     return None
 
                 with log.indent(True):
-                    log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchPycFormula")
+                    log.debug(
+                        "DispatchProviderInterceptor.queryDispatch: returning DispatchPycFormula"
+                    )
 
                 result = DispatchPycFormula()
                 eargs = EventArgs.from_args(cargs)
@@ -220,13 +226,17 @@ class DispatchProviderInterceptor(unohelper.Base, XDispatchProviderInterceptor):
                 args = self._convert_query_to_dict(URL.Arguments)
 
                 cargs = CancelEventArgs(self)
-                cargs.event_data = DotDict(cmd=UNO_DISPATCH_CODE_EDIT, doc=self._doc, **args)
+                cargs.event_data = DotDict(
+                    cmd=UNO_DISPATCH_CODE_EDIT, doc=self._doc, **args
+                )
                 se.trigger_event(LP_DISPATCHING_CMD, cargs)
                 if cargs.cancel is True and cargs.handled is False:
                     return None
 
                 with log.indent(True):
-                    log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchEditPyCell")
+                    log.debug(
+                        "DispatchProviderInterceptor.queryDispatch: returning DispatchEditPyCell"
+                    )
                 result = DispatchEditPyCell(sheet=args["sheet"], cell=args["cell"])
 
                 eargs = EventArgs.from_args(cargs)
@@ -237,64 +247,21 @@ class DispatchProviderInterceptor(unohelper.Base, XDispatchProviderInterceptor):
                 log.exception(f"Dispatch Error: {URL.Main}")
                 return None
 
-        # elif URL.Main == UNO_DISPATCH_CODE_EDIT_MB:
-        #     try:
-        #         from .dispatch_edit_py_cell_mb import DispatchEditPyCellMb
-        #     except ImportError:
-        #         log.exception("DispatchEditPyCellMb import error")
-        #         raise
-        #     try:
-        #         args = self._convert_query_to_dict(URL.Arguments)
-        #         in_thread = args.pop("in_thread", "0") == "1"
-        #         cargs = CancelEventArgs(self)
-        #         cargs.event_data = DotDict(cmd=UNO_DISPATCH_CODE_EDIT_MB, doc=self._doc, in_thread=in_thread, **args)
-
-        #         se.trigger_event(LP_DISPATCHING_CMD, cargs)
-        #         if cargs.cancel is True and cargs.handled is False:
-        #             return None
-
-        #         with log.indent(True):
-        #             log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchEditPyCellMb")
-        #         result = DispatchEditPyCellMb(sheet=args["sheet"], cell=args["cell"], in_thread=in_thread)
-
-        #         eargs = EventArgs.from_args(cargs)
-        #         eargs.event_data.dispatch = result
-        #         se.trigger_event(LP_DISPATCHED_CMD, eargs)
-        #         return result
-        #     except Exception:
-        #         log.exception(f"Dispatch Error: {URL.Main}")
-        #         return None
-
         elif URL.Main == UNO_DISPATCH_CODE_EDIT_MB:
             try:
-                wv_edit = self._config.lp_settings.experimental_editor
-            except Exception:
-                log.exception("DispatchProviderInterceptor.queryDispatch: Error getting experimental_editor setting.")
-                wv_edit = False
-
-            if wv_edit:
-                try:
-                    from .dispatch_cell_edit_wv import DispatchCellEditWv
-                except ImportError:
-                    log.exception("DispatchCellEditWv import error")
-                    raise
-            else:
-                try:
-                    from .dispatch_edit_py_cell_mb import DispatchEditPyCellMb
-                except ImportError:
-                    log.exception("DispatchEditPyCellMb import error")
-                    raise
+                from .dispatch_edit_py_cell_mb import DispatchEditPyCellMb
+            except ImportError:
+                log.exception("DispatchEditPyCellMb import error")
+                raise
             try:
                 args = self._convert_query_to_dict(URL.Arguments)
-                if wv_edit:
-                    _ = args.pop("in_thread", "0") == "1"
-                    in_thread = False
-                else:
-                    in_thread = args.pop("in_thread", "0") == "1"
-
+                in_thread = args.pop("in_thread", "0") == "1"
                 cargs = CancelEventArgs(self)
                 cargs.event_data = DotDict(
-                    cmd=UNO_DISPATCH_CODE_EDIT_MB, doc=self._doc, in_thread=in_thread, wev_view_edit=wv_edit, **args
+                    cmd=UNO_DISPATCH_CODE_EDIT_MB,
+                    doc=self._doc,
+                    in_thread=in_thread,
+                    **args,
                 )
 
                 se.trigger_event(LP_DISPATCHING_CMD, cargs)
@@ -302,14 +269,12 @@ class DispatchProviderInterceptor(unohelper.Base, XDispatchProviderInterceptor):
                     return None
 
                 with log.indent(True):
-                    if wv_edit:
-                        log.debug("DispatchProviderInterceptor.queryDispatch: returning DispatchCellEditWv")
-                    else:
-                        log.debug("DispatchProviderInterceptor.queryDispatch: returning DispatchEditPyCellMb")
-                if wv_edit:
-                    result = DispatchCellEditWv(sheet=args["sheet"], cell=args["cell"]) # type: ignore
-                else:
-                    result = DispatchEditPyCellMb(sheet=args["sheet"], cell=args["cell"], in_thread=in_thread) # type: ignore
+                    log.debug(
+                        "DispatchProviderInterceptor.queryDispatch: returning DispatchEditPyCellMb"
+                    )
+                result = DispatchEditPyCellMb(
+                    sheet=args["sheet"], cell=args["cell"], in_thread=in_thread
+                )
 
                 eargs = EventArgs.from_args(cargs)
                 eargs.event_data.dispatch = result
@@ -330,13 +295,17 @@ class DispatchProviderInterceptor(unohelper.Base, XDispatchProviderInterceptor):
                 in_thread = args.pop("in_thread", "0") == "1"
 
                 cargs = CancelEventArgs(self)
-                cargs.event_data = DotDict(cmd=UNO_DISPATCH_LOG_WIN, doc=self._doc, in_thread=in_thread, **args)
+                cargs.event_data = DotDict(
+                    cmd=UNO_DISPATCH_LOG_WIN, doc=self._doc, in_thread=in_thread, **args
+                )
                 se.trigger_event(LP_DISPATCHING_CMD, cargs)
                 if cargs.cancel is True and cargs.handled is False:
                     return None
 
                 with log.indent(True):
-                    log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchLogWindow")
+                    log.debug(
+                        "DispatchProviderInterceptor.queryDispatch: returning DispatchLogWindow"
+                    )
                 result = DispatchLogWindow(in_thread=in_thread)
 
                 eargs = EventArgs.from_args(cargs)
@@ -357,13 +326,17 @@ class DispatchProviderInterceptor(unohelper.Base, XDispatchProviderInterceptor):
                 args = self._convert_query_to_dict(URL.Arguments)
 
                 cargs = CancelEventArgs(self)
-                cargs.event_data = DotDict(cmd=UNO_DISPATCH_DF_STATE, doc=self._doc, **args)
+                cargs.event_data = DotDict(
+                    cmd=UNO_DISPATCH_DF_STATE, doc=self._doc, **args
+                )
                 se.trigger_event(LP_DISPATCHING_CMD, cargs)
                 if cargs.cancel is True and cargs.handled is False:
                     return None
 
                 with log.indent(True):
-                    log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchToggleDfState")
+                    log.debug(
+                        "DispatchProviderInterceptor.queryDispatch: returning DispatchToggleDfState"
+                    )
                 result = DispatchToggleDfState(sheet=args["sheet"], cell=args["cell"])
 
                 eargs = EventArgs.from_args(cargs)
@@ -384,14 +357,20 @@ class DispatchProviderInterceptor(unohelper.Base, XDispatchProviderInterceptor):
             try:
                 args = self._convert_query_to_dict(URL.Arguments)
                 cargs = CancelEventArgs(self)
-                cargs.event_data = DotDict(cmd=UNO_DISPATCH_DS_STATE, doc=self._doc, **args)
+                cargs.event_data = DotDict(
+                    cmd=UNO_DISPATCH_DS_STATE, doc=self._doc, **args
+                )
                 se.trigger_event(LP_DISPATCHING_CMD, cargs)
                 if cargs.cancel is True and cargs.handled is False:
                     return None
 
                 with log.indent(True):
-                    log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchToggleSeriesState")
-                result = DispatchToggleSeriesState(sheet=args["sheet"], cell=args["cell"])
+                    log.debug(
+                        "DispatchProviderInterceptor.queryDispatch: returning DispatchToggleSeriesState"
+                    )
+                result = DispatchToggleSeriesState(
+                    sheet=args["sheet"], cell=args["cell"]
+                )
 
                 eargs = EventArgs.from_args(cargs)
                 eargs.event_data.dispatch = result
@@ -411,14 +390,20 @@ class DispatchProviderInterceptor(unohelper.Base, XDispatchProviderInterceptor):
                 args = self._convert_query_to_dict(URL.Arguments)
 
                 cargs = CancelEventArgs(self)
-                cargs.event_data = DotDict(cmd=UNO_DISPATCH_DATA_TBL_STATE, doc=self._doc, **args)
+                cargs.event_data = DotDict(
+                    cmd=UNO_DISPATCH_DATA_TBL_STATE, doc=self._doc, **args
+                )
                 se.trigger_event(LP_DISPATCHING_CMD, cargs)
                 if cargs.cancel is True and cargs.handled is False:
                     return None
 
                 with log.indent(True):
-                    log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchToggleDataTblState")
-                result = DispatchToggleDataTblState(sheet=args["sheet"], cell=args["cell"])
+                    log.debug(
+                        "DispatchProviderInterceptor.queryDispatch: returning DispatchToggleDataTblState"
+                    )
+                result = DispatchToggleDataTblState(
+                    sheet=args["sheet"], cell=args["cell"]
+                )
 
                 eargs = EventArgs.from_args(cargs)
                 eargs.event_data.dispatch = result
@@ -438,13 +423,17 @@ class DispatchProviderInterceptor(unohelper.Base, XDispatchProviderInterceptor):
                 args = self._convert_query_to_dict(URL.Arguments)
 
                 cargs = CancelEventArgs(self)
-                cargs.event_data = DotDict(cmd=UNO_DISPATCH_CODE_DEL, doc=self._doc, **args)
+                cargs.event_data = DotDict(
+                    cmd=UNO_DISPATCH_CODE_DEL, doc=self._doc, **args
+                )
                 se.trigger_event(LP_DISPATCHING_CMD, cargs)
                 if cargs.cancel is True and cargs.handled is False:
                     return None
 
                 with log.indent(True):
-                    log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchDelPyCell")
+                    log.debug(
+                        "DispatchProviderInterceptor.queryDispatch: returning DispatchDelPyCell"
+                    )
                 result = DispatchDelPyCell(sheet=args["sheet"], cell=args["cell"])
 
                 eargs = EventArgs.from_args(cargs)
@@ -465,13 +454,17 @@ class DispatchProviderInterceptor(unohelper.Base, XDispatchProviderInterceptor):
                 args = self._convert_query_to_dict(URL.Arguments)
 
                 cargs = CancelEventArgs(self)
-                cargs.event_data = DotDict(cmd=UNO_DISPATCH_PY_OBJ_STATE, doc=self._doc, **args)
+                cargs.event_data = DotDict(
+                    cmd=UNO_DISPATCH_PY_OBJ_STATE, doc=self._doc, **args
+                )
                 se.trigger_event(LP_DISPATCHING_CMD, cargs)
                 if cargs.cancel is True and cargs.handled is False:
                     return None
 
                 with log.indent(True):
-                    log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchPyObjState")
+                    log.debug(
+                        "DispatchProviderInterceptor.queryDispatch: returning DispatchPyObjState"
+                    )
                 result = DispatchPyObjState(sheet=args["sheet"], cell=args["cell"])
 
                 eargs = EventArgs.from_args(cargs)
@@ -492,13 +485,17 @@ class DispatchProviderInterceptor(unohelper.Base, XDispatchProviderInterceptor):
                 args = self._convert_query_to_dict(URL.Arguments)
 
                 cargs = CancelEventArgs(self)
-                cargs.event_data = DotDict(cmd=UNO_DISPATCH_CELL_SELECT, doc=self._doc, **args)
+                cargs.event_data = DotDict(
+                    cmd=UNO_DISPATCH_CELL_SELECT, doc=self._doc, **args
+                )
                 se.trigger_event(LP_DISPATCHING_CMD, cargs)
                 if cargs.cancel is True and cargs.handled is False:
                     return None
 
                 with log.indent(True):
-                    log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchCellSelect")
+                    log.debug(
+                        "DispatchProviderInterceptor.queryDispatch: returning DispatchCellSelect"
+                    )
                 result = DispatchCellSelect(sheet=args["sheet"], cell=args["cell"])
 
                 eargs = EventArgs.from_args(cargs)
@@ -519,14 +516,20 @@ class DispatchProviderInterceptor(unohelper.Base, XDispatchProviderInterceptor):
                 args = self._convert_query_to_dict(URL.Arguments)
 
                 cargs = CancelEventArgs(self)
-                cargs.event_data = DotDict(cmd=UNO_DISPATCH_CELL_SELECT_RECALC, doc=self._doc, **args)
+                cargs.event_data = DotDict(
+                    cmd=UNO_DISPATCH_CELL_SELECT_RECALC, doc=self._doc, **args
+                )
                 se.trigger_event(LP_DISPATCHING_CMD, cargs)
                 if cargs.cancel is True and cargs.handled is False:
                     return None
 
                 with log.indent(True):
-                    log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchCellSelectRecalc")
-                result = DispatchCellSelectRecalc(sheet=args["sheet"], cell=args["cell"])
+                    log.debug(
+                        "DispatchProviderInterceptor.queryDispatch: returning DispatchCellSelectRecalc"
+                    )
+                result = DispatchCellSelectRecalc(
+                    sheet=args["sheet"], cell=args["cell"]
+                )
 
                 eargs = EventArgs.from_args(cargs)
                 eargs.event_data.dispatch = result
@@ -546,13 +549,17 @@ class DispatchProviderInterceptor(unohelper.Base, XDispatchProviderInterceptor):
                 args = self._convert_query_to_dict(URL.Arguments)
 
                 cargs = CancelEventArgs(self)
-                cargs.event_data = DotDict(cmd=UNO_DISPATCH_DF_CARD, doc=self._doc, **args)
+                cargs.event_data = DotDict(
+                    cmd=UNO_DISPATCH_DF_CARD, doc=self._doc, **args
+                )
                 se.trigger_event(LP_DISPATCHING_CMD, cargs)
                 if cargs.cancel is True and cargs.handled is False:
                     return None
 
                 with log.indent(True):
-                    log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchCardDf")
+                    log.debug(
+                        "DispatchProviderInterceptor.queryDispatch: returning DispatchCardDf"
+                    )
                 result = DispatchCardDf(sheet=args["sheet"], cell=args["cell"])
 
                 eargs = EventArgs.from_args(cargs)
@@ -573,13 +580,17 @@ class DispatchProviderInterceptor(unohelper.Base, XDispatchProviderInterceptor):
                 args = self._convert_query_to_dict(URL.Arguments)
 
                 cargs = CancelEventArgs(self)
-                cargs.event_data = DotDict(cmd=UNO_DISPATCH_DATA_TBL_CARD, doc=self._doc, **args)
+                cargs.event_data = DotDict(
+                    cmd=UNO_DISPATCH_DATA_TBL_CARD, doc=self._doc, **args
+                )
                 se.trigger_event(LP_DISPATCHING_CMD, cargs)
                 if cargs.cancel is True and cargs.handled is False:
                     return None
 
                 with log.indent(True):
-                    log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchCardTblData")
+                    log.debug(
+                        "DispatchProviderInterceptor.queryDispatch: returning DispatchCardTblData"
+                    )
                 result = DispatchCardTblData(sheet=args["sheet"], cell=args["cell"])
 
                 eargs = EventArgs.from_args(cargs)
@@ -603,13 +614,17 @@ class DispatchProviderInterceptor(unohelper.Base, XDispatchProviderInterceptor):
                     args = {}
 
                 cargs = CancelEventArgs(self)
-                cargs.event_data = DotDict(cmd=UNO_DISPATCH_SEL_RNG, doc=self._doc, **args)
+                cargs.event_data = DotDict(
+                    cmd=UNO_DISPATCH_SEL_RNG, doc=self._doc, **args
+                )
                 se.trigger_event(LP_DISPATCHING_CMD, cargs)
                 if cargs.cancel is True and cargs.handled is False:
                     return None
 
                 with log.indent(True):
-                    log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchRngSelectPopup")
+                    log.debug(
+                        "DispatchProviderInterceptor.queryDispatch: returning DispatchRngSelectPopup"
+                    )
                 result = DispatchRngSelectPopup(**args)
 
                 eargs = EventArgs.from_args(cargs)
@@ -634,7 +649,9 @@ class DispatchProviderInterceptor(unohelper.Base, XDispatchProviderInterceptor):
                     return None
 
                 with log.indent(True):
-                    log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchAbout")
+                    log.debug(
+                        "DispatchProviderInterceptor.queryDispatch: returning DispatchAbout"
+                    )
                 result = DispatchAbout()
 
                 eargs = EventArgs.from_args(cargs)
@@ -656,13 +673,17 @@ class DispatchProviderInterceptor(unohelper.Base, XDispatchProviderInterceptor):
                 args = self._convert_query_to_dict(URL.Arguments)
 
                 cargs = CancelEventArgs(self)
-                cargs.event_data = DotDict(cmd=UNO_DISPATCH_CELL_CTl_UPDATE, doc=self._doc, **args)
+                cargs.event_data = DotDict(
+                    cmd=UNO_DISPATCH_CELL_CTl_UPDATE, doc=self._doc, **args
+                )
                 se.trigger_event(LP_DISPATCHING_CMD, cargs)
                 if cargs.cancel is True and cargs.handled is False:
                     return None
 
                 with log.indent(True):
-                    log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchCtlUpdate")
+                    log.debug(
+                        "DispatchProviderInterceptor.queryDispatch: returning DispatchCtlUpdate"
+                    )
                 result = DispatchCtlUpdate(sheet=args["sheet"], cell=args["cell"])
 
                 eargs = EventArgs.from_args(cargs)
@@ -682,13 +703,17 @@ class DispatchProviderInterceptor(unohelper.Base, XDispatchProviderInterceptor):
 
             try:
                 cargs = CancelEventArgs(self)
-                cargs.event_data = DotDict(cmd=UNO_DISPATCH_PIP_PKG_INSTALL, doc=self._doc)
+                cargs.event_data = DotDict(
+                    cmd=UNO_DISPATCH_PIP_PKG_INSTALL, doc=self._doc
+                )
                 se.trigger_event(LP_DISPATCHING_CMD, cargs)
                 if cargs.cancel is True and cargs.handled is False:
                     return None
 
                 with log.indent(True):
-                    log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchPyPkgInstall")
+                    log.debug(
+                        "DispatchProviderInterceptor.queryDispatch: returning DispatchPyPkgInstall"
+                    )
                 result = DispatchPyPkgInstall()
 
                 eargs = EventArgs.from_args(cargs)
@@ -707,13 +732,17 @@ class DispatchProviderInterceptor(unohelper.Base, XDispatchProviderInterceptor):
                 raise
             try:
                 cargs = CancelEventArgs(self)
-                cargs.event_data = DotDict(cmd=UNO_DISPATCH_PIP_PKG_UNINSTALL, doc=self._doc)
+                cargs.event_data = DotDict(
+                    cmd=UNO_DISPATCH_PIP_PKG_UNINSTALL, doc=self._doc
+                )
                 se.trigger_event(LP_DISPATCHING_CMD, cargs)
                 if cargs.cancel is True and cargs.handled is False:
                     return None
 
                 with log.indent(True):
-                    log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchPyPkgUninstall")
+                    log.debug(
+                        "DispatchProviderInterceptor.queryDispatch: returning DispatchPyPkgUninstall"
+                    )
                 result = DispatchPyPkgUninstall()
 
                 eargs = EventArgs.from_args(cargs)
@@ -732,13 +761,17 @@ class DispatchProviderInterceptor(unohelper.Base, XDispatchProviderInterceptor):
                 raise
             try:
                 cargs = CancelEventArgs(self)
-                cargs.event_data = DotDict(cmd=UNO_DISPATCH_PIP_PKG_INSTALLED, doc=self._doc)
+                cargs.event_data = DotDict(
+                    cmd=UNO_DISPATCH_PIP_PKG_INSTALLED, doc=self._doc
+                )
                 se.trigger_event(LP_DISPATCHING_CMD, cargs)
                 if cargs.cancel is True and cargs.handled is False:
                     return None
 
                 with log.indent(True):
-                    log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchPyPkgInstalled")
+                    log.debug(
+                        "DispatchProviderInterceptor.queryDispatch: returning DispatchPyPkgInstalled"
+                    )
                 result = DispatchPyPkgInstalled()
 
                 eargs = EventArgs.from_args(cargs)
@@ -763,7 +796,9 @@ class DispatchProviderInterceptor(unohelper.Base, XDispatchProviderInterceptor):
                     return None
 
                 with log.indent(True):
-                    log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchPyLink")
+                    log.debug(
+                        "DispatchProviderInterceptor.queryDispatch: returning DispatchPyLink"
+                    )
                 result = DispatchPyLink()
 
                 eargs = EventArgs.from_args(cargs)
@@ -782,13 +817,17 @@ class DispatchProviderInterceptor(unohelper.Base, XDispatchProviderInterceptor):
                 raise
             try:
                 cargs = CancelEventArgs(self)
-                cargs.event_data = DotDict(cmd=UNO_DISPATCH_PIP_PKG_UNLINK, doc=self._doc)
+                cargs.event_data = DotDict(
+                    cmd=UNO_DISPATCH_PIP_PKG_UNLINK, doc=self._doc
+                )
                 se.trigger_event(LP_DISPATCHING_CMD, cargs)
                 if cargs.cancel is True and cargs.handled is False:
                     return None
 
                 with log.indent(True):
-                    log.debug(f"DispatchProviderInterceptor.queryDispatch: returning DispatchPyUnlink")
+                    log.debug(
+                        "DispatchProviderInterceptor.queryDispatch: returning DispatchPyUnlink"
+                    )
                 result = DispatchPyUnlink()
 
                 eargs = EventArgs.from_args(cargs)
@@ -801,7 +840,9 @@ class DispatchProviderInterceptor(unohelper.Base, XDispatchProviderInterceptor):
 
         return self._slave.queryDispatch(URL, TargetFrameName, SearchFlags)
 
-    def queryDispatches(self, Requests: Tuple[DispatchDescriptor, ...]) -> Tuple[XDispatch, ...]:
+    def queryDispatches(
+        self, Requests: Tuple[DispatchDescriptor, ...]
+    ) -> Tuple[XDispatch, ...]:
         """
         Actually this method is redundant to XDispatchProvider.queryDispatch() to avoid multiple remote calls.
 

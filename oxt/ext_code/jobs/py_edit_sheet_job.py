@@ -25,26 +25,22 @@ if TYPE_CHECKING:
         from typing import override  # type: ignore
     except ImportError:
         from typing_extensions import override
-    from ooodev.loader import Lo
-    from ooodev.calc import CalcDoc
     from ...___lo_pip___.oxt_logger import OxtLogger
     from ...pythonpath.libre_pythonista_lib.state.calc_state_mgr import CalcStateMgr
 else:
     override = lambda func: func  # noqa: E731
     _CONDITIONS_MET = _conditions_met()
     if _CONDITIONS_MET:
-        from ooodev.loader import Lo  # noqa: F401
-        from ooodev.calc import CalcDoc  # noqa: F401
         from libre_pythonista_lib.state.calc_state_mgr import CalcStateMgr  # noqa: F401
 
 # endregion imports
 
 
 # region XJob
-class LoadingJob(XJob, unohelper.Base):
+class PyEditSheetJob(XJob, unohelper.Base):
     """Python UNO Component that implements the com.sun.star.task.Job interface."""
 
-    IMPLE_NAME = "___lo_identifier___.LoadingJob"
+    IMPLE_NAME = "___lo_identifier___.py_edit_sheet_job"
     SERVICE_NAMES = ("com.sun.star.task.Job",)
 
     @classmethod
@@ -68,23 +64,28 @@ class LoadingJob(XJob, unohelper.Base):
         self._logger.debug("execute")
         try:
             # loader = Lo.load_office()
-            self._logger.debug(f"Args Length: {len(Arguments)}")
-            arg1 = Arguments[0]
+            # loader.load_office()
+            # import webview
 
-            for struct in arg1.Value:
-                self._logger.debug(f"Struct: {struct.Name}")
-                if struct.Name == "Model":
-                    self.document = struct.Value
-                    self._logger.debug("Document Found")
-            if self.document is None:
-                self._logger.debug("Document is None")
-                return
-            if self.document.supportsService("com.sun.star.sheet.SpreadsheetDocument"):
-                self._logger.debug("Document Loading is a spreadsheet")
+            # self._window = webview.create_window("Woah dude!", "https://example.com")
+            # webview.start()
+            if TYPE_CHECKING:
+                from ...pythonpath.libre_pythonista_lib.dialog.webview.lp_py_editor.py_edit_sheet import (
+                    PyEditSheet,
+                )  # type: ignore
+                from ...pythonpath.libre_pythonista_lib.dialog.webview.lp_py_editor import (
+                    editor,
+                )  # type: ignore
             else:
-                self._logger.debug("Document Loading not a spreadsheet")
+                from libre_pythonista_lib.dialog.webview.lp_py_editor.py_edit_sheet import (
+                    PyEditSheet,
+                )
+                from libre_pythonista_lib.dialog.webview.lp_py_editor import editor  # type: ignore
+            editor.main()
+            # editor = PyEditSheet(sheet="Sheet1", cell="A1")
+            # editor.show()
 
-        except Exception as e:
+        except Exception:
             self._logger.error("Error getting current document", exc_info=True)
             return
 
@@ -95,7 +96,7 @@ class LoadingJob(XJob, unohelper.Base):
     def _get_local_logger(self) -> OxtLogger:
         from ___lo_pip___.oxt_logger import OxtLogger  # type: ignore
 
-        return OxtLogger(log_name="LoadingJob")
+        return OxtLogger(log_name="PyEditSheetJob")
 
     # endregion Logging
 
@@ -106,6 +107,6 @@ class LoadingJob(XJob, unohelper.Base):
 
 g_TypeTable = {}
 g_ImplementationHelper = unohelper.ImplementationHelper()
-g_ImplementationHelper.addImplementation(*LoadingJob.get_imple())
+g_ImplementationHelper.addImplementation(*PyEditSheetJob.get_imple())
 
 # endregion Implementation

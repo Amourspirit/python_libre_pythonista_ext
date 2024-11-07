@@ -4,14 +4,25 @@
 <head>
     <!-- CodeMirror CSS -->
     <link rel="stylesheet" href="css/codemirror.min.css">
+    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/codemirror.min.css"> -->
     <!-- CodeMirror JS -->
     <script src="js/codemirror.min.js"></script>
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/codemirror.min.js"></script> -->
     <!-- Python Mode -->
     <script src="js/python.min.js"></script>
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/mode/python/python.min.js"></script> -->
     <!-- Show-hint CSS and JS for autocomplete -->
     <link rel="stylesheet" href="css/show-hint.min.css">
+    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/hint/show-hint.min.css"> -->
     <script src="js/show-hint.min.js"></script>
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/hint/show-hint.min.js"></script> -->
     <style>
+        body {
+            margin: 0;
+            padding: 0;
+            border: 5px solid #e20303; /* Add a border to the entire page */
+            box-sizing: border-box; /* Ensure padding and border are included in the element's total width and height */
+        }
         /* Set size and position for the textarea */
         .CodeMirror {
             position: absolute;
@@ -224,7 +235,7 @@
 
     <div class="button-container">
         <button onclick="pywebview.api.destroy()">Cancel</button>
-        <button onclick='pywebview.api.log("Woah dude!")'>OK</button>
+        <button onclick='pywebview.api.accept()'>OK</button>
     </div>
 </body>
 

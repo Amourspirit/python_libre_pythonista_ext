@@ -1,6 +1,11 @@
 from __future__ import annotations
 from typing import Any, cast, TYPE_CHECKING
+import threading
 
+from com.sun.star.uno import XInterface
+from ooo.dyn.beans.named_value import NamedValue
+
+from ooodev.loader import Lo
 from ooodev.calc import CalcCell
 from ooodev.gui.menu.popup_menu import PopupMenu
 from ooodev.gui.menu.popup.popup_creator import PopupCreator
@@ -18,30 +23,46 @@ from ...const import (
     UNO_DISPATCH_DATA_TBL_CARD,
     UNO_DISPATCH_CELL_CTl_UPDATE,
 )
+from ...const.job_executor import PY_EDITOR_SHEET
+
 from ..state.state_kind import StateKind
 from ..state.ctl_state import CtlState
 from ..lpl_cell import LplCell
 from ...log.log_inst import LogInst
+from ...dialog.webview.lp_py_editor.job_listener import JobListener
 
 if TYPE_CHECKING:
     from com.sun.star.awt import MenuEvent
     from ooodev.events.args.event_args import EventArgs
     from .....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from .....___lo_pip___.config import Config
 else:
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from ___lo_pip___.config import Config
 
 
 def on_menu_select(src: Any, event: EventArgs, menu: PopupMenu) -> None:
     # print("Menu Selected")
     log = LogInst()
     log.debug("on_menu_select() Menu Selected")
+    log.debug(f"on_menu_select() Is Main Thread: {is_main_thread()}")
     try:
         me = cast("MenuEvent", event.event_data)
         command = menu.get_command(me.MenuId)
         if command:
+            if command.startswith(".uno:service:"):
+                command = command.replace(".uno:", "")
+            if command == "service:___lo_identifier___.AsyncJobHtmlPyEditor":
+                editor_service_async(command)
+                return
+            if command == "service:___lo_identifier___.py_edit_sheet_job":
+                editor_service(command)
+                return
+
             log.debug(f"on_menu_select() Command: {command}")
             # check if command is a dispatch command
             # is is very important that UNO_DISPATCH_CODE_EDIT_MB be executed in a thread or it wil block GUI
+
             if menu.is_dispatch_cmd(command):
                 log.debug("on_menu_select() Dispatch Command")
                 if "?" in command:
@@ -64,14 +85,35 @@ def on_menu_select(src: Any, event: EventArgs, menu: PopupMenu) -> None:
         log.exception("on_menu_select() Error")
 
 
-class CtlPopup:
+def is_main_thread():
+    return threading.current_thread() == threading.main_thread()
 
+
+def editor_service_async(service: str) -> None:
+    service = service.removeprefix("service:")
+    # https://wiki.documentfoundation.org/Documentation/DevGuide/Writing_UNO_Components#Initialization
+
+    listener = JobListener(ctx=Lo.get_context())
+    nv_env = NamedValue("Environment", (NamedValue("EnvType", "DISPATCH"),))
+
+    serv = cast(Any, Lo.create_instance_mcf(XInterface, service))
+    serv.executeAsync((nv_env,), listener)
+
+
+def editor_service(service: str) -> None:
+    service = service.removeprefix("service:")
+    serv = cast(Any, Lo.create_instance_mcf(XInterface, service))
+    serv.execute(())  # are a tuple of NamedValue
+
+
+class CtlPopup:
     def __init__(self, cell: CalcCell) -> None:
         self._log = OxtLogger(log_name=self.__class__.__name__)
         with self._log.indent(True):
             self._log.debug("Init")
         self._cell = cell
         self._res = ResResolver()
+        self._config = Config()
         self._sheet_name = self._cell.calc_sheet.name
         self._key_maker = KeyMaker()
         self._ctl_state = CtlState(self._cell)
@@ -87,7 +129,9 @@ class CtlPopup:
             state = self._ctl_state.get_state()
             cmd = self._cps.get_rule_dispatch_cmd()
             if not cmd:
-                self._log.error("CtlPopup - _get_state_menu() No dispatch command found.")
+                self._log.error(
+                    "CtlPopup - _get_state_menu() No dispatch command found."
+                )
                 return []
             cmd_uno = f"{cmd}?sheet={self._sheet_name}&cell={self._cell.cell_obj}"
             py_obj = self._res.resolve_string("mnuViewPyObj")  # Python Object
@@ -98,8 +142,16 @@ class CtlPopup:
                     "text": "State",
                     "command": "",
                     "submenu": [
-                        {"text": py_obj, "command": cmd_uno, "enabled": state == StateKind.ARRAY},
-                        {"text": array, "command": cmd_uno, "enabled": state == StateKind.PY_OBJ},
+                        {
+                            "text": py_obj,
+                            "command": cmd_uno,
+                            "enabled": state == StateKind.ARRAY,
+                        },
+                        {
+                            "text": array,
+                            "command": cmd_uno,
+                            "enabled": state == StateKind.PY_OBJ,
+                        },
                     ],
                 },
             ]
@@ -135,7 +187,12 @@ class CtlPopup:
 
         cmd_enabled = self._cps.is_dispatch_enabled(UNO_DISPATCH_CODE_EDIT)
         self._log.debug(f"_get_popup_menu() Edit Command Enabled: {cmd_enabled}")
-        edit_url = f"{UNO_DISPATCH_CODE_EDIT_MB}?sheet={self._sheet_name}&cell={self._cell.cell_obj}&in_thread=1"
+        if self._config.lp_settings.experimental_editor:
+            # edit_url = f"{PY_EDITOR_SHEET}?py_edit_sheet&sheet={self._sheet_name}&cell={self._cell.cell_obj}"
+            # edit_url = "service:___lo_identifier___.AsyncJobHtmlPyEditor"
+            edit_url = "service:___lo_identifier___.py_edit_sheet_job"
+        else:
+            edit_url = f"{UNO_DISPATCH_CODE_EDIT_MB}?sheet={self._sheet_name}&cell={self._cell.cell_obj}&in_thread=1"
         del_url = f"{UNO_DISPATCH_CODE_DEL}?sheet={self._sheet_name}&cell={self._cell.cell_obj}"
         sel_url = f"{UNO_DISPATCH_CELL_SELECT}?sheet={self._sheet_name}&cell={self._cell.cell_obj}"
         sel_recalc_url = f"{UNO_DISPATCH_CELL_SELECT_RECALC}?sheet={self._sheet_name}&cell={self._cell.cell_obj}"

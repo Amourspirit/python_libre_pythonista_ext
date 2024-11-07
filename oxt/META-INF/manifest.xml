@@ -28,6 +28,8 @@
         manifest:full-path="config/options.xcu" />
     <manifest:file-entry manifest:media-type="application/vnd.sun.star.uno-component;type=Python"
         manifest:full-path="ext_code/impl/py_impl.py" />
+    <manifest:file-entry manifest:media-type="application/vnd.sun.star.uno-component;type=Python"
+        manifest:full-path="ext_code/impl/python_editor.py" />
     <manifest:file-entry
         manifest:media-type="application/vnd.sun.star.uno-component;type=Python"
         manifest:full-path="ext_code/impl/python_impl.py" />
@@ -49,6 +51,9 @@
     <manifest:file-entry
         manifest:media-type="application/vnd.sun.star.uno-component;type=Python"
         manifest:full-path="ext_code/jobs/log_window_job.py" />
+    <manifest:file-entry
+        manifest:media-type="application/vnd.sun.star.uno-component;type=Python"
+        manifest:full-path="ext_code/jobs/py_edit_sheet_job.py" />
     <manifest:file-entry
         manifest:media-type="application/vnd.sun.star.uno-component;type=Python"
         manifest:full-path="ext_code/jobs/async_jobs/html_py_editor.py" />

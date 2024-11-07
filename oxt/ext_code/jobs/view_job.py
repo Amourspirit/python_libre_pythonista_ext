@@ -34,7 +34,7 @@ if TYPE_CHECKING:
     #     SheetCalculationEventListener,
     # )
 else:
-    override = lambda func: func
+    override = lambda func: func  # noqa: E731
     _CONDITIONS_MET = _conditions_met()
     if _CONDITIONS_MET:
         from ooodev.loader import Lo
@@ -111,7 +111,7 @@ class ViewJob(unohelper.Base, XJob):
             else:
                 self._log.debug("Document is not a spreadsheet")
 
-        except Exception as e:
+        except Exception:
             self._log.error("Error getting current document", exc_info=True)
             return
 
