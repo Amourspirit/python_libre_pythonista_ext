@@ -1,6 +1,7 @@
 from __future__ import annotations
-from typing import Any, cast, TYPE_CHECKING
+from typing import Any, cast, Dict, TYPE_CHECKING
 import threading
+from urllib.parse import parse_qs, urlparse
 
 from com.sun.star.uno import XInterface
 from ooo.dyn.beans.named_value import NamedValue
@@ -51,11 +52,11 @@ def on_menu_select(src: Any, event: EventArgs, menu: PopupMenu) -> None:
         command = menu.get_command(me.MenuId)
         if command:
             if command.startswith(".uno:service:"):
-                command = command.replace(".uno:", "")
+                command = command.replace(".uno:", "", 1)
             if command == "service:___lo_identifier___.AsyncJobHtmlPyEditor":
                 editor_service_async(command)
                 return
-            if command == "service:___lo_identifier___.py_edit_sheet_job":
+            if command.startswith("service:___lo_identifier___.py_edit_cell_job"):
                 editor_service(command)
                 return
 
@@ -90,7 +91,8 @@ def is_main_thread():
 
 
 def editor_service_async(service: str) -> None:
-    service = service.removeprefix("service:")
+    # service = service.removeprefix("service:") # python 3.9
+    service = service.replace("service:", "", 1)
     # https://wiki.documentfoundation.org/Documentation/DevGuide/Writing_UNO_Components#Initialization
 
     listener = JobListener(ctx=Lo.get_context())
@@ -101,9 +103,33 @@ def editor_service_async(service: str) -> None:
 
 
 def editor_service(service: str) -> None:
-    service = service.removeprefix("service:")
-    serv = cast(Any, Lo.create_instance_mcf(XInterface, service))
-    serv.execute(())  # are a tuple of NamedValue
+    # service = service.removeprefix("service:") # python 3.9
+    service = service.replace("service:", "", 1)
+    service_name = service.split("?")[0]
+    params = get_query_params(service)
+    name_values = []
+    if params:
+        for name, value in params.items():
+            name_values.append(NamedValue(name, value))
+    serv = cast(Any, Lo.create_instance_mcf(XInterface, service_name))
+    if name_values:
+        serv.execute(tuple(name_values))
+    else:
+        serv.execute(())  # are a tuple of NamedValue
+
+
+def convert_query_to_dict(query: str) -> Dict[str, str]:
+    if not query:
+        return {}
+    query_dict = parse_qs(query)
+    return {k: v[0] for k, v in query_dict.items()}
+
+
+def get_query_params(url_str: str) -> Dict[str, str]:
+    # Parse the URL and extract the query part
+    query = urlparse(url_str).query
+    # Parse the query string into a dictionary
+    return convert_query_to_dict(query)
 
 
 class CtlPopup:
@@ -190,7 +216,7 @@ class CtlPopup:
         if self._config.lp_settings.experimental_editor:
             # edit_url = f"{PY_EDITOR_SHEET}?py_edit_sheet&sheet={self._sheet_name}&cell={self._cell.cell_obj}"
             # edit_url = "service:___lo_identifier___.AsyncJobHtmlPyEditor"
-            edit_url = "service:___lo_identifier___.py_edit_sheet_job"
+            edit_url = f"service:___lo_identifier___.py_edit_cell_job?sheet={self._sheet_name}&cell={self._cell.cell_obj}"
         else:
             edit_url = f"{UNO_DISPATCH_CODE_EDIT_MB}?sheet={self._sheet_name}&cell={self._cell.cell_obj}&in_thread=1"
         del_url = f"{UNO_DISPATCH_CODE_DEL}?sheet={self._sheet_name}&cell={self._cell.cell_obj}"

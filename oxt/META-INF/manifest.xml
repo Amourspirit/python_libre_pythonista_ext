@@ -53,7 +53,7 @@
         manifest:full-path="ext_code/jobs/log_window_job.py" />
     <manifest:file-entry
         manifest:media-type="application/vnd.sun.star.uno-component;type=Python"
-        manifest:full-path="ext_code/jobs/py_edit_sheet_job.py" />
+        manifest:full-path="ext_code/jobs/py_edit_cell_job.py" />
     <manifest:file-entry
         manifest:media-type="application/vnd.sun.star.uno-component;type=Python"
         manifest:full-path="ext_code/jobs/async_jobs/html_py_editor.py" />

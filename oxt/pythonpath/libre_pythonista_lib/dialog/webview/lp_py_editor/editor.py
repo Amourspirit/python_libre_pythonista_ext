@@ -6,10 +6,10 @@ import os
 from pathlib import Path
 import json
 
-
+from ooodev.calc import CalcDoc
 from ....multi_process.socket_manager import SocketManager
 from ....multi_process.process_mgr import ProcessMgr
-
+from ....code.py_source_mgr import PyInstance
 
 if TYPE_CHECKING:
     try:
@@ -36,6 +36,33 @@ class PyCellEditProcessMgr(ProcessMgr):
     """
     Manages subprocesses, including their creation, communication, and termination.
     """
+
+    @override
+    def __init__(self, socket_manager: SocketManager, sheet: str, cell: str):
+        """
+        Initializes the Editor instance.
+
+        Args:
+            socket_manager (SocketManager): Manager for handling socket connections.
+            sheet (str): The name of the sheet to edit.
+            cell (str): The name of the cell to edit
+
+        Attributes:
+            log (OxtLogger): Logger instance for logging purposes.
+            socket_manager (SocketManager): Manager for handling socket connections.
+            process_pool (Dict[str, Tuple[subprocess.Popen, str, str]]): Dictionary to manage subprocesses.
+            lock (threading.Lock): Lock for thread-safe operations.
+            _term_events (TerminateEvents): Instance to handle termination events.
+        """
+
+        super().__init__(socket_manager)
+        self.sheet = sheet
+        self.cell = cell
+        self.doc = CalcDoc.from_current_doc()
+        self.py_instance = PyInstance(self.doc)
+        self.log.debug(f"Sheet: {self.sheet}, Cell: {self.cell}")
+        calc_sheet = self.doc.sheets[sheet]
+        self.calc_cell = calc_sheet[cell]
 
     @override
     def get_script_path(self) -> str:
@@ -90,7 +117,8 @@ class PyCellEditProcessMgr(ProcessMgr):
                     break
                 elif msg_cmd == "webview_ready":
                     self.log.debug("Webview is ready, sending code")
-                    code = "html = '<h2>Hello World!</h2>'\nj_data = {'a': 1, 'b': 2}\n"
+                    # code = "html = '<h2>Hello World!</h2>'\nj_data = {'a': 1, 'b': 2}\n"
+                    code = self.py_instance[self.calc_cell.cell_obj]
                     self.socket_manager.send_message(
                         {"cmd": "code", "data": code}, process_id
                     )
@@ -118,7 +146,7 @@ class PyCellEditProcessMgr(ProcessMgr):
             self.socket_manager.close_socket(process_id)
 
 
-def main():
+def main(sheet: str, cell: str) -> None:
     """
     Main function to initialize and manage subprocesses.
     This function performs the following steps:
@@ -130,13 +158,19 @@ def main():
     5. Logs the subprocess ID if the subprocess starts successfully.
     6. Logs an error message if the subprocess fails to start.
 
+    Args:
+        sheet (str): The name of the sheet to edit.
+        cell (str): The name of the cell to edit
+
     Returns:
         None: This function does not return anything.
     """
 
     log = OxtLogger(log_name="shell_edit")
     socket_manager = SocketManager()
-    process_manager = PyCellEditProcessMgr(socket_manager)
+    process_manager = PyCellEditProcessMgr(
+        socket_manager=socket_manager, sheet=sheet, cell=cell
+    )
 
     subprocess_id = process_manager.start_subprocess()
     if subprocess_id:

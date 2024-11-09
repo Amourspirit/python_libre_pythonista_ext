@@ -1,12 +1,13 @@
 # region imports
 from __future__ import unicode_literals, annotations
-from typing import Any, TYPE_CHECKING
+from typing import Tuple, TYPE_CHECKING
 
 import unohelper
 import contextlib
 
 
 from com.sun.star.task import XJob
+from com.sun.star.beans import NamedValue
 
 
 def _conditions_met() -> bool:
@@ -25,6 +26,8 @@ if TYPE_CHECKING:
         from typing import override  # type: ignore
     except ImportError:
         from typing_extensions import override
+
+    from ooodev.utils.props import Props
     from ...___lo_pip___.oxt_logger import OxtLogger
     from ...pythonpath.libre_pythonista_lib.state.calc_state_mgr import CalcStateMgr
 else:
@@ -32,15 +35,16 @@ else:
     _CONDITIONS_MET = _conditions_met()
     if _CONDITIONS_MET:
         from libre_pythonista_lib.state.calc_state_mgr import CalcStateMgr  # noqa: F401
+        from ooodev.utils.props import Props
 
 # endregion imports
 
 
 # region XJob
-class PyEditSheetJob(XJob, unohelper.Base):
+class PyEditCellJob(XJob, unohelper.Base):
     """Python UNO Component that implements the com.sun.star.task.Job interface."""
 
-    IMPLE_NAME = "___lo_identifier___.py_edit_sheet_job"
+    IMPLE_NAME = "___lo_identifier___.py_edit_cell_job"
     SERVICE_NAMES = ("com.sun.star.task.Job",)
 
     @classmethod
@@ -54,39 +58,30 @@ class PyEditSheetJob(XJob, unohelper.Base):
         unohelper.Base.__init__(self)
         self.ctx = ctx
         self.document = None
-        self._logger = self._get_local_logger()
+        self._log = self._get_local_logger()
 
     # endregion Init
 
     # region execute
     @override
-    def execute(self, Arguments: Any) -> None:  # type: ignore
-        self._logger.debug("execute")
+    def execute(self, Arguments: Tuple[NamedValue, ...]) -> None:  # type: ignore
+        global _CONDITIONS_MET
+        if not _CONDITIONS_MET:
+            return
+        self._log.debug("execute")
         try:
-            # loader = Lo.load_office()
-            # loader.load_office()
-            # import webview
-
-            # self._window = webview.create_window("Woah dude!", "https://example.com")
-            # webview.start()
             if TYPE_CHECKING:
-                from ...pythonpath.libre_pythonista_lib.dialog.webview.lp_py_editor.py_edit_sheet import (
-                    PyEditSheet,
-                )  # type: ignore
                 from ...pythonpath.libre_pythonista_lib.dialog.webview.lp_py_editor import (
                     editor,
                 )  # type: ignore
             else:
-                from libre_pythonista_lib.dialog.webview.lp_py_editor.py_edit_sheet import (
-                    PyEditSheet,
-                )
                 from libre_pythonista_lib.dialog.webview.lp_py_editor import editor  # type: ignore
-            editor.main()
-            # editor = PyEditSheet(sheet="Sheet1", cell="A1")
-            # editor.show()
+            data_args = Props.data_to_dict(Arguments)
+            self._log.debug(f"data_args: {data_args}")
+            editor.main(sheet=data_args.get("sheet"), cell=data_args.get("cell"))
 
         except Exception:
-            self._logger.error("Error getting current document", exc_info=True)
+            self._log.error("Error getting current document", exc_info=True)
             return
 
     # endregion execute
@@ -96,7 +91,7 @@ class PyEditSheetJob(XJob, unohelper.Base):
     def _get_local_logger(self) -> OxtLogger:
         from ___lo_pip___.oxt_logger import OxtLogger  # type: ignore
 
-        return OxtLogger(log_name="PyEditSheetJob")
+        return OxtLogger(log_name=self.__class__.__name__)
 
     # endregion Logging
 
@@ -107,6 +102,6 @@ class PyEditSheetJob(XJob, unohelper.Base):
 
 g_TypeTable = {}
 g_ImplementationHelper = unohelper.ImplementationHelper()
-g_ImplementationHelper.addImplementation(*PyEditSheetJob.get_imple())
+g_ImplementationHelper.addImplementation(*PyEditCellJob.get_imple())
 
 # endregion Implementation
