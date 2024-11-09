@@ -1,14 +1,13 @@
 from __future__ import annotations
-from typing import cast, TYPE_CHECKING
-
-# import multiprocessing
-from multiprocessing.connection import Connection
+from typing import Any, Dict, cast, TYPE_CHECKING
+import socket
+import struct
 import sys
 import json
 import threading
 from pathlib import Path
 import webview
-import jedi
+import jedi  # noqa # type: ignore
 
 # from ooodev.adapter.frame.terminate_events import TerminateEvents
 # from ooodev.events.args.event_args import EventArgs
@@ -29,63 +28,75 @@ webview.settings = {
     "OPEN_DEVTOOLS_IN_DEBUG": False,
 }
 
+_WEB_VEW_ENDED = False
+
 
 class Api:
-    def __init__(self, doc_id: str, child_conn: Connection):
+    def __init__(self, doc_id: str, sock: socket.socket, port: int):
         self._window = cast(webview.Window, None)
         self._doc_id = doc_id
-        self.child_conn = child_conn
+        self.port = port
+        self.sock = sock
 
     def set_window(self, window: webview.Window):
         self._window = window
 
     def destroy(self):
+        global _WEB_VEW_ENDED
         try:
             if self._window:
                 # Destroy the window in a separate thread
                 # self.hide()
                 self._window.destroy()
                 self._window = cast(webview.Window, None)
+                _WEB_VEW_ENDED = True
         except Exception as e:
-            print("Error in destroy", e)
+            sys.stderr.write(f"Error in destroy {e}\n")
 
     def hide(self):
         try:
             if self._window:
                 if not self._window.hidden:
-                    print("Hiding window")
+                    sys.stdout.write("Hiding window\n")
                     self._window.hide()
-                    print("Window hidden")
+                    sys.stdout.write("Window hidden'n")
                 else:
-                    print("Window already hidden")
+                    sys.stdout.write("Window already hidden\n")
         except Exception as e:
-            print("Error in hide", e)
+            sys.stderr.write(f"Error in hide {e}\n")
 
     def show(self):
         try:
             if self._window:
-                print("Showing window")
+                sys.stdout.write("Showing window\n")
                 self._window.show()
-                print("Window shown")
+                sys.stdout.write("Window shown\n")
         except Exception as e:
-            print("Error in show", e)
+            sys.stderr.write(f"Error in show: {e}\n")
 
     def accept(self) -> None:
         try:
             if self._window:
                 code = self._window.evaluate_js("getCode()")
-                print("Code:\n{}".format(code))
-                self.child_conn.send("Code:\n{}".format(code))  # noqa: F821 # type: ignore
+                sys.stdout.write("Code:\n{}\n".format(code))
+                data = {
+                    "id": "code",
+                    "doc_id": self._doc_id,
+                    "data": code,
+                }
+                send_message(self.sock, data)
+                sys.stdout.write("Sent code to server\n")
+                self.destroy()
 
         except Exception as e:
-            print("Error in accept", e)
+            sys.stderr.write(f"Error in accept: {e}\n")
 
     def log(self, value):
         try:
             code = self._window.evaluate_js("getCode()")
-            print("Code:\n{}".format(code))
+            sys.stdout.write("Code:\n{}\n".format(code))
         except Exception as e:
-            print("Error in log", e)
+            sys.stderr.write(f"Error in log: {e}")
 
     def get_autocomplete(self, code, line, column):
         try:
@@ -108,10 +119,10 @@ class Api:
         try:
             if self._window:
                 escaped_code = json.dumps(code)  # Escape the string for JavaScript
-                print(escaped_code)
+                # sys.stdout.write(f"{escaped_code}\n")
                 self._window.evaluate_js(f"setCode({escaped_code})")
         except Exception as e:
-            print("Error in set_code", e)
+            sys.stderr.write(f"Error in set_code: {e}\n")
 
 
 def webview_ready(window: webview.Window):
@@ -122,54 +133,116 @@ def webview_ready(window: webview.Window):
     # window.evaluate_js(f"setCode({escaped_code})")
 
 
-def read_messages(api: Api, child_conn: Connection):
-    try:
-        while True:
-            message: str = child_conn.recv()
-            print(f"Subprocess received: {message}")
-            # Handle the message
-            if message == "destroy":
+def receive_all(sock: socket.socket, length: int) -> bytes:
+    data = b""
+    while len(data) < length:
+        more = sock.recv(length - len(data))
+        if not more:
+            raise ConnectionResetError("Connection closed prematurely")
+        data += more
+    return data
+
+
+def receive_messages(api: Api, sock: socket.socket) -> None:
+    global _WEB_VEW_ENDED
+    while True:
+        try:
+            # Receive the message length first
+            raw_msg_len = receive_all(sock, 4)
+            if not raw_msg_len:
+                break
+            msg_len = struct.unpack("!I", raw_msg_len)[0]
+
+            # Receive the actual message
+            data = receive_all(sock, msg_len)
+            message = data.decode()
+            # sys.stdout.write(f"Received from server: {message}\n")
+
+            json_dict = cast(Dict[str, Any], json.loads(message))
+            msg_id = json_dict.get("id")
+            sys.stdout.write(f"Received from server with id: {msg_id}\n")
+
+            if msg_id == "destroy":
                 api.destroy()
-            elif message.startswith("set_code:"):
-                msg = message.removeprefix("set_code:").lstrip()
-                # Perform some action
-                api.set_code(msg)
-            # Add more message handling as needed
-    except EOFError:
-        print("Connection closed by main process.")
+            elif msg_id == "code":
+                code = json_dict.get("data", "")
+                api.set_code(code)
+            elif msg_id == "general_message":
+                msg = json_dict.get("data", "")
+                sys.stdout.write(f"Received general message: {msg}\n")
+        except (ConnectionResetError, struct.error) as err:
+            if _WEB_VEW_ENDED:
+                sys.stdout.write("receive_messages() Webview ended\n")
+            else:
+                sys.stderr.write(f"receive_messages() Error receiving message: {err}\n")
+            break
+
+
+def send_message(sock: socket.socket, message: Dict[str, Any]) -> None:
+    # Prefix each message with a 4-byte length (network byte order)
+    try:
+        json_message = json.dumps(message)
+        message_bytes = json_message.encode()
+        message_length = struct.pack("!I", len(message_bytes))
+        sock.sendall(message_length + message_bytes)
+    except Exception as e:
+        sys.stderr.write(f"Error sending message: {e}\n")
 
 
 def main():
+    global _WEB_VEW_ENDED
+    _WEB_VEW_ENDED = False
+    doc_id = sys.argv[1]
+    port = int(sys.argv[2])
+
     def on_loaded():
-        print("Webview is ready")
+        nonlocal doc_id, client_socket
+
+        sys.stdout.write("Webview is ready\n")
         try:
-            child_conn.send("webview_ready")
-            print("Sent 'webview_ready' to main process")
+            data = {
+                "id": "webview_ready",
+                "doc_id": doc_id,
+                "data": "webview_ready",
+            }
+            send_message(client_socket, data)
+            sys.stdout.write("Sent 'webview_ready' to main process\n")
         except Exception as e:
-            print(f"Error sending 'webview_ready': {e}")
+            sys.stderr.write(f"Error sending 'webview_ready': {e}\n")
 
     try:
         if len(sys.argv) < 3:
-            print("Usage: python shell_edit.py <doc_id>")
+            sys.stdout.write("Usage: python shell_edit.py <doc_id>\n")
             sys.exit(1)
-        doc_id = sys.argv[1]
-        child_conn_fd = int(sys.argv[2])
 
-        # Retrieve the file descriptor from the environment
-        # child_conn_fd = int(os.environ["CHILD_CONN_FD"])
-
-        # Create the connection object from the file descriptor
-        child_conn = Connection(child_conn_fd)
+        client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        client_socket.connect(("localhost", int(port)))
 
         # Send a message to the main process
-        child_conn.send("Hello from subprocess!")
+        data = {
+            "id": "general_message",
+            "doc_id": doc_id,
+            "data": "Hello from subprocess!",
+        }
+        send_message(client_socket, data)
 
-        api = Api(doc_id, child_conn)
+        api = Api(doc_id, client_socket, port)
         root = Path(__file__).parent
         html_file = Path(root, "html/index.html")
-        print(f"html_file: {html_file}: Exists: {html_file.exists()}")
+        sys.stdout.write(f"html_file: {html_file}: Exists: {html_file.exists()}\n")
 
-        print("Creating window")
+        # Start a thread to receive messages from the server
+        t1 = threading.Thread(
+            target=receive_messages,
+            args=(
+                api,
+                client_socket,
+            ),
+            daemon=True,
+        )
+        t1.start()
+
+        sys.stdout.write("Creating window\n")
         window = webview.create_window(
             title="Python Editor", url=html_file.as_uri(), js_api=api
         )
@@ -177,7 +250,7 @@ def main():
         window.events.loaded += on_loaded
 
         api.set_window(window)
-        print("Window created")
+        sys.stdout.write("Window created\n")
         # if sys.platform == "win32":
         #     gui_type = "cef"
         # elif sys.platform == "linux":
@@ -185,19 +258,26 @@ def main():
         # else:
         #     gui_type = None
 
-        # Pass child_conn to read_messages
-        threading.Thread(
-            target=read_messages, args=(api, child_conn), daemon=True
-        ).start()
-
-        print("Starting Webview")
+        sys.stdout.write("Starting Webview\n")
         webview.start(
             webview_ready, (window,), gui=None, menu=menu_items
         )  # setting gui is causing crash in LibreOffice
+        sys.stdout.write("Ended Webview\n")
 
-        print("Ended Webview")
+        data = {
+            "id": "exit",
+            "doc_id": doc_id,
+            "data": "exit",
+        }
+
+        send_message(client_socket, data)
+        client_socket.close()
+        if t1.is_alive():
+            t1.join(timeout=1)
+        _WEB_VEW_ENDED = True
+
     except Exception as e:
-        print("Error in main", e)
+        sys.stderr.write(f"Error in main {e}\n")
 
 
 if __name__ == "__main__":
