@@ -6,10 +6,11 @@ import os
 from pathlib import Path
 import json
 
-from ooodev.calc import CalcDoc
+from ooodev.calc import CalcDoc, CalcCell
 from ....multi_process.socket_manager import SocketManager
 from ....multi_process.process_mgr import ProcessMgr
 from ....code.py_source_mgr import PyInstance
+from ....cell.code_edit.cell_code_edit import CellCodeEdit
 
 if TYPE_CHECKING:
     try:
@@ -30,6 +31,25 @@ if os.name == "nt":
     STARTUP_INFO.dwFlags |= subprocess.STARTF_USESHOWWINDOW
 else:
     STARTUP_INFO = None
+
+
+class PyCellCodeEdit(CellCodeEdit):
+    def __init__(
+        self, inst_id: str, cell: CalcCell, url_str: str = "", src_code: str = ""
+    ):
+        CellCodeEdit.__init__(self, inst_id, cell, url_str, src_code)
+
+    @override
+    def edit_code(self) -> bool:
+        try:
+            self.log.debug(f"Editing code for cell: {self.cell}")
+            py_inst = PyInstance(self.cell.calc_doc)  # singleton
+            py_inst.update_source(code=self.src_code, cell=self.cell.cell_obj)
+            py_inst.update_all()
+            return True
+        except Exception:
+            self.log.exception(f"Error editing code for cell: {self.cell.cell_obj}")
+            return False
 
 
 class PyCellEditProcessMgr(ProcessMgr):
@@ -118,7 +138,8 @@ class PyCellEditProcessMgr(ProcessMgr):
                 elif msg_cmd == "webview_ready":
                     self.log.debug("Webview is ready, sending code")
                     # code = "html = '<h2>Hello World!</h2>'\nj_data = {'a': 1, 'b': 2}\n"
-                    code = self.py_instance[self.calc_cell.cell_obj]
+                    py_src = self.py_instance[self.calc_cell.cell_obj]
+                    code = py_src.source_code
                     self.socket_manager.send_message(
                         {"cmd": "code", "data": code}, process_id
                     )
@@ -136,6 +157,12 @@ class PyCellEditProcessMgr(ProcessMgr):
                         if code
                         else "Received code from client with no data"
                     )
+                    inst = PyCellCodeEdit(
+                        inst_id=process_id, cell=self.calc_cell, src_code=code
+                    )
+                    inst.update_cell()
+                    inst = None
+                    self.log.debug("Code updated")
                 else:
                     self.log.error(f"Unknown message ID: {msg_cmd}")
         except (ConnectionResetError, struct.error):

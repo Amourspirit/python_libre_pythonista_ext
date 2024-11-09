@@ -1,6 +1,6 @@
 # region imports
 from __future__ import unicode_literals, annotations
-from typing import Tuple, TYPE_CHECKING
+from typing import cast, Tuple, TYPE_CHECKING
 
 import unohelper
 import contextlib
@@ -78,7 +78,10 @@ class PyEditCellJob(XJob, unohelper.Base):
                 from libre_pythonista_lib.dialog.webview.lp_py_editor import editor  # type: ignore
             data_args = Props.data_to_dict(Arguments)
             self._log.debug(f"data_args: {data_args}")
-            editor.main(sheet=data_args.get("sheet"), cell=data_args.get("cell"))
+            editor.main(
+                sheet=cast(str, data_args.get("sheet")),
+                cell=cast(str, data_args.get("cell")),
+            )
 
         except Exception:
             self._log.error("Error getting current document", exc_info=True)
