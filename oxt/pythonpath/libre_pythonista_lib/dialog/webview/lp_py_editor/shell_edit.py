@@ -29,12 +29,13 @@ webview.settings = {
 }
 
 _WEB_VEW_ENDED = False
+_IS_DEBUG = False
 
 
 class Api:
-    def __init__(self, doc_id: str, sock: socket.socket, port: int):
+    def __init__(self, process_id: str, sock: socket.socket, port: int):
         self._window = cast(webview.Window, None)
-        self._doc_id = doc_id
+        self.process_id = process_id
         self.port = port
         self.sock = sock
 
@@ -75,13 +76,15 @@ class Api:
             sys.stderr.write(f"Error in show: {e}\n")
 
     def accept(self) -> None:
+        global _IS_DEBUG
         try:
             if self._window:
                 code = self._window.evaluate_js("getCode()")
-                sys.stdout.write("Code:\n{}\n".format(code))
+                if _IS_DEBUG:
+                    sys.stdout.write("Code:\n{}\n".format(code))
                 data = {
-                    "id": "code",
-                    "doc_id": self._doc_id,
+                    "cmd": "code",
+                    "process_id": self.process_id,
                     "data": code,
                 }
                 send_message(self.sock, data)
@@ -159,15 +162,15 @@ def receive_messages(api: Api, sock: socket.socket) -> None:
             # sys.stdout.write(f"Received from server: {message}\n")
 
             json_dict = cast(Dict[str, Any], json.loads(message))
-            msg_id = json_dict.get("id")
-            sys.stdout.write(f"Received from server with id: {msg_id}\n")
+            msg_cmd = json_dict.get("cmd")
+            sys.stdout.write(f"Received from server with id: {msg_cmd}\n")
 
-            if msg_id == "destroy":
+            if msg_cmd == "destroy":
                 api.destroy()
-            elif msg_id == "code":
+            elif msg_cmd == "code":
                 code = json_dict.get("data", "")
                 api.set_code(code)
-            elif msg_id == "general_message":
+            elif msg_cmd == "general_message":
                 msg = json_dict.get("data", "")
                 sys.stdout.write(f"Received general message: {msg}\n")
         except (ConnectionResetError, struct.error) as err:
@@ -190,19 +193,25 @@ def send_message(sock: socket.socket, message: Dict[str, Any]) -> None:
 
 
 def main():
-    global _WEB_VEW_ENDED
+    global _WEB_VEW_ENDED, _IS_DEBUG
     _WEB_VEW_ENDED = False
-    doc_id = sys.argv[1]
+    _IS_DEBUG = False
+    process_id = sys.argv[1]
     port = int(sys.argv[2])
+    try:
+        if len(sys.argv) > 3:
+            _IS_DEBUG = sys.argv[3] == "debug"
+    except Exception:
+        pass
 
     def on_loaded():
-        nonlocal doc_id, client_socket
+        nonlocal process_id, client_socket
 
         sys.stdout.write("Webview is ready\n")
         try:
             data = {
-                "id": "webview_ready",
-                "doc_id": doc_id,
+                "cmd": "webview_ready",
+                "process_id": process_id,
                 "data": "webview_ready",
             }
             send_message(client_socket, data)
@@ -212,7 +221,7 @@ def main():
 
     try:
         if len(sys.argv) < 3:
-            sys.stdout.write("Usage: python shell_edit.py <doc_id>\n")
+            sys.stdout.write("Usage: python shell_edit.py <process_id> <port>\n")
             sys.exit(1)
 
         client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -220,13 +229,13 @@ def main():
 
         # Send a message to the main process
         data = {
-            "id": "general_message",
-            "doc_id": doc_id,
+            "cmd": "general_message",
+            "process_id": process_id,
             "data": "Hello from subprocess!",
         }
         send_message(client_socket, data)
 
-        api = Api(doc_id, client_socket, port)
+        api = Api(process_id, client_socket, port)
         root = Path(__file__).parent
         html_file = Path(root, "html/index.html")
         sys.stdout.write(f"html_file: {html_file}: Exists: {html_file.exists()}\n")
@@ -265,8 +274,8 @@ def main():
         sys.stdout.write("Ended Webview\n")
 
         data = {
-            "id": "exit",
-            "doc_id": doc_id,
+            "cmd": "exit",
+            "process_id": process_id,
             "data": "exit",
         }
 

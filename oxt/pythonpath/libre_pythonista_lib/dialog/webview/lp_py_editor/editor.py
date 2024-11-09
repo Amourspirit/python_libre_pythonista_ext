@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, cast, Dict, Tuple, TYPE_CHECKING
+from typing import Any, cast, Dict, Tuple, Optional, TYPE_CHECKING
 import socket
 import struct
 import threading
@@ -9,7 +9,6 @@ import sys
 
 # import atexit
 from pathlib import Path
-from typing import Dict, Optional
 from uuid import uuid4
 import json
 
@@ -51,7 +50,8 @@ class SubprocessManager:
             return
 
         self.log = OxtLogger(log_name="shell_edit")
-        self.process_pool: Dict[str, Tuple[subprocess.Popen, Any]] = {}
+        self.process_pool: Dict[str, Tuple[subprocess.Popen, str, str]] = {}
+        # process_pool = {process_id: (process, port, doc_id)}
         self._socket_pool: Dict[str, socket.socket] = {}
         self.lock = threading.Lock()
         # atexit.register(self.terminate_all_subprocesses)
@@ -103,13 +103,18 @@ class SubprocessManager:
             server_socket.listen(1)
             server_socket.settimeout(_TIMEOUT)  # Set a timeout of 10 seconds
 
+            process_id = str(uuid4())
+
+            is_dbg = "debug" if self.log.is_debug else "no_debug"
+
             if STARTUP_INFO:
                 process = subprocess.Popen(
                     [
                         str(config.python_path),
                         script_path,
-                        Lo.current_doc.runtime_uid,
+                        process_id,
                         str(port),
+                        is_dbg,
                     ],
                     env=env,
                     stdout=subprocess.PIPE,
@@ -122,8 +127,9 @@ class SubprocessManager:
                     [
                         str(config.python_path),
                         script_path,
-                        Lo.current_doc.runtime_uid,
+                        process_id,
                         str(port),
+                        is_dbg,
                     ],
                     env=env,
                     stdout=subprocess.PIPE,
@@ -131,9 +137,12 @@ class SubprocessManager:
                     text=True,
                 )
 
-            process_id = str(uuid4())
             with self.lock:
-                self.process_pool[process_id] = (process, str(port))
+                self.process_pool[process_id] = (
+                    process,
+                    str(port),
+                    Lo.current_doc.runtime_uid,
+                )
 
             try:
                 # Accept the connection from the client
@@ -143,7 +152,7 @@ class SubprocessManager:
 
                 # Send a message to the client
                 data = {
-                    "id": "general_message",
+                    "cmd": "general_message",
                     "data": "Hello from server!",
                 }
                 self.send_message(data, process_id)
@@ -228,20 +237,20 @@ class SubprocessManager:
                         break
                     message = data.decode()
                     json_dict = cast(Dict[str, Any], json.loads(message))
-                    msg_id = json_dict.get("id")
+                    msg_cmd = json_dict.get("cmd")
                     # self.log.debug(f"Received From Client: {message}")
 
-                    if msg_id == "exit":
+                    if msg_cmd == "exit":
                         break
-                    elif msg_id == "webview_ready":
+                    elif msg_cmd == "webview_ready":
                         self.log.debug("Webview is ready, sending code")
                         code = "html = '<h2>Hello World!</h2>'\nj_data = {'a': 1, 'b': 2}\n"
                         data = {
-                            "id": "code",
+                            "cmd": "code",
                             "data": code,
                         }
                         self.send_message(data, process_id)
-                    elif msg_id == "general_message":
+                    elif msg_cmd == "general_message":
                         gen_msg = json_dict.get("data", "")
                         if gen_msg:
                             self.log.debug(f"Received From Client {gen_msg}")
@@ -249,14 +258,14 @@ class SubprocessManager:
                             self.log.debug(
                                 "Received From Client: general_message with no data"
                             )
-                    elif msg_id == "code":
+                    elif msg_cmd == "code":
                         code = json_dict.get("data", "")
                         if code:
                             self.log.debug("Received code from client")
                         else:
                             self.log.debug("Received code from client with no data")
                     else:
-                        self.log.error(f"Unknown message ID: {msg_id}")
+                        self.log.error(f"Unknown message ID: {msg_cmd}")
                 except (ConnectionResetError, struct.error):
                     break
             sock.close()
@@ -266,29 +275,6 @@ class SubprocessManager:
             if process_id in self._socket_pool:
                 del self._socket_pool[process_id]
 
-    # def read_from_subprocess(self, conn, process_id):
-    #     """Reads messages from the subprocess."""
-    #     try:
-    #         while True:
-    #             message = conn.recv()
-    #             self.log.debug(f"Received from subprocess {process_id}: {message}")
-    #             if message == "webview_ready":
-    #                 self.send_message(
-    #                     process_id, 'set_code: html = "<h2>Hello World!</h2>"'
-    #                 )
-    #     except EOFError:
-    #         print(f"Subprocess {process_id} connection closed.")
-
-    # def send_message(self, process_id: str, message: str):
-    #     """Sends a message to the subprocess."""
-    #     with self.lock:
-    #         process_tuple = self.process_pool.get(process_id)
-    #     if process_tuple:
-    #         _, conn = process_tuple
-    #         conn.send(message)
-    #     else:
-    #         print(f"No subprocess with ID {process_id} found.")
-
     def terminate_subprocess(self, process_id: str):
         """Terminates the specified subprocess."""
         process = self.get_process(process_id)
@@ -297,7 +283,7 @@ class SubprocessManager:
             return
         self.log.debug(f"Terminating subprocess {process_id}")
         data = {
-            "id": "destroy",
+            "cmd": "destroy",
             "data": "destroy",
         }
         self.send_message(data, process_id)
