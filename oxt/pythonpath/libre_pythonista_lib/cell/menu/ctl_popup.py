@@ -24,8 +24,6 @@ from ...const import (
     UNO_DISPATCH_DATA_TBL_CARD,
     UNO_DISPATCH_CELL_CTl_UPDATE,
 )
-from ...const.job_executor import PY_EDITOR_SHEET
-
 from ..state.state_kind import StateKind
 from ..state.ctl_state import CtlState
 from ..lpl_cell import LplCell

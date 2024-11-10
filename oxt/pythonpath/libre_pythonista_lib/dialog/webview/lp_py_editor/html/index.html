@@ -101,6 +101,16 @@
             }
         });
 
+        function focusCodeMirror() {
+            editor.focus();
+        }
+
+        function insertTextAtCursor(text) {
+            var doc = editor.getDoc();
+            var cursor = doc.getCursor(); // gets the line number in the cursor position
+            doc.replaceRange(text, cursor); // replaces the selection with the given text
+        }
+
         var ExcludedIntelliSenseTriggerKeys = {
             "8": "backspace",
             "9": "tab",

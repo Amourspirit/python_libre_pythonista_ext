@@ -79,6 +79,7 @@ class ProcessMgr(ABC):
         self.lock = threading.Lock()
         self._term_events = TerminateEvents()
         self._term_events.add_event_notify_termination(self._on_notify_termination)
+        self._server = None
 
     def _on_notify_termination(self, src: Any, event: EventArgs) -> None:
         """
@@ -140,8 +141,14 @@ class ProcessMgr(ABC):
                 self.log.debug(f"Starting shell_edit: {script_path}")
                 self.log.debug(f"Python Path: {config.python_path}")
 
-            server_socket, port = self.socket_manager.create_server_socket()
+            if self._server is None:
+                server_socket, port = self.socket_manager.create_server_socket()
+                self._server = server_socket, port
+            else:
+                server_socket, port = self._server
+
             process_id = str(uuid4())
+
             is_dbg = "debug" if self.log.is_debug else "no_debug"
 
             process = subprocess.Popen(

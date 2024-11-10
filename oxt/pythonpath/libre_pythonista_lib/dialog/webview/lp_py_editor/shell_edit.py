@@ -40,6 +40,7 @@ class Api:
         self.port = port
         self.sock = sock
         self.resources: Dict[str, str] = {}
+        self.info: Dict[str, str] = {}
 
     def set_window(self, window: webview.Window):
         self._window = window
@@ -109,7 +110,25 @@ class Api:
         # self._window.evaluate_js(
         #     f"alert('{self.resources.get('mbmsg001', 'Code is Valid')}')"
         # )
-        # sys.stdout.write("Validating code\n")
+        sys.stdout.write("Validating code\n")
+
+    def insert_lp_function(self) -> None:
+        request_data = {
+            "cmd": "request_action",
+            "process_id": self.process_id,
+            "action": "insert_lp_function",
+            "params": {},
+        }
+        send_message(self.sock, request_data)
+
+    def insert_range(self) -> None:
+        request_data = {
+            "cmd": "request_action",
+            "process_id": self.process_id,
+            "action": "insert_range",
+            "params": {},
+        }
+        send_message(self.sock, request_data)
 
     def log(self, value):
         try:
@@ -153,6 +172,22 @@ class Api:
         except Exception as e:
             sys.stderr.write(f"Error in set_code: {e}\n")
 
+    def insert_text_at_cursor(self, text: str):
+        try:
+            if self._window:
+                js_code = f"insertTextAtCursor('{text}');"
+                self._window.evaluate_js(js_code)
+        except Exception as e:
+            sys.stderr.write(f"Error in insert_text: {e}\n")
+
+    def set_focus_on_editor(self):
+        try:
+            if self._window:
+                js_code = "focusCodeMirror();"
+                self._window.evaluate_js(js_code)
+        except Exception as e:
+            sys.stderr.write(f"Error in set_focus_on_editor: {e}\n")
+
     def handle_response(self, response: Dict[str, Any]) -> None:
         """
         Handles the response from the server and updates the UI.
@@ -163,9 +198,15 @@ class Api:
         msg = response.get("message", "")
         status = response.get("status", "")
         try:
-            if msg == "got_resources":
+            # if msg == "got_resources":
+            #     if status == "success":
+            #         self.resources = cast(Dict[str, str], response.get("data", {}))
+
+            if msg == "got_info":
                 if status == "success":
-                    self.resources = cast(Dict[str, str], response.get("data", {}))
+                    data = cast(Dict[str, Dict[str, str]], response.get("data", {}))
+                    self.info = data.get("info", {})
+                    self.resources = data.get("resources", {})
 
             elif msg == "validated_code":
                 if status == "success":
@@ -176,6 +217,32 @@ class Api:
                     self._window.evaluate_js(
                         f"alert('{self.resources.get('log09', 'Error')}')"
                     )
+            elif msg == "lp_fn_inserted":
+                if status == "success":
+                    data = cast(Dict[str, str], response.get("data", {}))
+                    fn_str = data.get("function", "")
+                    if fn_str:
+                        # self._window.evaluate_js(f"alert('{fn_str}')")
+                        self.insert_text_at_cursor(fn_str)
+                    else:
+                        self._window.evaluate_js(
+                            "alert('Failed to insert LP function. No function returned.')"
+                        )
+            elif msg == "lp_rng_inserted":
+                if status == "success":
+                    data = cast(Dict[str, str], response.get("data", {}))
+                    fn_str = data.get("range", "")
+                    if fn_str:
+                        # self._window.evaluate_js(f"alert('{fn_str}')")
+                        self.insert_text_at_cursor(fn_str)
+                    else:
+                        self._window.evaluate_js(
+                            "alert('Failed to insert range. No function returned.')"
+                        )
+            elif msg == "pass":
+                pass
+            else:
+                sys.stderr.write(f"Unknown response: {response}\n")
         except Exception as e:
             sys.stderr.write(f"Error handling response: {e}\n")
 
@@ -198,9 +265,11 @@ def receive_all(sock: socket.socket, length: int) -> bytes:
     return data
 
 
-def receive_messages(api: Api, sock: socket.socket, event: threading.Event) -> None:
+def receive_messages(
+    api: Api, sock: socket.socket, event: threading.Event, stop_event: threading.Event
+) -> None:
     global _WEB_VEW_ENDED
-    while True:
+    while not stop_event.is_set():
         try:
             # Receive the message length first
             raw_msg_len = receive_all(sock, 4)
@@ -266,7 +335,26 @@ class Menu:
                     wm.MenuAction(
                         cast(str, self.api.resources.get("mnuValidate", "Validate")),
                         self.api.validate_code,
-                    ),
+                    ),  # type: ignore
+                ],
+            ),
+            wm.Menu(
+                self.api.resources.get("mnuInsert", "Insert"),
+                [
+                    wm.MenuAction(
+                        cast(
+                            str,
+                            self.api.resources.get("mnuAutoLpFn", "Insert Lp Function"),
+                        ),
+                        self.api.insert_lp_function,
+                    ),  # type: ignore
+                    wm.MenuAction(
+                        cast(
+                            str,
+                            self.api.resources.get("mnuSelectRng", "Select Range"),
+                        ),
+                        self.api.insert_range,
+                    ),  # type: ignore
                 ],
             ),
         ]
@@ -322,12 +410,13 @@ def main():
         sys.stdout.write(f"html_file: {html_file}: Exists: {html_file.exists()}\n")
 
         # Create an event to wait for the menu data
-        menu_event = threading.Event()
+        info_event = threading.Event()
+        stop_event = threading.Event()
 
         # Start a thread to receive messages from the server
         t1 = threading.Thread(
             target=receive_messages,
-            args=(api, client_socket, menu_event),
+            args=(api, client_socket, info_event, stop_event),
             daemon=True,
         )
         t1.start()
@@ -336,24 +425,31 @@ def main():
         request_data = {
             "cmd": "request_action",
             "process_id": process_id,
-            "action": "get_resources",
+            "action": "get_info",
             "params": {},
         }
         send_message(client_socket, request_data)
         sys.stdout.write("Requested menu data from server\n")
 
         # Wait for the menu data to be received
-        menu_event.wait(timeout=10)  # Wait for up to 10 seconds
+        info_event.wait(timeout=10)  # Wait for up to 10 seconds
 
         if api.resources:
             sys.stdout.write(f"Received menu data: {api.resources}\n")
         else:
             sys.stderr.write("Failed to receive menu data within the timeout period\n")
 
+        if api.info:
+            sys.stdout.write(f"Received info data: {api.info}\n")
+        else:
+            sys.stderr.write("Failed to receive info data within the timeout period\n")
+
         sys.stdout.write("Creating window\n")
-        window = webview.create_window(
-            title="Python Editor", url=html_file.as_uri(), js_api=api
-        )
+        title = api.resources.get("title10", "Python Code")
+        cell = api.info.get("cell", "")
+        if cell:
+            title = f"{title} - {cell}"
+        window = webview.create_window(title=title, url=html_file.as_uri(), js_api=api)
 
         window.events.loaded += on_loaded
 
@@ -380,10 +476,11 @@ def main():
         }
 
         send_message(client_socket, data)
-        client_socket.close()
+        _WEB_VEW_ENDED = True
+        stop_event.set()
         if t1.is_alive():
             t1.join(timeout=1)
-        _WEB_VEW_ENDED = True
+        client_socket.close()
 
     except Exception as e:
         sys.stderr.write(f"Error in main {e}\n")

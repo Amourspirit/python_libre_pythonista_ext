@@ -248,11 +248,24 @@ class DispatchProviderInterceptor(unohelper.Base, XDispatchProviderInterceptor):
                 return None
 
         elif URL.Main == UNO_DISPATCH_CODE_EDIT_MB:
-            try:
-                from .dispatch_edit_py_cell_mb import DispatchEditPyCellMb
-            except ImportError:
-                log.exception("DispatchEditPyCellMb import error")
-                raise
+            is_experiential = self._config.lp_settings.experimental_editor
+            if is_experiential:
+                try:
+                    from .dispatch_edit_py_cell_wv import (
+                        DispatchEditPyCellWv as DispatchEditPyCell,
+                    )
+                except ImportError:
+                    log.exception("DispatchEditPyCellWv import error")
+                    raise
+            else:
+                try:
+                    from .dispatch_edit_py_cell_mb import (
+                        DispatchEditPyCellMb as DispatchEditPyCell,
+                    )
+                except ImportError:
+                    log.exception("DispatchEditPyCellMb import error")
+                    raise
+
             try:
                 args = self._convert_query_to_dict(URL.Arguments)
                 in_thread = args.pop("in_thread", "0") == "1"
@@ -261,6 +274,7 @@ class DispatchProviderInterceptor(unohelper.Base, XDispatchProviderInterceptor):
                     cmd=UNO_DISPATCH_CODE_EDIT_MB,
                     doc=self._doc,
                     in_thread=in_thread,
+                    experiential_edit=is_experiential,
                     **args,
                 )
 
@@ -269,10 +283,15 @@ class DispatchProviderInterceptor(unohelper.Base, XDispatchProviderInterceptor):
                     return None
 
                 with log.indent(True):
-                    log.debug(
-                        "DispatchProviderInterceptor.queryDispatch: returning DispatchEditPyCellMb"
-                    )
-                result = DispatchEditPyCellMb(
+                    if is_experiential:
+                        log.debug(
+                            "DispatchProviderInterceptor.queryDispatch: returning DispatchEditPyCellWv"
+                        )
+                    else:
+                        log.debug(
+                            "DispatchProviderInterceptor.queryDispatch: returning DispatchEditPyCellMb"
+                        )
+                result = DispatchEditPyCell(
                     sheet=args["sheet"], cell=args["cell"], in_thread=in_thread
                 )
 
