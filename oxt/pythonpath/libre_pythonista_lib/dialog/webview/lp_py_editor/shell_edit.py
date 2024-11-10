@@ -7,6 +7,7 @@ import json
 import threading
 from pathlib import Path
 import webview
+import webview.menu as wm
 import jedi  # noqa # type: ignore
 
 # from ooodev.adapter.frame.terminate_events import TerminateEvents
@@ -38,6 +39,7 @@ class Api:
         self.process_id = process_id
         self.port = port
         self.sock = sock
+        self.resources: Dict[str, str] = {}
 
     def set_window(self, window: webview.Window):
         self._window = window
@@ -79,7 +81,7 @@ class Api:
         global _IS_DEBUG
         try:
             if self._window:
-                code = self._window.evaluate_js("getCode()")
+                code = self.get_code()
                 if _IS_DEBUG:
                     sys.stdout.write("Code:\n{}\n".format(code))
                 data = {
@@ -94,16 +96,31 @@ class Api:
         except Exception as e:
             sys.stderr.write(f"Error in accept: {e}\n")
 
+    def validate_code(self) -> None:
+        code = self.get_code()
+        request_data = {
+            "cmd": "request_action",
+            "process_id": self.process_id,
+            "action": "validate_code",
+            "params": {"code": code},
+        }
+        send_message(self.sock, request_data)
+
+        # self._window.evaluate_js(
+        #     f"alert('{self.resources.get('mbmsg001', 'Code is Valid')}')"
+        # )
+        # sys.stdout.write("Validating code\n")
+
     def log(self, value):
         try:
-            code = self._window.evaluate_js("getCode()")
+            code = self.get_code()
             sys.stdout.write("Code:\n{}\n".format(code))
         except Exception as e:
             sys.stderr.write(f"Error in log: {e}")
 
     def get_autocomplete(self, code, line, column):
         try:
-            code = self._window.evaluate_js("getCode()")
+            # code = self._window.evaluate_js("getCode()")
             # print("code:\n", code)
             script = jedi.Script(code, path="")
             # print("script:\n", script)
@@ -118,6 +135,15 @@ class Api:
     def has_window(self):
         return self._window is not None
 
+    def get_code(self):
+        try:
+            if self._window:
+                code = self._window.evaluate_js("getCode()")
+                return code
+        except Exception as e:
+            sys.stderr.write(f"Error in get_code: {e}\n")
+        return ""
+
     def set_code(self, code: str):
         try:
             if self._window:
@@ -126,6 +152,32 @@ class Api:
                 self._window.evaluate_js(f"setCode({escaped_code})")
         except Exception as e:
             sys.stderr.write(f"Error in set_code: {e}\n")
+
+    def handle_response(self, response: Dict[str, Any]) -> None:
+        """
+        Handles the response from the server and updates the UI.
+
+        Args:
+            response (Dict[str, Any]): The response from the server.
+        """
+        msg = response.get("message", "")
+        status = response.get("status", "")
+        try:
+            if msg == "got_resources":
+                if status == "success":
+                    self.resources = cast(Dict[str, str], response.get("data", {}))
+
+            elif msg == "validated_code":
+                if status == "success":
+                    self._window.evaluate_js(
+                        f"alert('{self.resources.get('mbmsg001', 'Code is Valid')}')"
+                    )
+                else:
+                    self._window.evaluate_js(
+                        f"alert('{self.resources.get('log09', 'Error')}')"
+                    )
+        except Exception as e:
+            sys.stderr.write(f"Error handling response: {e}\n")
 
 
 def webview_ready(window: webview.Window):
@@ -146,7 +198,7 @@ def receive_all(sock: socket.socket, length: int) -> bytes:
     return data
 
 
-def receive_messages(api: Api, sock: socket.socket) -> None:
+def receive_messages(api: Api, sock: socket.socket, event: threading.Event) -> None:
     global _WEB_VEW_ENDED
     while True:
         try:
@@ -173,6 +225,16 @@ def receive_messages(api: Api, sock: socket.socket) -> None:
             elif msg_cmd == "general_message":
                 msg = json_dict.get("data", "")
                 sys.stdout.write(f"Received general message: {msg}\n")
+            elif msg_cmd == "action_completed":
+                response = json_dict.get("response_data", {})
+                api.handle_response(response)
+                event.set()  # Set the event to indicate that the response has been received
+
+            # elif message.startswith("action_completed:"):
+            #     response = json.loads(message[len("action_completed:") :])
+            #     api.handle_response(response)
+            else:
+                sys.stdout.write(f"Subprocess received: {message}\n")
         except (ConnectionResetError, struct.error) as err:
             if _WEB_VEW_ENDED:
                 sys.stdout.write("receive_messages() Webview ended\n")
@@ -190,6 +252,25 @@ def send_message(sock: socket.socket, message: Dict[str, Any]) -> None:
         sock.sendall(message_length + message_bytes)
     except Exception as e:
         sys.stderr.write(f"Error sending message: {e}\n")
+
+
+class Menu:
+    def __init__(self, api: Api):
+        self.api = api
+
+    def get_menu(self):
+        items = [
+            wm.Menu(
+                self.api.resources.get("mnuCode", "Code"),
+                [
+                    wm.MenuAction(
+                        cast(str, self.api.resources.get("mnuValidate", "Validate")),
+                        self.api.validate_code,
+                    ),
+                ],
+            ),
+        ]
+        return items
 
 
 def main():
@@ -240,16 +321,34 @@ def main():
         html_file = Path(root, "html/index.html")
         sys.stdout.write(f"html_file: {html_file}: Exists: {html_file.exists()}\n")
 
+        # Create an event to wait for the menu data
+        menu_event = threading.Event()
+
         # Start a thread to receive messages from the server
         t1 = threading.Thread(
             target=receive_messages,
-            args=(
-                api,
-                client_socket,
-            ),
+            args=(api, client_socket, menu_event),
             daemon=True,
         )
         t1.start()
+
+        # Request menu data from the server
+        request_data = {
+            "cmd": "request_action",
+            "process_id": process_id,
+            "action": "get_resources",
+            "params": {},
+        }
+        send_message(client_socket, request_data)
+        sys.stdout.write("Requested menu data from server\n")
+
+        # Wait for the menu data to be received
+        menu_event.wait(timeout=10)  # Wait for up to 10 seconds
+
+        if api.resources:
+            sys.stdout.write(f"Received menu data: {api.resources}\n")
+        else:
+            sys.stderr.write("Failed to receive menu data within the timeout period\n")
 
         sys.stdout.write("Creating window\n")
         window = webview.create_window(
@@ -268,8 +367,9 @@ def main():
         #     gui_type = None
 
         sys.stdout.write("Starting Webview\n")
+        mnu = Menu(api)
         webview.start(
-            webview_ready, (window,), gui=None, menu=menu_items
+            webview_ready, (window,), gui=None, menu=mnu.get_menu()
         )  # setting gui is causing crash in LibreOffice
         sys.stdout.write("Ended Webview\n")
 

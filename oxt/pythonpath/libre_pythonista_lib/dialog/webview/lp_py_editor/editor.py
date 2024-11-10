@@ -11,6 +11,7 @@ from ....multi_process.socket_manager import SocketManager
 from ....multi_process.process_mgr import ProcessMgr
 from ....code.py_source_mgr import PyInstance
 from ....cell.code_edit.cell_code_edit import CellCodeEdit
+from ....res.res_resolver import ResResolver
 
 if TYPE_CHECKING:
     try:
@@ -83,6 +84,7 @@ class PyCellEditProcessMgr(ProcessMgr):
         self.log.debug(f"Sheet: {self.sheet}, Cell: {self.cell}")
         calc_sheet = self.doc.sheets[sheet]
         self.calc_cell = calc_sheet[cell]
+        self._res = ResResolver()
 
     @override
     def get_script_path(self) -> str:
@@ -163,6 +165,18 @@ class PyCellEditProcessMgr(ProcessMgr):
                     inst.update_cell()
                     inst = None
                     self.log.debug("Code updated")
+                elif msg_cmd == "request_action":
+                    action = cast(str, json_dict.get("action", ""))
+                    params = json_dict.get("params", {})
+                    self.log.debug(
+                        f"Received request for action '{action}' with params: {params}"
+                    )
+                    # Perform the requested action
+                    result = self.perform_action(action, params)
+                    # Send the result back to the client
+                    self.socket_manager.send_message(
+                        {"cmd": "action_completed", "response_data": result}, process_id
+                    )
                 else:
                     self.log.error(f"Unknown message ID: {msg_cmd}")
         except (ConnectionResetError, struct.error):
@@ -171,6 +185,62 @@ class PyCellEditProcessMgr(ProcessMgr):
             self.log.exception(f"Error handling client: {e}")
         finally:
             self.socket_manager.close_socket(process_id)
+
+    def perform_action(self, action: str, params: Dict[str, Any]) -> Any:
+        """
+        Performs the requested action and returns the result.
+
+        Args:
+            action (str): The action to be performed.
+            params (Dict[str, Any]): The parameters for the action.
+
+        Returns:
+            Any: The result of the action.
+        """
+        # Implement the logic for the requested action here
+        # For example:
+        if action == "some_action":
+            # Perform the action and return the result
+            return {"status": "success", "message": "Action completed successfully"}
+        elif action == "get_resources":
+            # Get the resources for the given parameters
+            self.log.debug("Getting resources")
+            return {
+                "status": "success",
+                "message": "got_resources",
+                "data": {
+                    "mnuAutoLpFn": self._res.resolve_string("mnuAutoLpFn").replace(
+                        "~", "", 1
+                    ),
+                    "mnuSelectRng": self._res.resolve_string("mnuSelectRng").replace(
+                        "~", "", 1
+                    ),
+                    "mnuValidate": self._res.resolve_string("mnuValidate").replace(
+                        "~", "", 1
+                    ),
+                    "mnuCode": self._res.resolve_string("mnuCode").replace("~", "", 1),
+                    "mnuInsert": self._res.resolve_string("mnuInsert").replace(
+                        "~", "", 1
+                    ),
+                    "mbtitle001": self._res.resolve_string("mbtitle001"),
+                    "mbmsg001": self._res.resolve_string("mbmsg001"),
+                    "log09": self._res.resolve_string("log09"),
+                },
+            }
+        elif action == "validate_code":
+            code = params.get("code", "")
+            code_valid = False
+            try:
+                if code:
+                    self.doc.python_script.test_compile_python(code)
+                code_valid = True
+            except Exception:
+                code_valid = False
+            if code_valid:
+                return {"status": "success", "message": "validated_code"}
+            return {"status": "error", "message": "validated_code"}
+        else:
+            return {"status": "error", "message": f"Unknown action '{action}'"}
 
 
 def main(sheet: str, cell: str) -> None:
