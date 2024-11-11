@@ -22,6 +22,7 @@ from ....const import UNO_DISPATCH_SEL_RNG
 from ....multi_process.process_mgr import ProcessMgr
 from ....multi_process.socket_manager import SocketManager
 from ....res.res_resolver import ResResolver
+from ....code import py_module
 # from ...listener.top_listener_rng import TopListenerRng
 
 if TYPE_CHECKING:
@@ -258,6 +259,7 @@ class PyCellEditProcessMgr(ProcessMgr):
                     },
                     "resources": cast(Dict[str, str], self._gbl_cache[key]),
                     "theme": {"is_doc_dark": self._calc_theme.is_document_dark()},
+                    "module_source_code": self._get_source_code(),
                 },
             }
         elif action == "validate_code":
@@ -367,6 +369,20 @@ class PyCellEditProcessMgr(ProcessMgr):
 
         else:
             return {"status": "error", "message": f"Unknown action '{action}'"}
+
+    # region Source Code
+    def _get_source_code(self) -> str:
+        try:
+            init_src = py_module.get_module_init_code()
+            mod_src = self.py_instance.get_module_source_code(
+                max_cell=self.calc_cell.cell_obj, include_max=False
+            )
+            return f"{init_src}\n{mod_src}"
+        except Exception:
+            self.log.exception("Error getting source code")
+            return ""
+
+    # endregion Source Code
 
     # region Auto Function Selection
     def _on_menu_insert_lp_fn(self, src: Any, event: EventArgs) -> None:

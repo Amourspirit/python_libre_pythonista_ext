@@ -10,22 +10,13 @@ import webview
 import webview.menu as wm
 import jedi  # noqa # type: ignore
 
-# from ooodev.adapter.frame.terminate_events import TerminateEvents
-# from ooodev.events.args.event_args import EventArgs
-
-if TYPE_CHECKING:
-    from ......pythonpath.libre_pythonista_lib.dialog.webview.lp_py_editor.menu import (
-        menu_items,
-    )
-else:
-    from libre_pythonista_lib.dialog.webview.lp_py_editor.menu import menu_items
 
 # https://pywebview.flowrl.com/guide/api.html#webview-settings
 
 webview.settings = {
     "ALLOW_DOWNLOADS": False,
     "ALLOW_FILE_URLS": True,
-    "OPEN_EXTERNAL_LINKS_IN_BROWSER": True,
+    "OPEN_EXTERNAL_LINKS_IN_BROWSER": False,
     "OPEN_DEVTOOLS_IN_DEBUG": False,
 }
 
@@ -44,6 +35,7 @@ class Api:
         self.resources: Dict[str, str] = {}
         self.info: Dict[str, str] = {}
         self.theme: Dict[str, Any] = {}
+        self.module_source_code = ""
 
     def set_window(self, window: webview.Window):
         self._window = window
@@ -142,14 +134,17 @@ class Api:
 
     def get_autocomplete(self, code, line, column):
         try:
-            # code = self._window.evaluate_js("getCode()")
-            # print("code:\n", code)
-            script = jedi.Script(code, path="")
-            # print("script:\n", script)
-            completions = script.complete(line, column)
+            # sys.stdout.write(f"{code}\n")
+            # Combine the additional code with the editor code
+            combined_code = self.module_source_code + "\n" + code
+
+            # Adjust the line number for the cursor
+            prepended_lines = self.module_source_code.count("\n") + 1
+            adjusted_line = line + prepended_lines
+
+            script = jedi.Script(combined_code, path="")
+            completions = script.complete(adjusted_line, column)
             suggestions = [completion.name for completion in completions]
-            # print()
-            # print("Suggestions:\n", suggestions)
             return json.dumps(suggestions)
         except Exception:
             return json.dumps([])
@@ -211,6 +206,9 @@ class Api:
                     self.info = data.get("info", {})
                     self.resources = data.get("resources", {})
                     self.theme = data.get("theme", {})
+                    self.module_source_code = cast(
+                        str, data.get("module_source_code", "")
+                    )
 
             elif msg == "validated_code":
                 if status == "success":
@@ -481,6 +479,9 @@ def main():
             sys.stdout.write(f"Received theme data: {api.theme}\n")
         else:
             sys.stderr.write("Failed to receive theme data within the timeout period\n")
+
+        # if api.module_source_code:
+        #     sys.stdout.write(f"Received Module Source Code: {api.module_source_code}\n")
 
         _IS_DARK_THEME = bool(api.theme.get("is_doc_dark", False))
 
