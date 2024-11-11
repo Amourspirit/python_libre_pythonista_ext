@@ -121,7 +121,7 @@ class SocketManager:
                 message_bytes = json_message.encode()
                 message_length = struct.pack("!I", len(message_bytes))
                 self.log.debug(
-                    f"Sending message to client: {message} to process {process_id}"
+                    f"Sending message to client: {json_message} to process {process_id}"
                 )
                 sock.sendall(message_length + message_bytes)
             except Exception:

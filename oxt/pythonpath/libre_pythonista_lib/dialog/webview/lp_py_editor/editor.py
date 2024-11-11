@@ -14,6 +14,7 @@ from ooodev.calc import CalcDoc, CalcCell
 from ooodev.events.args.event_args import EventArgs
 from ooodev.utils.data_type.range_obj import RangeObj
 from ooodev.globals import GTC
+from ooodev.theme.theme_calc import ThemeCalc
 
 from ....cell.code_edit.cell_code_edit import CellCodeEdit
 from ....code.py_source_mgr import PyInstance
@@ -96,6 +97,7 @@ class PyCellEditProcessMgr(ProcessMgr):
         self.calc_cell = calc_sheet[cell]
         self._res = ResResolver()
         self._gbl_cache = GTC()
+        self._calc_theme = ThemeCalc()
         self._fn_on_menu_insert_lp_fn = self._on_menu_insert_lp_fn
         self._fn_on_menu_range_select_result = self._on_menu_range_select_result
         self._active_process = ""
@@ -255,6 +257,7 @@ class PyCellEditProcessMgr(ProcessMgr):
                         "runtime_uid": self.doc.runtime_uid,
                     },
                     "resources": cast(Dict[str, str], self._gbl_cache[key]),
+                    "theme": {"is_doc_dark": self._calc_theme.is_document_dark()},
                 },
             }
         elif action == "validate_code":

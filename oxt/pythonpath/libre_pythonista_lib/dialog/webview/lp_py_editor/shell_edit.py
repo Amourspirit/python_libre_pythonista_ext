@@ -31,6 +31,8 @@ webview.settings = {
 
 _WEB_VEW_ENDED = False
 _IS_DEBUG = False
+_IS_DARK_THEME = False
+_DARK_THEME_NAME = "material-darker"
 
 
 class Api:
@@ -41,6 +43,7 @@ class Api:
         self.sock = sock
         self.resources: Dict[str, str] = {}
         self.info: Dict[str, str] = {}
+        self.theme: Dict[str, Any] = {}
 
     def set_window(self, window: webview.Window):
         self._window = window
@@ -207,6 +210,7 @@ class Api:
                     data = cast(Dict[str, Dict[str, str]], response.get("data", {}))
                     self.info = data.get("info", {})
                     self.resources = data.get("resources", {})
+                    self.theme = data.get("theme", {})
 
             elif msg == "validated_code":
                 if status == "success":
@@ -246,13 +250,42 @@ class Api:
         except Exception as e:
             sys.stderr.write(f"Error handling response: {e}\n")
 
+    def set_theme(self, theme: str):
+        try:
+            if self._window:
+                js_code = f"setCodeMirrorTheme('{theme}');"
+                self._window.evaluate_js(js_code)
+        except Exception as e:
+            sys.stderr.write(f"Error in set_theme: {e}\n")
+
+    def set_body_class(self, class_name: str):
+        try:
+            if self._window:
+                js_code = f"setBodyClass('{class_name}');"
+                self._window.evaluate_js(js_code)
+        except Exception as e:
+            sys.stderr.write(f"Error in set_body_class: {e}\n")
+
+    def append_body_class(self, class_name: str):
+        try:
+            if self._window:
+                js_code = f"appendBodyClass('{class_name}');"
+                self._window.evaluate_js(js_code)
+        except Exception as e:
+            sys.stderr.write(f"Error in append_body_class: {e}\n")
+
 
 def webview_ready(window: webview.Window):
-    pass
+    global _IS_DARK_THEME
     # code = "# Write your code here! \nimport sys\nprint(sys.version)\n# type sys followed by a dot to see the completions\n"
     # escaped_code = json.dumps(code)  # Escape the string for JavaScript
     # print(escaped_code)
     # window.evaluate_js(f"setCode({escaped_code})")
+    if _IS_DARK_THEME:
+        window.evaluate_js(f"setCodeMirrorTheme('{_DARK_THEME_NAME}')")
+        window.evaluate_js("appendBodyClass('dark')")
+    else:
+        window.evaluate_js("appendBodyClass('light')")
 
 
 def receive_all(sock: socket.socket, length: int) -> bytes:
@@ -362,7 +395,7 @@ class Menu:
 
 
 def main():
-    global _WEB_VEW_ENDED, _IS_DEBUG
+    global _WEB_VEW_ENDED, _IS_DEBUG, _IS_DARK_THEME
     _WEB_VEW_ENDED = False
     _IS_DEBUG = False
     process_id = sys.argv[1]
@@ -443,6 +476,13 @@ def main():
             sys.stdout.write(f"Received info data: {api.info}\n")
         else:
             sys.stderr.write("Failed to receive info data within the timeout period\n")
+
+        if api.theme:
+            sys.stdout.write(f"Received theme data: {api.theme}\n")
+        else:
+            sys.stderr.write("Failed to receive theme data within the timeout period\n")
+
+        _IS_DARK_THEME = bool(api.theme.get("is_doc_dark", False))
 
         sys.stdout.write("Creating window\n")
         title = api.resources.get("title10", "Python Code")

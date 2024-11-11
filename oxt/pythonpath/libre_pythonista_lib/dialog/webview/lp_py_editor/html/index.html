@@ -16,6 +16,9 @@
     <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/hint/show-hint.min.css"> -->
     <script src="js/show-hint.min.js"></script>
     <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/hint/show-hint.min.js"></script> -->
+    <!-- <link rel="stylesheet" href="css/theme/night.min.css"> -->
+    <link rel="stylesheet" href="css/theme/material-darker.min.css">
+    
     <style>
         /* Set size and position for the textarea */
         .CodeMirror {
@@ -59,6 +62,41 @@
         .button-container button:first-child {
             margin-left: 0;
         }
+
+        .dark {
+            background-color: #343434;
+        }
+        .light {
+            background-color: #ffffff;
+        }
+
+         /* Dark theme for buttons */
+        .dark .button-container button {
+            background-color: #555;
+            color: #fff;
+        }
+
+        /* Light theme for buttons */
+        .light .button-container button {
+            background-color: #f0f0f0;
+            color: #000;
+        }
+
+        .dark .CodeMirror-hints {
+            background: #2e2e2e; /* Background color */
+            color: #f8f8f2; /* Text color */
+            border: 1px solid #555; /* Border color */
+        }
+
+        .dark .CodeMirror-hint {
+            padding: 2px 10px; /* Padding for each hint */
+            color: #f8f8f2; /* Text color for hints */
+        }
+
+        .dark .CodeMirror-hint-active {
+            background: #444; /* Background color for active hint */
+            color: #fff; /* Text color for active hint */
+        }
     </style>
 </head>
 
@@ -96,6 +134,7 @@
             extraKeys: {
                 "Ctrl-Space": "autocomplete"
             },
+            // theme: "night",
             hintOptions: {
                 hint: customAutocomplete
             }
@@ -105,10 +144,22 @@
             editor.focus();
         }
 
+        function setCodeMirrorTheme(theme) {
+            editor.setOption("theme", theme);
+        }
+
         function insertTextAtCursor(text) {
             var doc = editor.getDoc();
             var cursor = doc.getCursor(); // gets the line number in the cursor position
             doc.replaceRange(text, cursor); // replaces the selection with the given text
+        }
+
+        function setBodyClass(className) {
+            document.body.className = className;
+        }
+
+        function appendBodyClass(className) {
+            document.body.classList.add(className);
         }
 
         var ExcludedIntelliSenseTriggerKeys = {
