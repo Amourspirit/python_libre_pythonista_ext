@@ -5,6 +5,7 @@ import threading
 import subprocess
 import os
 import sys
+import contextlib
 from uuid import uuid4
 from abc import ABC, abstractmethod
 
@@ -321,3 +322,26 @@ class ProcessMgr(ABC):
                 if process_id in self.process_pool:
                     del self.process_pool[process_id]
                     self.log.debug(f"Subprocess {process_id} removed from process pool")
+
+    def terminate_server(self):
+        """
+        Terminates the server socket.
+
+        Returns:
+            None: This method does not return anything.
+        """
+
+        if self._server:
+            server_socket, _ = self._server
+            server_socket.close()
+            self._server = None
+
+    def __del__(self):
+        """
+        Destructor for the ProcessMgr class.
+        This method is called when the ProcessMgr instance is deleted.
+        It ensures that all subprocesses are terminated before the instance is destroyed.
+        """
+        with contextlib.suppress(Exception):
+            self.terminate_all_subprocesses()
+            self.terminate_server()

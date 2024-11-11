@@ -2,18 +2,18 @@ from __future__ import annotations
 from typing import Any, List, Dict, Tuple, TYPE_CHECKING
 
 from sortedcontainers import SortedDict
+
 from ooodev.calc import CalcDoc, CalcCell
-from ooodev.utils.data_type.cell_obj import CellObj
-from ooodev.utils import gen_util as gUtil
-from ooodev.io.sfa import Sfa
-from ooodev.events.lo_events import LoEvents
-from ooodev.events.partial.events_partial import EventsPartial
 from ooodev.events.args.cancel_event_args import CancelEventArgs
 from ooodev.events.args.event_args import EventArgs
-
-# from ooodev.io.log.named_logger import NamedLogger
+from ooodev.events.lo_events import LoEvents
+from ooodev.events.partial.events_partial import EventsPartial
+from ooodev.io.sfa import Sfa
+from ooodev.utils import gen_util as gUtil
+from ooodev.utils.data_type.cell_obj import CellObj
 from ooodev.utils.helper.dot_dict import DotDict
 from ooodev.utils.string.str_list import StrList
+
 from ..event.shared_event import SharedEvent
 from ..log.log_inst import LogInst
 from ..utils.gen_util import GenUtil

@@ -9,12 +9,14 @@ import os
 from pathlib import Path
 import json
 
-from ooodev.globals import GblEvents
 from ooodev.calc import CalcDoc, CalcCell
 from ooodev.events.args.event_args import EventArgs
-from ooodev.utils.data_type.range_obj import RangeObj
+from ooodev.events.lo_events import LoEvents
+from ooodev.globals import GblEvents
 from ooodev.globals import GTC
+from ooodev.loader import Lo
 from ooodev.theme.theme_calc import ThemeCalc
+from ooodev.utils.data_type.range_obj import RangeObj
 
 from ....cell.code_edit.cell_code_edit import CellCodeEdit
 from ....code.py_source_mgr import PyInstance
@@ -23,6 +25,7 @@ from ....multi_process.process_mgr import ProcessMgr
 from ....multi_process.socket_manager import SocketManager
 from ....res.res_resolver import ResResolver
 from ....code import py_module
+from ....const.event_const import GBL_DOC_CLOSING
 # from ...listener.top_listener_rng import TopListenerRng
 
 if TYPE_CHECKING:
@@ -44,6 +47,8 @@ if os.name == "nt":
     STARTUP_INFO.dwFlags |= subprocess.STARTF_USESHOWWINDOW
 else:
     STARTUP_INFO = None
+
+_MANAGERS: Dict[str, PyCellEditProcessMgr] = {}
 
 
 class PyCellCodeEdit(CellCodeEdit):
@@ -68,17 +73,18 @@ class PyCellCodeEdit(CellCodeEdit):
 class PyCellEditProcessMgr(ProcessMgr):
     """
     Manages subprocesses, including their creation, communication, and termination.
+    This class is implemented as a singleton.
     """
 
     @override
-    def __init__(self, socket_manager: SocketManager, sheet: str, cell: str):
+    def __init__(self, *, socket_manager: SocketManager, sheet: str, cell: str):
         """
         Initializes the Editor instance.
 
         Args:
             socket_manager (SocketManager): Manager for handling socket connections.
             sheet (str): The name of the sheet to edit.
-            cell (str): The name of the cell to edit
+            cell (str): The name of the cell to edit.
 
         Attributes:
             log (OxtLogger): Logger instance for logging purposes.
@@ -87,11 +93,13 @@ class PyCellEditProcessMgr(ProcessMgr):
             lock (threading.Lock): Lock for thread-safe operations.
             _term_events (TerminateEvents): Instance to handle termination events.
         """
-
         super().__init__(socket_manager)
         self.sheet = sheet
         self.cell = cell
         self.doc = CalcDoc.from_current_doc()
+        self.cache_key = (
+            f"doc_{self.doc.runtime_uid}_sheet_{self.sheet}_cell_{self.cell}"
+        )
         self.py_instance = PyInstance(self.doc)
         self.log.debug(f"Sheet: {self.sheet}, Cell: {self.cell}")
         calc_sheet = self.doc.sheets[sheet]
@@ -135,6 +143,7 @@ class PyCellEditProcessMgr(ProcessMgr):
         The method ensures that the socket is closed properly in the 'finally' block.
         """
         self._active_process = process_id
+        last_cmd = ""
 
         try:
             while True:
@@ -153,10 +162,11 @@ class PyCellEditProcessMgr(ProcessMgr):
                 message = data.decode()
                 json_dict = cast(Dict[str, Any], json.loads(message))
                 msg_cmd = json_dict.get("cmd")
+                last_cmd = msg_cmd
 
                 if msg_cmd == "exit":
                     self.log.debug("Received exit command. Closing socket.")
-                    self.socket_manager.close_socket(process_id)
+                    # self.socket_manager.close_socket(process_id)
                     break
                 elif msg_cmd == "webview_ready":
                     self.log.debug("Webview is ready, sending code")
@@ -174,7 +184,13 @@ class PyCellEditProcessMgr(ProcessMgr):
                         else "Received From Client: general_message with no data"
                     )
                 elif msg_cmd == "code":
+                    py_src = self.py_instance[self.calc_cell.cell_obj]
+                    current_code = py_src.source_code
+
                     code = json_dict.get("data", "")
+                    if code == current_code:
+                        self.log.debug("Code is the same. No update required.")
+                        continue
                     self.log.debug(
                         "Received code from client"
                         if code
@@ -205,10 +221,14 @@ class PyCellEditProcessMgr(ProcessMgr):
                         )
                 else:
                     self.log.error(f"Unknown message ID: {msg_cmd}")
+
         except (ConnectionResetError, struct.error):
             pass
         except Exception as e:
             self.log.exception(f"Error handling client: {e}")
+
+        if last_cmd == "exit":
+            PyCellEditProcessMgr.terminate_instance(self.cache_key)
         # finally:
         #     self.socket_manager.close_socket(process_id)
 
@@ -524,6 +544,15 @@ class PyCellEditProcessMgr(ProcessMgr):
 
     # endregion Range Selection
 
+    @classmethod
+    def terminate_instance(cls, key: Any) -> None:
+        global _MANAGERS
+        if key in _MANAGERS:
+            inst = _MANAGERS[key]
+            inst.terminate_all_subprocesses()
+            inst.terminate_server()
+            del _MANAGERS[key]
+
 
 def main(sheet: str, cell: str) -> None:
     """
@@ -544,15 +573,37 @@ def main(sheet: str, cell: str) -> None:
     Returns:
         None: This function does not return anything.
     """
-
+    global _MANAGERS
     log = OxtLogger(log_name="shell_edit")
     socket_manager = SocketManager()
     process_manager = PyCellEditProcessMgr(
         socket_manager=socket_manager, sheet=sheet, cell=cell
     )
+    _MANAGERS[process_manager.cache_key] = process_manager
 
     subprocess_id = process_manager.start_subprocess()
     if subprocess_id:
         log.debug(f"Subprocess ID: {subprocess_id}")
     else:
         log.error("Failed to start subprocess")
+
+
+def _on_doc_closing(src: Any, event: EventArgs) -> None:
+    # clean up singleton
+    global _MANAGERS
+    uid = str(event.event_data.uid)
+    key = f"doc_{uid}"
+    remove_keys = []
+    for inst in _MANAGERS.values():
+        if inst.cache_key.startswith(key):
+            remove_keys.append(inst.cache_key)
+
+    for remove_key in remove_keys:
+        PyCellEditProcessMgr.terminate_instance(remove_key)
+
+    for remove_key in remove_keys:
+        if remove_key in _MANAGERS:
+            del _MANAGERS[remove_key]
+
+
+LoEvents().on(GBL_DOC_CLOSING, _on_doc_closing)

@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, Dict, cast, TYPE_CHECKING
+from typing import Any, Dict, cast
 import socket
 import struct
 import sys
