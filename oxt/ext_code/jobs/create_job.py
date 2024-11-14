@@ -51,16 +51,16 @@ else:
 
         # Initialize the breakpoint manager
         break_mgr = BreakMgr()
-        break_mgr.add_breakpoint("view_job_init")
-        break_mgr.add_breakpoint("view_job_init_state")
+        # break_mgr.add_breakpoint("create_job_init")
+        # break_mgr.add_breakpoint("create_job_init_state")
 # endregion imports
 
 
 # region XJob
-class ViewJob(unohelper.Base, XJob):
+class CreateJob(unohelper.Base, XJob):
     """Python UNO Component that implements the com.sun.star.task.Job interface."""
 
-    IMPLE_NAME = "___lo_identifier___.ViewJob"
+    IMPLE_NAME = "___lo_identifier___.CreateJob"
     SERVICE_NAMES = ("com.sun.star.task.Job",)
 
     @classmethod
@@ -81,11 +81,7 @@ class ViewJob(unohelper.Base, XJob):
     # region execute
     @override
     def execute(self, Arguments: Any) -> None:
-        # This job may be executed more then once.
-        # When a spreadsheet is put into print preview this is fired.
-        # When the print preview is closed this is fired again.
-        # print("ViewJob execute")
-        self._log.debug("ViewJob execute")
+        self._log.debug("CreateJob execute")
         try:
             # loader = Lo.load_office()
             self._log.debug("Args Length: %i", len(Arguments))
@@ -98,7 +94,7 @@ class ViewJob(unohelper.Base, XJob):
                     self._log.debug("Document Found")
 
             if self.document is None:
-                self._log.debug("ViewJob - Document is None")
+                self._log.debug("CreateJob - Document is None")
                 return
             if self.document.supportsService("com.sun.star.sheet.SpreadsheetDocument"):
                 run_id = self.document.RuntimeUID
@@ -108,7 +104,7 @@ class ViewJob(unohelper.Base, XJob):
                 if _CONDITIONS_MET:
                     try:
                         self._log.debug("Conditions met. Continuing ...")
-                        break_mgr.check_breakpoint("view_job_init")
+                        break_mgr.check_breakpoint("create_job_init")
                         doc_args = self.document.getArgs()
                         args_dic = Props.props_to_dot_dict(doc_args)
                         if hasattr(args_dic, "MacroExecutionMode"):
@@ -125,12 +121,12 @@ class ViewJob(unohelper.Base, XJob):
 
                         _ = Lo.load_office()
                         doc = CalcDoc.get_doc_from_component(self.document)
-                        # if os.getenv("LIBREOFFICE_DEBUG_ATTACHED"):
-                        #     breakpoint()
-                        # t = threading.Thread(
-                        #     target=_init_with_state, args=(doc, self._log), daemon=True
-                        # )
-                        # t.start()
+
+                        t = threading.Thread(
+                            target=_init_with_state, args=(doc, self._log), daemon=True
+                        )
+                        t.start()
+                        # t.join() # DO NOT join. Can cause LibreOffice to hang.
 
                     except Exception:
                         self._log.error(
@@ -152,7 +148,7 @@ class ViewJob(unohelper.Base, XJob):
     def _get_local_logger(self) -> OxtLogger:
         from ___lo_pip___.oxt_logger import OxtLogger  # type: ignore
 
-        return OxtLogger(log_name="ViewJob")
+        return OxtLogger(log_name="CreateJob")
 
     # endregion Logging
 
@@ -180,11 +176,12 @@ def _init_with_state(doc: CalcDoc, log: OxtLogger):
         log.debug("Creating an instance of CalcDocMgr")
         # if os.getenv("LIBREOFFICE_DEBUG_ATTACHED"):
         #     breakpoint()
-        break_mgr.check_breakpoint("view_job_init_state")
+        break_mgr.check_breakpoint("create_job_init_state")
 
         doc_mgr = CalcDocMgr()
         doc_mgr.calc_state_mgr.is_oxt_init = True
-        # doc_mgr.ensure_events()
+        # doc_mgr.ensure_events_for_new()
+        doc_mgr.is_job_loading_finished = True
 
     except Exception:
         log.error("Error _init_with_state()", exc_info=True)
@@ -196,6 +193,6 @@ def _init_with_state(doc: CalcDoc, log: OxtLogger):
 
 g_TypeTable = {}
 g_ImplementationHelper = unohelper.ImplementationHelper()
-g_ImplementationHelper.addImplementation(*ViewJob.get_imple())
+g_ImplementationHelper.addImplementation(*CreateJob.get_imple())
 
 # endregion Implementation

@@ -40,7 +40,7 @@ else:
 
     break_mgr = BreakMgr()
     # Add breakpoint labels
-    break_mgr.add_breakpoint("init_cell_manager")
+    # break_mgr.add_breakpoint("init_cell_manager")
 
 
 class CalcDocMgr(SingletonBase):
@@ -73,6 +73,7 @@ class CalcDocMgr(SingletonBase):
             # if not ready then a restart of LibreOffice is required.
             self._log.debug("Imports2 is not ready. Returning.")
             return
+
         self._se = SharedEvent(self._doc)
         self._init_events()
         # if self._state_mgr.is_pythonista_doc:
@@ -169,7 +170,10 @@ class CalcDocMgr(SingletonBase):
                 with self._log.noindent():
                     if self._log.is_debug:
                         self._log.debug("Dispatch Command %s", cmd)
-                self.ensure_events()
+                if self.is_new_document:
+                    self.ensure_events_for_new()
+                else:
+                    self.ensure_events()
 
         except Exception:
             with self._log.noindent():
@@ -304,6 +308,9 @@ class CalcDocMgr(SingletonBase):
         # if not self._state_mgr.is_pythonista_doc:
         #     self._log.debug("_init_cell_manager() Document not currently a LibrePythonista. Returning.")
         #     return False
+        if not self.is_macros_enabled:
+            self._log.debug("_init_cell_manager() Macros not enabled. Returning.")
+            return False
 
         try:
             from ..sheet.sheet_mgr import SheetMgr
@@ -334,6 +341,49 @@ class CalcDocMgr(SingletonBase):
         self._log.debug(f"Pre Dispatch manager loaded, UID: {self._doc.runtime_uid}")
         dispatch_mgr.unregister_interceptor(self._doc)
         dispatch_mgr.register_interceptor(self._doc)
+
+    def ensure_events_for_new(self) -> None:
+        """
+        Make sure the sheet events and environments are set for new documents that can become LibrePythonista documents.
+
+        Generally this method will not take any action until after the Created Job has finished.
+        """
+        self._log.debug("ensure_events_for_new()")
+        if self._events_ensured:
+            self._log.debug(
+                "ensure_events_for_new() Events already ensuring. Returning."
+            )
+            return
+
+        if not self.calc_state_mgr.is_oxt_init:
+            self._log.debug("ensure_events_for_new() Oxt not initialized. Returning.")
+            return
+
+        self._events_ensuring = True
+
+        try:
+            if self.events_ensured:
+                self._log.debug("Events already ensured. Returning.")
+                self._se.trigger_event(LP_DOC_EVENTS_ENSURED, EventArgs(self))
+                return
+
+            if self._init_doc_view_listeners:
+                self._log.debug("Document view listeners already initialized.")
+            else:
+                self._log.debug(
+                    "Document view listeners not initialized. Initializing."
+                )
+                self._init_doc_view_listeners = self._initialize_document_listeners()
+
+            if not self._init_doc_view_listeners:
+                self._log.debug("Document view listeners not initialized. Returning.")
+                return
+
+        except Exception:
+            with self._log.noindent():
+                self._log.exception("Error ensuring events")
+        finally:
+            self._events_ensuring = False
 
     def ensure_events(self) -> None:
         """
@@ -435,3 +485,37 @@ class CalcDocMgr(SingletonBase):
     @property
     def calc_state_mgr(self) -> CalcStateMgr:
         return self._state_mgr
+
+    @property
+    def is_macros_enabled(self) -> bool:
+        """
+        Checks if macros are enabled for the current document session.
+
+        Returns:
+            bool: True if macros are enabled, False otherwise.
+        """
+        return self._state_mgr.is_macros_enabled
+
+    @property
+    def is_job_loading_finished(self) -> bool:
+        """
+        Gets/Sets if the job loading has finished.
+
+        Returns:
+            bool: True if the job loading has finished, False otherwise.
+        """
+        return self._state_mgr.is_job_loading_finished
+
+    @is_job_loading_finished.setter
+    def is_job_loading_finished(self, value: bool) -> None:
+        self._state_mgr.is_job_loading_finished = value
+
+    @property
+    def is_new_document(self) -> bool:
+        """
+        Gets/Sets if the document is new.
+
+        Returns:
+            bool: True if the document is new, False otherwise.
+        """
+        return self._state_mgr.is_new_document

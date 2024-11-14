@@ -29,6 +29,7 @@ if TYPE_CHECKING:
     from ooodev.events.args.event_args import EventArgs
     from ooodev.utils.helper.dot_dict import DotDict
     from ooodev.loader.inst.lo_loader import LoLoader
+    from ooodev.events.lo_events import LoEvents
     from ...___lo_pip___.oxt_logger import OxtLogger
     from ...pythonpath.libre_pythonista_lib.event.shared_event import SharedEvent
     from ...pythonpath.libre_pythonista_lib.event.shared_cb import SharedCb
@@ -49,6 +50,7 @@ else:
         from ooodev.loader import Lo
         from ooodev.calc import CalcDoc
         from ooodev.events.args.event_args import EventArgs
+        from ooodev.events.lo_events import LoEvents
         from ooodev.utils.helper.dot_dict import DotDict
         from libre_pythonista_lib.event.shared_event import SharedEvent
         from libre_pythonista_lib.event.shared_cb import SharedCb
@@ -190,6 +192,8 @@ class CalcDocUnFocusJob(unohelper.Base, XJob):
         self.ctx = ctx
         self.document = None
         self._log = self._get_local_logger()
+        self._doc: CalcDoc | None = None
+        self._fn_on_doc_event_partial_check_uid = self._on_doc_event_partial_check_uid
 
     # endregion Init
 
@@ -198,6 +202,7 @@ class CalcDocUnFocusJob(unohelper.Base, XJob):
     def execute(self, Arguments: Any) -> None:
         self._log.debug("execute")
         try:
+            self._add_events()
             # loader = Lo.load_office()
             self._log.debug(f"Args Length: {len(Arguments)}")
             arg1 = Arguments[0]
@@ -220,28 +225,28 @@ class CalcDocUnFocusJob(unohelper.Base, XJob):
             if not _CONDITIONS_MET:
                 self._log.debug("Conditions not met. Returning.")
                 return
-            doc = CalcDoc.get_doc_from_component(self.document)
-            if self._log.is_debug:
-                try:
-                    lo_doc = cast(CalcDoc, Lo.current_doc)
-                    self._log.debug(f"Current Lo Document Run ID: {lo_doc.runtime_uid}")
-                except Exception:
-                    self._log.debug("Current Lo Document not found")
+            self._doc = CalcDoc.get_doc_from_component(self.document)
+            self._log.debug("Current Lo Document Run ID: %s", self._doc.runtime_uid)
 
             # sc = SharedCb()
             # if CB_DOC_FOCUS_LOST in sc:
             #     sc.execute(CB_DOC_FOCUS_LOST)
 
-            se = SharedEvent(doc)
+            se = SharedEvent(self._doc)
             eargs = EventArgs(self)
             eargs.event_data = DotDict(
-                run_id=run_id, doc=doc, event="unfocus", doc_type=doc.DOC_TYPE
+                run_id=run_id,
+                doc=self._doc,
+                event="unfocus",
+                doc_type=self._doc.DOC_TYPE,
             )
             se.trigger_event(DOCUMENT_FOCUS_LOST, eargs)
 
-        except Exception as e:
+        except Exception:
             self._log.error("Error getting current document", exc_info=True)
             return
+        finally:
+            self._remove_events()
 
     # endregion execute
 
@@ -253,6 +258,40 @@ class CalcDocUnFocusJob(unohelper.Base, XJob):
         return OxtLogger(log_name="CalcDocUnFocusJob")
 
     # endregion Logging
+
+    # region Event Add/Remove
+    def _add_events(self) -> None:
+        events = LoEvents()
+
+        events.remove(
+            "LibrePythonistaDocEventPartialCheckUid",
+            self._fn_on_doc_event_partial_check_uid,
+        )
+        events.on(
+            "LibrePythonistaDocEventPartialCheckUid",
+            self._fn_on_doc_event_partial_check_uid,
+        )
+
+    def _remove_events(self) -> None:
+        events = LoEvents()
+
+        events.remove(
+            "LibrePythonistaDocEventPartialCheckUid",
+            self._fn_on_doc_event_partial_check_uid,
+        )
+
+    # endregion Event Add/Remove
+
+    # region Event Handlers
+
+    def _on_doc_event_partial_check_uid(self, src: Any, event: EventArgs) -> None:
+        if self._doc is None:
+            return
+        event_data = cast(DotDict, event.event_data)
+        event_data.doc_uid = self._doc.runtime_uid
+
+    # endregion Event Handlers
+
     @classmethod
     def get_imple(cls):
         return (cls, cls.IMPLE_NAME, cls.SERVICE_NAMES)

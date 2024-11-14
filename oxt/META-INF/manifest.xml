@@ -39,7 +39,11 @@
     <manifest:file-entry manifest:media-type="application/vnd.sun.star.uno-component;type=Python"
         manifest:full-path="ext_code/jobs/view_job.py" />
     <manifest:file-entry manifest:media-type="application/vnd.sun.star.uno-component;type=Python"
+        manifest:full-path="ext_code/jobs/load_finished_job.py" />
+    <manifest:file-entry manifest:media-type="application/vnd.sun.star.uno-component;type=Python"
         manifest:full-path="ext_code/jobs/loading_job.py" />
+    <manifest:file-entry manifest:media-type="application/vnd.sun.star.uno-component;type=Python"
+        manifest:full-path="ext_code/jobs/create_job.py" />
     <manifest:file-entry manifest:media-type="application/vnd.sun.star.uno-component;type=Python"
         manifest:full-path="ext_code/jobs/saving_job.py" />
     <manifest:file-entry

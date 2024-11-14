@@ -14,6 +14,8 @@ from ooodev.loader import Lo
 from ooodev.events.lo_events import LoEvents
 from ooodev.events.args.event_args import EventArgs
 from ooodev.utils.helper.dot_dict import DotDict
+
+from ...ex.exceptions import SingletonKeyError
 from ...const.event_const import GBL_DOC_CLOSING
 from ...event.shared_event import SharedEvent
 from ...const.event_const import SHEET_MODIFIED
@@ -41,7 +43,17 @@ class CodeSheetModifyListener(XModifyListener, unohelper.Base):
 
     @classmethod
     def _get_key(cls, inst_name: str) -> str:
-        return f"{Lo.current_doc.runtime_uid}_uid_{inst_name}"
+        eargs = EventArgs(cls)
+        eargs.event_data = DotDict(class_name=cls.__name__, key="", inst_name=inst_name)
+        LoEvents().trigger("LibrePythonistaCodeSheetModifyListenerGetKey", eargs)
+        if eargs.event_data.key:
+            return eargs.event_data.key
+        try:
+            return f"{Lo.current_doc.runtime_uid}_uid_{inst_name}"
+        except Exception as e:
+            raise SingletonKeyError(
+                f"Error getting single key for class name: {cls.__name__} with inst_name: {inst_name}"
+            ) from e
 
     def __init__(
         self,
@@ -91,7 +103,9 @@ class CodeSheetModifyListener(XModifyListener, unohelper.Base):
             self._log.debug("Disposing")
         if self._inst_name in CodeSheetModifyListener._instances:
             del CodeSheetModifyListener._instances[self._inst_name]
-        setattr(self, "_log", None)  # avoid type checker complaining about log being none.
+        setattr(
+            self, "_log", None
+        )  # avoid type checker complaining about log being none.
 
     def __del__(self) -> None:
         if self._log is not None:

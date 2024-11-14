@@ -1,6 +1,6 @@
 # region imports
 from __future__ import unicode_literals, annotations
-from typing import Any, TYPE_CHECKING
+from typing import Any, cast, TYPE_CHECKING
 import os
 import contextlib
 
@@ -28,9 +28,13 @@ if TYPE_CHECKING:
     from ooodev.events.lo_events import LoEvents
     from ooodev.events.args.event_args import EventArgs
     from ooodev.utils.helper.dot_dict import DotDict
+    from ooodev.calc import CalcDoc
+    from ooodev.loader import Lo
     from ...___lo_pip___.oxt_logger import OxtLogger
     from ...pythonpath.libre_pythonista_lib.event.shared_event import SharedEvent
-    from ...pythonpath.libre_pythonista_lib.sheet.listen.code_sheet_modify_listener import CodeSheetModifyListener
+    from ...pythonpath.libre_pythonista_lib.sheet.listen.code_sheet_modify_listener import (
+        CodeSheetModifyListener,
+    )
     from ...pythonpath.libre_pythonista_lib.sheet.listen.code_sheet_activation_listener import (
         CodeSheetActivationListener,
     )
@@ -42,15 +46,23 @@ if TYPE_CHECKING:
     # from ...pythonpath.libre_pythonista_lib.state.calc_state_mgr import CalcStateMgr
     from ...pythonpath.libre_pythonista_lib.doc.calc_doc_mgr import CalcDocMgr
 else:
-    override = lambda func: func
+
+    def override(func):
+        return func
+
     _CONDITIONS_MET = _conditions_met()
     if _CONDITIONS_MET:
         from ooodev.events.lo_events import LoEvents
         from ooodev.events.args.event_args import EventArgs
         from ooodev.utils.helper.dot_dict import DotDict
+        from ooodev.loader import Lo
         from libre_pythonista_lib.event.shared_event import SharedEvent
-        from libre_pythonista_lib.sheet.listen.code_sheet_modify_listener import CodeSheetModifyListener
-        from libre_pythonista_lib.sheet.listen.code_sheet_activation_listener import CodeSheetActivationListener
+        from libre_pythonista_lib.sheet.listen.code_sheet_modify_listener import (
+            CodeSheetModifyListener,
+        )
+        from libre_pythonista_lib.sheet.listen.code_sheet_activation_listener import (
+            CodeSheetActivationListener,
+        )
         from libre_pythonista_lib.code.mod_helper.lplog import LpLog
         from libre_pythonista_lib.cell.cell_mgr import CellMgr
         from libre_pythonista_lib.dispatch import dispatch_mgr  # type: ignore
@@ -80,6 +92,10 @@ class UnLoadingJob(XJob, unohelper.Base):
         self.ctx = ctx
         self.document = None
         self._log = self._get_local_logger()
+        self._doc: CalcDoc | None = None
+        self._fn_on_singleton_get_key = self._on_singleton_get_key
+        self._fn_on_doc_event_partial_check_uid = self._on_doc_event_partial_check_uid
+        self._fn_on_singleton_get_doc = self._on_singleton_get_doc
 
     # endregion Init
 
@@ -113,10 +129,11 @@ class UnLoadingJob(XJob, unohelper.Base):
                     try:
                         from ooodev.calc import CalcDoc
 
-                        # doc = CalcDoc.from_current_doc()
-                        doc = CalcDoc.get_doc_from_component(self.document)
+                        self._add_events()
 
-                        dispatch_mgr.unregister_interceptor(doc)
+                        self._doc = CalcDoc.get_doc_from_component(self.document)
+
+                        dispatch_mgr.unregister_interceptor(self._doc)
 
                         doc_mgr = CalcDocMgr()
                         if not doc_mgr.events_ensured:
@@ -129,29 +146,40 @@ class UnLoadingJob(XJob, unohelper.Base):
                             return
 
                         if not state_mgr.is_pythonista_doc:
-                            self._log.debug("Document not currently a LibrePythonista. Returning.")
+                            self._log.debug(
+                                "Document not currently a LibrePythonista. Returning."
+                            )
                             return
 
-                        CellMgr.reset_instance(doc)
-                        view = doc.get_view()
-                        view.component.addActivationEventListener(CodeSheetActivationListener())
-                        for sheet in doc.sheets:
+                        CellMgr.reset_instance(self._doc)
+                        view = self._doc.get_view()
+                        view.component.addActivationEventListener(
+                            CodeSheetActivationListener()
+                        )
+                        for sheet in self._doc.sheets:
                             unique_id = sheet.unique_id
                             if CodeSheetModifyListener.has_listener(unique_id):
-                                listener = CodeSheetModifyListener(unique_id)  # singleton
+                                listener = CodeSheetModifyListener(
+                                    unique_id
+                                )  # singleton
                                 sheet.component.removeModifyListener(listener)
                     except Exception:
-                        self._log.error("Error dispatch manager not unregistered", exc_info=True)
+                        self._log.error(
+                            "Error dispatch manager not unregistered", exc_info=True
+                        )
+
                     try:
                         self._log.debug("Cleaning up LpLog file")
                         if LpLog.has_singleton_instance():
                             lp_log = LpLog()
                             if lp_log.log_path.exists():
-                                self._log.debug(f"Removing LpLog file: {lp_log.log_path}")
+                                self._log.debug(
+                                    f"Removing LpLog file: {lp_log.log_path}"
+                                )
                                 lp_log.log_path.unlink()
                         else:
                             self._log.debug("LpLog instance not found")
-                    except Exception as e:
+                    except Exception:
                         self._log.error("Error removing log file", exc_info=True)
 
                     # many singletons are created and need to be removed
@@ -163,16 +191,20 @@ class UnLoadingJob(XJob, unohelper.Base):
                     # LoEvents is used to unload various singletons
                     LoEvents().trigger(GBL_DOC_CLOSING, event_args)
 
-                    event_args.event_data = DotDict(run_id=run_time_id, doc=self.document)
+                    event_args.event_data = DotDict(
+                        run_id=run_time_id, doc=self.document
+                    )
                     se.trigger_event(GBL_DOC_CLOSING, event_args)
                     # any class the has the SingletonBase can be used to clear the instance for the uid
                     CellMgr.remove_instance_by_uid(run_time_id)
             else:
                 self._log.debug("Document UnLoading not a spreadsheet")
 
-        except Exception as e:
+        except Exception:
             self._log.error("Error getting current document", exc_info=True)
             return
+        finally:
+            self._remove_events()
 
     # endregion execute
 
@@ -184,6 +216,118 @@ class UnLoadingJob(XJob, unohelper.Base):
         return OxtLogger(log_name="UnLoadingJob")
 
     # endregion Logging
+
+    # region Event Add/Remove
+    def _add_events(self) -> None:
+        events = LoEvents()
+        events.remove(
+            "LibrePythonistaSingletonGetKey",
+            self._fn_on_singleton_get_key,
+        )
+        events.on(
+            "LibrePythonistaSingletonGetKey",
+            self._fn_on_singleton_get_key,
+        )
+
+        events.remove(
+            "LibrePythonistaCodeSheetActivationListenerGetKey",
+            self._fn_on_singleton_get_key,
+        )
+        events.on(
+            "LibrePythonistaCodeSheetActivationListenerGetKey",
+            self._fn_on_singleton_get_key,
+        )
+
+        events.remove(
+            "LibrePythonistaCodeSheetModifyListenerGetKey",
+            self._fn_on_singleton_get_key,
+        )
+        events.on(
+            "LibrePythonistaCodeSheetModifyListenerGetKey",
+            self._fn_on_singleton_get_key,
+        )
+
+        events.remove(
+            "LibrePythonistaDocEventPartialCheckUid",
+            self._fn_on_doc_event_partial_check_uid,
+        )
+        events.on(
+            "LibrePythonistaDocEventPartialCheckUid",
+            self._fn_on_doc_event_partial_check_uid,
+        )
+
+        events.remove(
+            "LibrePythonistaSharedEventGetDoc",
+            self._fn_on_singleton_get_doc,
+        )
+        events.on(
+            "LibrePythonistaSharedEventGetDoc",
+            self._fn_on_singleton_get_doc,
+        )
+
+    def _remove_events(self) -> None:
+        events = LoEvents()
+        events.remove(
+            "LibrePythonistaSingletonGetKey",
+            self._fn_on_singleton_get_key,
+        )
+        events.remove(
+            "LibrePythonistaCodeSheetActivationListenerGetKey",
+            self._fn_on_singleton_get_key,
+        )
+        events.remove(
+            "LibrePythonistaCodeSheetModifyListenerGetKey",
+            self._fn_on_singleton_get_key,
+        )
+        events.remove(
+            "LibrePythonistaDocEventPartialCheckUid",
+            self._fn_on_doc_event_partial_check_uid,
+        )
+        events.remove(
+            "LibrePythonistaSharedEventGetDoc",
+            self._fn_on_singleton_get_doc,
+        )
+
+    # endregion Event Add/Remove
+
+    # region Event Handlers
+
+    def _on_singleton_get_key(self, src: Any, event: EventArgs) -> None:
+        if self._doc is None:
+            return
+        event_data = cast(DotDict, event.event_data)
+        if event_data.class_name == CalcDocMgr.__name__:
+            self._log.debug("CalcDocMgr singleton requested")
+            event_data.key = f"{self._doc.runtime_uid}_uid_{CalcDocMgr.__name__}"
+        elif event_data.class_name == CellMgr.__name__:
+            self._log.debug("CellMgr singleton requested")
+            event_data.key = f"{self._doc.runtime_uid}_uid_{CellMgr.__name__}"
+        elif event_data.class_name == LpLog.__name__:
+            self._log.debug("LpLog singleton requested")
+            event_data.key = f"{self._doc.runtime_uid}_uid_{LpLog.__name__}"
+        elif event_data.class_name == "CellCache":
+            self._log.debug("CellCache singleton requested")
+            event_data.key = f"{self._doc.runtime_uid}_uid_CellCache"
+        if event_data.class_name == "CodeSheetActivationListener":
+            self._log.debug("CodeSheetActivationListener singleton requested")
+            event_data.key = f"{self._doc.runtime_uid}_uid"
+        if event_data.class_name == "CodeSheetModifyListener":
+            self._log.debug("CodeSheetModifyListener singleton requested")
+            event_data.key = f"{self._doc.runtime_uid}_uid_{event_data.inst_name}"
+
+    def _on_singleton_get_doc(self, src: Any, event: EventArgs) -> None:
+        if self._doc is None:
+            return
+        event_data = cast(DotDict, event.event_data)
+        event_data.doc = self._doc
+
+    def _on_doc_event_partial_check_uid(self, src: Any, event: EventArgs) -> None:
+        if self._doc is None:
+            return
+        event_data = cast(DotDict, event.event_data)
+        event_data.doc_uid = self._doc.runtime_uid
+
+    # endregion Event Handlers
 
 
 # endregion XJob

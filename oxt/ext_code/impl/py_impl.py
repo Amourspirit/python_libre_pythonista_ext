@@ -35,6 +35,7 @@ if TYPE_CHECKING:
     from ooodev.utils.data_type.col_obj import ColObj
     from ...___lo_pip___.oxt_logger.oxt_logger import OxtLogger
     from ...___lo_pip___.config import Config
+    from ...___lo_pip___.debug.break_mgr import BreakMgr
     from ...pythonpath.libre_pythonista_lib.cell.cell_mgr import CellMgr
     from ...pythonpath.libre_pythonista_lib.code.cell_cache import CellCache
     from ...pythonpath.libre_pythonista_lib.cell.result_action.pyc.rules.pyc_rules import (
@@ -46,7 +47,7 @@ if TYPE_CHECKING:
         PYC_RULE_MATCH_DONE,
         PYC_FORMULA_ENTER,
     )
-    from ...___lo_pip___.debug.break_mgr import BreakMgr
+    from ...pythonpath.libre_pythonista_lib.state.calc_state_mgr import CalcStateMgr
 
     break_mgr = BreakMgr()
 else:
@@ -65,6 +66,7 @@ else:
             PYC_RULE_MATCH_DONE,
             PYC_FORMULA_ENTER,
         )
+        from libre_pythonista_lib.state.calc_state_mgr import CalcStateMgr
         from ___lo_pip___.debug.break_mgr import BreakMgr
 
         # Initialize the breakpoint manager
@@ -125,6 +127,11 @@ class PyImpl(unohelper.Base, XPy):
         result = None
         try:
             self._logger.debug(f"pyc - Doc UID: {doc.runtime_uid}")
+            calc_state_mgr = CalcStateMgr(doc)
+            if not calc_state_mgr.is_job_loading_finished:
+                self._logger.debug("pyc - Loading Job not finished. Returning.")
+                return None
+
             key = f"LIBRE_PYTHONISTA_DOC_{doc.runtime_uid}"
             if key not in os.environ:
                 # if len(sheet.draw_page) == 0:

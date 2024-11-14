@@ -4,6 +4,10 @@ from typing import Set, TYPE_CHECKING
 
 from ooodev.loader import Lo
 from ooodev.events.partial.events_partial import EventsPartial
+from ooodev.events.lo_events import LoEvents
+from ooodev.events.args.event_args import EventArgs
+from ooodev.utils.helper.dot_dict import DotDict
+
 from ..ex import RuntimeUidError
 
 if TYPE_CHECKING:
@@ -22,6 +26,11 @@ class DocEventPartial(EventsPartial):
         EventsPartial.__init__(self)
 
     def __check_runtime_uid(self) -> bool:
+        eargs = EventArgs(self)
+        eargs.event_data = DotDict(current_udi=self.__runtime_uid, doc_uid="")
+        LoEvents().trigger("LibrePythonistaDocEventPartialCheckUid", eargs)
+        if eargs.event_data.doc_uid:
+            return eargs.event_data.doc_uid == self.__runtime_uid
         return Lo.current_doc.runtime_uid == self.__runtime_uid
 
     # region EventsPartial Overrides
