@@ -26,3 +26,14 @@ LP_DOC_EVENTS_ENSURED = "lp_doc_events_ensured"
 LP_DOC_EVENTS_ENSURED event is triggered when the document events are ensured.
 This takes place in the CalcDocMgr._ensure_events() method.
 """
+
+# region cell.ctl shared events
+CONTROL_ADDED = "control_added"
+CONTROL_ADDING = "control_adding"
+CONTROL_REMOVED = "control_removed"
+CONTROL_REMOVING = "control_removing"
+CONTROL_UPDATING = "control_updating"
+CONTROL_UPDATED = "control_updated"
+CONTROL_INSERTING_CELL_IMG_LINKED = "control_insert_cell_img_linked"
+CONTROL_INSERTED_CELL_IMG_LINKED = "control_inserted_cell_img_linked"
+# endregion cell.ctl shared events

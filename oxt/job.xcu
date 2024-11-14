@@ -44,6 +44,26 @@
         <value>___lo_identifier___.LogWindowJob</value>
       </prop>
     </node>
+    <node oor:name="HtmlPyEditAsync" oor:op="replace">
+      <prop oor:name="Service">
+        <value>___lo_identifier___.AsyncJobHtmlPyEditor</value>
+      </prop>
+    </node>
+    <node oor:name="HtmlPyEditSheet" oor:op="replace">
+      <prop oor:name="Service">
+        <value>___lo_identifier___.py_edit_sheet_job</value>
+      </prop>
+    </node>
+    <node oor:name="DebugJob" oor:op="fuse">
+      <prop oor:name="Service">
+        <value>___lo_identifier___.DebugJob</value>
+      </prop>
+    </node>
+    <node oor:name="DebugLpJob" oor:op="fuse">
+      <prop oor:name="Service">
+        <value>___lo_identifier___.DebugLpJob</value>
+      </prop>
+    </node>
   </node>
   <node oor:name="Events">
     <node oor:name="___startup_event___" oor:op="fuse">
@@ -63,8 +83,9 @@
     </node>
     <node oor:name="OnViewCreated" oor:op="fuse">
       <node oor:name="JobList">
+        <node oor:name="DebugJob" oor:op="fuse" />
+        <node oor:name="DebugLpJob" oor:op="fuse" />
         <node oor:name="ViewJob" oor:op="fuse" />
-        <!-- <node oor:name="LogWindowJob" oor:op="fuse" /> -->
       </node>
     </node>
     <node oor:name="OnSave" oor:op="fuse">
@@ -90,6 +111,16 @@
     <node oor:name="OnUnfocus" oor:op="fuse">
       <node oor:name="JobList">
         <node oor:name="CalcDocUnFocusJob" oor:op="fuse" />
+      </node>
+    </node>
+    <node oor:name="HtmlPyEditEventAsync" oor:op="replace">
+      <node oor:name="JobList">
+        <node oor:name="HtmlPyEditAsync" oor:op="replace" />
+      </node>
+    </node>
+    <node oor:name="HtmlPyEditSheetEvent" oor:op="replace">
+      <node oor:name="JobList">
+        <node oor:name="HtmlPyEditSheet" oor:op="replace" />
       </node>
     </node>
   </node>

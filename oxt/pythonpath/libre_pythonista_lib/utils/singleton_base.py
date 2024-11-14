@@ -16,7 +16,7 @@ class SingletonBase(object):
     _instances = {}
 
     def __new__(cls, *args, **kwargs):
-        if not "single_key" in kwargs:
+        if "single_key" not in kwargs:
             key = cls._get_single_key()
         else:
             key = kwargs.pop("single_key")
@@ -27,7 +27,9 @@ class SingletonBase(object):
             inst = cast(Any, super().__new__(cls))
             inst.singleton_doc = Lo.current_doc
             inst.singleton_key = key
-            inst.runtime_uid = inst.singleton_doc.runtime_uid  # key.split("_", maxsplit=1)[0]
+            inst.runtime_uid = (
+                inst.singleton_doc.runtime_uid
+            )  # key.split("_", maxsplit=1)[0]
             cls._instances[key] = inst
         return cls._instances[key]
 
@@ -43,7 +45,11 @@ class SingletonBase(object):
     @classmethod
     def remove_instance_by_uid(cls, uid: str) -> None:
         start_key = f"{uid}_uid_"
-        rm_keys = [k for k in cls._instances.keys() if isinstance(k, str) and k.startswith(start_key)]
+        rm_keys = [
+            k
+            for k in cls._instances.keys()
+            if isinstance(k, str) and k.startswith(start_key)
+        ]
         for key in rm_keys:
             del cls._instances[key]
 

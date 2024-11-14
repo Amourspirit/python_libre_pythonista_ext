@@ -18,7 +18,7 @@ class SharedEvent(DocEventPartial):
         if doc is None:
             doc = Lo.current_doc
         key = f"doc_{doc.runtime_uid}"
-        if not key in cls._instances:
+        if key not in cls._instances:
             inst = super(SharedEvent, cls).__new__(cls)
             inst._is_init = False
             inst.__init__(doc)

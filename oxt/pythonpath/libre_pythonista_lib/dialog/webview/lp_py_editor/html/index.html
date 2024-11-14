@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <!-- CodeMirror CSS -->
+    <link rel="stylesheet" href="css/codemirror.min.css">
+    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/codemirror.min.css"> -->
+    <!-- CodeMirror JS -->
+    <script src="js/codemirror.min.js"></script>
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/codemirror.min.js"></script> -->
+    <!-- Python Mode -->
+    <script src="js/python.min.js"></script>
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/mode/python/python.min.js"></script> -->
+    <!-- Show-hint CSS and JS for autocomplete -->
+    <link rel="stylesheet" href="css/show-hint.min.css">
+    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/hint/show-hint.min.css"> -->
+    <script src="js/show-hint.min.js"></script>
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/hint/show-hint.min.js"></script> -->
+    <!-- <link rel="stylesheet" href="css/theme/night.min.css"> -->
+    <link rel="stylesheet" href="css/theme/material-darker.min.css">
+    
+    <style>
+        /* Set size and position for the textarea */
+        .CodeMirror {
+            position: absolute;
+            border-bottom: 1px solid #D3D3D3;
+        }
+
+        .android .CodeMirror,
+        .ios .CodeMirror,
+        .mac .CodeMirror,
+        .linux .CodeMirror {
+            width: calc(100% - 10px);
+            /* Desired width */
+            height: calc(100vh - 50px);
+            /* Desired height */
+            top: 2px;
+            left: 5px;
+            /* margin: 10px; */
+        }
+
+        .windows .CodeMirror {
+            width: calc(100% - 10px);
+            /* Desired width */
+            height: calc(100vh - 60px);
+            /* Desired height */
+            top: 4px;
+            left: 5px;
+            /* margin: 10px; */
+        }
+
+        .button-container {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+        }
+
+        .button-container button {
+            margin-left: 5px;
+        }
+
+        .button-container button:first-child {
+            margin-left: 0;
+        }
+
+        .dark {
+            background-color: #343434;
+        }
+        .light {
+            background-color: #ffffff;
+        }
+
+         /* Dark theme for buttons */
+        .dark .button-container button {
+            background-color: #555;
+            color: #fff;
+        }
+
+        /* Light theme for buttons */
+        .light .button-container button {
+            background-color: #f0f0f0;
+            color: #000;
+        }
+
+        .dark .CodeMirror-hints {
+            background: #2e2e2e; /* Background color */
+            color: #f8f8f2; /* Text color */
+            border: 1px solid #555; /* Border color */
+        }
+
+        .dark .CodeMirror-hint {
+            padding: 2px 10px; /* Padding for each hint */
+            color: #f8f8f2; /* Text color for hints */
+        }
+
+        .dark .CodeMirror-hint-active {
+            background: #444; /* Background color for active hint */
+            color: #fff; /* Text color for active hint */
+        }
+    </style>
+</head>
+
+<body>
+    <textarea id="code" name="code" placeholder=""></textarea>
+    <script>
+        function getOS() {
+            var userAgent = window.navigator.userAgent,
+                platform = window.navigator.platform,
+                macosPlatforms = ['Macintosh', 'MacIntel', 'MacPPC', 'Mac68K'],
+                windowsPlatforms = ['Win32', 'Win64', 'Windows', 'WinCE'],
+                iosPlatforms = ['iPhone', 'iPad', 'iPod'],
+                os = null;
+
+            if (macosPlatforms.indexOf(platform) !== -1) {
+                os = 'mac';
+            } else if (iosPlatforms.indexOf(platform) !== -1) {
+                os = 'ios';
+            } else if (windowsPlatforms.indexOf(platform) !== -1) {
+                os = 'windows';
+            } else if (/Android/.test(userAgent)) {
+                os = 'android';
+            } else if (!os && /Linux/.test(platform)) {
+                os = 'linux';
+            }
+
+            return os;
+        }
+
+        document.body.classList.add(getOS());
+
+        var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
+            lineNumbers: true,
+            mode: "python",
+            extraKeys: {
+                "Ctrl-Space": "autocomplete"
+            },
+            // theme: "night",
+            hintOptions: {
+                hint: customAutocomplete
+            }
+        });
+
+        function focusCodeMirror() {
+            editor.focus();
+        }
+
+        function setCodeMirrorTheme(theme) {
+            editor.setOption("theme", theme);
+        }
+
+        function insertTextAtCursor(text) {
+            var doc = editor.getDoc();
+            var cursor = doc.getCursor(); // gets the line number in the cursor position
+            doc.replaceRange(text, cursor); // replaces the selection with the given text
+        }
+
+        function setBodyClass(className) {
+            document.body.className = className;
+        }
+
+        function appendBodyClass(className) {
+            document.body.classList.add(className);
+        }
+
+        var ExcludedIntelliSenseTriggerKeys = {
+            "8": "backspace",
+            "9": "tab",
+            "13": "enter",
+            "16": "shift",
+            "17": "ctrl",
+            "18": "alt",
+            "19": "pause",
+            "20": "capslock",
+            "27": "escape",
+            "33": "pageup",
+            "34": "pagedown",
+            "35": "end",
+            "36": "home",
+            "37": "left",
+            "38": "up",
+            "39": "right",
+            "40": "down",
+            "45": "insert",
+            "46": "delete",
+            "91": "left window key",
+            "92": "right window key",
+            "93": "select",
+            "107": "add",
+            "109": "subtract",
+            "110": "decimal point",
+            "111": "divide",
+            "112": "f1",
+            "113": "f2",
+            "114": "f3",
+            "115": "f4",
+            "116": "f5",
+            "117": "f6",
+            "118": "f7",
+            "119": "f8",
+            "120": "f9",
+            "121": "f10",
+            "122": "f11",
+            "123": "f12",
+            "144": "numlock",
+            "145": "scrolllock",
+            "186": "semicolon",
+            "187": "equalsign",
+            "188": "comma",
+            "189": "dash",
+            // "190": "period",
+            "191": "slash",
+            "192": "graveaccent",
+            "220": "backslash",
+            "222": "quote"
+        }
+
+        editor.on("keyup", function (editor, event) {
+            var __Cursor = editor.getDoc().getCursor();
+            var __Token = editor.getTokenAt(__Cursor);
+
+            if (!editor.state.completionActive &&
+                !ExcludedIntelliSenseTriggerKeys[(event.keyCode || event.which).toString()] &&
+                (__Token.type == "tag" || __Token.string == " " || __Token.string == ".")) {
+                CodeMirror.commands.autocomplete(editor, null, {
+                    completeSingle: false
+                });
+            }
+        });
+
+        function getCode() {
+            return editor.getValue();
+        }
+
+        function customAutocomplete(cm, options) {
+            var cursor = cm.getCursor(); // Current cursor position
+            var code = cm.getValue();
+            var line = cursor.line + 1; // Jedi uses 1-based line numbers
+            var column = cursor.ch;
+            var lineContent = cm.getLine(cursor.line);
+
+            // Find the position after the last dot before the cursor
+            var start = cursor.ch;
+            for (var i = cursor.ch - 1; i >= 0; i--) {
+                var char = lineContent.charAt(i);
+                if (char === '.') {
+                    start = i + 1;
+                    break;
+                } else if (!/\w/.test(char)) {
+                    // Stop if not a word character
+                    start = i + 1;
+                    break;
+                } else if (i === 0) {
+                    start = 0;
+                }
+            }
+
+            return new Promise(function (resolve) {
+                pywebview.api.get_autocomplete(code, line, column).then(function (response) {
+                    var suggestions = JSON.parse(response);
+                    var result = {
+                        list: suggestions.map(function (item) {
+                            return {
+                                text: item,
+                                displayText: item
+                            };
+                        }),
+                        from: CodeMirror.Pos(cursor.line, start),
+                        to: cursor
+                    };
+                    resolve(result);
+                }).catch(function (error) {
+                    console.error(error);
+                    resolve({
+                        list: [],
+                        from: cursor,
+                        to: cursor
+                    });
+                });
+            });
+        }
+
+        window.onload = function () {
+            editor.focus();
+        };
+
+        function setCode(code) {
+            editor.setValue(code);
+        }
+    </script>
+
+    <div class="button-container">
+        <button onclick="pywebview.api.destroy()">Cancel</button>
+        <button onclick='pywebview.api.accept()'>OK</button>
+    </div>
+</body>
+
+</html>

@@ -30,10 +30,11 @@ else:
 
 
 class DispatchAbout(unohelper.Base, XDispatch):
-    """If the View is not in PY_OBJ state the it is switched into PY_OBJ State."""
+    """Displays the About dialog for the extension."""
 
     def __init__(self):
-        super().__init__()
+        XDispatch.__init__(self)
+        unohelper.Base.__init__(self)
         self._log = OxtLogger(log_name=self.__class__.__name__)
         self._status_listeners: Dict[str, XStatusListener] = {}
 

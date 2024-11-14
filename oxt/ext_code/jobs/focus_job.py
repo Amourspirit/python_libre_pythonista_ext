@@ -42,10 +42,10 @@ if TYPE_CHECKING:
         CB_DOC_FOCUS_LOST,
     )
 else:
-    override = lambda func: func
+    override = lambda func: func  # noqa: E731
     _CONDITIONS_MET = _conditions_met()
     if _CONDITIONS_MET:
-        from ooodev.loader.inst.lo_loader import LoLoader
+        from ooodev.loader.inst.lo_loader import LoLoader  # noqa: F401
         from ooodev.loader import Lo
         from ooodev.calc import CalcDoc
         from ooodev.events.args.event_args import EventArgs
@@ -59,7 +59,7 @@ else:
             DOCUMENT_FOCUS_GAINED,
             DOCUMENT_FOCUS_LOST,
             CB_DOC_FOCUS_GAINED,
-            CB_DOC_FOCUS_LOST,
+            CB_DOC_FOCUS_LOST,  # noqa: F401
         )
 # endregion imports
 
@@ -123,7 +123,9 @@ class CalcDocFocusJob(XJob, unohelper.Base):
                 Lo.current_lo.current_doc = self.document
                 if self._log.is_debug:
                     lo_doc = cast(CalcDoc, Lo.current_doc)
-                    self._log.debug(f"Current Focus2 Lo Document Run ID: {lo_doc.runtime_uid}")
+                    self._log.debug(
+                        f"Current Focus2 Lo Document Run ID: {lo_doc.runtime_uid}"
+                    )
                     are_equal = lo_doc.component == self.document
                     self._log.debug(f"Are Equal: {are_equal}")
                 doc = CalcDoc.get_doc_from_component(self.document)
@@ -138,7 +140,9 @@ class CalcDocFocusJob(XJob, unohelper.Base):
                     self._log.debug("Imports2 is not ready. Returning.")
                     return
                 if not state_mgr.is_pythonista_doc:
-                    self._log.debug("Document not currently a LibrePythonista. Returning.")
+                    self._log.debug(
+                        "Document not currently a LibrePythonista. Returning."
+                    )
                     return
                 if not state_mgr.is_oxt_init:
                     self._log.debug("Oxt is not init. Returning.")
@@ -150,7 +154,9 @@ class CalcDocFocusJob(XJob, unohelper.Base):
 
                 se = SharedEvent(doc)
                 eargs = EventArgs(self)
-                eargs.event_data = DotDict(run_id=run_id, doc=doc, event="focus", doc_type=doc.DOC_TYPE)
+                eargs.event_data = DotDict(
+                    run_id=run_id, doc=doc, event="focus", doc_type=doc.DOC_TYPE
+                )
                 se.trigger_event(DOCUMENT_FOCUS_GAINED, eargs)
 
         except Exception as e:
@@ -228,7 +234,9 @@ class CalcDocUnFocusJob(unohelper.Base, XJob):
 
             se = SharedEvent(doc)
             eargs = EventArgs(self)
-            eargs.event_data = DotDict(run_id=run_id, doc=doc, event="unfocus", doc_type=doc.DOC_TYPE)
+            eargs.event_data = DotDict(
+                run_id=run_id, doc=doc, event="unfocus", doc_type=doc.DOC_TYPE
+            )
             se.trigger_event(DOCUMENT_FOCUS_LOST, eargs)
 
         except Exception as e:

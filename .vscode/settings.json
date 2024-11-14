@@ -5,7 +5,7 @@
         "editor.formatOnPaste": true,
         "editor.formatOnSaveMode": "file",
         "editor.formatOnSave": true,
-        "editor.defaultFormatter": "ms-python.black-formatter"
+        "editor.defaultFormatter": "charliermarsh.ruff"
     },
     "python.defaultInterpreterPath": "${workspaceRoot}/.venv/bin/python3",
     "autoDocstring.docstringFormat": "google",
