@@ -7,14 +7,17 @@ try:
 except ImportError:
     from typing_extensions import override
 
-import uno
 from ooo.dyn.awt.size import Size
 from ooo.dyn.awt.point import Point
 from ooodev.exceptions import ex as mEx
+from ooodev.events.args.event_args import EventArgs
+from ooodev.events.args.cancel_event_args import CancelEventArgs
+from ooodev.utils.helper.dot_dict import DotDict
 
 from .simple_ctl import SimpleCtl
 from ..state.ctl_state import CtlState
 from ..state.state_kind import StateKind
+from ...const.event_const import CONTROL_UPDATING, CONTROL_UPDATED
 
 
 if TYPE_CHECKING:
@@ -22,7 +25,6 @@ if TYPE_CHECKING:
 
 
 class DataSeriesCtl(SimpleCtl):
-
     @override
     def get_rule_name(self) -> str:
         """Gets the rule name for this class instance."""
@@ -46,31 +48,90 @@ class DataSeriesCtl(SimpleCtl):
 
     @override
     def update_ctl(self) -> None:
+        """
+        Updates the control state based on the current state of the associated cell.
+        This method performs the following steps:
+        1. Logs the entry into the method.
+        2. Retrieves the sheet and draw page from the associated cell.
+        3. Gets the shape name from the namer.
+        4. Triggers the ``CONTROL_UPDATING`` event with relevant data.
+        5. If the event is cancelled, logs the cancellation and exits.
+        6. Attempts to find the shape by name on the draw page.
+        7. If the shape is found:
+            a. Retrieves the control state.
+            b. If the state is ARRAY, hides the control.
+            c. If the state is PY_OBJ, shows the control and sets its size.
+        8. If the shape is not found, logs the missing shape.
+        9. Triggers the ``CONTROL_UPDATED`` event.
+        10. Logs any errors encountered during execution.
+        Returns:
+            None:
+
+        Triggers:
+            CONTROL_UPDATING: Before the control is added.
+            CONTROL_UPDATED: After the control has been added.
+
+        Notes:
+            Triggers are fired using the shared_event object.
+        """
+
         with self.log.indent(True):
-            self.log.debug(f"{self.__class__.__name__}: update_ctl(): Entered")
+            self.log.debug("%s: update_ctl(): Entered", self.__class__.__name__)
             try:
                 sheet = self.calc_cell.calc_sheet
                 dp = sheet.draw_page
                 shape_name = self.namer.ctl_shape_name
 
+                cargs = CancelEventArgs(self)
+                dd = DotDict(cell=self.calc_cell, shape_name=shape_name, control=self)
+                cargs.event_data = dd
+                self.shared_event.trigger_event(CONTROL_UPDATING, cargs)
+                if cargs.cancel:
+                    self.log.debug(
+                        "%s: update_ctl(): Cancelled", self.__class__.__name__
+                    )
+                    return
+
                 try:
                     shape = dp.find_shape_by_name(shape_name)
-                    self.log.debug(f"{self.__class__.__name__}: update_ctl(): Found Shape: {shape_name}")
+                    self.log.debug(
+                        "%s: update_ctl(): Found Shape: %s",
+                        self.__class__.__name__,
+                        shape_name,
+                    )
                     ctl_state = CtlState(cell=self.calc_cell)
                     state = ctl_state.get_state()
                     if state == StateKind.ARRAY:
-                        self.log.debug(f"{self.__class__.__name__}: update_ctl(): State is ARRAY. Hiding Control.")
+                        self.log.debug(
+                            "%s: update_ctl(): State is ARRAY. Hiding Control.",
+                            self.__class__.__name__,
+                        )
                         shape.set_visible(False)
                     else:
-                        self.log.debug(f"{self.__class__.__name__}: update_ctl(): State is PY_OBJ. Showing control.")
+                        self.log.debug(
+                            "%s: update_ctl(): State is PY_OBJ. Showing control.",
+                            self.__class__.__name__,
+                        )
                         shape.set_visible(True)
 
                         self._set_size(shape.component)  # type: ignore
-                    self.log.debug(f"{self.__class__.__name__}: update_ctl(): Leaving")
+                    self.log.debug("%s: update_ctl(): Leaving", self.__class__.__name__)
                 except mEx.ShapeMissingError:
-                    self.log.debug(f"{self.__class__.__name__}: update_ctl(): Shape not found: {shape_name}")
-                    self.log.debug(f"{self.__class__.__name__}: update_ctl(): Leaving")
+                    self.log.debug(
+                        "%s: update_ctl(): Shape not found: %s",
+                        self.__class__.__name__,
+                        shape_name,
+                    )
+                    self.log.debug("%s: update_ctl(): Leaving", self.__class__.__name__)
 
+                self.shared_event.trigger_event(
+                    CONTROL_UPDATED, EventArgs.from_args(cargs)
+                )
             except Exception as e:
-                self.log.error(f"{self.__class__.__name__}: update_ctl error: {e}", exc_info=True)
+                self.log.error(
+                    "%s: update_ctl error: %s",
+                    self.__class__.__name__,
+                    e,
+                    exc_info=True,
+                )
                 return None

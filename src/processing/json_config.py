@@ -168,7 +168,7 @@ class JsonConfig(metaclass=Singleton):
                 int, self._cfg["tool"]["oxt"]["config"]["log_indent"]
             )
         except Exception:
-            self._log_indent = False
+            self._log_indent = 0
 
         # region tool.libre_pythonista.config
         try:
@@ -291,6 +291,21 @@ class JsonConfig(metaclass=Singleton):
             )
         except Exception:
             self._no_pip_remove = ["pip", "setuptools", "wheel"]
+
+        try:
+            self._libreoffice_debug_port = cast(
+                int,
+                self._cfg["tool"]["oxt"]["config"]["token"]["libreoffice_debug_port"],
+            )
+        except Exception:
+            self._libreoffice_debug_port = 5678
+
+        try:
+            self._lp_debug_port = cast(
+                int, self._cfg["tool"]["oxt"]["config"]["token"]["lp_debug_port"]
+            )
+        except Exception:
+            self._lp_debug_port = 5679
         # endregion tool.libre_pythonista.config
         self._validate()
         self._warnings()
@@ -348,6 +363,8 @@ class JsonConfig(metaclass=Singleton):
         json_config["requirements_macos"] = self._requirements_macos
         json_config["requirements_win"] = self._requirements_win
         json_config["has_locals"] = self._config.has_locals
+        json_config["libreoffice_debug_port"] = self._libreoffice_debug_port
+        json_config["lp_debug_port"] = self._lp_debug_port
 
         # region tool.libre_pythonista.config
         json_config["cell_cp_prefix"] = self._cell_custom_prop_prefix
@@ -430,6 +447,10 @@ class JsonConfig(metaclass=Singleton):
         ), "_install_on_no_uninstall_permission must be a bool"
         assert isinstance(self._run_imports, list), "run_imports must be a list"
         assert isinstance(self._run_imports2, list), "run_imports2 must be a list"
+        assert isinstance(
+            self._libreoffice_debug_port, int
+        ), "libreoffice_debug_port must be a int"
+        assert isinstance(self._lp_debug_port, int), "lp_debug_port must be a int"
         # region tool.libre_pythonista.config
         assert isinstance(
             self._cell_custom_prop_prefix, str

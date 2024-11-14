@@ -14,7 +14,6 @@ from .simple_ctl import SimpleCtl
 
 
 class StrCtl(SimpleCtl):
-
     @override
     def get_rule_name(self) -> str:
         """Gets the rule name for this class instance."""
@@ -23,6 +22,8 @@ class StrCtl(SimpleCtl):
     @override
     def add_ctl(self) -> Any:
         shape = super().add_ctl()
+        if shape is None:
+            return None
         cell = cast("CalcCell", self.calc_cell)
         cell.style_align_text(hori_align=HoriAlignKind.LEFT, indent=UnitPT(14))
         return shape

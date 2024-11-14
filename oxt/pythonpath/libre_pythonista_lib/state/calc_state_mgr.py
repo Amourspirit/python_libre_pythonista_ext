@@ -8,8 +8,14 @@ from ooodev.calc import CalcDoc
 from ooodev.events.args.event_args import EventArgs
 from ooodev.utils.helper.dot_dict import DotDict
 from ooodev.io.sfa import Sfa
+from ooodev.utils.props import Props
 
-from ..const.event_const import OXT_INIT, GBL_DOC_CLOSING, DOCUMENT_EVENT, LP_DOC_EVENTS_ENSURED
+from ..const.event_const import (
+    OXT_INIT,
+    GBL_DOC_CLOSING,
+    DOCUMENT_EVENT,
+    LP_DOC_EVENTS_ENSURED,
+)
 from ..utils.singleton_base import SingletonBase
 from ..event.shared_event import SharedEvent
 
@@ -48,13 +54,17 @@ class CalcStateMgr(SingletonBase):
                 self._log.debug(f"Initializing {self.__class__.__name__}")
             self._config = Config()
             self._sfa = Sfa()
-            self._lp_code_dir = f"vnd.sun.star.tdoc:/{self._doc.runtime_uid}/{self._config.lp_code_dir}"
+            self._lp_code_dir = (
+                f"vnd.sun.star.tdoc:/{self._doc.runtime_uid}/{self._config.lp_code_dir}"
+            )
             self._props: Dict[str, Any] = {}
             self._se = SharedEvent(doc)
             self._calc_event_ensured = False
             self._fn_on_lp_doc_events_ensured = self._on_lp_doc_events_ensured
             # CalcDocMgr is a singleton and it creates and instance of CalcStateMgr.
-            self._se.subscribe_event(LP_DOC_EVENTS_ENSURED, self._fn_on_lp_doc_events_ensured)
+            self._se.subscribe_event(
+                LP_DOC_EVENTS_ENSURED, self._fn_on_lp_doc_events_ensured
+            )
             self._is_first_init = True
 
     def _init_state_mgr(self) -> None:
@@ -76,7 +86,9 @@ class CalcStateMgr(SingletonBase):
     def _on_lp_doc_events_ensured(self, src: Any, event: EventArgs) -> None:
         self._log.debug("_on_lp_doc_events_ensured() Entered.")
         # runtime_uid
-        if isinstance(event.event_data, DotDict) and hasattr(event.event_data, "run_id"):
+        if isinstance(event.event_data, DotDict) and hasattr(
+            event.event_data, "run_id"
+        ):
             uid = event.event_data.run_id
         else:
             uid = self.runtime_uid  # noqa # type: ignore
@@ -141,10 +153,16 @@ class CalcStateMgr(SingletonBase):
         else:
             result = self._sfa.exists(self._lp_code_dir)
             if result:
-                self._log.debug(f"is_pythonista_doc() Code Folder {self._config.lp_code_dir} Exists")
+                self._log.debug(
+                    "is_pythonista_doc() Code Folder %s Exists",
+                    self._config.lp_code_dir,
+                )
                 self._props[key] = True
             else:
-                self._log.debug(f"is_pythonista_doc() Code Folder {self._config.lp_code_dir} Does Not Exist")
+                self._log.debug(
+                    "is_pythonista_doc() Code Folder %s Does Not Exist",
+                    self._config.lp_code_dir,
+                )
             return result
             # inst = PyInstance(self._doc)
             # return inst.has_code()
@@ -160,6 +178,19 @@ class CalcStateMgr(SingletonBase):
         else:
             if key in self._props:
                 del self._props[key]
+
+    @property
+    def is_new_document(self) -> bool:
+        """
+        Checks if the current document is a new, unsaved document.
+
+        Returns:
+            bool: True if the document is new and unsaved, False otherwise.
+        """
+        # https://wiki.openoffice.org/wiki/Documentation/DevGuide/OfficeDev/Component/Models
+        doc_args = self._doc.component.getArgs()
+        args_dic = Props.props_to_dot_dict(doc_args)
+        return args_dic.URL == ""
 
     @property
     def is_view_loaded(self) -> bool:
@@ -190,5 +221,7 @@ class CalcStateMgr(SingletonBase):
         try:
             return self._imports2_ready
         except AttributeError:
-            self._imports2_ready = all(self.is_import_available(imp) for imp in self._config.run_imports2)
+            self._imports2_ready = all(
+                self.is_import_available(imp) for imp in self._config.run_imports2
+            )
         return self._imports2_ready

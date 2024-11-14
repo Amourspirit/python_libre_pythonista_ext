@@ -33,7 +33,7 @@ oxt_name = "LibrePythonista" # https://tinyurl.com/ymeh4c9j#oxt_name
 py_pkg_dir = "py_pkgs" # https://tinyurl.com/ymeh4c9j#py_pkg_dir
 py_pkg_files = [] # https://tinyurl.com/ymeh4c9j#py_pkg_files
 py_pkg_names = [] # ["ooodev", "ooo"] https://tinyurl.com/ymeh4c9j#py_pkg_names
-token_file_ext = ["txt", "xml", "xcu", "xcs", "py","components"] # https://tinyurl.com/ymeh4c9j#token_file_ext
+token_file_ext = ["txt", "xml", "xcu", "xcs", "py","components", "json"] # https://tinyurl.com/ymeh4c9j#token_file_ext
 tokes_files = [] # ["python_impl.py", "res_resolver.py", "py_code.py"] https://tinyurl.com/ymeh4c9j#tokes_files
 update_file = "update.xml" # https://tinyurl.com/ymeh4c9j#update_file
 zip_preinstall_pure = true # https://tinyurl.com/ymeh4c9j#zip_preinstall_pure
@@ -86,6 +86,8 @@ show_progress = true # https://tinyurl.com/ymeh4c9j#show_progress
 delay_startup = true # determines if installing waits fo the window to load before installing https://tinyurl.com/ymeh4c9j#delay_startup
 float_dialog_error = "dialogs/log_dock.xdl"
 float_dialog_error_num = "9809"
+libreoffice_debug_port = 5678
+lp_debug_port = 5679
 lp_experimental_editor=true
 
 [tool.oxt.requirements]

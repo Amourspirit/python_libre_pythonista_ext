@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import cast, TYPE_CHECKING
+from typing import Any, cast, TYPE_CHECKING
 from abc import ABC, abstractmethod
 
 from ooodev.calc import CalcCell
@@ -9,8 +9,22 @@ from ooodev.events.args.cancel_event_args import CancelEventArgs
 from ooodev.events.args.event_args import EventArgs
 from ooodev.utils.helper.dot_dict import DotDict
 
+from ...event.shared_event import SharedEvent
 from ...code.cell_cache import CellCache
 from ...cell.cell_mgr import CellMgr
+
+from ...const.event_const import (
+    # LP_DOC_EVENTS_ENSURED,
+    # SHEET_ACTIVATION,
+    # SHEET_MODIFIED,
+    # LP_DISPATCHED_CMD,
+    # PYC_FORMULA_ENTER,
+    # DOCUMENT_SAVING,
+    # CALC_FORMULAS_CALCULATED,
+    # PYC_FORMULA_INSERTED,
+    # PYC_RULE_MATCH_DONE,
+    CONTROL_ADDING,
+)
 
 if TYPE_CHECKING:
     from com.sun.star.sheet import SheetCellCursor
@@ -41,6 +55,10 @@ class CellCodeEdit(EventsPartial, ABC):
         self.url = url_str
         self.inst_id = inst_id
         self.src_code = src_code
+        self._is_formula_array = False
+        self._shared_event = SharedEvent()
+        self._fn_on_adding_control = self._on_adding_control
+        self._shared_event.subscribe_event(CONTROL_ADDING, self._fn_on_adding_control)
 
     def update_cell(self) -> None:
         """
@@ -72,6 +90,7 @@ class CellCodeEdit(EventsPartial, ABC):
                     return
                 self.src_code = cast(str, cargs.event_data.src_code)
 
+                self._is_formula_array = False
                 cc = CellCache(self.cell.calc_doc)  # singleton
                 cell_obj = self.cell.cell_obj
                 sheet_idx = self.cell.calc_sheet.sheet_index
@@ -87,6 +106,7 @@ class CellCodeEdit(EventsPartial, ABC):
                                 self.cell.calc_doc
                             )  # singleton. Tracks all Code cells
                             # https://ask.libreoffice.org/t/mark-a-calc-sheet-cell-as-dirty/106659
+                            # suspend the listeners for this cell
                             with cm.listener_context(self.cell.component):
                                 # suspend the listeners for this cell
                                 formula = self.cell.component.getFormula()
@@ -100,9 +120,8 @@ class CellCodeEdit(EventsPartial, ABC):
                                         )
                                     return
                                 # s = s.lstrip("=")  # just in case there are multiple equal signs
-                                is_formula_array = False
                                 if formula.startswith("{"):
-                                    is_formula_array = True
+                                    self._is_formula_array = True
                                     formula = formula.lstrip("{")
                                     formula = formula.rstrip("}")
 
@@ -110,7 +129,7 @@ class CellCodeEdit(EventsPartial, ABC):
                                 for key, value in cargs.event_data.items():
                                     dd[key] = value
                                 eargs = EventArgs(self)
-                                if is_formula_array:
+                                if self._is_formula_array:
                                     # The try block is important. If there is a error without the block then the entire LibreOffice app can crash.
                                     self.log.debug("Resetting array formula")
                                     # get the cell that are involved in the array formula.
@@ -147,6 +166,15 @@ class CellCodeEdit(EventsPartial, ABC):
                 # re-raising the error may crash the entire LibreOffice app.
                 self.log.exception("Error:")
                 return
+
+    def _on_adding_control(self, src: Any, event: CancelEventArgs) -> None:
+        # When cursor.setArrayFormula(formula) is called in dispatch
+        # it cause a bunch of events to be fired.
+        # When a cell is displayed as an array this cause a control to be added in the cell.
+        # The fix is to cancel the adding of controls here.
+        # The event is fired in pythonpath.libre_pythonista_lib.cell.ctl.simple_ctl.SimpleCtl.add_ctl
+        if self._is_formula_array:
+            event.cancel = True
 
     @abstractmethod
     def edit_code(self) -> bool: ...

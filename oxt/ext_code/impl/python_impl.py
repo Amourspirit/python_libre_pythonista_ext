@@ -6,6 +6,7 @@ import sys
 
 import unohelper
 from com.sun.star.task import XJobExecutor
+from com.sun.star.task import XJob
 
 
 def add_local_path_to_sys_path() -> None:
@@ -59,7 +60,10 @@ if TYPE_CHECKING:
         UNO_DISPATCH_PYC_FORMULA_DEP,
     )
 else:
-    override = lambda func: func  # noqa: E731
+
+    def override(func):
+        return func
+
     _CONDITIONS_MET = _conditions_met()
     if _CONDITIONS_MET:
         from ooodev.loader import Lo
@@ -111,12 +115,14 @@ class PythonImpl(unohelper.Base, XJobExecutor):
         elif Event == "pyc_formula_with_dependent":
             try:
                 self._log.debug(
-                    f"PYC Formula with dependent, Dispatching {UNO_DISPATCH_PYC_FORMULA_DEP}"
+                    "PYC Formula with dependent, Dispatching %s",
+                    UNO_DISPATCH_PYC_FORMULA_DEP,
                 )
                 _ = Lo.current_doc
                 Lo.dispatch_cmd(cmd=UNO_DISPATCH_PYC_FORMULA_DEP)
                 self._log.debug(
-                    f"PYC Formula with dependent, Dispatched {UNO_DISPATCH_PYC_FORMULA_DEP}"
+                    "PYC Formula with dependent, Dispatched %s",
+                    UNO_DISPATCH_PYC_FORMULA_DEP,
                 )
             except Exception:
                 self._log.exception("Error dispatching")
@@ -125,89 +131,91 @@ class PythonImpl(unohelper.Base, XJobExecutor):
             self._debug_dump_module_to_log()
         elif Event == "about":
             try:
-                self._log.debug(f"About, Dispatching {UNO_DISPATCH_ABOUT}")
+                self._log.debug("About, Dispatching %s", UNO_DISPATCH_ABOUT)
                 _ = Lo.current_doc
                 Lo.dispatch_cmd(cmd=UNO_DISPATCH_ABOUT)
-                self._log.debug(f"About, Dispatched {UNO_DISPATCH_ABOUT}")
+                self._log.debug("About, Dispatched %s", UNO_DISPATCH_ABOUT)
             except Exception:
                 self._log.exception("Error dispatching")
         elif Event == "install_pip_pkg":
             try:
                 self._log.debug(
-                    f"Install Pkg, Dispatching {UNO_DISPATCH_PIP_PKG_INSTALL}"
+                    "Install Pkg, Dispatching %s", UNO_DISPATCH_PIP_PKG_INSTALL
                 )
                 _ = Lo.current_doc
                 Lo.dispatch_cmd(cmd=UNO_DISPATCH_PIP_PKG_INSTALL)
                 self._log.debug(
-                    f"Install Pkg, Dispatched {UNO_DISPATCH_PIP_PKG_INSTALL}"
+                    "Install Pkg, Dispatched %s", UNO_DISPATCH_PIP_PKG_INSTALL
                 )
             except Exception:
                 self._log.exception("Error dispatching")
         elif Event == "uninstall_pip_pkg":
             try:
                 self._log.debug(
-                    f"Installed Pkg, Dispatching {UNO_DISPATCH_PIP_PKG_UNINSTALL}"
+                    "Installed Pkg, Dispatching %s", UNO_DISPATCH_PIP_PKG_UNINSTALL
                 )
                 _ = Lo.current_doc
                 Lo.dispatch_cmd(cmd=UNO_DISPATCH_PIP_PKG_UNINSTALL)
                 self._log.debug(
-                    f"Installed Pkg, Dispatched {UNO_DISPATCH_PIP_PKG_UNINSTALL}"
+                    "Installed Pkg, Dispatched %s", UNO_DISPATCH_PIP_PKG_UNINSTALL
                 )
             except Exception:
                 self._log.exception("Error dispatching")
         elif Event == "installed_pip_pkg":
             try:
                 self._log.debug(
-                    "Installed Pkg, Dispatching {UNO_DISPATCH_PIP_PKG_INSTALLED}"
+                    "Installed Pkg, Dispatching %s", UNO_DISPATCH_PIP_PKG_INSTALLED
                 )
                 _ = Lo.current_doc
                 Lo.dispatch_cmd(cmd=UNO_DISPATCH_PIP_PKG_INSTALLED)
                 self._log.debug(
-                    f"Installed Pkg, Dispatched {UNO_DISPATCH_PIP_PKG_INSTALLED}"
+                    "Installed Pkg, Dispatched %s", UNO_DISPATCH_PIP_PKG_INSTALLED
                 )
             except Exception:
                 self._log.exception("Error dispatching")
 
         elif Event == "log_window":
             try:
-                self._log.debug(f"Log Window, Dispatching {UNO_DISPATCH_LOG_WIN}")
+                self._log.debug("Log Window, Dispatching %s", UNO_DISPATCH_LOG_WIN)
                 _ = Lo.current_doc
                 # in_thread=1 to wait for thread to join else thread is not joined.
                 Lo.dispatch_cmd(
                     cmd=UNO_DISPATCH_LOG_WIN + "?in_thread=0", in_thread=True
                 )
-                self._log.debug(f"Log Window, Dispatched {UNO_DISPATCH_LOG_WIN}")
+                self._log.debug("Log Window, Dispatched %s", UNO_DISPATCH_LOG_WIN)
             except Exception:
                 self._log.exception("Error dispatching")
         elif Event == "link_python":
             try:
-                self._log.debug(f"Dispatching {UNO_DISPATCH_PIP_PKG_LINK}")
+                self._log.debug("Dispatching %s", UNO_DISPATCH_PIP_PKG_LINK)
                 _ = Lo.current_doc
                 # in_thread=1 to wait for thread to join else thread is not joined.
                 Lo.dispatch_cmd(cmd=UNO_DISPATCH_PIP_PKG_LINK)
-                self._log.debug(f"Dispatched {UNO_DISPATCH_PIP_PKG_LINK}")
+                self._log.debug("Dispatched %s", UNO_DISPATCH_PIP_PKG_LINK)
             except Exception:
                 self._log.exception("Error dispatching")
         elif Event == "unlink_python":
             try:
-                self._log.debug(f"Dispatching {UNO_DISPATCH_PIP_PKG_UNLINK}")
+                self._log.debug("Dispatching %s", UNO_DISPATCH_PIP_PKG_UNLINK)
                 _ = Lo.current_doc
                 # in_thread=1 to wait for thread to join else thread is not joined.
                 Lo.dispatch_cmd(cmd=UNO_DISPATCH_PIP_PKG_UNLINK)
-                self._log.debug(f"Dispatched {UNO_DISPATCH_PIP_PKG_UNLINK}")
+                self._log.debug("Dispatched %s", UNO_DISPATCH_PIP_PKG_UNLINK)
             except Exception:
                 self._log.exception("Error dispatching")
-        # elif Event == "wv":
-        #     try:
-        #         wv.main()
-        #     except Exception:
-        #         self._log.exception(f"Error importing wv")
+        elif Event == "debuggy":
+            try:
+                job = Lo.create_instance_mcf(XJob, "___lo_identifier___.DebugJob")
+                if job is not None:
+                    job.execute(())
+            except Exception:
+                self._log.exception("Error Starting Job")
         else:
             try:
-                self._log.debug(f"PYC Formula, Dispatching {UNO_DISPATCH_PYC_FORMULA}")
+                self._log.debug("PYC Formula, Dispatching %s", UNO_DISPATCH_PYC_FORMULA)
                 _ = Lo.current_doc
                 Lo.dispatch_cmd(cmd=UNO_DISPATCH_PYC_FORMULA)
-                self._log.debug(f"PYC Formula, Dispatched {UNO_DISPATCH_PYC_FORMULA}")
+                self._log.debug("PYC Formula, Dispatched %s", UNO_DISPATCH_PYC_FORMULA)
             except Exception:
                 self._log.exception("Error dispatching")
 

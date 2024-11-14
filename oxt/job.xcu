@@ -54,6 +54,16 @@
         <value>___lo_identifier___.py_edit_sheet_job</value>
       </prop>
     </node>
+    <node oor:name="DebugJob" oor:op="fuse">
+      <prop oor:name="Service">
+        <value>___lo_identifier___.DebugJob</value>
+      </prop>
+    </node>
+    <node oor:name="DebugLpJob" oor:op="fuse">
+      <prop oor:name="Service">
+        <value>___lo_identifier___.DebugLpJob</value>
+      </prop>
+    </node>
   </node>
   <node oor:name="Events">
     <node oor:name="___startup_event___" oor:op="fuse">
@@ -73,8 +83,9 @@
     </node>
     <node oor:name="OnViewCreated" oor:op="fuse">
       <node oor:name="JobList">
+        <node oor:name="DebugJob" oor:op="fuse" />
+        <node oor:name="DebugLpJob" oor:op="fuse" />
         <node oor:name="ViewJob" oor:op="fuse" />
-        <!-- <node oor:name="LogWindowJob" oor:op="fuse" /> -->
       </node>
     </node>
     <node oor:name="OnSave" oor:op="fuse">

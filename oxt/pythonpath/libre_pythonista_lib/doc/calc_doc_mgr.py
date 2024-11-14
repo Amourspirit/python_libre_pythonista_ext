@@ -31,8 +31,16 @@ from ..dispatch import dispatch_mgr  # type: ignore
 
 if TYPE_CHECKING:
     from ....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from ....___lo_pip___.debug.break_mgr import BreakMgr, check_breakpoint
+
+    break_mgr = BreakMgr()
 else:
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from ___lo_pip___.debug.break_mgr import BreakMgr, check_breakpoint
+
+    break_mgr = BreakMgr()
+    # Add breakpoint labels
+    break_mgr.add_breakpoint("init_cell_manager")
 
 
 class CalcDocMgr(SingletonBase):
@@ -102,7 +110,7 @@ class CalcDocMgr(SingletonBase):
             self._sheet = cast(CalcSheet, event.event_data.sheet)
             with self._log.noindent():
                 if self._log.is_debug:
-                    self._log.debug(f"Formula entered {self._sheet.name}")
+                    self._log.debug("Formula entered %s", self._sheet.name)
 
             self.ensure_events()
         except Exception:
@@ -117,7 +125,7 @@ class CalcDocMgr(SingletonBase):
             self._sheet = self._doc.sheets.get_sheet(sheet=event.event_data.sheet)
             with self._log.noindent():
                 if self._log.is_debug:
-                    self._log.debug(f"Sheet activated {self._sheet.name}")
+                    self._log.debug("Sheet activated %s", self._sheet.name)
 
             self.ensure_events()
         except Exception:
@@ -139,7 +147,7 @@ class CalcDocMgr(SingletonBase):
                         self._log.debug(f"{err}")
                         sheet = None
                     if sheet:
-                        self._log.debug(f"Sheet Modified  {sheet.name}")
+                        self._log.debug("Sheet Modified %s", sheet.name)
                     else:
                         self._log.debug("Sheet Modified. Sheet not found")
 
@@ -160,7 +168,7 @@ class CalcDocMgr(SingletonBase):
                 self._calc_event_ensured = False
                 with self._log.noindent():
                     if self._log.is_debug:
-                        self._log.debug(f"Dispatch Command {cmd}")
+                        self._log.debug("Dispatch Command %s", cmd)
                 self.ensure_events()
 
         except Exception:
@@ -211,8 +219,12 @@ class CalcDocMgr(SingletonBase):
         # only run if state_mgr.is_imports2_ready
         self._log.debug("_initialize_sheet_listeners()")
         try:
-            from ..sheet.listen.code_sheet_modify_listener import CodeSheetModifyListener
-            from ..sheet.listen.code_sheet_activation_listener import CodeSheetActivationListener
+            from ..sheet.listen.code_sheet_modify_listener import (
+                CodeSheetModifyListener,
+            )
+            from ..sheet.listen.code_sheet_activation_listener import (
+                CodeSheetActivationListener,
+            )
             from ..sheet.listen.sheet_activation_listener import SheetActivationListener
         except ImportError:
             self._log.exception("Sheet listeners not imported. Returning.")
@@ -234,7 +246,10 @@ class CalcDocMgr(SingletonBase):
             else:
                 # this could mean that the print preview has been activated.
                 # Print Preview view controller Name: PrintPreview
-                self._log.debug(f"'{view.view_controller_name}' is not the default view controller. Returning.")
+                self._log.debug(
+                    "'%s' is not the default view controller. Returning.",
+                    view.view_controller_name,
+                )
                 return False
 
             if not self._state_mgr.is_imports2_ready:
@@ -248,7 +263,9 @@ class CalcDocMgr(SingletonBase):
                     listener = CodeSheetModifyListener(unique_id)  # singleton
                     sheet.component.addModifyListener(listener)
                 else:
-                    listener = CodeSheetModifyListener.get_listener(unique_id)  # singleton
+                    listener = CodeSheetModifyListener.get_listener(
+                        unique_id
+                    )  # singleton
                     sheet.component.removeModifyListener(listener)
                     sheet.component.addModifyListener(listener)
         except Exception:
@@ -282,6 +299,7 @@ class CalcDocMgr(SingletonBase):
             return False
         return True
 
+    @check_breakpoint("init_cell_manager")
     def _init_cell_manager(self) -> bool:
         # if not self._state_mgr.is_pythonista_doc:
         #     self._log.debug("_init_cell_manager() Document not currently a LibrePythonista. Returning.")
@@ -300,7 +318,10 @@ class CalcDocMgr(SingletonBase):
             self._doc.component.calculateAll()
             eargs = EventArgs(object())
             eargs.event_data = DotDict(
-                run_id=self.runtime_uid, doc=self._doc, event=OXT_INIT, doc_type=self._doc.DOC_TYPE
+                run_id=self.runtime_uid,
+                doc=self._doc,
+                event=OXT_INIT,
+                doc_type=self._doc.DOC_TYPE,
             )
             self._se.trigger_event(OXT_INIT, eargs)
         except Exception:
@@ -359,7 +380,9 @@ class CalcDocMgr(SingletonBase):
             if self._init_doc_view_listeners:
                 self._log.debug("Document view listeners already initialized.")
             else:
-                self._log.debug("Document view listeners not initialized. Initializing.")
+                self._log.debug(
+                    "Document view listeners not initialized. Initializing."
+                )
                 self._init_doc_view_listeners = self._initialize_document_listeners()
 
             if not self._init_doc_view_listeners:

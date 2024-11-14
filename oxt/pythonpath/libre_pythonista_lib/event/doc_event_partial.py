@@ -1,5 +1,6 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from contextlib import contextmanager
+from typing import Set, TYPE_CHECKING
 
 from ooodev.loader import Lo
 from ooodev.events.partial.events_partial import EventsPartial
@@ -13,11 +14,11 @@ if TYPE_CHECKING:
 
 
 class DocEventPartial(EventsPartial):
-
     def __init__(self, doc: OfficeDocumentT | None = None) -> None:
         if doc is None:
             doc = Lo.current_doc
         self.__runtime_uid = doc.runtime_uid
+        self.__omit_events: Set[str] = set()
         EventsPartial.__init__(self)
 
     def __check_runtime_uid(self) -> bool:
@@ -123,8 +124,22 @@ class DocEventPartial(EventsPartial):
         """
         try:
             if self.__check_runtime_uid():
-                EventsPartial.trigger_event(self, event_name, event_args)
+                if event_name not in self.__omit_events:
+                    EventsPartial.trigger_event(self, event_name, event_args)
         except Exception as e:
             raise RuntimeUidError(f"Error checking runtime_uid: {e}") from e
 
     # endregion EventsPartial Overrides
+    @contextmanager
+    def suspend_event_context(self, *event_names: str):
+        """
+        Context manager that on entry adds events to the omit list.
+        On exit removes events from the omit list.
+        """
+        try:
+            for event_name in event_names:
+                self.__omit_events.add(event_name)
+            yield
+        finally:
+            for event_name in event_names:
+                self.__omit_events.discard(event_name)

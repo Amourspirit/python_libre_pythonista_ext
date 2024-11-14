@@ -28,17 +28,31 @@ if TYPE_CHECKING:
     _CONDITIONS_MET = True
     from ooodev.loader import Lo
     from ooodev.calc import CalcDoc
+    from ooodev.utils.props import Props
     from ...___lo_pip___.oxt_logger import OxtLogger
+    from ...___lo_pip___.debug.break_mgr import BreakMgr
+
+    break_mgr = BreakMgr()
 
     # from ...pythonpath.libre_pythonista_lib.sheet.listen.sheet_calculation_event_listener import (
     #     SheetCalculationEventListener,
     # )
 else:
-    override = lambda func: func  # noqa: E731
+
+    def override(func):
+        return func
+
     _CONDITIONS_MET = _conditions_met()
     if _CONDITIONS_MET:
         from ooodev.loader import Lo
         from ooodev.calc import CalcDoc
+        from ooodev.utils.props import Props
+        from ___lo_pip___.debug.break_mgr import BreakMgr
+
+        # Initialize the breakpoint manager
+        break_mgr = BreakMgr()
+        break_mgr.add_breakpoint("view_job_init")
+        break_mgr.add_breakpoint("view_job_init_state")
 # endregion imports
 
 
@@ -78,7 +92,7 @@ class ViewJob(unohelper.Base, XJob):
             arg1 = Arguments[0]
 
             for struct in arg1.Value:
-                self._log.debug(f"Struct: {struct.Name}")
+                self._log.debug("Struct: %s", struct.Name)
                 if struct.Name == "Model":
                     self.document = struct.Value
                     self._log.debug("Document Found")
@@ -94,8 +108,25 @@ class ViewJob(unohelper.Base, XJob):
                 if _CONDITIONS_MET:
                     try:
                         self._log.debug("Conditions met. Continuing ...")
+                        break_mgr.check_breakpoint("view_job_init")
+                        doc_args = self.document.getArgs()
+                        args_dic = Props.props_to_dot_dict(doc_args)
+                        if hasattr(args_dic, "MacroExecutionMode"):
+                            self._log.debug(
+                                "MacroExecutionMode: %s", args_dic.MacroExecutionMode
+                            )
+                            macros_enabled = args_dic.MacroExecutionMode == 4
+                        else:
+                            macros_enabled = False
+                        self._log.debug("Macros Enabled: %s", macros_enabled)
+                        if not macros_enabled:
+                            self._log.debug("Macros are not enabled. Exiting.")
+                            return
+
                         _ = Lo.load_office()
                         doc = CalcDoc.get_doc_from_component(self.document)
+                        # if os.getenv("LIBREOFFICE_DEBUG_ATTACHED"):
+                        #     breakpoint()
                         t = threading.Thread(
                             target=_init_with_state, args=(doc, self._log), daemon=True
                         )
@@ -148,6 +179,10 @@ def _init_with_state(doc: CalcDoc, log: OxtLogger):
 
     try:
         log.debug("Creating an instance of CalcDocMgr")
+        # if os.getenv("LIBREOFFICE_DEBUG_ATTACHED"):
+        #     breakpoint()
+        break_mgr.check_breakpoint("view_job_init_state")
+
         doc_mgr = CalcDocMgr()
         doc_mgr.calc_state_mgr.is_oxt_init = True
         doc_mgr.ensure_events()  # must be called after is_oxt_init is set to True
