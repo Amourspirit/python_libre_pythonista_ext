@@ -26,6 +26,7 @@ from ....multi_process.socket_manager import SocketManager
 from ....res.res_resolver import ResResolver
 from ....code import py_module
 from ....const.event_const import GBL_DOC_CLOSING
+from ....config.dialog.wv_code_cfg import WvCodeCfg
 # from ...listener.top_listener_rng import TopListenerRng
 
 if TYPE_CHECKING:
@@ -145,6 +146,15 @@ class PyCellEditProcessMgr(ProcessMgr):
         self._active_process = process_id
         last_cmd = ""
 
+        def update_window_config(window_config: Dict[str, Any]) -> None:
+            if window_config:
+                self.log.debug("Updating window configuration")
+                wv_cfg = WvCodeCfg()
+                wv_cfg.from_dict(window_config)
+                wv_cfg.save()
+            else:
+                self.log.debug("No window configuration received")
+
         try:
             while True:
                 raw_msg_len = self.socket_manager.receive_all(
@@ -165,8 +175,18 @@ class PyCellEditProcessMgr(ProcessMgr):
                 last_cmd = msg_cmd
 
                 if msg_cmd == "exit":
-                    self.log.debug("Received exit command. Closing socket.")
+                    self.log.debug("Received exit command.")
                     # self.socket_manager.close_socket(process_id)
+                    data = json_dict.get("data", {})
+                    window_config = data.get("window_config", {})
+                    update_window_config(window_config)
+                    break
+                if msg_cmd == "destroyed":
+                    self.log.debug("Received destroyed command.")
+                    # self.socket_manager.close_socket(process_id)
+                    data = json_dict.get("data", {})
+                    window_config = data.get("window_config", {})
+                    update_window_config(window_config)
                     break
                 elif msg_cmd == "webview_ready":
                     self.log.debug("Webview is ready, sending code")
@@ -187,7 +207,8 @@ class PyCellEditProcessMgr(ProcessMgr):
                     py_src = self.py_instance[self.calc_cell.cell_obj]
                     current_code = py_src.source_code
 
-                    code = json_dict.get("data", "")
+                    data = json_dict.get("data", {})
+                    code = data.get("code", "")
                     if code == current_code:
                         self.log.debug("Code is the same. No update required.")
                         continue
@@ -202,6 +223,10 @@ class PyCellEditProcessMgr(ProcessMgr):
                     inst.update_cell()
                     inst = None
                     self.log.debug("Code updated")
+
+                    window_config = data.get("window_config", {})
+                    update_window_config(window_config)
+
                 elif msg_cmd == "request_action":
                     action = cast(str, json_dict.get("action", ""))
                     params = json_dict.get("params", {})
@@ -268,6 +293,7 @@ class PyCellEditProcessMgr(ProcessMgr):
                     "title10": self._res.resolve_string("title10"),  # Python Code
                 }
             self.log.debug("Getting info")
+            wv_config = WvCodeCfg()
             return {
                 "status": "success",
                 "message": "got_info",
@@ -280,6 +306,7 @@ class PyCellEditProcessMgr(ProcessMgr):
                     "resources": cast(Dict[str, str], self._gbl_cache[key]),
                     "theme": {"is_doc_dark": self._calc_theme.is_document_dark()},
                     "module_source_code": self._get_source_code(),
+                    "window_config": wv_config.to_dict(),
                 },
             }
         elif action == "validate_code":

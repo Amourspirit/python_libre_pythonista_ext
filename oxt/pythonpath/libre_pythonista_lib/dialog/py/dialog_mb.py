@@ -157,7 +157,7 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
             self._log.debug("Init Complete")
             self._is_init = True
         except Exception:
-            self._log.exception(f"Error in DialogMb.__init__:")
+            self._log.exception("Error in DialogMb.__init__:")
 
     def _init_dialog(self) -> None:
         """Create dialog and add controls."""

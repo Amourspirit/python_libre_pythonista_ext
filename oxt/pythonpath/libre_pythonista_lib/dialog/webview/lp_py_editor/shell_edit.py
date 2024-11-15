@@ -26,6 +26,58 @@ _IS_DARK_THEME = False
 _DARK_THEME_NAME = "material-darker"
 
 
+class WindowConfig:
+    def __init__(self):
+        self.width = 0
+        self.height = 0
+        self.x = -1
+        self.y = -1
+
+    def from_json(self, json_str: str):
+        try:
+            data = json.loads(json_str)
+            self.width = data.get("width", 0)
+            self.height = data.get("height", 0)
+            self.x = data.get("x", -1)
+            self.y = data.get("y", -1)
+        except Exception as e:
+            sys.stderr.write(f"Error in from_json: {e}\n")
+
+    def from_dict(self, data: Dict[str, int]):
+        self.width = data.get("width", 0)
+        self.height = data.get("height", 0)
+        self.x = data.get("x", -1)
+        self.y = data.get("y", -1)
+
+    def to_json(self) -> str:
+        data = {"width": self.width, "height": self.height, "x": self.x, "y": self.y}
+        return json.dumps(data)
+
+    def to_dict(self) -> Dict[str, int]:
+        return {
+            "width": self.width,
+            "height": self.height,
+            "x": self.x,
+            "y": self.y,
+        }
+
+    def has_size(self) -> bool:
+        return self.width > 0 and self.height > 0
+
+    def has_position(self) -> bool:
+        return self.x > -1 and self.y > -1
+
+    def update_from_api(self, api: Api):
+        try:
+            if api.has_window():
+                api.window_config.width = api._window.width
+                api.window_config.height = api._window.height
+                api.window_config.x = api._window.x
+                api.window_config.y = api._window.y
+        except Exception as e:
+            sys.stderr.write(f"Error in update_from_api: {e}\n")
+
+
 class Api:
     def __init__(self, process_id: str, sock: socket.socket, port: int):
         self._window = cast(webview.Window, None)
@@ -36,6 +88,7 @@ class Api:
         self.info: Dict[str, str] = {}
         self.theme: Dict[str, Any] = {}
         self.module_source_code = ""
+        self.window_config = WindowConfig()
 
     def set_window(self, window: webview.Window):
         self._window = window
@@ -46,6 +99,14 @@ class Api:
             if self._window:
                 # Destroy the window in a separate thread
                 # self.hide()
+                data = {
+                    "cmd": "destroyed",
+                    "process_id": self.process_id,
+                    "data": {
+                        "window_config": self.window_config.to_dict(),
+                    },
+                }
+                send_message(self.sock, data)
                 self._window.destroy()
                 self._window = cast(webview.Window, None)
                 _WEB_VEW_ENDED = True
@@ -83,7 +144,10 @@ class Api:
                 data = {
                     "cmd": "code",
                     "process_id": self.process_id,
-                    "data": code,
+                    "data": {
+                        "code": code,
+                        "window_config": self.window_config.to_dict(),
+                    },
                 }
                 send_message(self.sock, data)
                 sys.stdout.write("Sent code to server\n")
@@ -209,6 +273,9 @@ class Api:
                     self.module_source_code = cast(
                         str, data.get("module_source_code", "")
                     )
+                    self.window_config.from_dict(
+                        cast(Dict[str, int], data.get("window_config", {}))
+                    )
 
             elif msg == "validated_code":
                 if status == "success":
@@ -271,6 +338,23 @@ class Api:
                 self._window.evaluate_js(js_code)
         except Exception as e:
             sys.stderr.write(f"Error in append_body_class: {e}\n")
+
+    # region Window Events
+    def on_resized(self, width: int, height: int) -> None:
+        if _IS_DEBUG:
+            sys.stdout.write(f"Resized: {width} x {height}\n")
+        self.window_config.width = width
+        self.window_config.height = height
+
+    def on_moved(self, x: int, y: int) -> None:
+        if _IS_DEBUG:
+            sys.stdout.write(f"Moved: {x}, {y}\n")
+        # On Ubuntu 24.04, the window position reports 0, 0 when moved
+        # It may be the same on other platforms
+        self.window_config.x = x
+        self.window_config.y = y
+
+    # endregion Window Events
 
 
 def webview_ready(window: webview.Window):
@@ -490,9 +574,32 @@ def main():
         cell = api.info.get("cell", "")
         if cell:
             title = f"{title} - {cell}"
-        window = webview.create_window(title=title, url=html_file.as_uri(), js_api=api)
+        if api.window_config.has_size():
+            width = api.window_config.width
+            height = api.window_config.height
+        else:
+            width = 800
+            height = 600
+
+        if api.window_config.has_position():
+            x = api.window_config.x
+            y = api.window_config.y
+        else:
+            x = None
+            y = None
+        window = webview.create_window(
+            title=title,
+            url=html_file.as_uri(),
+            width=width,
+            height=height,
+            x=x,
+            y=y,
+            js_api=api,
+        )
 
         window.events.loaded += on_loaded
+        window.events.moved += api.on_moved
+        window.events.resized += api.on_resized
 
         api.set_window(window)
         sys.stdout.write("Window created\n")
@@ -513,7 +620,7 @@ def main():
         data = {
             "cmd": "exit",
             "process_id": process_id,
-            "data": "exit",
+            "data": {"window_config": api.window_config.to_dict()},
         }
 
         send_message(client_socket, data)

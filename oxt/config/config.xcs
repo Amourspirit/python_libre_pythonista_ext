@@ -136,6 +136,13 @@
                 </info>
             </prop>
         </group>
+        <group oor:name="LpWebViewDialogWindow">
+            <prop oor:name="CodeWindowJson" oor:type="xs:string">
+                <info>
+                    <desc>Code Edit Window Edit Data for Webview Editor</desc>
+                </info>
+            </prop>
+        </group>
         <group oor:name="LpSettings">
             <prop oor:name="ExperimentalEditor" oor:type="xs:boolean">
                 <info>
