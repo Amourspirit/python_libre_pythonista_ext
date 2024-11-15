@@ -6,6 +6,10 @@ When a new document is created, the singleton must be reinitialized.
 from __future__ import annotations
 from typing import Any, cast
 from ooodev.loader import Lo
+from ooodev.events.lo_events import LoEvents
+from ooodev.events.args.event_args import EventArgs
+from ooodev.utils.helper.dot_dict import DotDict
+from ..ex.exceptions import SingletonKeyError
 
 
 class SingletonBase(object):
@@ -35,7 +39,17 @@ class SingletonBase(object):
 
     @classmethod
     def _get_single_key(cls) -> str:
-        return f"{Lo.current_doc.runtime_uid}_uid_{cls.__name__}"
+        eargs = EventArgs(cls)
+        eargs.event_data = DotDict(class_name=cls.__name__, key="")
+        LoEvents().trigger("LibrePythonistaSingletonGetKey", eargs)
+        if eargs.event_data.key:
+            return eargs.event_data.key
+        try:
+            return f"{Lo.current_doc.runtime_uid}_uid_{cls.__name__}"
+        except Exception as e:
+            raise SingletonKeyError(
+                f"Error getting single key for class name: {cls.__name__}"
+            ) from e
 
     @classmethod
     def remove_instance(cls, key: Any) -> None:

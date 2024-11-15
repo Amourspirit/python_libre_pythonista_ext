@@ -52,3 +52,9 @@ class RuntimeUidError(DocumentError):
     """Runtime Uid Error."""
 
     pass
+
+
+class SingletonKeyError(Exception):
+    """Singleton Key Error."""
+
+    pass

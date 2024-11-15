@@ -14,14 +14,29 @@
         <value>___lo_identifier___.ViewJob</value>
       </prop>
     </node>
+    <node oor:name="LoadFinishedJob" oor:op="fuse">
+      <prop oor:name="Service">
+        <value>___lo_identifier___.LoadFinishedJob</value>
+      </prop>
+    </node>
     <node oor:name="LoadingJob" oor:op="fuse">
       <prop oor:name="Service">
         <value>___lo_identifier___.LoadingJob</value>
       </prop>
     </node>
+    <node oor:name="CreateJob" oor:op="fuse">
+      <prop oor:name="Service">
+        <value>___lo_identifier___.CreateJob</value>
+      </prop>
+    </node>
     <node oor:name="UnLoadingJob" oor:op="fuse">
       <prop oor:name="Service">
         <value>___lo_identifier___.UnLoadingJob</value>
+      </prop>
+    </node>
+    <node oor:name="PrepareUnloadJob" oor:op="fuse">
+      <prop oor:name="Service">
+        <value>___lo_identifier___.PrepareUnloadJob</value>
       </prop>
     </node>
     <node oor:name="SavingJob" oor:op="fuse">
@@ -81,6 +96,11 @@
         <node oor:name="UnLoadingJob" oor:op="fuse" />
       </node>
     </node>
+    <node oor:name="OnPrepareUnload" oor:op="fuse">
+      <node oor:name="JobList">
+        <node oor:name="PrepareUnloadJob" oor:op="fuse" />
+      </node>
+    </node>
     <node oor:name="OnViewCreated" oor:op="fuse">
       <node oor:name="JobList">
         <node oor:name="DebugJob" oor:op="fuse" />
@@ -88,9 +108,19 @@
         <node oor:name="ViewJob" oor:op="fuse" />
       </node>
     </node>
+    <node oor:name="OnLoadFinished" oor:op="fuse">
+      <node oor:name="JobList">
+        <node oor:name="LoadFinishedJob" oor:op="fuse" />
+      </node>
+    </node>
     <node oor:name="OnSave" oor:op="fuse">
       <node oor:name="JobList">
         <node oor:name="SavingJob" oor:op="fuse" />
+      </node>
+    </node>
+    <node oor:name="OnCreate" oor:op="fuse">
+      <node oor:name="JobList">
+        <node oor:name="CreateJob" oor:op="fuse" />
       </node>
     </node>
     <node oor:name="OnSave" oor:op="fuse">

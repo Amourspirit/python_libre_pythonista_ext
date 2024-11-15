@@ -56,12 +56,12 @@ class CellCache(SingletonBase):
         self._current_sheet_index = -1
         if self._log.is_debug:
             with self._log.indent(True):
-                self._log.debug(f"__init__() for doc: {doc.runtime_uid}")
+                self._log.debug("__init__() for doc: %s", doc.runtime_uid)
                 for sheet_idx, items in self._code.items():
                     self._log.debug(f"Sheet Index: {sheet_idx}")
                     for cell, props in items.items():
                         self._log.debug(f"Cell: {cell} - Props: {props.props}")
-                self._log.debug(f"__init__() Code Property: {self._code_prop}")
+                self._log.debug("__init__() Code Property: %s", self._code_prop)
         self._is_init = True
 
     def __len__(self) -> int:
@@ -84,7 +84,9 @@ class CellCache(SingletonBase):
         with self._log.indent(True):
             is_db = self._log.is_debug
             if is_db:
-                self._log.debug(f"update_sheet_cell_addr_prop() for Sheet Index: {sheet_idx}")
+                self._log.debug(
+                    f"update_sheet_cell_addr_prop() for Sheet Index: {sheet_idx}"
+                )
             if sheet_idx < 0:
                 sheet_idx = self.current_sheet_index
             if sheet_idx < 0:
@@ -97,13 +99,19 @@ class CellCache(SingletonBase):
                 calc_cell = sheet[cell]
                 if is_db:
                     self._log.debug(f"update_sheet_cell_addr_prop() for Cell: {cell}")
-                addr = GenUtil.create_cell_addr_query_str(sheet_idx, str(calc_cell.cell_obj))
+                addr = GenUtil.create_cell_addr_query_str(
+                    sheet_idx, str(calc_cell.cell_obj)
+                )
                 current = calc_cell.get_custom_property(km.cell_addr_key, addr)
                 if current != addr:
                     calc_cell.set_custom_property(km.cell_addr_key, addr)
                     args = EventArgs(self)
                     args.event_data = DotDict(
-                        calc_cell=calc_cell, sheet_idx=sheet_idx, old_addr=current, addr=addr, icp=icp
+                        calc_cell=calc_cell,
+                        sheet_idx=sheet_idx,
+                        old_addr=current,
+                        addr=addr,
+                        icp=icp,
                     )
                     self._events.trigger_event("update_sheet_cell_addr_prop", args)
             if is_db:
@@ -140,7 +148,9 @@ class CellCache(SingletonBase):
                     cell = sheet[key]
                     code_name = cell.get_custom_property(filter_key, "")
                     if not code_name:
-                        self._log.error(f"_get_cells() Code Name not found for cell: {cell}. Skipping?")
+                        self._log.error(
+                            f"_get_cells() Code Name not found for cell: {cell}. Skipping?"
+                        )
                         continue
                     code_index[key] = IndexCellProps(code_name, value, i)
                 code_cells[index] = code_index
@@ -148,15 +158,20 @@ class CellCache(SingletonBase):
 
     def _ensure_sheet_index(self, sheet_idx: int) -> None:
         with self._log.indent(True):
-            self._log.debug(f"_ensure_sheet_index() Sheet Index: {sheet_idx}")
+            self._log.debug("_ensure_sheet_index() Sheet Index: %s", sheet_idx)
             if sheet_idx < 0:
                 self._log.error("_ensure_sheet_index() Sheet index not set")
                 raise ValueError("Sheet index not set")
             if not self.has_sheet(sheet_idx):
-                self._log.debug(f"_ensure_sheet_index() Sheet index {sheet_idx} not in code. Adding.")
+                self._log.debug(
+                    "_ensure_sheet_index() Sheet index %i not in code. Adding.",
+                    sheet_idx,
+                )
                 self._code[sheet_idx] = {}
 
-    def insert(self, cell: CellObj, code_name: str, props: Set[str], sheet_idx: int = -1) -> None:
+    def insert(
+        self, cell: CellObj, code_name: str, props: Set[str], sheet_idx: int = -1
+    ) -> None:
         """
         Insert a new cell into the cache and updates the indexes. If the sheet index is not in the cache it is added.
 
@@ -186,15 +201,23 @@ class CellCache(SingletonBase):
                 self._log.error("insert() Cell already exists")
                 raise ValueError("Cell already exists")
             if self._code_prop not in props:
-                self._log.error(f"insert() Code property '{self._code_prop}' not in props")
-                raise ValueError(f"Code property '{self._code_prop}' not in props")
+                self._log.error(
+                    "insert() Code property '%s' not in props", self._code_prop
+                )
+                raise ValueError("Code property '%s' not in props", self._code_prop)
             self._log.debug(
-                f"insert() Inserting Cell: {cell} into Sheet Index: {sheet_idx} with Code Name: {code_name}"
+                "insert() Inserting Cell: %s into Sheet Index: %i with Code Name: %s",
+                cell,
+                sheet_idx,
+                code_name,
             )
             self._code[sheet_idx][cell] = IndexCellProps(code_name, props)
             self._update_indexes()
             self._log.debug(
-                f"insert() Inserted Cell: {cell} into Sheet Index: {sheet_idx} with Code Name: {code_name}"
+                "insert() Inserted Cell: %s into Sheet Index: %i with Code Name: %s",
+                cell,
+                sheet_idx,
+                code_name,
             )
             if "code_name_map" in self._cache:
                 self._log.debug("insert() Removing code_name_map from cache")
@@ -219,23 +242,33 @@ class CellCache(SingletonBase):
             Reading the sheet custom cell properties from the sheets is a bit slow. Allowing the deletion rather then reloading the custom properties is faster.
         """
         with self._log.indent(True):
-            self._log.debug(f"remove_cell() Removing Cell: {cell} from sheet index: {sheet_idx}")
+            self._log.debug(
+                f"remove_cell() Removing Cell: {cell} from sheet index: {sheet_idx}"
+            )
             if sheet_idx < 0:
                 sheet_idx = self.current_sheet_index
             if sheet_idx < 0:
                 self._log.error("remove_cell() Sheet index not set")
                 raise ValueError("Sheet index not set")
             if not self.has_cell(cell, sheet_idx):
-                self._log.error(f"remove_cell() Cell: {cell} not in sheet index: {sheet_idx}")
+                self._log.error(
+                    "remove_cell() Cell: %s not in sheet index: %i", cell, sheet_idx
+                )
                 return
             del self._code[sheet_idx][cell]
-            self._log.debug(f"remove_cell() Removed Cell: {cell} from sheet index: {sheet_idx}")
+            self._log.debug(
+                "remove_cell() Removed Cell: %s from sheet index: %i",
+                cell,
+                sheet_idx,
+            )
             self._update_indexes()
             if "code_name_map" in self._cache:
                 del self._cache["code_name_map"]
         return None
 
-    def get_index_cell_props(self, cell: CellObj, sheet_idx: int = -1) -> IndexCellProps:
+    def get_index_cell_props(
+        self, cell: CellObj, sheet_idx: int = -1
+    ) -> IndexCellProps:
         """
         Get the IndexCellProps for the cell.
 
@@ -257,7 +290,11 @@ class CellCache(SingletonBase):
                 self._log.error("get_index_cell_props() Sheet index not set")
                 raise ValueError("Sheet index not set")
             if not self.has_cell(cell, sheet_idx):
-                self._log.error(f"get_index_cell_props() Cell: {cell} not in sheet index: {sheet_idx}")
+                self._log.error(
+                    "get_index_cell_props() Cell: %s not in sheet index: %i",
+                    cell,
+                    sheet_idx,
+                )
                 raise ValueError(f"Cell: {cell} not in sheet index: {sheet_idx}")
             return self._code[sheet_idx][cell]
 
@@ -277,7 +314,7 @@ class CellCache(SingletonBase):
             key = f"{sheet_idx}_indexes"
             if key in self._cache:
                 del self._cache[key]
-        self._log.debug(f"_update_indexes() {count} Indexes Updated")
+        self._log.debug("_update_indexes() %i Indexes Updated", count)
         self._log.outdent()
 
     def _get_indexes(self, sheet_idx: int = -1) -> Dict[int, CellObj]:
@@ -304,14 +341,16 @@ class CellCache(SingletonBase):
                 self._log.error("get_by_index() Sheet index not set")
                 raise ValueError("Sheet index not set")
             if self._log.is_debug:
-                self._log.debug(f"get_by_index() Index: {index} - Sheet Index: {sheet_idx}")
+                self._log.debug(
+                    f"get_by_index() Index: {index} - Sheet Index: {sheet_idx}"
+                )
             self._ensure_sheet_index(sheet_idx)
             indexes = self._get_indexes(sheet_idx)
             if self._log.is_debug:
                 for key, value in indexes.items():
                     self._log.debug(f"get_by_index() Index: {key} - Cell: {value}")
             if index not in indexes:
-                self._log.error(f"get_by_index() Index: {index} not in indexes")
+                self._log.error("get_by_index() Index: %i not in indexes", index)
                 raise ValueError(f"Index: {index} not in indexes")
             return indexes[index]
 
@@ -329,7 +368,9 @@ class CellCache(SingletonBase):
                 raise ValueError("Cell not set")
             items = self.code_cells[sheet_idx]
             if cell not in items:
-                self._log.debug(f"get_cell_index() Cell: {cell} not in sheet index: {sheet_idx}")
+                self._log.debug(
+                    f"get_cell_index() Cell: {cell} not in sheet index: {sheet_idx}"
+                )
                 return -1
             props = items[cell]
             return props.index
@@ -385,7 +426,7 @@ class CellCache(SingletonBase):
                 self._log.error("has_cell() Sheet index not set")
                 raise ValueError("Sheet index not set")
             if not self.has_sheet(sheet_idx):
-                self._log.debug(f"has_cell() Sheet index {sheet_idx} not in code")
+                self._log.debug("has_cell() Sheet index %i not in code", sheet_idx)
                 return False
             return cell in self._code[sheet_idx]
 
@@ -501,7 +542,9 @@ class CellCache(SingletonBase):
             last_cell = self.get_last_cell(sheet_idx)
             return cell > last_cell
 
-    def get_next_cell(self, cell: CellObj | None = None, sheet_idx: int = -1) -> CellObj | None:
+    def get_next_cell(
+        self, cell: CellObj | None = None, sheet_idx: int = -1
+    ) -> CellObj | None:
         with self._log.indent(True):
             if cell is None:
                 cell = self.current_cell
@@ -524,7 +567,9 @@ class CellCache(SingletonBase):
                 return None
             return self.get_by_index(next_index, sheet_idx)
 
-    def get_cell_before(self, cell: CellObj | None = None, sheet_idx: int = -1) -> CellObj | None:
+    def get_cell_before(
+        self, cell: CellObj | None = None, sheet_idx: int = -1
+    ) -> CellObj | None:
         """
         Gets the cell before the current cell if Any.
 
@@ -556,15 +601,21 @@ class CellCache(SingletonBase):
             # get the index of the current cell if available
             index = self.get_cell_index(cell, sheet_idx)
             if self._log.is_debug:
-                self._log.debug(f"get_cell_before() Index for current cell {cell} is {index}")
+                self._log.debug(
+                    "get_cell_before() Index for current cell %s is %i", cell, index
+                )
             if index == 0:
                 if self._log.is_debug:
-                    self._log.debug(f"get_cell_before() Current cell {cell} is the first cell")
+                    self._log.debug(
+                        "get_cell_before() Current cell %s is the first cell", cell
+                    )
                 return None
             if index > 0:
                 co = self.get_by_index(index - 1, sheet_idx)
                 if self._log.is_debug:
-                    self._log.debug(f"get_cell_before() Cell before current cell {cell} is {co}")
+                    self._log.debug(
+                        "get_cell_before() Cell before current cell %s is %s", cell, co
+                    )
                 return co
             # negative index means the cell is not in this instance.
             items = self.code_cells[sheet_idx]
@@ -576,7 +627,11 @@ class CellCache(SingletonBase):
                     break
                 found = co
             if self._log.is_debug:
-                self._log.debug(f"get_cell_before() Cell found before current cell {cell} is {found}")
+                self._log.debug(
+                    "get_cell_before() Cell found before current cell %s is %s",
+                    cell,
+                    found,
+                )
             return found
 
     # make a context manager method that will set the current cell and sheet index
@@ -700,8 +755,12 @@ class CellCache(SingletonBase):
         """
         log = LogInst()
         if cls.has_singleton_instance:
-            log.debug(f"CellCache.reset_instance() - Resetting instance for doc: {doc.runtime_uid}")
+            log.debug(
+                f"CellCache.reset_instance() - Resetting instance for doc: {doc.runtime_uid}"
+            )
             inst = cls(doc)
             cls.remove_this_instance(inst)
         else:
-            log.debug(f"CellCache.reset_instance() - No instance to reset for doc: {doc.runtime_uid}")
+            log.debug(
+                f"CellCache.reset_instance() - No instance to reset for doc: {doc.runtime_uid}"
+            )
