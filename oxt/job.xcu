@@ -59,11 +59,6 @@
         <value>___lo_identifier___.LogWindowJob</value>
       </prop>
     </node>
-    <node oor:name="HtmlPyEditAsync" oor:op="replace">
-      <prop oor:name="Service">
-        <value>___lo_identifier___.AsyncJobHtmlPyEditor</value>
-      </prop>
-    </node>
     <node oor:name="HtmlPyEditSheet" oor:op="replace">
       <prop oor:name="Service">
         <value>___lo_identifier___.py_edit_sheet_job</value>
@@ -141,11 +136,6 @@
     <node oor:name="OnUnfocus" oor:op="fuse">
       <node oor:name="JobList">
         <node oor:name="CalcDocUnFocusJob" oor:op="fuse" />
-      </node>
-    </node>
-    <node oor:name="HtmlPyEditEventAsync" oor:op="replace">
-      <node oor:name="JobList">
-        <node oor:name="HtmlPyEditAsync" oor:op="replace" />
       </node>
     </node>
     <node oor:name="HtmlPyEditSheetEvent" oor:op="replace">

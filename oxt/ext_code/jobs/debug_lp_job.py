@@ -15,10 +15,10 @@ def _conditions_met() -> bool:
         result = RequirementsCheck().run_imports_ready()
         if not result:
             return False
-        try:
-            __import__("debugpy")
-        except (ModuleNotFoundError, ImportError):
-            return False
+    try:
+        __import__("debugpy")
+    except (ModuleNotFoundError, ImportError):
+        return False
     return True
 
 
