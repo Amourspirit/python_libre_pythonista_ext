@@ -51,8 +51,8 @@ else:
 
         # Initialize the breakpoint manager
         break_mgr = BreakMgr()
-        break_mgr.add_breakpoint("view_job_init")
-        break_mgr.add_breakpoint("view_job_init_state")
+        # break_mgr.add_breakpoint("view_job_init")
+        # break_mgr.add_breakpoint("view_job_init_state")
 # endregion imports
 
 
@@ -101,10 +101,10 @@ class ViewJob(unohelper.Base, XJob):
                 self._log.debug("ViewJob - Document is None")
                 return
             if self.document.supportsService("com.sun.star.sheet.SpreadsheetDocument"):
-                run_id = self.document.RuntimeUID
-                key = f"LIBRE_PYTHONISTA_DOC_{run_id}"
-                os.environ[key] = "1"
-                self._log.debug(f"Added {key} to environment variables")
+                # run_id = self.document.RuntimeUID
+                # key = f"LIBRE_PYTHONISTA_DOC_{run_id}"
+                # os.environ[key] = "1"
+                # self._log.debug(f"Added {key} to environment variables")
                 if _CONDITIONS_MET:
                     try:
                         self._log.debug("Conditions met. Continuing ...")
@@ -124,7 +124,7 @@ class ViewJob(unohelper.Base, XJob):
                             return
 
                         _ = Lo.load_office()
-                        doc = CalcDoc.get_doc_from_component(self.document)
+                        # doc = CalcDoc.get_doc_from_component(self.document)
                         # if os.getenv("LIBREOFFICE_DEBUG_ATTACHED"):
                         #     breakpoint()
                         # t = threading.Thread(

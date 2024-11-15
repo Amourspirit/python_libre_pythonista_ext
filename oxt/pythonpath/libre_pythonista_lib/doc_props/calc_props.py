@@ -55,15 +55,19 @@ class CalcProps(CustomPropsBase):
         file_name = f"{cfg.general_code_name}{cfg.calc_props_json_name}"
 
         self._is_imported_calc_doc_mgr = False
-        CustomPropsBase.__init__(self, doc=doc, file_name=file_name, props_id="calc_custom_props")
+        CustomPropsBase.__init__(
+            self, doc=doc, file_name=file_name, props_id="calc_custom_props"
+        )
 
         self._doc_mgr: CalcDocMgr
         if self.log.is_debug:
             with self.log.indent(True):
-                self.log.debug(f"Setting log_level: {self.log_level}")
-                self.log.debug(f"Setting log_format: {self.log_format}")
-                self.log.debug(f"Setting log_to_console: {self.log_to_console}")
-                self.log.debug(f"Setting include_extra_err_info: {self.include_extra_err_info}")
+                self.log.debug("Setting log_level: %i", self.log_level)
+                self.log.debug("Setting log_format: %s", self.log_format)
+                self.log.debug("Setting log_to_console: %s", self.log_to_console)
+                self.log.debug(
+                    "Setting include_extra_err_info: %s", self.include_extra_err_info
+                )
         # please the type checker
 
     def _ensure_import_calc_doc_mgr(self):
@@ -96,7 +100,9 @@ class CalcProps(CustomPropsBase):
             self.is_doc_props = True
             super()._ensure_doc_json_file()
         else:
-            self.log.debug("_ensure_doc_json_file() Events not ensured. Document json file not ensured.")
+            self.log.debug(
+                "_ensure_doc_json_file() Events not ensured. Document json file not ensured."
+            )
 
     # region Overrides
     @override
@@ -131,7 +137,9 @@ class CalcProps(CustomPropsBase):
         if self._doc_mgr.events_ensured:
             super()._init_props()
         else:
-            self.log.debug("_init_props() Events not ensured. Properties not initialized.")
+            self.log.debug(
+                "_init_props() Events not ensured. Properties not initialized."
+            )
 
     @override
     def set_custom_property(self, name: str, value: Any):
@@ -149,7 +157,9 @@ class CalcProps(CustomPropsBase):
         if self._doc_mgr.events_ensured:
             super().set_custom_property(name, value)
         else:
-            self.log.debug("set_custom_property() Events not ensured. Property not set.")
+            self.log.debug(
+                "set_custom_property() Events not ensured. Property not set."
+            )
 
     @override
     def set_custom_properties(self, properties: DotDict) -> None:
@@ -167,7 +177,9 @@ class CalcProps(CustomPropsBase):
         if self._doc_mgr.events_ensured:
             super().set_custom_properties(properties)
         else:
-            self.log.debug("set_custom_properties() Events not ensured. Properties not set.")
+            self.log.debug(
+                "set_custom_properties() Events not ensured. Properties not set."
+            )
 
     # endregion Overrides
 
@@ -192,7 +204,7 @@ class CalcProps(CustomPropsBase):
 
     @doc_ext_location.setter
     def doc_ext_location(self, value: str) -> None:
-        if not value in ("share", "user"):
+        if value not in ("share", "user"):
             raise ValueError(f"Invalid value for doc_ext_location: {value}")
         self.set_custom_property("doc_ext_location", value)
 

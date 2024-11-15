@@ -48,6 +48,9 @@
         manifest:full-path="ext_code/jobs/saving_job.py" />
     <manifest:file-entry
         manifest:media-type="application/vnd.sun.star.uno-component;type=Python"
+        manifest:full-path="ext_code/jobs/prepare_unload_job.py" />
+    <manifest:file-entry
+        manifest:media-type="application/vnd.sun.star.uno-component;type=Python"
         manifest:full-path="ext_code/jobs/unloading_job.py" />
     <manifest:file-entry
         manifest:media-type="application/vnd.sun.star.uno-component;type=Python"
