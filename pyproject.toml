@@ -101,6 +101,7 @@ ooo-dev-tools = ">=0.50.0"
 matplotlib = ">=3.7.5"
 seaborn = ">=0.13"
 sortedcontainers = ">=2.4.0"
+debugpy = ">=1.8"
 
 [tool.oxt.requirements_linux]
 # https://tinyurl.com/ymeh4c9j#tooloxtrequirements_linux
@@ -123,6 +124,28 @@ sortedcontainers = ">=2.4.0"
 # These requirements take precedence over the general requirements
 # cefpython3=">=66.1"
 # pywebview = ">=5"
+
+[tool.oxt.experimental.requirements_win]
+# https://tinyurl.com/ymeh4c9j#tooloxtrequirements_win
+# any windows specific requirements
+# These requirements take precedence over the general requirements
+cefpython3=">=66.1"
+pywebview = ">=5"
+
+[tool.oxt.experimental.requirements_macos]
+# https://tinyurl.com/ymeh4c9j#tooloxtrequirements_macos
+# any macos specific requirements
+# These requirements take precedence over the general requirements
+pyobjc = ">=10.3.1"
+pywebview = ">=5"
+
+[tool.oxt.experimental.requirements_linux]
+# https://tinyurl.com/ymeh4c9j#tooloxtrequirements_linux
+# any linux specific requirements
+# These requirements take precedence over the general requirements
+qtpy = ">=2.4.1"
+PySide2 = ">=5"
+pywebview = ">=5"
 
 [tool.oxt.isolate]
 # https://tinyurl.com/ymeh4c9j#tooloxtisolate

@@ -27,6 +27,10 @@
         manifest:media-type="application/vnd.sun.star.configuration-data"
         manifest:full-path="config/options.xcu" />
     <manifest:file-entry manifest:media-type="application/vnd.sun.star.uno-component;type=Python"
+        manifest:full-path="___lo_pip___/dialog/handler/logger_options.py" />
+    <manifest:file-entry manifest:media-type="application/vnd.sun.star.uno-component;type=Python"
+        manifest:full-path="___lo_pip___/dialog/handler/lp_settings.py" />
+    <manifest:file-entry manifest:media-type="application/vnd.sun.star.uno-component;type=Python"
         manifest:full-path="ext_code/impl/py_impl.py" />
     <manifest:file-entry manifest:media-type="application/vnd.sun.star.uno-component;type=Python"
         manifest:full-path="ext_code/impl/python_editor.py" />

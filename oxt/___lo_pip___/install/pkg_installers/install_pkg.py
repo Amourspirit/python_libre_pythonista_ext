@@ -55,10 +55,14 @@ class InstallPkg:
         self._ver_rules = VerRules()
         self._logger = self._get_logger()
         self._flag_upgrade = flag_upgrade
-        self._show_progress = bool(kwargs.get("show_progress", self._config.show_progress))
+        self._show_progress = bool(
+            kwargs.get("show_progress", self._config.show_progress)
+        )
         self._resource_resolver = ResourceResolver(ctx=self.ctx)
         self._target_path = TargetPath()
-        self._no_pip_remove = self._config.no_pip_remove  # {"pip", "setuptools", "wheel"}
+        self._no_pip_remove = (
+            self._config.no_pip_remove
+        )  # {"pip", "setuptools", "wheel"}
 
     def _get_logger(self) -> OxtLogger:
         return OxtLogger(log_name=__name__)
@@ -117,7 +121,11 @@ class InstallPkg:
         elif self.flag_upgrade:
             cmd.append("--upgrade")
 
-        if not auto_target and self.config.is_win and len(self.config.isolate_windows) > 0:
+        if (
+            not auto_target
+            and self.config.is_win
+            and len(self.config.isolate_windows) > 0
+        ):
             auto_target = True
 
         if auto_target:
@@ -151,7 +159,10 @@ class InstallPkg:
             # display a terminal window to show progress
             self._logger.debug("Starting Progress Window")
             msg = self.resource_resolver.resolve_string("msg08")
-            title = self.resource_resolver.resolve_string("title01") or self.config.lo_implementation_name
+            title = (
+                self.resource_resolver.resolve_string("title01")
+                or self.config.lo_implementation_name
+            )
             progress = Progress(start_msg=f"{msg}: {pkg}", title=title)
             progress.start()
         else:
@@ -220,7 +231,9 @@ class InstallPkg:
             bool: True if the package was uninstalled successfully, False otherwise.
         """
         if pkg in self.no_pip_remove:
-            self.log.debug(f"{pkg} is in the no install list. Not Uninstalling and continuing.")
+            self.log.debug(
+                f"{pkg} is in the no install list. Not Uninstalling and continuing."
+            )
             return True
 
         def find_matching_files(directory: str, pattern: str) -> list:
@@ -248,35 +261,53 @@ class InstallPkg:
             if os.path.exists(dist_info_dir):
                 try:
                     shutil.rmtree(dist_info_dir)
-                    self.log.info(f"uninstall_package() Successfully removed {dist_info_dir}. Step {step}")
+                    self.log.info(
+                        f"uninstall_package() Successfully removed {dist_info_dir}. Step {step}"
+                    )
                 except Exception as e:
-                    self.log.exception(f"uninstall_package() Failed to remove {dist_info_dir}: {e}. Step {step}")
+                    self.log.exception(
+                        f"uninstall_package() Failed to remove {dist_info_dir}: {e}. Step {step}"
+                    )
                     success = False
             else:
-                self.log.debug(f"uninstall_package() {dist_info_dir} not found. Step {step}")
+                self.log.debug(
+                    f"uninstall_package() {dist_info_dir} not found. Step {step}"
+                )
         else:
-            self.log.debug(f"uninstall_package() no dist-info found for {pkg}. Step {step}")
+            self.log.debug(
+                f"uninstall_package() no dist-info found for {pkg}. Step {step}"
+            )
 
         step = 2
         if not success:
-            self.log.error(f"uninstall_package() Incomplete removal for {pkg} in step {step}")
+            self.log.error(
+                f"uninstall_package() Incomplete removal for {pkg} in step {step}"
+            )
             return False
 
         if os.path.exists(package_dir):
             try:
                 shutil.rmtree(package_dir)
-                self.log.info(f"uninstall_package() Successfully removed {pkg} from {target}. Step {step}")
+                self.log.info(
+                    f"uninstall_package() Successfully removed {pkg} from {target}. Step {step}"
+                )
             except Exception as e:
-                self.log.exception(f"uninstall_package() Failed to remove {pkg} from {target}: {e}. Step {step}")
+                self.log.exception(
+                    f"uninstall_package() Failed to remove {pkg} from {target}: {e}. Step {step}"
+                )
                 success = False
         else:
-            self.log.debug(f"uninstall_package() {pkg} not found in {target}. Step {step}")
+            self.log.debug(
+                f"uninstall_package() {pkg} not found in {target}. Step {step}"
+            )
 
         # just in case there are multiple dist-info folders from previous bad uninstalls,
         # we will remove all of them.
         step = 3
         if not success:
-            self.log.error(f"uninstall_package() Incomplete removal for {pkg} in step {step}")
+            self.log.error(
+                f"uninstall_package() Incomplete removal for {pkg} in step {step}"
+            )
             return False
 
         patterns = (f"{pkg}-*.dist-info", f"{pkg.replace('-', '_')}*.dist-info")
@@ -286,14 +317,22 @@ class InstallPkg:
                 if os.path.exists(dist_info_dir):
                     try:
                         shutil.rmtree(dist_info_dir)
-                        self.log.info(f"uninstall_package() Successfully removed {dist_info_dir}. Step {step}")
+                        self.log.info(
+                            f"uninstall_package() Successfully removed {dist_info_dir}. Step {step}"
+                        )
                     except Exception as e:
-                        self.log.exception(f"uninstall_package() Failed to remove {dist_info_dir}: {e}. Step {step}")
+                        self.log.exception(
+                            f"uninstall_package() Failed to remove {dist_info_dir}: {e}. Step {step}"
+                        )
                         success = False
                 else:
-                    self.log.debug(f"uninstall_package() {dist_info_dir} not found. Step {step}")
+                    self.log.debug(
+                        f"uninstall_package() {dist_info_dir} not found. Step {step}"
+                    )
             if self.log.is_debug:
-                self.log.debug(f"uninstall_package() dist_info_dirs: {dist_info_dirs}. Step {step}")
+                self.log.debug(
+                    f"uninstall_package() dist_info_dirs: {dist_info_dirs}. Step {step}"
+                )
                 if not dist_info_dirs:
                     self.log.debug(
                         f"uninstall_package() dist_info_pattern: {dist_info_pattern} found no more dist-info folders. Step {step}"
@@ -301,14 +340,18 @@ class InstallPkg:
 
         step = 4
         if not success:
-            self.log.error(f"uninstall_package() Incomplete removal for {pkg} in step {step}")
+            self.log.error(
+                f"uninstall_package() Incomplete removal for {pkg} in step {step}"
+            )
             return False
 
         if success:
             if pkg_dir := self.get_package_installation_dir(pkg):
                 try:
                     shutil.rmtree(pkg_dir)
-                    self.log.info(f"uninstall_package() Successfully removed {pkg_dir}. Step {step}")
+                    self.log.info(
+                        f"uninstall_package() Successfully removed {pkg_dir}. Step {step}"
+                    )
                 except Exception as e:
                     self.log.error(
                         f"uninstall_package() Failed to remove {pkg_dir}: {e}. Not critical so will continue. Step {step}"
@@ -317,7 +360,9 @@ class InstallPkg:
 
         step = 5
         if not success:
-            self.log.error(f"uninstall_package() Incomplete removal for {pkg} in step {step}")
+            self.log.error(
+                f"uninstall_package() Incomplete removal for {pkg} in step {step}"
+            )
             return False
 
         return success
@@ -350,12 +395,39 @@ class InstallPkg:
 
         if req is None:
             req = self._config.requirements.copy()
+            self._logger.debug(
+                "Using experimental editor: %s",
+                self._config.lp_settings.experimental_editor,
+            )
             if self._config.is_linux:
                 req.update(self._config.requirements_linux)
+                if self._config.lp_settings.experimental_editor:
+                    if self._logger.is_debug:
+                        self._logger.debug(
+                            "Adding experimental requirements for linux: %s",
+                            self.config.experimental_requirements_linux,
+                        )
+                    req.update(self._config.experimental_requirements_linux)
             if self._config.is_win:
                 req.update(self._config.requirements_win)
+                if self._config.lp_settings.experimental_editor:
+                    if self._logger.is_debug:
+                        self._logger.debug(
+                            "Adding experimental requirements for windows: %s",
+                            self.config.experimental_requirements_win,
+                        )
+                    req.update(self._config.experimental_requirements_win)
             if self._config.is_mac:
                 req.update(self._config.requirements_macos)
+                if self._config.lp_settings.experimental_editor:
+                    if self._logger.is_debug:
+                        self._logger.debug(
+                            "Adding experimental requirements for macos: %s",
+                            self.config.experimental_requirements_macos,
+                        )
+                    req.update(self._config.experimental_requirements_macos)
+        else:
+            self._logger.debug("Using requirements from parameter.")
 
         if not req:
             self._logger.warning("No packages to install.")
@@ -377,7 +449,9 @@ class InstallPkg:
             if self.config.uninstall_on_update:
                 pkg_ver = self.get_package_version(name)
                 if pkg_ver:
-                    self.log.debug(f"Package {name} {pkg_ver} already installed. Attempting to uninstall.")
+                    self.log.debug(
+                        f"Package {name} {pkg_ver} already installed. Attempting to uninstall."
+                    )
                     try:
                         if not self.uninstall_pkg(name):
                             return False
@@ -422,7 +496,9 @@ class InstallPkg:
         self._logger.info(f"Install file package {pth.name} Done!")
         return result
 
-    def _is_valid_version(self, name: str, ver: str, force: bool) -> Tuple[int, List[VerProto]]:
+    def _is_valid_version(
+        self, name: str, ver: str, force: bool
+    ) -> Tuple[int, List[VerProto]]:
         """
         Check if the version of the package is valid.
 
@@ -446,12 +522,18 @@ class InstallPkg:
         self._logger.debug(f"Found Package {name} {pkg_ver} already installed ...")
         if not rules:
             if pkg_ver:
-                self._logger.info(f"Package {name} {pkg_ver} already installed, no rules")
+                self._logger.info(
+                    f"Package {name} {pkg_ver} already installed, no rules"
+                )
             else:
-                self._logger.error(f"Unable to Install. Unable to find rules for {name} {ver}")
+                self._logger.error(
+                    f"Unable to Install. Unable to find rules for {name} {ver}"
+                )
             return 1, rules
 
-        rules_pass = self._ver_rules.get_installed_is_valid_by_rules(rules=rules, check_version=pkg_ver)
+        rules_pass = self._ver_rules.get_installed_is_valid_by_rules(
+            rules=rules, check_version=pkg_ver
+        )
         if not rules_pass:
             self._logger.info(
                 f"Package {name} {pkg_ver} already installed. It does not meet requirements specified by: {ver}, but will be upgraded."
@@ -516,11 +598,17 @@ class InstallPkg:
 
     def _get_file_names(self, path: str) -> List[str]:
         # only get the file names in the specified path
-        return [name for name in os.listdir(path) if os.path.isfile(os.path.join(path, name))]
+        return [
+            name
+            for name in os.listdir(path)
+            if os.path.isfile(os.path.join(path, name))
+        ]
 
     def _get_directory_names(self, path: str) -> List[str]:
         """Get the directory names in the specified path."""
-        return [name for name in os.listdir(path) if os.path.isdir(os.path.join(path, name))]
+        return [
+            name for name in os.listdir(path) if os.path.isdir(os.path.join(path, name))
+        ]
 
     def _save_changed(
         self,
@@ -547,7 +635,9 @@ class InstallPkg:
 
         try:
             json_str = _create_json()
-            json_path = os.path.join(pth, f"{self._config.lo_implementation_name}_{pkg}.json")
+            json_path = os.path.join(
+                pth, f"{self._config.lo_implementation_name}_{pkg}.json"
+            )
             with open(json_path, "w") as f:
                 f.write(json_str)
             self._logger.info(f"New directories and files saved to {json_path}")
@@ -556,7 +646,9 @@ class InstallPkg:
 
     def _delete_json_file(self, path: str, pkg: str) -> None:
         """Delete the JSON file if it exists."""
-        json_path = os.path.join(path, f"{self._config.lo_implementation_name}_{pkg}.json")
+        json_path = os.path.join(
+            path, f"{self._config.lo_implementation_name}_{pkg}.json"
+        )
         if os.path.exists(json_path):
             os.remove(json_path)
             self._logger.info(f"Deleted {json_path}")
@@ -564,7 +656,9 @@ class InstallPkg:
     # get the json data from the file if it exists
     def _get_json_data(self, path: str, pkg: str) -> Dict[str, Any]:
         """Get the JSON data from the file if it exists."""
-        json_path = os.path.join(path, f"{self._config.lo_implementation_name}_{pkg}.json")
+        json_path = os.path.join(
+            path, f"{self._config.lo_implementation_name}_{pkg}.json"
+        )
         if os.path.exists(json_path):
             with open(json_path, "r") as f:
                 return json.load(f)
@@ -572,7 +666,9 @@ class InstallPkg:
 
     def _remove_json_data(self, path: str, pkg: str) -> None:
         """Remove the JSON data if it exists."""
-        json_path = os.path.join(path, f"{self._config.lo_implementation_name}_{pkg}.json")
+        json_path = os.path.join(
+            path, f"{self._config.lo_implementation_name}_{pkg}.json"
+        )
         if os.path.exists(json_path):
             os.remove(json_path)
             self._logger.info(f"Deleted {json_path}")
@@ -591,9 +687,13 @@ class InstallPkg:
                     shutil.rmtree(dir_path)
                     self._logger.info(f"_remove_changed() Removed directory: {d}")
                 else:
-                    self._logger.debug(f"_remove_changed() Directory {d} does not exist.")
+                    self._logger.debug(
+                        f"_remove_changed() Directory {d} does not exist."
+                    )
             except Exception as e:
-                self._logger.error(f"_remove_changed() Error removing directory {d}: {e}")
+                self._logger.error(
+                    f"_remove_changed() Error removing directory {d}: {e}"
+                )
         for f in new_files:
             file_path = os.path.join(pth, f)
             try:

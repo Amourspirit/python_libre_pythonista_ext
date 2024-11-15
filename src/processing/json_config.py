@@ -41,6 +41,30 @@ class JsonConfig(metaclass=Singleton):
             self._requirements_win = {}
 
         try:
+            self._experimental_requirements_linux = cast(
+                Dict[str, str],
+                self._cfg["tool"]["oxt"]["experimental"]["requirements_linux"],
+            )
+        except Exception:
+            self._experimental_requirements_linux = {}
+
+        try:
+            self._experimental_requirements_macos = cast(
+                Dict[str, str],
+                self._cfg["tool"]["oxt"]["experimental"]["requirements_macos"],
+            )
+        except Exception:
+            self._experimental_requirements_macos = {}
+
+        try:
+            self._experimental_requirements_win = cast(
+                Dict[str, str],
+                self._cfg["tool"]["oxt"]["experimental"]["requirements_win"],
+            )
+        except Exception:
+            self._experimental_requirements_win = {}
+
+        try:
             self._zip_preinstall_pure = cast(
                 bool, self._cfg["tool"]["oxt"]["config"]["zip_preinstall_pure"]
             )
@@ -362,6 +386,15 @@ class JsonConfig(metaclass=Singleton):
         json_config["requirements_linux"] = self._requirements_linux
         json_config["requirements_macos"] = self._requirements_macos
         json_config["requirements_win"] = self._requirements_win
+        json_config["experimental_requirements_linux"] = (
+            self._experimental_requirements_linux
+        )
+        json_config["experimental_requirements_macos"] = (
+            self._experimental_requirements_macos
+        )
+        json_config["experimental_requirements_win"] = (
+            self._experimental_requirements_win
+        )
         json_config["has_locals"] = self._config.has_locals
         json_config["libreoffice_debug_port"] = self._libreoffice_debug_port
         json_config["lp_debug_port"] = self._lp_debug_port
@@ -399,9 +432,24 @@ class JsonConfig(metaclass=Singleton):
             self._run_imports_macos, list
         ), "run_imports_macos must be a list"
         assert isinstance(self._run_imports_win, list), "run_imports_win must be a list"
-        assert isinstance(self._requirements_linux, dict), "requirements must be a dict"
-        assert isinstance(self._requirements_macos, dict), "requirements must be a dict"
-        assert isinstance(self._requirements_win, dict), "requirements must be a dict"
+        assert isinstance(
+            self._requirements_linux, dict
+        ), "requirements for linux must be a dict"
+        assert isinstance(
+            self._requirements_macos, dict
+        ), "requirements for mac os must be a dict"
+        assert isinstance(
+            self._requirements_win, dict
+        ), "requirements for windows must be a dict"
+        assert isinstance(
+            self._experimental_requirements_linux, dict
+        ), "experimental requirements for linux must be a dict"
+        assert isinstance(
+            self._experimental_requirements_macos, dict
+        ), "experimental requirements for mac os must be a dict"
+        assert isinstance(
+            self._experimental_requirements_win, dict
+        ), "experimental requirements for windows must be a dict"
         assert isinstance(
             self._zip_preinstall_pure, bool
         ), "zip_preinstall_pure must be a bool"

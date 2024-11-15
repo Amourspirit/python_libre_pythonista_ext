@@ -72,7 +72,8 @@ class RequirementsCheck(metaclass=Singleton):
             bool: ``True`` if requirements are installed; Otherwise, ``False``.
         """
         result = all(
-            self._is_valid_version(name=name, ver=ver) == 0 for name, ver in self._config.requirements.items()
+            self._is_valid_version(name=name, ver=ver) == 0
+            for name, ver in self._config.requirements.items()
         )
         if not result:
             self._logger.error("Requirements not met.")
@@ -86,14 +87,32 @@ class RequirementsCheck(metaclass=Singleton):
                 self._logger.error("Linux Requirements not met.")
                 return False
 
-        if self._config.is_win:
+            if self._config.lp_settings.experimental_editor:
+                result = all(
+                    self._is_valid_version(name=name, ver=ver) == 0
+                    for name, ver in self._config.experimental_requirements_linux.items()
+                )
+                if not result:
+                    self._logger.error("Linux Experimental Requirements not met.")
+                    return False
+
+        elif self._config.is_win:
             result = all(
-                self._is_valid_version(name=name, ver=ver) == 0 for name, ver in self._config.requirements_win.items()
+                self._is_valid_version(name=name, ver=ver) == 0
+                for name, ver in self._config.requirements_win.items()
             )
             if not result:
                 self._logger.error("Windows Requirements not met.")
                 return False
-        if self._config.is_mac:
+            if self._config.lp_settings.experimental_editor:
+                result = all(
+                    self._is_valid_version(name=name, ver=ver) == 0
+                    for name, ver in self._config.experimental_requirements_win.items()
+                )
+                if not result:
+                    self._logger.error("Windows Experimental Requirements not met.")
+                    return False
+        elif self._config.is_mac:
             result = all(
                 self._is_valid_version(name=name, ver=ver) == 0
                 for name, ver in self._config.requirements_macos.items()
@@ -101,6 +120,15 @@ class RequirementsCheck(metaclass=Singleton):
             if not result:
                 self._logger.error("Mac Requirements not met.")
                 return False
+            if self._config.lp_settings.experimental_editor:
+                result = all(
+                    self._is_valid_version(name=name, ver=ver) == 0
+                    for name, ver in self._config.experimental_requirements_macos.items()
+                )
+                if not result:
+                    self._logger.error("MacOs Experimental Requirements not met.")
+                    return False
+
         self._logger.info("Requirements met.")
         return True
 
@@ -142,16 +170,22 @@ class RequirementsCheck(metaclass=Singleton):
         self._logger.debug(f"Found Package {name} {pkg_ver} already installed ...")
         if not rules:
             if pkg_ver:
-                self._logger.info(f"Package {name} {pkg_ver} already installed, no rules")
+                self._logger.info(
+                    f"Package {name} {pkg_ver} already installed, no rules"
+                )
             else:
                 self._logger.error(f"Unable to find rules for {name} {ver}")
             return -1
 
-        rules_pass = self._ver_rules.get_installed_is_valid_by_rules(rules=rules, check_version=pkg_ver)
-        if rules_pass == False:
+        rules_pass = self._ver_rules.get_installed_is_valid_by_rules(
+            rules=rules, check_version=pkg_ver
+        )
+        if rules_pass is False:
             self._logger.info(
                 f"Package {name} {pkg_ver} already installed. It does not meet requirements specified by: {ver}"
             )
             return 1
-        self._logger.info(f"Package {name} {pkg_ver} already installed. Requirements met for constraints: {ver}")
+        self._logger.info(
+            f"Package {name} {pkg_ver} already installed. Requirements met for constraints: {ver}"
+        )
         return 0

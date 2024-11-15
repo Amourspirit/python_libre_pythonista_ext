@@ -16,9 +16,9 @@ from .oxt_logger.oxt_logger import OxtLogger
 
 if TYPE_CHECKING:
     from .lo_util import Session
-    from .lo_util import Util
+    from .lo_util import Util  # noqa: F401
     from .info import ExtensionInfo
-    from .settings.general_settings import GeneralSettings
+    from .settings.general_settings import GeneralSettings  # noqa: F401
     from .settings.lp_settings import LpSettings
 # endregion Imports
 
@@ -289,6 +289,36 @@ class Config(metaclass=Singleton):
         This is the default locale to use if the locale is not set in the LibreOffice configuration.
         """
         return "-".join(self.default_locale)
+
+    @property
+    def experimental_requirements_linux(self) -> Dict[str, str]:
+        """
+        Gets the set of experimental requirements specific to Linux.
+        The value for this property can be set in pyproject.toml (tool.oxt.requirements_linux)
+        The key is the name of the package and the value is the version number.
+        Example: {"requests": ">=2.25.1"}
+        """
+        return self.basic_config.experimental_requirements_linux
+
+    @property
+    def experimental_requirements_macos(self) -> Dict[str, str]:
+        """
+        Gets the set of experimental requirements specific to Mac OS.
+        The value for this property can be set in pyproject.toml (tool.oxt.requirements_macos)
+        The key is the name of the package and the value is the version number.
+        Example: {"requests": ">=2.25.1"}
+        """
+        return self.basic_config.experimental_requirements_macos
+
+    @property
+    def experimental_requirements_win(self) -> Dict[str, str]:
+        """
+        Gets the set of experimental requirements specific to Windows.
+        The value for this property can be set in pyproject.toml (tool.oxt.requirements_win)
+        The key is the name of the package and the value is the version number.
+        Example: {"requests": ">=2.25.1"}
+        """
+        return self.basic_config.experimental_requirements_win
 
     @property
     def url_pip(self) -> str:

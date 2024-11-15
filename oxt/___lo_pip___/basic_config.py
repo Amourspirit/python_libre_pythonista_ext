@@ -82,6 +82,25 @@ class BasicConfig(metaclass=ConfigMeta):
         if "requirements_win" not in kwargs:
             kwargs["requirements_win"] = {}
         self._requirements_win: Dict[str, str] = dict(**kwargs["requirements_win"])
+
+        if "experimental_requirements_linux" not in kwargs:
+            kwargs["experimental_requirements_linux"] = {}
+        self._experimental_requirements_linux: Dict[str, str] = dict(
+            **kwargs["experimental_requirements_linux"]
+        )
+
+        if "experimental_requirements_macos" not in kwargs:
+            kwargs["experimental_requirements_macos"] = {}
+        self._experimental_requirements_macos: Dict[str, str] = dict(
+            **kwargs["experimental_requirements_macos"]
+        )
+
+        if "experimental_requirements_win" not in kwargs:
+            kwargs["experimental_requirements_win"] = {}
+        self._experimental_requirements_win: Dict[str, str] = dict(
+            **kwargs["experimental_requirements_win"]
+        )
+
         self._libreoffice_debug_port = int(kwargs.get("libreoffice_debug_port", 0))
         self._lp_debug_port = int(kwargs.get("lp_debug_port", 0))
 
@@ -134,6 +153,36 @@ class BasicConfig(metaclass=ConfigMeta):
         If this is set to ``True`` then the dialog is owned by the LibreOffice desktop window.
         """
         return self._dialog_desktop_owned
+
+    @property
+    def experimental_requirements_linux(self) -> Dict[str, str]:
+        """
+        Gets the set of experimental requirements specific to Linux.
+        The value for this property can be set in pyproject.toml (tool.oxt.requirements_linux)
+        The key is the name of the package and the value is the version number.
+        Example: {"requests": ">=2.25.1"}
+        """
+        return self._experimental_requirements_linux
+
+    @property
+    def experimental_requirements_macos(self) -> Dict[str, str]:
+        """
+        Gets the set of experimental requirements specific to Mac OS.
+        The value for this property can be set in pyproject.toml (tool.oxt.requirements_macos)
+        The key is the name of the package and the value is the version number.
+        Example: {"requests": ">=2.25.1"}
+        """
+        return self._experimental_requirements_macos
+
+    @property
+    def experimental_requirements_win(self) -> Dict[str, str]:
+        """
+        Gets the set of experimental requirements specific to Windows.
+        The value for this property can be set in pyproject.toml (tool.oxt.requirements_win)
+        The key is the name of the package and the value is the version number.
+        Example: {"requests": ">=2.25.1"}
+        """
+        return self._experimental_requirements_win
 
     @property
     def extension_display_name(self) -> str:

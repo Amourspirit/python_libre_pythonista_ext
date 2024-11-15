@@ -1,6 +1,7 @@
 from __future__ import annotations
 from typing import Any, TYPE_CHECKING, cast
-import uno
+from pathlib import Path
+import sys
 import unohelper
 
 from com.sun.star.awt import XActionListener
@@ -8,16 +9,6 @@ from com.sun.star.awt import XContainerWindowEventHandler
 from com.sun.star.beans import XPropertyChangeListener
 from com.sun.star.beans import PropertyChangeEvent  # struct
 
-from ...basic_config import BasicConfig
-from ...config import Config
-from ...lo_util.resource_resolver import ResourceResolver
-
-from ...lo_util.configuration import Configuration, SettingsT
-from ...settings.settings import Settings
-
-from ...oxt_logger import OxtLogger
-from ..message_dialog import MessageDialog
-from ...lo_util.clipboard import copy_to_clipboard
 
 if TYPE_CHECKING:
     from com.sun.star.awt import UnoControlEdit  # service
@@ -27,8 +18,46 @@ if TYPE_CHECKING:
     from com.sun.star.awt import UnoControlRadioButtonModel  # service
     from com.sun.star.awt import UnoControlFixedText
 
+    from ....___lo_pip___.config import Config
+    from ....___lo_pip___.basic_config import BasicConfig
+    from ....___lo_pip___.lo_util.resource_resolver import ResourceResolver
+    from ....___lo_pip___.lo_util.configuration import Configuration, SettingsT
+    from ....___lo_pip___.lo_util.clipboard import copy_to_clipboard
+    from ....___lo_pip___.settings.settings import Settings
+    from ....___lo_pip___.oxt_logger import OxtLogger
+    from ....___lo_pip___.dialog.message_dialog import MessageDialog
 
-IMPLEMENTATION_NAME = f"{BasicConfig().lo_implementation_name}.LoggingOptionsPage"
+else:
+
+    def add_local_path_to_sys_path():
+        """Add the local path to sys.path."""
+
+        def find_root_path(current_path) -> str:
+            if current_path == Path("/"):
+                return ""
+            if (current_path / "___lo_pip___").exists():
+                return str(current_path)
+            return find_root_path(current_path.parent)
+
+        root_path = find_root_path(Path(__file__).parent)
+        if not root_path:
+            return
+        if root_path not in sys.path:
+            sys.path.append(root_path)
+
+    add_local_path_to_sys_path()
+
+    from ___lo_pip___.basic_config import BasicConfig
+    from ___lo_pip___.config import Config
+    from ___lo_pip___.lo_util.resource_resolver import ResourceResolver
+    from ___lo_pip___.lo_util.configuration import Configuration, SettingsT
+    from ___lo_pip___.lo_util.clipboard import copy_to_clipboard
+    from ___lo_pip___.settings.settings import Settings
+    from ___lo_pip___.oxt_logger import OxtLogger
+    from ___lo_pip___.dialog.message_dialog import MessageDialog
+
+
+# IMPLEMENTATION_NAME = f"{BasicConfig().lo_implementation_name}.LoggingOptionsPage"
 
 _LOG_OPTS = {
     "optLogNone": "NONE",
@@ -48,26 +77,30 @@ _OPT_LOG = {
 }
 
 
-class ButtonListener(unohelper.Base, XActionListener):
+class ButtonListener(XActionListener, unohelper.Base):
     def __init__(self, cast: "OptionsDialogHandler"):
+        XActionListener.__init__(self)
+        unohelper.Base.__init__(self)
         self._logger = OxtLogger(log_name=__name__)
         self._logger.debug("ButtonListener.__init__")
         self.cast = cast
         self._logger.debug("ButtonListener.__init__ done")
 
-    def disposing(self, ev: Any):
+    def disposing(self, Source: Any):
         pass
 
-    def actionPerformed(self, ev: Any):
+    def actionPerformed(self, rEvent: Any):
         # sourcery skip: extract-method
         self._logger.debug("ButtonListener.actionPerformed")
         try:
-            cmd = str(ev.ActionCommand)
+            cmd = str(rEvent.ActionCommand)
             self._logger.debug(f"ButtonListener.actionPerformed cmd: {cmd}")
             if cmd == "CopyLogPath":
-                window = cast("UnoControlDialog", ev.Source.getContext())
+                window = cast("UnoControlDialog", rEvent.Source.getContext())
                 # lbl_log = cast("UnoControlFixedText", ev.Source.getContext().getControl("lblLogLocation"))
-                lbl_log = cast("UnoControlFixedText", window.getControl("lblLogLocation"))
+                lbl_log = cast(
+                    "UnoControlFixedText", window.getControl("lblLogLocation")
+                )
                 clip_text = lbl_log.getText()
                 copy_to_clipboard(clip_text)
                 self._logger.debug(f"Copied to clipboard lbl_log: {clip_text}")
@@ -84,31 +117,40 @@ class ButtonListener(unohelper.Base, XActionListener):
             raise err
 
 
-class RadioButtonListener(unohelper.Base, XPropertyChangeListener):
+class RadioButtonListener(XPropertyChangeListener, unohelper.Base):
     def __init__(self, cast: "OptionsDialogHandler"):
+        XPropertyChangeListener.__init__(self)
+        unohelper.Base.__init__(self)
         self._logger = OxtLogger(log_name=__name__)
         self._logger.debug("RadioButtonListener.__init__")
         self.cast = cast
         self._logger.debug("RadioButtonListener.__init__ done")
 
-    def disposing(self, ev: Any):
+    def disposing(self, Source: Any):
         pass
 
-    def propertyChange(self, ev: PropertyChangeEvent):
+    def propertyChange(self, evt: PropertyChangeEvent):
         self._logger.debug("RadioButtonListener.propertyChange")
         try:
             # state (evn.NewValue) will be 1 for true and 0 for false
-            src = cast("UnoControlRadioButtonModel", ev.Source)
+            src = cast("UnoControlRadioButtonModel", evt.Source)
             if src.Name in _LOG_OPTS:
                 self.cast.logging_level = _LOG_OPTS[src.Name]
         except Exception as err:
-            self._logger.error(f"RadioButtonListener.propertyChange: {err}", exc_info=True)
+            self._logger.error(
+                f"RadioButtonListener.propertyChange: {err}", exc_info=True
+            )
             raise
 
 
-class OptionsDialogHandler(unohelper.Base, XContainerWindowEventHandler):
+class OptionsDialogHandler(XContainerWindowEventHandler, unohelper.Base):
+    IMPLE_NAME = f"{BasicConfig().lo_implementation_name}.LoggingOptionsPage"
+    SERVICE_NAMES = (IMPLE_NAME,)
+
     def __init__(self, ctx: Any):
-        self._logger = OxtLogger(log_name=__name__)
+        XContainerWindowEventHandler.__init__(self)
+        unohelper.Base.__init__(self)
+        self._logger = OxtLogger(log_name=self.__class__.__name__)
         self._logger.debug("OptionsDialogHandler.__init__")
         self.ctx = ctx
         self._config = Config()
@@ -122,12 +164,18 @@ class OptionsDialogHandler(unohelper.Base, XContainerWindowEventHandler):
         self._settings = Settings()
         self._logger.debug("OptionsDialogHandler.__init__ done")
 
+    @classmethod
+    def get_imple(cls):
+        return (cls, cls.IMPLE_NAME, cls.SERVICE_NAMES)
+
     # region XContainerWindowEventHandler
-    def callHandlerMethod(self, window: UnoControlDialog, eventObject: Any, method: str):
-        self._logger.debug(f"OptionsDialogHandler.callHandlerMethod: {method}")
-        if method == "external_event":
+    def callHandlerMethod(  # type: ignore
+        self, xWindow: UnoControlDialog, EventObject: Any, MethodName: str
+    ):
+        self._logger.debug(f"OptionsDialogHandler.callHandlerMethod: {MethodName}")
+        if MethodName == "external_event":
             try:
-                self._handle_external_event(window, eventObject)
+                self._handle_external_event(xWindow, EventObject)
             except Exception as e:
                 print(e)
             return True
@@ -177,7 +225,9 @@ class OptionsDialogHandler(unohelper.Base, XContainerWindowEventHandler):
                     message=msg,
                 ).execute()
             except Exception as err:
-                self._logger.error(f"OptionsDialogHandler._save_data: {err}", exc_info=True)
+                self._logger.error(
+                    f"OptionsDialogHandler._save_data: {err}", exc_info=True
+                )
 
     def _load_data(self, window: UnoControlDialog, ev_name: str):
         # sourcery skip: extract-method
@@ -197,13 +247,17 @@ class OptionsDialogHandler(unohelper.Base, XContainerWindowEventHandler):
                 opt_listener = RadioButtonListener(self)
 
                 for opt in _LOG_OPTS.keys():
-                    opt_model = cast("UnoControlRadioButtonModel", window.getControl(opt).getModel())
+                    opt_model = cast(
+                        "UnoControlRadioButtonModel", window.getControl(opt).getModel()
+                    )
                     opt_model.addPropertyChangeListener("State", opt_listener)
 
                 for control in window.Controls:  # type: ignore
                     if not control.supportsService("com.sun.star.awt.UnoControlEdit"):
                         model = control.Model
-                        model.Label = self._resource_resolver.resolve_string(model.Label)
+                        model.Label = self._resource_resolver.resolve_string(
+                            model.Label
+                        )
 
             if settings := self._settings.current_settings:
                 self._logging_level_original = settings["LogLevel"]
@@ -212,12 +266,17 @@ class OptionsDialogHandler(unohelper.Base, XContainerWindowEventHandler):
                     f"OptionsDialogHandler._load_data settings LogLevel: {self._logging_level_original}"
                 )
                 if self._logging_level in _OPT_LOG:
-                    opt_log = cast("UnoControlRadioButton", window.getControl(_OPT_LOG[self._logging_level]))
+                    opt_log = cast(
+                        "UnoControlRadioButton",
+                        window.getControl(_OPT_LOG[self._logging_level]),
+                    )
                     opt_log.setState(True)
 
                 self._logging_format_original = str(settings["LogFormat"])
                 self._logging_format = self._logging_format_original
-                txt_log_format = cast("UnoControlEdit", window.getControl("txtLogFormat"))
+                txt_log_format = cast(
+                    "UnoControlEdit", window.getControl("txtLogFormat")
+                )
                 txt_log_format.setText(self._logging_format)
             # must come after for control in window.Controls:
             lbl_log = cast("UnoControlFixedText", window.getControl("lblLogLocation"))
@@ -245,10 +304,7 @@ class OptionsDialogHandler(unohelper.Base, XContainerWindowEventHandler):
         self._logging_level = value
 
 
-# g_ImplementationHelper = unohelper.ImplementationHelper()
-
-# g_ImplementationHelper.addImplementation(
-#     OptionsDialogHandler,
-#     IMPLEMENTATION_NAME,
-#     (IMPLEMENTATION_NAME,),
-# )
+# python loader looks for a static g_ImplementationHelper variable
+g_TypeTable = {}
+g_ImplementationHelper = unohelper.ImplementationHelper()
+g_ImplementationHelper.addImplementation(*OptionsDialogHandler.get_imple())
