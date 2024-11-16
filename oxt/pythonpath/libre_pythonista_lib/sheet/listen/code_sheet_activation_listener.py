@@ -14,8 +14,10 @@ from ooodev.loader import Lo
 from ooodev.calc import CalcDoc
 from ooodev.events.lo_events import LoEvents
 from ooodev.events.args.event_args import EventArgs
+from ooodev.utils.helper.dot_dict import DotDict
 from .code_sheet_modify_listener import CodeSheetModifyListener
 from ...const.event_const import GBL_DOC_CLOSING
+from ...ex.exceptions import SingletonKeyError
 
 if TYPE_CHECKING:
     from com.sun.star.lang import EventObject
@@ -40,7 +42,17 @@ class CodeSheetActivationListener(unohelper.Base, XActivationEventListener):
 
     @classmethod
     def _get_key(cls) -> str:
-        return f"{Lo.current_doc.runtime_uid}_uid"
+        eargs = EventArgs(cls)
+        eargs.event_data = DotDict(class_name=cls.__name__, key="")
+        LoEvents().trigger("LibrePythonistaCodeSheetActivationListenerGetKey", eargs)
+        if eargs.event_data.key:
+            return eargs.event_data.key
+        try:
+            return f"{Lo.current_doc.runtime_uid}_uid"
+        except Exception as e:
+            raise SingletonKeyError(
+                f"Error getting single key for class name: {cls.__name__}"
+            ) from e
 
     def __init__(self) -> None:
         if getattr(self, "_is_init", False):
@@ -65,11 +77,15 @@ class CodeSheetActivationListener(unohelper.Base, XActivationEventListener):
         sheet = doc.sheets.get_sheet(aEvent.ActiveSheet)
         unique_id = sheet.unique_id
         if not CodeSheetModifyListener.has_listener(unique_id):
-            self._log.debug(f"Adding Modify Listener to sheet with unique id of: {unique_id}")
+            self._log.debug(
+                f"Adding Modify Listener to sheet with unique id of: {unique_id}"
+            )
             listener = CodeSheetModifyListener(unique_id)  # singleton
             sheet.component.addModifyListener(listener)
         else:
-            self._log.debug(f"Sheet with unique id of: {unique_id} already has a Modify Listener")
+            self._log.debug(
+                f"Sheet with unique id of: {unique_id} already has a Modify Listener"
+            )
 
     @override
     def disposing(self, Source: EventObject) -> None:
@@ -85,7 +101,9 @@ class CodeSheetActivationListener(unohelper.Base, XActivationEventListener):
         """
         if self._log is not None:
             self._log.debug("Disposing")
-        setattr(self, "_log", None)  # avoid type checker complaining about log being none.
+        setattr(
+            self, "_log", None
+        )  # avoid type checker complaining about log being none.
 
     def __del__(self) -> None:
         if self._log is not None:

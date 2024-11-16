@@ -4,7 +4,11 @@ from ooodev.gui.menu.popup_menu import PopupMenu
 from ooodev.gui.menu.popup.popup_creator import PopupCreator
 from ooodev.loader.inst.doc_type import DocType
 
-from ...const import UNO_DISPATCH_PY_CODE_VALIDATE, UNO_DISPATCH_SEL_RNG, UNO_DISPATCH_SEL_LP_FN
+from ...const import (
+    UNO_DISPATCH_PY_CODE_VALIDATE,
+    UNO_DISPATCH_SEL_RNG,
+    UNO_DISPATCH_SEL_LP_FN,
+)
 
 
 if TYPE_CHECKING:
@@ -32,7 +36,7 @@ class DialogMbMenu:
             popup_menu = popup_creator.create(menu_data)
             return popup_menu
         except Exception:
-            self._log.exception(f"get_insert_menu()")
+            self._log.exception("get_insert_menu()")
             raise
 
     def get_code_menu(self) -> PopupMenu:
@@ -43,7 +47,7 @@ class DialogMbMenu:
             popup_menu = popup_creator.create(menu_data)
             return popup_menu
         except Exception:
-            self._log.exception(f"get_code_menu()")
+            self._log.exception("get_code_menu()")
             raise
 
     def _get_insert_data(self) -> List[dict]:

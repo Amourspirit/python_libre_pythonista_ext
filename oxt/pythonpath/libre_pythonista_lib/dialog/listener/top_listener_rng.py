@@ -37,7 +37,8 @@ class TopListenerRng(XTopWindowListener, unohelper.Base):
     """
 
     def __init__(self, doc: CalcDoc) -> None:
-        super().__init__()
+        XTopWindowListener.__init__(self)
+        unohelper.Base.__init__(self)
         self._log = OxtLogger(log_name=self.__class__.__name__)
         # assigning tk to class is important.
         # if not assigned then tk goes out of scope after class __init__() is called
@@ -47,7 +48,7 @@ class TopListenerRng(XTopWindowListener, unohelper.Base):
             self._top = self._doc.get_top_window()
             self._top.addTopWindowListener(self)  # type: ignore
         except Exception:
-            self._log.error("Error add listener to calc doc.", exc_info=True)
+            self._log.error("Error adding listener to calc doc.", exc_info=True)
 
     @override
     def windowOpened(self, e: EventObject) -> None:
@@ -66,7 +67,7 @@ class TopListenerRng(XTopWindowListener, unohelper.Base):
                 self._doc.dispatch_cmd(UNO_DISPATCH_SEL_RNG)
                 # Lo.dispatch_cmd(UNO_DISPATCH_SEL_RNG, in_thread=True)
                 # self._doc.invoke_range_selection()
-                self._log.debug(f"invoke_range_selection()")
+                self._log.debug("invoke_range_selection()")
             except Exception:
                 self._log.error("Error getting range from popup.", exc_info=True)
 

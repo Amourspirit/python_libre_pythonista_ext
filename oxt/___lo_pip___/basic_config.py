@@ -25,7 +25,9 @@ class BasicConfig(metaclass=ConfigMeta):
         self._lo_identifier = str(kwargs["lo_identifier"])
         self._lo_implementation_name = str(kwargs["lo_implementation_name"])
         self._zipped_preinstall_pure = bool(kwargs["zipped_preinstall_pure"])
-        self._auto_install_in_site_packages = bool(kwargs["auto_install_in_site_packages"])
+        self._auto_install_in_site_packages = bool(
+            kwargs["auto_install_in_site_packages"]
+        )
         self._install_wheel = bool(kwargs["install_wheel"])
         self._has_locals = bool(kwargs["has_locals"])
         self._window_timeout = int(kwargs["window_timeout"])
@@ -39,7 +41,9 @@ class BasicConfig(metaclass=ConfigMeta):
         self._isolate_windows = set(kwargs["isolate_windows"])
         self._sym_link_cpython = bool(kwargs["sym_link_cpython"])
         self._uninstall_on_update = bool(kwargs["uninstall_on_update"])
-        self._install_on_no_uninstall_permission = bool(kwargs["install_on_no_uninstall_permission"])
+        self._install_on_no_uninstall_permission = bool(
+            kwargs["install_on_no_uninstall_permission"]
+        )
         self._unload_after_install = bool(kwargs["unload_after_install"])
         self._log_indent = int(kwargs.get("log_indent", 0))
         self._run_imports = set(kwargs["run_imports"])
@@ -78,6 +82,27 @@ class BasicConfig(metaclass=ConfigMeta):
         if "requirements_win" not in kwargs:
             kwargs["requirements_win"] = {}
         self._requirements_win: Dict[str, str] = dict(**kwargs["requirements_win"])
+
+        if "experimental_requirements_linux" not in kwargs:
+            kwargs["experimental_requirements_linux"] = {}
+        self._experimental_requirements_linux: Dict[str, str] = dict(
+            **kwargs["experimental_requirements_linux"]
+        )
+
+        if "experimental_requirements_macos" not in kwargs:
+            kwargs["experimental_requirements_macos"] = {}
+        self._experimental_requirements_macos: Dict[str, str] = dict(
+            **kwargs["experimental_requirements_macos"]
+        )
+
+        if "experimental_requirements_win" not in kwargs:
+            kwargs["experimental_requirements_win"] = {}
+        self._experimental_requirements_win: Dict[str, str] = dict(
+            **kwargs["experimental_requirements_win"]
+        )
+
+        self._libreoffice_debug_port = int(kwargs.get("libreoffice_debug_port", 0))
+        self._lp_debug_port = int(kwargs.get("lp_debug_port", 0))
 
     # region Properties
     @property
@@ -128,6 +153,36 @@ class BasicConfig(metaclass=ConfigMeta):
         If this is set to ``True`` then the dialog is owned by the LibreOffice desktop window.
         """
         return self._dialog_desktop_owned
+
+    @property
+    def experimental_requirements_linux(self) -> Dict[str, str]:
+        """
+        Gets the set of experimental requirements specific to Linux.
+        The value for this property can be set in pyproject.toml (tool.oxt.requirements_linux)
+        The key is the name of the package and the value is the version number.
+        Example: {"requests": ">=2.25.1"}
+        """
+        return self._experimental_requirements_linux
+
+    @property
+    def experimental_requirements_macos(self) -> Dict[str, str]:
+        """
+        Gets the set of experimental requirements specific to Mac OS.
+        The value for this property can be set in pyproject.toml (tool.oxt.requirements_macos)
+        The key is the name of the package and the value is the version number.
+        Example: {"requests": ">=2.25.1"}
+        """
+        return self._experimental_requirements_macos
+
+    @property
+    def experimental_requirements_win(self) -> Dict[str, str]:
+        """
+        Gets the set of experimental requirements specific to Windows.
+        The value for this property can be set in pyproject.toml (tool.oxt.requirements_win)
+        The key is the name of the package and the value is the version number.
+        Example: {"requests": ">=2.25.1"}
+        """
+        return self._experimental_requirements_win
 
     @property
     def extension_display_name(self) -> str:
@@ -198,6 +253,15 @@ class BasicConfig(metaclass=ConfigMeta):
         return self._lo_identifier
 
     @property
+    def libreoffice_debug_port(self) -> int:
+        """
+        Gets the LibreOffice debug port.
+
+        The value for this property can be set in pyproject.toml (tool.oxt.token.libreoffice_debug_port)
+        """
+        return self._libreoffice_debug_port
+
+    @property
     def lo_implementation_name(self) -> str:
         """
         Gets the LibreOffice implementation name, such as ``OooPipRunner``
@@ -223,6 +287,15 @@ class BasicConfig(metaclass=ConfigMeta):
         The value for this property can be set in pyproject.toml (tool.libre_pythonista.config)
         """
         return self._lp_code_dir
+
+    @property
+    def lp_debug_port(self) -> int:
+        """
+        Gets the LibrePythonista debug port.
+
+        The value for this property can be set in pyproject.toml (tool.oxt.token.lp_debug_port)
+        """
+        return self._lp_debug_port
 
     @property
     def macro_lp_sheet_ctl_click(self) -> str:

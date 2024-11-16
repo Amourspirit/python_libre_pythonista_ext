@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dlg:window PUBLIC "-//OpenOffice.org//DTD OfficeDocument 1.0//EN" "dialog.dtd">
+<dlg:window xmlns:dlg="http://openoffice.org/2000/dialog"
+    xmlns:script="http://openoffice.org/2000/script" dlg:style-id="0" dlg:id="settings" dlg:left="56"
+    dlg:top="24" dlg:width="195" dlg:height="220" dlg:closeable="true" dlg:moveable="true"
+    dlg:withtitlebar="false">
+    <dlg:styles>
+        <dlg:style dlg:style-id="0" dlg:font-name="DejaVu Sans Mono" dlg:font-height="9"
+            dlg:font-stylename="Book" dlg:font-family="modern" />
+    </dlg:styles>
+    <dlg:bulletinboard>
+        <dlg:checkbox dlg:control-implementation="stardiv.one.form.component.CheckBox" dlg:id="chkExperimental" dlg:tab-index="0" dlg:left="18" dlg:top="15" dlg:width="180" dlg:height="9" dlg:value="strExperimental" />
+    </dlg:bulletinboard>
+</dlg:window>

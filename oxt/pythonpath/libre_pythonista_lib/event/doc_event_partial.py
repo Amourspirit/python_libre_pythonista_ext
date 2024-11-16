@@ -1,8 +1,13 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from contextlib import contextmanager
+from typing import Set, TYPE_CHECKING
 
 from ooodev.loader import Lo
 from ooodev.events.partial.events_partial import EventsPartial
+from ooodev.events.lo_events import LoEvents
+from ooodev.events.args.event_args import EventArgs
+from ooodev.utils.helper.dot_dict import DotDict
+
 from ..ex import RuntimeUidError
 
 if TYPE_CHECKING:
@@ -13,14 +18,19 @@ if TYPE_CHECKING:
 
 
 class DocEventPartial(EventsPartial):
-
     def __init__(self, doc: OfficeDocumentT | None = None) -> None:
         if doc is None:
             doc = Lo.current_doc
         self.__runtime_uid = doc.runtime_uid
+        self.__omit_events: Set[str] = set()
         EventsPartial.__init__(self)
 
     def __check_runtime_uid(self) -> bool:
+        eargs = EventArgs(self)
+        eargs.event_data = DotDict(current_udi=self.__runtime_uid, doc_uid="")
+        LoEvents().trigger("LibrePythonistaDocEventPartialCheckUid", eargs)
+        if eargs.event_data.doc_uid:
+            return eargs.event_data.doc_uid == self.__runtime_uid
         return Lo.current_doc.runtime_uid == self.__runtime_uid
 
     # region EventsPartial Overrides
@@ -123,8 +133,22 @@ class DocEventPartial(EventsPartial):
         """
         try:
             if self.__check_runtime_uid():
-                EventsPartial.trigger_event(self, event_name, event_args)
+                if event_name not in self.__omit_events:
+                    EventsPartial.trigger_event(self, event_name, event_args)
         except Exception as e:
             raise RuntimeUidError(f"Error checking runtime_uid: {e}") from e
 
     # endregion EventsPartial Overrides
+    @contextmanager
+    def suspend_event_context(self, *event_names: str):
+        """
+        Context manager that on entry adds events to the omit list.
+        On exit removes events from the omit list.
+        """
+        try:
+            for event_name in event_names:
+                self.__omit_events.add(event_name)
+            yield
+        finally:
+            for event_name in event_names:
+                self.__omit_events.discard(event_name)

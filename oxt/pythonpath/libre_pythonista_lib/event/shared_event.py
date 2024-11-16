@@ -4,7 +4,12 @@ from typing import Any, Dict, TYPE_CHECKING
 from ooodev.loader import Lo
 from ooodev.events.lo_events import LoEvents
 from ooodev.events.args.event_args import EventArgs
+from ooodev.events.lo_events import LoEvents
+from ooodev.events.args.event_args import EventArgs
+from ooodev.utils.helper.dot_dict import DotDict
+
 from ..const.event_const import GBL_DOC_CLOSING
+from ..ex.exceptions import SingletonKeyError
 from .doc_event_partial import DocEventPartial
 
 if TYPE_CHECKING:
@@ -16,9 +21,21 @@ class SharedEvent(DocEventPartial):
 
     def __new__(cls, doc: OfficeDocumentT | None = None) -> SharedEvent:
         if doc is None:
-            doc = Lo.current_doc
+            eargs = EventArgs(cls)
+            eargs.event_data = DotDict(class_name=cls.__name__, doc=None)
+            LoEvents().trigger("LibrePythonistaSharedEventGetDoc", eargs)
+            if eargs.event_data.doc is not None:
+                doc = eargs.event_data.doc
+            if doc is None:
+                try:
+                    doc = Lo.current_doc
+                except Exception as e:
+                    raise SingletonKeyError(
+                        f"Error getting single key for class name: {cls.__name__}"
+                    ) from e
+
         key = f"doc_{doc.runtime_uid}"
-        if not key in cls._instances:
+        if key not in cls._instances:
             inst = super(SharedEvent, cls).__new__(cls)
             inst._is_init = False
             inst.__init__(doc)

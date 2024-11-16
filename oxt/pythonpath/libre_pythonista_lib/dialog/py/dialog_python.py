@@ -36,7 +36,7 @@ from .key_handler import KeyHandler
 
 from .dialog_menu import DialogMenu
 from ...config.dialog.code_cfg import CodeCfg
-from .top_listener_rng import TopListenerRng
+from ..listener.top_listener_rng import TopListenerRng
 
 
 if TYPE_CHECKING:
@@ -300,7 +300,9 @@ class DialogPython(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
     def _init_code(self) -> None:
         txt_y = DialogPython.HEADER + self._margin
 
-        txt_height = DialogPython.HEIGHT - DialogPython.FOOTER - (self._margin * 2) - txt_y
+        txt_height = (
+            DialogPython.HEIGHT - DialogPython.FOOTER - (self._margin * 2) - txt_y
+        )
         self._code = CtlTextEdit.create(
             self._dialog,
             x=self._margin,
@@ -329,23 +331,32 @@ class DialogPython(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
 
     # region resize
     def resize_buttons(self, sz: Rectangle) -> None:
-
         btn_y = sz.Height - DialogPython.BUTTON_HEIGHT - self._padding
         btn_x = sz.Width - DialogPython.BUTTON_WIDTH - self._padding
         self._ctl_btn_cancel.view.setPosSize(
-            btn_x, btn_y, DialogPython.BUTTON_WIDTH, DialogPython.BUTTON_HEIGHT, PosSize.POSSIZE
+            btn_x,
+            btn_y,
+            DialogPython.BUTTON_WIDTH,
+            DialogPython.BUTTON_HEIGHT,
+            PosSize.POSSIZE,
         )
 
         x = btn_x - DialogPython.BUTTON_WIDTH - self._margin
         self._ctl_btn_ok.view.setPosSize(
-            x, btn_y, DialogPython.BUTTON_WIDTH, DialogPython.BUTTON_HEIGHT, PosSize.POSSIZE
+            x,
+            btn_y,
+            DialogPython.BUTTON_WIDTH,
+            DialogPython.BUTTON_HEIGHT,
+            PosSize.POSSIZE,
         )
 
     def resize_code(self, sz: Rectangle) -> None:
         txt_sz = self._code.view.getPosSize()
         width = sz.Width - (self._margin * 2)
         txt_height = sz.Height - DialogPython.FOOTER - (self._margin * 2) - txt_sz.Y
-        self._code.view.setPosSize(txt_sz.X, txt_sz.Y, width, txt_height, PosSize.POSSIZE)
+        self._code.view.setPosSize(
+            txt_sz.X, txt_sz.Y, width, txt_height, PosSize.POSSIZE
+        )
 
     def resize(self) -> None:
         sz = self._dialog.getPosSize()
@@ -409,12 +420,17 @@ class DialogPython(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
             self._log.debug("_write_range_sel_popup() Write Range Selection Popup")
             try:
                 glbs = GblEvents()
-                glbs.subscribe_event("GlobalCalcRangeSelector", self._fn_on_menu_range_select_result)
+                glbs.subscribe_event(
+                    "GlobalCalcRangeSelector", self._fn_on_menu_range_select_result
+                )
                 self._log.debug("_write_range_sel_popup() Hide Dialog")
                 doc.activate()
                 _ = TopListenerRng(doc)
             except:
-                self._log.error("_write_range_sel_popup() Error getting range selection", exc_info=True)
+                self._log.error(
+                    "_write_range_sel_popup() Error getting range selection",
+                    exc_info=True,
+                )
             finally:
                 # For some reason this need to be here.
                 # If not self._dialog.setFocus() the the top window listener will not fire right away.
@@ -436,7 +452,9 @@ class DialogPython(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
 
     # region text_changed
 
-    def on_text_changed(self, source: Any, event: EventArgs, control_src: CtlTextEdit) -> None:
+    def on_text_changed(
+        self, source: Any, event: EventArgs, control_src: CtlTextEdit
+    ) -> None:
         """Handle text changed event"""
         self.end = len(control_src.text)
         return
@@ -448,7 +466,9 @@ class DialogPython(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
 
     # region key handlers
 
-    def on_code_key_pressed(self, source: Any, event: EventArgs, control_src: CtlTextEdit) -> None:
+    def on_code_key_pressed(
+        self, source: Any, event: EventArgs, control_src: CtlTextEdit
+    ) -> None:
         pass
         # key_event = cast("KeyEvent", event.event_data)
         # if not key_event.Modifiers:
@@ -457,13 +477,17 @@ class DialogPython(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
     # endregion key handlers
 
     # region focus handlers
-    def on_code_focus_gained(self, source: Any, event: EventArgs, control_src: CtlTextEdit) -> None:
+    def on_code_focus_gained(
+        self, source: Any, event: EventArgs, control_src: CtlTextEdit
+    ) -> None:
         self.code_focused = True
         self.tk.addKeyHandler(self.keyhandler)
         with self._log.indent(True):
             self._log.debug("Focus Gained")
 
-    def on_code_focus_lost(self, source: Any, event: EventArgs, control_src: CtlTextEdit) -> None:
+    def on_code_focus_lost(
+        self, source: Any, event: EventArgs, control_src: CtlTextEdit
+    ) -> None:
         self.code_focused = False
         self.tk.removeKeyHandler(self.keyhandler)
         with self._log.indent(True):
@@ -474,10 +498,14 @@ class DialogPython(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
     # region button handlers
 
     # endregion button handlers
-    def on_btn_ok_click(self, source: Any, event: EventArgs, control_src: CtlButton) -> None:
+    def on_btn_ok_click(
+        self, source: Any, event: EventArgs, control_src: CtlButton
+    ) -> None:
         self.end_dialog(1)
 
-    def on_btn_cancel_click(self, source: Any, event: EventArgs, control_src: CtlButton) -> None:
+    def on_btn_cancel_click(
+        self, source: Any, event: EventArgs, control_src: CtlButton
+    ) -> None:
         self.end_dialog(0)
 
     # endregion Event Handlers
@@ -506,7 +534,6 @@ class DialogPython(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
             self._dialog.endDialog(result)
 
     def show(self) -> int:
-
         self._is_shown = True
         self._dialog.addTopWindowListener(self)
 
@@ -584,9 +611,14 @@ class DialogPython(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
             log = self._log
             try:
                 glbs = GblEvents()
-                glbs.unsubscribe_event("GlobalCalcRangeSelector", self._fn_on_menu_range_select_result)
+                glbs.unsubscribe_event(
+                    "GlobalCalcRangeSelector", self._fn_on_menu_range_select_result
+                )
             except:
-                log.error("_on_menu_range_select_result() unsubscribing from GlobalCalcRangeSelector", exc_info=True)
+                log.error(
+                    "_on_menu_range_select_result() unsubscribing from GlobalCalcRangeSelector",
+                    exc_info=True,
+                )
             if event.event_data.state != "done":
                 log.debug("on_sel _on_menu_range_select_result aborted")
                 return

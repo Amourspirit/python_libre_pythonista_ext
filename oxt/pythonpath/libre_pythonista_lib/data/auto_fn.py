@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 from ooodev.calc import CalcCellRange
-
+from ooodev.exceptions import ex as mEx
 from .tbl_data_obj import TblDataObj
 
 if TYPE_CHECKING:
@@ -22,7 +22,9 @@ class AutoFn:
         """
         self._log = OxtLogger(log_name=self.__class__.__name__)
         if self._log.is_debug:
-            self._log.debug(f"init cell range: {cell_rng.range_obj}, Original Sheet Index: {orig_sheet_idx}")
+            self._log.debug(
+                f"init cell range: {cell_rng.range_obj}, Original Sheet Index: {orig_sheet_idx}"
+            )
         self._cell_rng = cell_rng
         self._orig_sheet_idx = orig_sheet_idx
         self._data_info = TblDataObj(cell_rng)
@@ -63,6 +65,10 @@ class AutoFn:
             ro = self._cell_rng.find_used_range()
             if ro_orig != ro.range_obj:
                 return True
+        except mEx.CellRangeError:
+            self._log.debug(
+                "Error getting used range. Find used range did not get a value. Not critical."
+            )
         except Exception as e:
             self._log.exception(f"Error: {e}")
         return False

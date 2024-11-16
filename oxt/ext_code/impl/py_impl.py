@@ -35,13 +35,21 @@ if TYPE_CHECKING:
     from ooodev.utils.data_type.col_obj import ColObj
     from ...___lo_pip___.oxt_logger.oxt_logger import OxtLogger
     from ...___lo_pip___.config import Config
+    from ...___lo_pip___.debug.break_mgr import BreakMgr
     from ...pythonpath.libre_pythonista_lib.cell.cell_mgr import CellMgr
     from ...pythonpath.libre_pythonista_lib.code.cell_cache import CellCache
-    from ...pythonpath.libre_pythonista_lib.cell.result_action.pyc.rules.pyc_rules import PycRules
-    from ...pythonpath.libre_pythonista_lib.cell.lpl_cell import LplCell
+    from ...pythonpath.libre_pythonista_lib.cell.result_action.pyc.rules.pyc_rules import (
+        PycRules,
+    )
+    from ...pythonpath.libre_pythonista_lib.cell.lpl_cell import LplCell  # noqa: F401
     from ...pythonpath.libre_pythonista_lib.event.shared_event import SharedEvent
-    from ...pythonpath.libre_pythonista_lib.const.event_const import PYC_RULE_MATCH_DONE, PYC_FORMULA_ENTER
+    from ...pythonpath.libre_pythonista_lib.const.event_const import (
+        PYC_RULE_MATCH_DONE,
+        PYC_FORMULA_ENTER,
+    )
+    from ...pythonpath.libre_pythonista_lib.state.calc_state_mgr import CalcStateMgr
 
+    break_mgr = BreakMgr()
 else:
     _CONDITIONS_MET = _conditions_met()
 
@@ -54,7 +62,16 @@ else:
         from libre_pythonista_lib.cell.result_action.pyc.rules.pyc_rules import PycRules
         from libre_pythonista_lib.event.shared_event import SharedEvent
         from libre_pythonista_lib.code.cell_cache import CellCache
-        from libre_pythonista_lib.const.event_const import PYC_RULE_MATCH_DONE, PYC_FORMULA_ENTER
+        from libre_pythonista_lib.const.event_const import (
+            PYC_RULE_MATCH_DONE,
+            PYC_FORMULA_ENTER,
+        )
+        from libre_pythonista_lib.state.calc_state_mgr import CalcStateMgr
+        from ___lo_pip___.debug.break_mgr import BreakMgr
+
+        # Initialize the breakpoint manager
+        break_mgr = BreakMgr()
+        # break_mgr.add_breakpoint("matched_rule")
     from ___lo_pip___.config import Config
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
 
@@ -74,7 +91,10 @@ class PyImpl(unohelper.Base, XPy):
         self._logger.debug("Py: PyImpl init")
         try:
             mgr = self.ctx.getServiceManager()
-            self.desktop = cast("Desktop", mgr.createInstanceWithContext("com.sun.star.frame.Desktop", self.ctx))
+            self.desktop = cast(
+                "Desktop",
+                mgr.createInstanceWithContext("com.sun.star.frame.Desktop", self.ctx),
+            )
         except Exception as e:
             self._logger.error(f"Error: {e}", exc_info=True)
 
@@ -107,8 +127,13 @@ class PyImpl(unohelper.Base, XPy):
         result = None
         try:
             self._logger.debug(f"pyc - Doc UID: {doc.runtime_uid}")
+            calc_state_mgr = CalcStateMgr(doc)
+            if not calc_state_mgr.is_job_loading_finished:
+                self._logger.debug("pyc - Loading Job not finished. Returning.")
+                return None
+
             key = f"LIBRE_PYTHONISTA_DOC_{doc.runtime_uid}"
-            if not key in os.environ:
+            if key not in os.environ:
                 # if len(sheet.draw_page) == 0:
                 # if there are no draw pages for the sheet then they are not yet loaded. Return None, and expect a recalculation to take place when the document is fully loaded.
                 self._logger.debug("pyc - Not yet loaded. Returning.")
@@ -126,8 +151,8 @@ class PyImpl(unohelper.Base, XPy):
                 self._logger.debug(f"pyc - args count: {len(args)}")
 
             sheet = doc.sheets[sheet_idx]
-            xcell = sheet.component.getCellRangeByName(cell_address)
-            cell = sheet.get_cell(xcell)
+            x_cell = sheet.component.getCellRangeByName(cell_address)
+            cell = sheet.get_cell(x_cell)
             self._logger.debug(
                 f"pyc - Cell {cell.cell_obj} for sheet index {cell.cell_obj.sheet_idx} has custom properties: {cell.has_custom_properties()}"
             )
@@ -136,8 +161,9 @@ class PyImpl(unohelper.Base, XPy):
             eargs.event_data = dd
             shared_event.trigger_event(PYC_FORMULA_ENTER, eargs)
 
-            if not cm.has_cell(cell_obj=cell.cell_obj):
-
+            if cm.has_cell(cell_obj=cell.cell_obj):
+                self._logger.debug("pyc - py cell has code")
+            else:
                 # if not py_cell.has_code():
                 self._logger.debug(f"pyc - py {cell.cell_obj} cell has no code")
 
@@ -173,8 +199,6 @@ class PyImpl(unohelper.Base, XPy):
 
                 if not code_handled:
                     cm.add_source_code(source_code="", cell_obj=cell.cell_obj)
-            else:
-                self._logger.debug("pyc - py cell has code")
 
             # resetting is handled by the CodeSheetModifyListener
             # if cm.is_first_cell(cell_obj=cell.cell_obj):
@@ -192,18 +216,25 @@ class PyImpl(unohelper.Base, XPy):
                 # calling the action method of the matched rule will return the data for the cell and
                 # set the custom property for the cell that is used by CodeCellListener to raise an event that is then
                 # handled by the CellMgr which uses CtlMgr to assign the control to the cell.
+                break_mgr.check_breakpoint("matched_rule")
                 rule_result = matched_rule.action()
                 cm.add_cell_control_from_pyc_rule(rule=matched_rule)
 
                 cell_cache = CellCache(doc)
-                dd = DotDict(matched_rule=matched_rule, rule_result=rule_result, calc_cell=cell)
-                dd.is_first_cell = cell_cache.is_first_cell(cell=cell.cell_obj, sheet_idx=sheet_idx)
-                dd.is_last_cell = cell_cache.is_last_cell(cell=cell.cell_obj, sheet_idx=sheet_idx)
+                dd = DotDict(
+                    matched_rule=matched_rule, rule_result=rule_result, calc_cell=cell
+                )
+                dd.is_first_cell = cell_cache.is_first_cell(
+                    cell=cell.cell_obj, sheet_idx=sheet_idx
+                )
+                dd.is_last_cell = cell_cache.is_last_cell(
+                    cell=cell.cell_obj, sheet_idx=sheet_idx
+                )
                 eargs = EventArgs(self)
                 eargs.event_data = dd
                 shared_event.trigger_event(PYC_RULE_MATCH_DONE, eargs)
 
-                self._logger.debug(f"pyc - Done")
+                self._logger.debug("pyc - Done")
                 return rule_result
 
             else:
@@ -237,7 +268,7 @@ class PyImpl(unohelper.Base, XPy):
             # rng.component.setArrayFormula(cell.component.getFormula())
 
             # return result
-        self._logger.debug(f"pyc - Done")
+        self._logger.debug("pyc - Done")
         return result
 
 

@@ -28,14 +28,12 @@ if TYPE_CHECKING:
     from ooodev.loader import Lo
     from ooodev.calc import CalcDoc
     from ...___lo_pip___.oxt_logger import OxtLogger
-    from ...pythonpath.libre_pythonista_lib.state.calc_state_mgr import CalcStateMgr
 else:
-    override = lambda func: func
+    override = lambda func: func  # noqa: E731
     _CONDITIONS_MET = _conditions_met()
     if _CONDITIONS_MET:
-        from ooodev.loader import Lo
-        from ooodev.calc import CalcDoc
-        from libre_pythonista_lib.state.calc_state_mgr import CalcStateMgr
+        from ooodev.loader import Lo  # noqa: F401
+        from ooodev.calc import CalcDoc  # noqa: F401
 
 # endregion imports
 
@@ -84,7 +82,7 @@ class LoadingJob(XJob, unohelper.Base):
             else:
                 self._logger.debug("Document Loading not a spreadsheet")
 
-        except Exception as e:
+        except Exception:
             self._logger.error("Error getting current document", exc_info=True)
             return
 

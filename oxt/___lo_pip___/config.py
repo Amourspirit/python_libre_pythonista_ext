@@ -16,9 +16,10 @@ from .oxt_logger.oxt_logger import OxtLogger
 
 if TYPE_CHECKING:
     from .lo_util import Session
-    from .lo_util import Util
+    from .lo_util import Util  # noqa: F401
     from .info import ExtensionInfo
-    from .settings.general_settings import GeneralSettings
+    from .settings.general_settings import GeneralSettings  # noqa: F401
+    from .settings.lp_settings import LpSettings
 # endregion Imports
 
 
@@ -49,6 +50,7 @@ class Config(metaclass=Singleton):
             from .info import ExtensionInfo
             from .lo_util import Util
             from .settings.general_settings import GeneralSettings
+            from .settings.lp_settings import LpSettings
 
         logger_config = LoggerConfig()
         self._logger = OxtLogger(log_name=__name__)
@@ -60,6 +62,7 @@ class Config(metaclass=Singleton):
             self._basic_config = BasicConfig()
             self._logger.debug("Basic config initialized")
             generals_settings = GeneralSettings()
+            self._lp_settings = LpSettings()
             self._logger.debug("General Settings initialized")
             self._url_pip = generals_settings.url_pip
             self._pip_wheel_url = generals_settings.pip_wheel_url
@@ -71,8 +74,13 @@ class Config(metaclass=Singleton):
 
             self._session = Session()
             self._extension_info = ExtensionInfo()
-            self._auto_install_in_site_packages = self._basic_config.auto_install_in_site_packages
-            if not self._auto_install_in_site_packages and os.getenv("DEV_CONTAINER", "") == "1":
+            self._auto_install_in_site_packages = (
+                self._basic_config.auto_install_in_site_packages
+            )
+            if (
+                not self._auto_install_in_site_packages
+                and os.getenv("DEV_CONTAINER", "") == "1"
+            ):
                 # if running in a dev container (Codespace)
                 self._auto_install_in_site_packages = True
             self._log_level = logger_config.log_level
@@ -87,7 +95,9 @@ class Config(metaclass=Singleton):
             util = Util()
 
             # self._package_location = Path(file_util.get_package_location(self._lo_identifier, True))
-            self._package_location = Path(self._extension_info.get_extension_loc(self.lo_identifier, True)).resolve()
+            self._package_location = Path(
+                self._extension_info.get_extension_loc(self.lo_identifier, True)
+            ).resolve()
             self._python_major_minor = self._get_python_major_minor()
 
             self._is_user_installed = False
@@ -99,7 +109,9 @@ class Config(metaclass=Singleton):
                 self._python_path = Path(self.join(util.config("Module"), "python.exe"))
                 self._site_packages = self._get_windows_site_packages_dir()
             elif self._is_mac:
-                self._python_path = Path(self.join(util.config("Module"), "..", "Resources", "python")).resolve()
+                self._python_path = Path(
+                    self.join(util.config("Module"), "..", "Resources", "python")
+                ).resolve()
                 self._site_packages = self._get_mac_site_packages_dir()
             elif self._is_app_image:
                 self._python_path = Path(self.join(util.config("Module"), "python"))
@@ -178,7 +190,10 @@ class Config(metaclass=Singleton):
             if site.USER_SITE:
                 site_packages = Path(site.USER_SITE).resolve()
             else:
-                site_packages = Path.home() / f".local/lib/python{self.python_major_minor}/site-packages"
+                site_packages = (
+                    Path.home()
+                    / f".local/lib/python{self.python_major_minor}/site-packages"
+                )
             site_packages.mkdir(parents=True, exist_ok=True)
         return str(site_packages)
 
@@ -187,7 +202,9 @@ class Config(metaclass=Singleton):
         sand_box = os.getenv("FLATPAK_SANDBOX_DIR", "") or str(
             Path.home() / ".var/app/org.libreoffice.LibreOffice/sandbox"
         )
-        site_packages = Path(sand_box) / f"lib/python{self.python_major_minor}/site-packages"
+        site_packages = (
+            Path(sand_box) / f"lib/python{self.python_major_minor}/site-packages"
+        )
         site_packages.mkdir(parents=True, exist_ok=True)
         return str(site_packages)
 
@@ -201,7 +218,8 @@ class Config(metaclass=Singleton):
                 site_packages = Path(site.USER_SITE).resolve()
             else:
                 site_packages = (
-                    Path.home() / f"Library/LibreOfficePython/{self.python_major_minor}/lib/python/site-packages"
+                    Path.home()
+                    / f"Library/LibreOfficePython/{self.python_major_minor}/lib/python/site-packages"
                 )
             site_packages.mkdir(parents=True, exist_ok=True)
         return str(site_packages)
@@ -216,7 +234,8 @@ class Config(metaclass=Singleton):
                 site_packages = Path(site.USER_SITE).resolve()
             else:
                 site_packages = (
-                    Path.home() / f"'/AppData/Roaming/Python/Python{self.python_major_minor}/site-packages'"
+                    Path.home()
+                    / f"'/AppData/Roaming/Python/Python{self.python_major_minor}/site-packages'"
                 )
             site_packages.mkdir(parents=True, exist_ok=True)
         return str(site_packages)
@@ -270,6 +289,36 @@ class Config(metaclass=Singleton):
         This is the default locale to use if the locale is not set in the LibreOffice configuration.
         """
         return "-".join(self.default_locale)
+
+    @property
+    def experimental_requirements_linux(self) -> Dict[str, str]:
+        """
+        Gets the set of experimental requirements specific to Linux.
+        The value for this property can be set in pyproject.toml (tool.oxt.requirements_linux)
+        The key is the name of the package and the value is the version number.
+        Example: {"requests": ">=2.25.1"}
+        """
+        return self.basic_config.experimental_requirements_linux
+
+    @property
+    def experimental_requirements_macos(self) -> Dict[str, str]:
+        """
+        Gets the set of experimental requirements specific to Mac OS.
+        The value for this property can be set in pyproject.toml (tool.oxt.requirements_macos)
+        The key is the name of the package and the value is the version number.
+        Example: {"requests": ">=2.25.1"}
+        """
+        return self.basic_config.experimental_requirements_macos
+
+    @property
+    def experimental_requirements_win(self) -> Dict[str, str]:
+        """
+        Gets the set of experimental requirements specific to Windows.
+        The value for this property can be set in pyproject.toml (tool.oxt.requirements_win)
+        The key is the name of the package and the value is the version number.
+        Example: {"requests": ">=2.25.1"}
+        """
+        return self.basic_config.experimental_requirements_win
 
     @property
     def url_pip(self) -> str:
@@ -860,6 +909,13 @@ class Config(metaclass=Singleton):
         return self._basic_config.py_script_sheet_on_calculate
 
     # endregion tool.libre_pythonista.config
+    @property
+    def lp_settings(self) -> LpSettings:
+        """
+        Gets the LibrePythonista settings.
+        """
+        return self._lp_settings
+
     # endregion Properties
 
 

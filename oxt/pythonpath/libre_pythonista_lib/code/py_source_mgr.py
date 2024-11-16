@@ -2,18 +2,18 @@ from __future__ import annotations
 from typing import Any, List, Dict, Tuple, TYPE_CHECKING
 
 from sortedcontainers import SortedDict
+
 from ooodev.calc import CalcDoc, CalcCell
-from ooodev.utils.data_type.cell_obj import CellObj
-from ooodev.utils import gen_util as gUtil
-from ooodev.io.sfa import Sfa
-from ooodev.events.lo_events import LoEvents
-from ooodev.events.partial.events_partial import EventsPartial
 from ooodev.events.args.cancel_event_args import CancelEventArgs
 from ooodev.events.args.event_args import EventArgs
-
-# from ooodev.io.log.named_logger import NamedLogger
+from ooodev.events.lo_events import LoEvents
+from ooodev.events.partial.events_partial import EventsPartial
+from ooodev.io.sfa import Sfa
+from ooodev.utils import gen_util as gUtil
+from ooodev.utils.data_type.cell_obj import CellObj
 from ooodev.utils.helper.dot_dict import DotDict
 from ooodev.utils.string.str_list import StrList
+
 from ..event.shared_event import SharedEvent
 from ..log.log_inst import LogInst
 from ..utils.gen_util import GenUtil
@@ -38,7 +38,9 @@ else:
 
 
 class PySource:
-    def __init__(self, uri: str, unique_id: str, cell: CellObj, mgr: PySourceManager) -> None:
+    def __init__(
+        self, uri: str, unique_id: str, cell: CellObj, mgr: PySourceManager
+    ) -> None:
         if getattr(self, "_is_init", False):
             return
         self._uri = uri
@@ -176,7 +178,9 @@ class PySourceManager(EventsPartial):
         self._sfa = Sfa()
         self._config = Config()
 
-        self._root_uri = f"vnd.sun.star.tdoc:/{self._doc.runtime_uid}/{self._config.lp_code_dir}"
+        self._root_uri = (
+            f"vnd.sun.star.tdoc:/{self._doc.runtime_uid}/{self._config.lp_code_dir}"
+        )
         # if not self._sfa.exists(self._root_uri):
         #     self._sfa.inst.create_folder(self._root_uri)
         self._mod = PyModule()
@@ -207,7 +211,6 @@ class PySourceManager(EventsPartial):
         return log
 
     def _get_sources(self) -> SortedDict[Tuple[int, int, int], PySource]:
-
         cc = CellCache(self._doc)
         code_prop_name = cc.code_prop
         result = None
@@ -238,13 +241,35 @@ class PySourceManager(EventsPartial):
 
     # endregion Init
 
-    def get_module_source_code(self) -> str:
-        """Gets a string that represents the source code of the modules current state."""
+    def get_module_source_code(
+        self, max_cell: CellObj | None = None, include_max: bool = True
+    ) -> str:
+        """
+        Gets a string that represents the source code of the modules current state.
+
+        If max_cell is specified, the source code will be generated up to the max_cell.
+
+        Args:
+            max_cell (CellObj, optional): Maximum cell address. Defaults to None.
+            include_max (bool, optional): Include the max cell in the source code. Defaults to True.
+        """
         sb = StrList(sep="\n")
         sb.append(f"# Source code for doc: vnd.sun.star.tdoc:/{self._doc.runtime_uid}/")
         for py_src in self._data.values():
-            cell_obj = CellObj.from_idx(col_idx=py_src.col, row_idx=py_src.row, sheet_idx=py_src.sheet_idx)
-            sb.append(f"# Code for Cell: {cell_obj} of sheet index: {cell_obj.sheet_idx}")
+            cell_obj = CellObj.from_idx(
+                col_idx=py_src.col, row_idx=py_src.row, sheet_idx=py_src.sheet_idx
+            )
+            if max_cell is not None:
+                if include_max:
+                    if cell_obj > max_cell:
+                        break
+                else:
+                    if cell_obj >= max_cell:
+                        break
+
+            sb.append(
+                f"# Code for Cell: {cell_obj} of sheet index: {cell_obj.sheet_idx}"
+            )
             sb.append(py_src.source_code)
             sb.append()
         return str(sb)
@@ -299,7 +324,9 @@ class PySourceManager(EventsPartial):
         # triggered from self._update_item()
         self.subscribe_event("BeforeSourceUpdate", cb)
 
-    def subscribe_after_cell_source_update(self, cell: Tuple[int, int], cb: EventCallback) -> None:
+    def subscribe_after_cell_source_update(
+        self, cell: Tuple[int, int], cb: EventCallback
+    ) -> None:
         """
         Subscribe to after cell source update event.
         This event is similar to ``subscribe_after_source_update`` except is only is triggered
@@ -326,7 +353,9 @@ class PySourceManager(EventsPartial):
         # triggered from self._update_item()
         self.subscribe_event(f"AfterSourceUpdate_{cell[0]}_{cell[1]}", cb)
 
-    def subscribe_before_cell_source_update(self, cell: Tuple[int, int], cb: EventCallback) -> None:
+    def subscribe_before_cell_source_update(
+        self, cell: Tuple[int, int], cb: EventCallback
+    ) -> None:
         """
         Subscribe to before cell source update event.
         This event is similar to ``subscribe_before_source_update`` except is only is triggered
@@ -664,12 +693,21 @@ class PySourceManager(EventsPartial):
             sheet_idx = code_cell[0]
             row = code_cell[1]
             col = code_cell[2]
-            self._log.debug(f"add_source() sheet index: {sheet_idx} col: {col}, row: {row}")
+            self._log.debug(
+                f"add_source() sheet index: {sheet_idx} col: {col}, row: {row}"
+            )
             if code_cell in self._data:
                 self._log.error(f"add_source() - Cell {cell} already exists.")
                 raise Exception(f"Cell {cell} already exists.")
             cargs = CancelEventArgs(self)
-            cargs.event_data = DotDict(source=self, sheet_idx=sheet_idx, row=row, col=col, code=code, doc=self._doc)
+            cargs.event_data = DotDict(
+                source=self,
+                sheet_idx=sheet_idx,
+                row=row,
+                col=col,
+                code=code,
+                doc=self._doc,
+            )
             self.trigger_event("BeforeAddSource", cargs)
             if cargs.cancel:
                 return
@@ -683,7 +721,9 @@ class PySourceManager(EventsPartial):
 
             addr = GenUtil.create_cell_addr_query_str(sheet_idx, str(cell))
             calc_cell.set_custom_property(km.cell_addr_key, addr)
-            self._log.debug(f"add_source() - Setting custom property: {km.cell_addr_key} to {addr}")
+            self._log.debug(
+                f"add_source() - Setting custom property: {km.cell_addr_key} to {addr}"
+            )
 
             name = str_id + ".py"
             uri = f"{self._root_uri}/{sheet.unique_id}/{name}"
@@ -691,9 +731,15 @@ class PySourceManager(EventsPartial):
             py_src.source_code = code  # writes code to file
             # after code has been saved to file, update the cell cache
             # resetting is slower than just adding the cell to the cache
-            self._log.debug(f"add_source() - inserting for cell {cell}: sheet index: {sheet_idx}")
-            cc.insert(cell=cell, code_name=str_id, props={cc.code_prop}, sheet_idx=sheet_idx)
-            self._log.debug(f"add_source() - inserted for cell {cell}: sheet index: {sheet_idx}")
+            self._log.debug(
+                f"add_source() - inserting for cell {cell}: sheet index: {sheet_idx}"
+            )
+            cc.insert(
+                cell=cell, code_name=str_id, props={cc.code_prop}, sheet_idx=sheet_idx
+            )
+            self._log.debug(
+                f"add_source() - inserted for cell {cell}: sheet index: {sheet_idx}"
+            )
             # CellCache.reset_instance()
             self._data[code_cell] = py_src
             index = self.get_index(cell)
@@ -701,7 +747,9 @@ class PySourceManager(EventsPartial):
                 self._log.error(f"add_source() - Cell {cell} not found.")
                 raise Exception(f"Cell {cell} not found.")
             if self._is_last_index(index):
-                self._log.debug(f"add_source() - Last Index, updating from index {index}")
+                self._log.debug(
+                    f"add_source() - Last Index, updating from index {index}"
+                )
                 self.update_from_index(index)
             else:
                 self._log.debug(f"add_source() not last index, Updating all")
@@ -729,12 +777,21 @@ class PySourceManager(EventsPartial):
             sheet_idx = code_cell[0]
             row = code_cell[1]
             col = code_cell[2]
-            self._log.debug(f"update_source() sheet index: {sheet_idx} col: {col}, row: {row}")
+            self._log.debug(
+                f"update_source() sheet index: {sheet_idx} col: {col}, row: {row}"
+            )
 
             if code_cell not in self._data:
                 raise Exception(f"Cell {cell} does not exists.")
             cargs = CancelEventArgs(self)
-            cargs.event_data = DotDict(source=self, sheet_idx=sheet_idx, row=row, col=col, code=code, doc=self._doc)
+            cargs.event_data = DotDict(
+                source=self,
+                sheet_idx=sheet_idx,
+                row=row,
+                col=col,
+                code=code,
+                doc=self._doc,
+            )
             self.trigger_event("BeforeUpdateSource", cargs)
             if cargs.cancel:
                 return
@@ -748,7 +805,9 @@ class PySourceManager(EventsPartial):
             # CellCache.reset_instance()
 
             if self._is_last_index(index):
-                self._log.debug(f"update_source() is last index updating from index {index}")
+                self._log.debug(
+                    f"update_source() is last index updating from index {index}"
+                )
                 self.update_from_index(index)
             else:
                 self._log.debug(f"update_source() not last index, Updating all")
@@ -778,12 +837,16 @@ class PySourceManager(EventsPartial):
             sheet_idx = code_cell[0]
             row = code_cell[1]
             col = code_cell[2]
-            self._log.debug(f"remove_source() sheet index: {sheet_idx} col: {col}, row: {row}")
+            self._log.debug(
+                f"remove_source() sheet index: {sheet_idx} col: {col}, row: {row}"
+            )
 
             if code_cell not in self._data:
                 raise Exception(f"Cell {cell} does not exist.")
             cargs = CancelEventArgs(self)
-            cargs.event_data = DotDict(source=self, sheet_idx=sheet_idx, row=row, col=col, doc=self._doc)
+            cargs.event_data = DotDict(
+                source=self, sheet_idx=sheet_idx, row=row, col=col, doc=self._doc
+            )
             self.trigger_event("BeforeRemoveSource", cargs)
             if cargs.cancel:
                 return
@@ -798,7 +861,9 @@ class PySourceManager(EventsPartial):
             cc = CellCache(self._doc)
             cc.remove_cell(cell=cell, sheet_idx=sheet_idx)
             if calc_cell.has_custom_property(cc.code_prop):
-                self._log.debug(f"remove_source() Has custom property: {cc.code_prop}. Removing ...")
+                self._log.debug(
+                    f"remove_source() Has custom property: {cc.code_prop}. Removing ..."
+                )
                 calc_cell.remove_custom_property(cc.code_prop)
                 self._log.debug("remove_source() custom property removed.")
             # remove the cell from the cache is faster then resetting
@@ -824,7 +889,9 @@ class PySourceManager(EventsPartial):
             is_deleted = cell.extra_data.get("deleted", False)
             if not is_deleted:
                 self.remove_source(cell.cell_obj)
-            self._log.debug(f"remove_source_by_calc_cell() - Cell is deleted. {cell.cell_obj}")
+            self._log.debug(
+                f"remove_source_by_calc_cell() - Cell is deleted. {cell.cell_obj}"
+            )
             if not "code_name" in cell.extra_data:
                 return
             str_id = cell.extra_data["code_name"]
@@ -845,7 +912,9 @@ class PySourceManager(EventsPartial):
             value (Any): Variable value.
         """
         with self._log.indent(True):
-            self._log.debug(f"set_global_var() - Setting Global Variable: {name} = {value}")
+            self._log.debug(
+                f"set_global_var() - Setting Global Variable: {name} = {value}"
+            )
             self.py_mod.set_global_var(name, value)
 
     def get_index(self, cell: CellObj) -> int:
@@ -884,7 +953,9 @@ class PySourceManager(EventsPartial):
             row = py_src.row
             col = py_src.col
             self._log.debug("_update_item() Entered.")
-            self._log.debug(f"_update_item() sheet index: {sheet_idx} col: {col}, row: {row}")
+            self._log.debug(
+                f"_update_item() sheet index: {sheet_idx} col: {col}, row: {row}"
+            )
             cargs.event_data = DotDict(
                 source=self,
                 sheet_idx=sheet_idx,
@@ -906,7 +977,9 @@ class PySourceManager(EventsPartial):
                 py_src.source_code = code
             # update the dictionary to the current state of the module
             py_src.mod_dict = self.py_mod.mod.__dict__.copy()
-            cell_obj = CellObj.from_idx(col_idx=py_src.col, row_idx=py_src.row, sheet_idx=py_src.sheet_idx)
+            cell_obj = CellObj.from_idx(
+                col_idx=py_src.col, row_idx=py_src.row, sheet_idx=py_src.sheet_idx
+            )
             self.py_mod.set_global_var("CURRENT_CELL_ID", py_src.unique_id)
             self.py_mod.set_global_var("CURRENT_CELL_OBJ", cell_obj)
             result = self.py_mod.update_with_result(py_src.source_code)
@@ -995,11 +1068,15 @@ class PySourceManager(EventsPartial):
             if self._is_last_index(index):
                 self._log.debug(f"update_from_index({index}). Is last index.")
             else:
-                self._log.debug(f"update_from_index({index}). Is not last index. Resetting module to py_src dict.")
+                self._log.debug(
+                    f"update_from_index({index}). Is not last index. Resetting module to py_src dict."
+                )
                 self.py_mod.reset_to_dict(py_src.mod_dict)
             for i in range(index, length):
                 key = keys[i]  # tuple in row, col format
-                cell_obj = CellObj.from_idx(col_idx=key[2], row_idx=key[1], sheet_idx=key[0])
+                cell_obj = CellObj.from_idx(
+                    col_idx=key[2], row_idx=key[1], sheet_idx=key[0]
+                )
                 py_src = self[cell_obj]
                 self._update_item(py_src)
             self._log.debug(f"update_from_index({index}) Leaving.")
@@ -1026,7 +1103,7 @@ class PyInstance:
 
     def __new__(cls, doc: CalcDoc) -> PySourceManager:
         key = f"doc_{doc.runtime_uid}"
-        if not key in cls._instances:
+        if key not in cls._instances:
             # cls._instances[key] = PySourceManager(doc)
             cls._instances[key] = PySourceManager(doc)
             cls._instances[key]._is_init = True
@@ -1050,7 +1127,9 @@ class PyInstance:
             inst = None
             del cls._instances[key]
         else:
-            LogInst().debug(f"PyInstance.reset_instance() - Instance not found for doc: {doc.runtime_uid}")
+            LogInst().debug(
+                f"PyInstance.reset_instance() - Instance not found for doc: {doc.runtime_uid}"
+            )
 
 
 def _on_doc_closing(src: Any, event: EventArgs) -> None:

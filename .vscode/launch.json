@@ -6,7 +6,7 @@
     "configurations": [
         {
             "name": "Python: Current File",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
@@ -14,7 +14,7 @@
         },
         {
             "name": "Python: Test Cases",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "program": "${file}",
             "justMyCode": false,
@@ -25,7 +25,7 @@
         },
         {
             "name": "Python: Current All Code",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
@@ -33,11 +33,27 @@
         },
         {
             "name": "Debuggy",
-            "type": "python",
+            "type": "debugpy",
             "request": "attach",
             "connect": {
                 "port": 8550,
             }
         },
+        {
+            "name": "Attach to LibreOffice Extension",
+            "type": "debugpy",
+            "request": "attach",
+            "connect": {
+                "host": "localhost",
+                "port": 5678
+            },
+            "pathMappings": [
+                {
+                    "localRoot": "${workspaceFolder}",
+                    "remoteRoot": "<remote_path>"
+                }
+            ],
+            "justMyCode": false
+        }
     ]
 }

@@ -76,4 +76,14 @@
       <value></value>
     </prop>
   </node>
+  <node oor:name="LpWebViewDialogWindow">
+    <prop oor:name="CodeWindowJson" oor:type="xs:string">
+      <value></value>
+    </prop>
+  </node>
+  <node oor:name="LpSettings">
+    <prop oor:name="ExperimentalEditor" oor:type="xs:boolean">
+      <value>___lp_experimental_editor___</value>
+    </prop>
+  </node>
 </oor:component-data>
