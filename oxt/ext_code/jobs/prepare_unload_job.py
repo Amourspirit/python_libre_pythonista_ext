@@ -45,6 +45,10 @@ if TYPE_CHECKING:
 
     # from ...pythonpath.libre_pythonista_lib.state.calc_state_mgr import CalcStateMgr
     from ...pythonpath.libre_pythonista_lib.doc.calc_doc_mgr import CalcDocMgr
+    from ...___lo_pip___.debug.break_mgr import BreakMgr
+
+    # Initialize the breakpoint manager
+    break_mgr = BreakMgr()
 else:
 
     def override(func):
@@ -70,6 +74,11 @@ else:
 
         # from libre_pythonista_lib.state.calc_state_mgr import CalcStateMgr
         from libre_pythonista_lib.doc.calc_doc_mgr import CalcDocMgr
+        from ___lo_pip___.debug.break_mgr import BreakMgr
+
+        # Initialize the breakpoint manager
+        break_mgr = BreakMgr()
+        break_mgr.add_breakpoint("PrepareUnloadJob.execute.conditions_met")
 # endregion imports
 
 
@@ -125,6 +134,9 @@ class PrepareUnloadJob(XJob, unohelper.Base):
                 else:
                     self._log.debug(f"{key} not found in os.environ")
                 if _CONDITIONS_MET:
+                    break_mgr.check_breakpoint(
+                        "PrepareUnloadJob.execute.conditions_met"
+                    )
                     run_time_id = self.document.RuntimeUID
                     try:
                         from ooodev.calc import CalcDoc
