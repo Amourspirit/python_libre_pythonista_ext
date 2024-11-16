@@ -30,7 +30,8 @@
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
     "spellchecker.ignoreWordsList": [
-        "LibreOffice"
+        "LibreOffice",
+        "LibrePythonista"
     ],
     "black-formatter.args": [
         "--line-length",

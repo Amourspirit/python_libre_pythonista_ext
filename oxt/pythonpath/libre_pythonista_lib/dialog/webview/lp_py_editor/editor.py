@@ -148,10 +148,15 @@ class PyCellEditProcessMgr(ProcessMgr):
 
         def update_window_config(window_config: Dict[str, Any]) -> None:
             if window_config:
-                self.log.debug("Updating window configuration")
-                wv_cfg = WvCodeCfg()
-                wv_cfg.from_dict(window_config)
-                wv_cfg.save()
+                try:
+                    self.log.debug("Updating window configuration")
+                    wv_cfg = WvCodeCfg()
+                    wv_cfg.from_dict(window_config)
+                    wv_cfg.save()
+                except Exception:
+                    self.log.debug(
+                        "Error updating window configuration. LibreOffice Window may be closed."
+                    )
             else:
                 self.log.debug("No window configuration received")
 

@@ -78,6 +78,16 @@ The following image shows a Python in Calc calculation adding the values of cell
 
 When a cell contains Python code It can be edit by clicking the control and choosing Edit Code.
 
+### Experimental Code Editor
+
+As of version `0.6.0`, the code editor has been updated to include syntax highlighting and code completion. Currently the code editor is experimental.
+
+To activated the experimental code editor, open the LibreOffice Extension Manager and click on the LibrePythonista extension. Then click on the Options button. Navigate to `LibrePythonista -> Options`  check the box for `Use Experimental Python Cell Editor` and click OK. Now restart LibreOffice to activate the new code editor.
+
+![image](https://github.com/user-attachments/assets/745af61c-4c44-4f1c-be82-87cce9a603c6)
+
+### Default Code Editor
+
 ![image](https://github.com/user-attachments/assets/f9d50085-d496-4f62-852f-cf98d514b5e8)
 
 Or Python cells and charts can right click and choose `Pythonista --> Edit Code`
@@ -86,6 +96,18 @@ Or Python cells and charts can right click and choose `Pythonista --> Edit Code`
 Image for the code editor for the example above.
 ![tri_code](https://github.com/user-attachments/assets/a52c20f9-6536-437a-8ebd-8f997921b83f)
 
+
+## Security
+
+LibrePythonista is designed to run Python code locally on your computer. This means that your data never leaves your computer. LibrePythonista does not send your data to any external servers. LibrePythonista is open source software and the code is available on GitHub.
+
+### Running Sheet Level Python
+
+LibrePythonista allows Python code to be run at the sheet level. This means that Python code can be run in any cell in the sheet. This can be a security risk if the sheet is from a untrusted source. To mitigate this risk, LibrePythonista will not run Python code unless macros have been enabled for the sheet. This means that the user must enable macros for the sheet before Python code can be run.
+
+Usually, when a sheet is opened, LibreOffice will ask the user if they want to enable macros. If the user does not enable macros, then Python code will not run. If the user enables macros, then Python code will run.
+
+The recommended security setting for LibrePythonista is `Medium`. This setting will allow Python code to run when macros are enabled. To set the security level, go to `Tools -> Options -> LibreOffice -> Security -> Macro Security` and set the security level to `Medium`.
 
 ## Other Resources
 
