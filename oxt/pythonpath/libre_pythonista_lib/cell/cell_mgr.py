@@ -52,7 +52,7 @@ else:
     from ___lo_pip___.debug.break_mgr import BreakMgr, check_breakpoint
 
     break_mgr = BreakMgr()
-    break_mgr.add_breakpoint("update_array_cells")
+    # break_mgr.add_breakpoint("update_array_cells")
 
 
 class CellMgr(SingletonBase):

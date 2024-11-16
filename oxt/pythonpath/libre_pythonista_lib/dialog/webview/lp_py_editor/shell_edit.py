@@ -350,7 +350,7 @@ class Api:
         if _IS_DEBUG:
             sys.stdout.write(f"Moved: {x}, {y}\n")
         # On Ubuntu 24.04, the window position reports 0, 0 when moved
-        # It may be the same on other platforms
+        # On windows 10 the position is reported correctly
         self.window_config.x = x
         self.window_config.y = y
 
@@ -373,7 +373,10 @@ def webview_ready(window: webview.Window):
 def receive_all(sock: socket.socket, length: int) -> bytes:
     data = b""
     while len(data) < length:
-        more = sock.recv(length - len(data))
+        try:
+            more = sock.recv(length - len(data))
+        except ConnectionAbortedError as e:
+            raise ConnectionAbortedError("Connection has been aborted") from e
         if not more:
             raise ConnectionResetError("Connection closed prematurely")
         data += more
@@ -419,7 +422,7 @@ def receive_messages(
             #     api.handle_response(response)
             else:
                 sys.stdout.write(f"Subprocess received: {message}\n")
-        except (ConnectionResetError, struct.error) as err:
+        except (ConnectionResetError, struct.error, ConnectionAbortedError) as err:
             if _WEB_VEW_ENDED:
                 sys.stdout.write("receive_messages() Webview ended\n")
             else:

@@ -69,6 +69,7 @@ class PyEditCellJob(XJob, unohelper.Base):
         if not _CONDITIONS_MET:
             return
         self._log.debug("execute")
+        # called from dispatch/dispatch_edit_py_cell_wv.py
         try:
             if TYPE_CHECKING:
                 from ...pythonpath.libre_pythonista_lib.dialog.webview.lp_py_editor import (

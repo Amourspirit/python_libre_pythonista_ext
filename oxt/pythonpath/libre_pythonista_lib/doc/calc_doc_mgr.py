@@ -41,8 +41,8 @@ else:
     break_mgr = BreakMgr()
     # Add breakpoint labels
     # break_mgr.add_breakpoint("init_cell_manager")
-    break_mgr.add_breakpoint("CalcDocMgr.ensure_events_for_new")
-    break_mgr.add_breakpoint("CalcDocMgr.ensure_events")
+    # break_mgr.add_breakpoint("CalcDocMgr.ensure_events_for_new")
+    # break_mgr.add_breakpoint("CalcDocMgr.ensure_events")
 
 
 class CalcDocMgr(SingletonBase):

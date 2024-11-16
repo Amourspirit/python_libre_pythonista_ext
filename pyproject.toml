@@ -75,7 +75,7 @@ url_pip = 'https://bootstrap.pypa.io/get-pip.py' # https://tinyurl.com/ymeh4c9j#
 # set log_file to "" to disable logging
 log_file = "libre_pythonista.log" # https://tinyurl.com/ymeh4c9j#log_file
 log_name = "LibrePythonista Installer" # https://tinyurl.com/ymeh4c9j#log_name
-log_level = "INFO" # NONE, DEBUG, INFO, WARNING, ERROR, CRITICAL https://tinyurl.com/ymeh4c9j#log_level
+log_level = "DEBUG" # NONE, DEBUG, INFO, WARNING, ERROR, CRITICAL https://tinyurl.com/ymeh4c9j#log_level
 log_format = "%(asctime)s - %(levelname)s - %(name)s: %(message)s" # https://tinyurl.com/ymeh4c9j#log_format
 # log_format = "%(asctime)s - %(levelname)s - %(indent_str)s%(name)s: %(message)s"
 log_add_console = true # should be false for production # https://tinyurl.com/ymeh4c9j#log_add_console
@@ -131,6 +131,7 @@ debugpy = ">=1.8"
 # These requirements take precedence over the general requirements
 cefpython3=">=66.1"
 pywebview = ">=5"
+jedi = ">=0.19"
 
 [tool.oxt.experimental.requirements_macos]
 # https://tinyurl.com/ymeh4c9j#tooloxtrequirements_macos
@@ -138,6 +139,7 @@ pywebview = ">=5"
 # These requirements take precedence over the general requirements
 pyobjc = ">=10.3.1"
 pywebview = ">=5"
+jedi = ">=0.19"
 
 [tool.oxt.experimental.requirements_linux]
 # https://tinyurl.com/ymeh4c9j#tooloxtrequirements_linux
@@ -146,6 +148,7 @@ pywebview = ">=5"
 qtpy = ">=2.4.1"
 PySide2 = ">=5"
 pywebview = ">=5"
+jedi = ">=0.19"
 
 [tool.oxt.isolate]
 # https://tinyurl.com/ymeh4c9j#tooloxtisolate
