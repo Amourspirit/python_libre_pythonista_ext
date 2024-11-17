@@ -228,7 +228,19 @@
         });
 
         function getCode() {
-            return editor.getValue();
+            return new Promise(function(resolve, reject) {
+                try {
+                    // Check if the editor is initialized
+                    if (editor) {
+                        var code = editor.getValue();
+                        resolve(code);
+                    } else {
+                        reject("Editor is not initialized");
+                    }
+                } catch (error) {
+                    reject(error);
+                }
+            });
         }
 
         function customAutocomplete(cm, options) {

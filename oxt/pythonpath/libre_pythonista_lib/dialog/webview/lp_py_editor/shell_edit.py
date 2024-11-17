@@ -7,6 +7,7 @@ import json
 import threading
 from pathlib import Path
 import webview
+from webview.errors import JavascriptException
 import webview.menu as wm
 import jedi  # noqa # type: ignore
 
@@ -137,21 +138,24 @@ class Api:
     def accept(self) -> None:
         global _IS_DEBUG
         try:
+            sys.stdout.write("accept entered\n")
             if self._window:
-                code = self.get_code()
-                if _IS_DEBUG:
-                    sys.stdout.write("Code:\n{}\n".format(code))
-                data = {
-                    "cmd": "code",
-                    "process_id": self.process_id,
-                    "data": {
-                        "code": code,
-                        "window_config": self.window_config.to_dict(),
-                    },
-                }
-                send_message(self.sock, data)
-                sys.stdout.write("Sent code to server\n")
-                self.destroy()
+                self.get_code()
+                # code = self.get_code()
+                # sys.stdout.write("Code:\n{}\n".format(code))
+                # data = {
+                #     "cmd": "code",
+                #     "process_id": self.process_id,
+                #     "data": {
+                #         "code": code,
+                #         "window_config": self.window_config.to_dict(),
+                #     },
+                # }
+                # send_message(self.sock, data)
+                # sys.stdout.write("Sent code to server\n")
+                # self.destroy()
+            else:
+                sys.stderr.write("No window available\n")
 
         except Exception as e:
             sys.stderr.write(f"Error in accept: {e}\n")
@@ -216,11 +220,33 @@ class Api:
     def has_window(self):
         return self._window is not None
 
+    def got_code(self, result: str):
+        # sys.stdout.write(f"Got code: {result}\n")
+        if _IS_DEBUG:
+            sys.stdout.write("Code:\n{}\n".format(result))
+        data = {
+            "cmd": "code",
+            "process_id": self.process_id,
+            "data": {
+                "code": result,
+                "window_config": self.window_config.to_dict(),
+            },
+        }
+        send_message(self.sock, data)
+        sys.stdout.write("Sent code to server\n")
+        self.destroy()
+
     def get_code(self):
         try:
             if self._window:
-                code = self._window.evaluate_js("getCode()")
-                return code
+                sys.stdout.write("Getting Code\n")
+                self._window.evaluate_js("getCode()", self.got_code)
+                # code = self._window.evaluate_js("getCode()")
+                # sys.stdout.write("got code\n")
+                # # time.sleep(10)
+                # return code
+        except JavascriptException as jse:
+            sys.stderr.write(f"JavaScriptError in get_code: {jse}\n")
         except Exception as e:
             sys.stderr.write(f"Error in get_code: {e}\n")
         return ""
@@ -616,7 +642,11 @@ def main():
         sys.stdout.write("Starting Webview\n")
         mnu = Menu(api)
         webview.start(
-            webview_ready, (window,), gui=None, menu=mnu.get_menu()
+            webview_ready,
+            (window,),
+            gui=None,
+            menu=mnu.get_menu(),
+            debug=False,
         )  # setting gui is causing crash in LibreOffice
         sys.stdout.write("Ended Webview\n")
 
