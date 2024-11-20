@@ -828,7 +828,7 @@ class Config(metaclass=Singleton):
     @property
     def oxt_name(self) -> str:
         """
-        Gets the Otx name of the extension without the ``.otx`` extension.
+        Gets the Oxt name of the extension without the ``.oxt`` extension.
 
         The value for this property can be set in pyproject.toml (tool.oxt.token.oxt_name)
         """

@@ -144,22 +144,20 @@
             editor.focus();
         }
 
-        function setCodeMirrorTheme(theme) {
-            editor.setOption("theme", theme);
-        }
-
         function insertTextAtCursor(text) {
             var doc = editor.getDoc();
             var cursor = doc.getCursor(); // gets the line number in the cursor position
             doc.replaceRange(text, cursor); // replaces the selection with the given text
         }
 
-        function setBodyClass(className) {
-            document.body.className = className;
-        }
-
-        function appendBodyClass(className) {
+        function applyTheme(isDarkTheme) {
+            const theme = isDarkTheme ? "material-darker" : "default";
+            // only set theme if it's not default
+            if (theme !== "default")
+                editor.setOption("theme", theme);
+            var className = isDarkTheme ? "dark" : "light";
             document.body.classList.add(className);
+
         }
 
         var ExcludedIntelliSenseTriggerKeys = {
@@ -227,21 +225,36 @@
             }
         });
 
-        function getCode() {
-            return new Promise(function(resolve, reject) {
-                try {
-                    // Check if the editor is initialized
-                    if (editor) {
-                        var code = editor.getValue();
-                        resolve(code);
-                    } else {
-                        reject("Editor is not initialized");
-                    }
-                } catch (error) {
-                    reject(error);
+        function sendCode() {
+            try {
+                if (editor) {
+                    const code = editor.getValue();
+                    pywebview.api.receive_code(code).catch(function(error) {
+                        console.error("Error sending code to Python:", error);
+                    });
+                } else {
+                    console.error("Editor is not initialized");
                 }
-            });
+            } catch (error) {
+                console.error("Error in sendCode:", error);
+            }
         }
+
+        function validateCode() {
+            try {
+                if (editor) {
+                    const code = editor.getValue();
+                    pywebview.api.validate_code_result(code).catch(function(error) {
+                        console.error("Error sending validation code to Python:", error);
+                    });
+                } else {
+                    console.error("Editor is not initialized");
+                }
+            } catch (error) {
+                console.error("Error in validateCode:", error);
+            }
+        }
+
 
         function customAutocomplete(cm, options) {
             var cursor = cm.getCursor(); // Current cursor position
@@ -302,7 +315,7 @@
 
     <div class="button-container">
         <button onclick="pywebview.api.destroy()">Cancel</button>
-        <button onclick='pywebview.api.accept()'>OK</button>
+        <button onclick='sendCode()'>OK</button>
     </div>
 </body>
 

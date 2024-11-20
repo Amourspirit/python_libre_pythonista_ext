@@ -1,6 +1,7 @@
 from __future__ import annotations
 from typing import Any, Dict, cast, TYPE_CHECKING
 from pathlib import Path
+import json
 
 from ..basic_config import BasicConfig
 from ..meta.singleton import Singleton
@@ -16,6 +17,8 @@ if TYPE_CHECKING:
 
 
 class LoggerConfig(metaclass=Singleton):
+    """Singleton Class. Log configuration"""
+
     def __init__(self) -> None:
         basic_config = BasicConfig()
         self._lo_implementation_name = basic_config.lo_implementation_name
@@ -36,7 +39,9 @@ class LoggerConfig(metaclass=Singleton):
         # sourcery skip: dict-assign-update-to-union
         configuration = Configuration()
         key = f"/{self.lo_implementation_name}.Settings"
-        reader = cast("ConfigurationAccess", configuration.get_configuration_access(key))
+        reader = cast(
+            "ConfigurationAccess", configuration.get_configuration_access(key)
+        )
         # group_names = reader.getElementNames()
         settings = {}
 
@@ -73,8 +78,24 @@ class LoggerConfig(metaclass=Singleton):
         """
         event_args = EventArgs("LoggerConfig.raise_log_ready_event")
         event_args.event_data = {"first_time": not self._log_ready_event_raised}
-        LoEvents().trigger(event_name=LogNamedEvent.LOGGING_READY, event_args=event_args)
+        LoEvents().trigger(
+            event_name=LogNamedEvent.LOGGING_READY, event_args=event_args
+        )
         self._log_ready_event_raised = True
+
+    def to_dict(self) -> dict:
+        """Convert the LoggerConfig instance to a dictionary."""
+        return {
+            "log_level": self.log_level,
+            "log_format": self.log_format,
+            "log_file": self.log_file,
+            "log_add_console": self.log_add_console,
+            "lo_implementation_name": self.lo_implementation_name,
+        }
+
+    def to_json(self) -> str:
+        """Convert the LoggerConfig instance to a JSON string."""
+        return json.dumps(self.to_dict())
 
     @property
     def lo_implementation_name(self) -> str:

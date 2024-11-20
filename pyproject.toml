@@ -129,26 +129,29 @@ debugpy = ">=1.8"
 # https://tinyurl.com/ymeh4c9j#tooloxtrequirements_win
 # any windows specific requirements
 # These requirements take precedence over the general requirements
-cefpython3=">=66.1"
-pywebview = ">=5"
-jedi = ">=0.19"
+# cefpython3=">=66.1"
+# pywebview = ">=5"
+# jedi = ">=0.19"
+librepythonista-python-editor=">=0.1.6"
 
 [tool.oxt.experimental.requirements_macos]
 # https://tinyurl.com/ymeh4c9j#tooloxtrequirements_macos
 # any macos specific requirements
 # These requirements take precedence over the general requirements
-pyobjc = ">=10.3.1"
-pywebview = ">=5"
-jedi = ">=0.19"
+# pyobjc = ">=10.3.1"
+# pywebview = ">=5"
+# jedi = ">=0.19"
+librepythonista-python-editor=">=0.1.6"
 
 [tool.oxt.experimental.requirements_linux]
 # https://tinyurl.com/ymeh4c9j#tooloxtrequirements_linux
 # any linux specific requirements
 # These requirements take precedence over the general requirements
-qtpy = ">=2.4.1"
-PySide2 = ">=5"
-pywebview = ">=5"
-jedi = ">=0.19"
+# qtpy = ">=2.4.1"
+# PySide2 = ">=5"
+# pywebview = ">=5"
+# jedi = ">=0.19"
+librepythonista-python-editor=">=0.1.6"
 
 [tool.oxt.isolate]
 # https://tinyurl.com/ymeh4c9j#tooloxtisolate

@@ -4,14 +4,19 @@ import socket
 import struct
 import threading
 import json
+import tempfile
+from pathlib import Path
+import os
 
 
 _SOCKET_TIMEOUT_SEC = 10
 
 if TYPE_CHECKING:
     from ....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from ....___lo_pip___.config import Config
 else:
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from ___lo_pip___.config import Config
 
 
 class SocketManager:
@@ -22,7 +27,7 @@ class SocketManager:
     Methods:
         __init__(log: OxtLogger):
             Initializes the SocketManager with a logger, a socket pool, and a lock.
-        create_server_socket() -> Tuple[socket.socket, int]:
+        create_server_socket() -> Tuple[socket.socket, str, int, str]:
         accept_client(server_socket: socket.socket, process_id: str) -> socket.socket:
         send_message(message: Dict[str, Any], process_id: str) -> None:
         receive_all(length: int, process_id: str) -> bytes:
@@ -43,22 +48,40 @@ class SocketManager:
         global _SOCKET_TIMEOUT_SEC
         self.socket_timeout_sec = _SOCKET_TIMEOUT_SEC
         self._socket_pool: Dict[str, socket.socket] = {}
+        self._socket_file = ""
         self.log = OxtLogger(log_name=self.__class__.__name__)
         self.lock = threading.Lock()
 
-    def create_server_socket(self) -> Tuple[socket.socket, int]:
+    def create_server_socket(self) -> Tuple[socket.socket, str, int, str]:
         """
-        Creates a server socket bound to an available port on localhost.
+        Creates a server socket bound to an available port on localhost on Windows.
+        For Unix-based systems, it creates a server socket bound to a temporary file.
 
         Returns:
-            Tuple[socket.socket, int]: A tuple containing the server socket object and the port number it is bound to.
+            Tuple[socket.socket, str, int, str]: A tuple containing the server socket object, host, port number, socket_file it is bound to.
         """
-        server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        server_socket.bind(("localhost", 0))  # Bind to an available port
-        host, port = server_socket.getsockname()
+        config = Config()
+
+        host = "localhost"
+        if config.is_win:
+            server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            server_socket.bind((host, 0))  # Bind to an available port
+            _, port = server_socket.getsockname()  # host, port
+            self._socket_file = ""
+        else:
+            port = 0
+            tmp = Path(tempfile.gettempdir())
+            socket_path = tmp / "librepythonista_edit.sock"
+            if socket_path.exists():
+                socket_path.unlink()
+            self._socket_file = str(socket_path)
+            server_socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+            server_socket.bind(self._socket_file)
+            os.chmod(socket_path, 0o600)  # Restrict access to the socket
+
         server_socket.listen(1)
         server_socket.settimeout(self.socket_timeout_sec)  # Set a timeout of 10 seconds
-        return server_socket, port
+        return server_socket, host, port, self._socket_file
 
     def accept_client(
         self, server_socket: socket.socket, process_id: str
@@ -118,7 +141,7 @@ class SocketManager:
                     return
                 sock = self._socket_pool[process_id]
                 json_message = json.dumps(message)
-                message_bytes = json_message.encode()
+                message_bytes = json_message.encode(encoding="utf-8")
                 message_length = struct.pack("!I", len(message_bytes))
                 self.log.debug(
                     f"Sending message to client: {json_message} to process {process_id}"
@@ -168,3 +191,8 @@ class SocketManager:
             if process_id in self._socket_pool:
                 self._socket_pool[process_id].close()
                 del self._socket_pool[process_id]
+
+    @property
+    def socket_file(self):
+        """Gets the path to the Unix domain socket file."""
+        return self._socket_file

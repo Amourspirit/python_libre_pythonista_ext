@@ -1,7 +1,7 @@
 from __future__ import annotations
 import queue
 import time
-from typing import Any, cast, Dict, TYPE_CHECKING
+from typing import Any, List, cast, Dict, TYPE_CHECKING
 import struct
 import subprocess
 import threading
@@ -14,7 +14,6 @@ from ooodev.events.args.event_args import EventArgs
 from ooodev.events.lo_events import LoEvents
 from ooodev.globals import GblEvents
 from ooodev.globals import GTC
-from ooodev.loader import Lo
 from ooodev.theme.theme_calc import ThemeCalc
 from ooodev.utils.data_type.range_obj import RangeObj
 
@@ -27,6 +26,7 @@ from ....res.res_resolver import ResResolver
 from ....code import py_module
 from ....const.event_const import GBL_DOC_CLOSING
 from ....config.dialog.wv_code_cfg import WvCodeCfg
+from ....py_pip.pkg_info import PkgInfo
 # from ...listener.top_listener_rng import TopListenerRng
 
 if TYPE_CHECKING:
@@ -37,10 +37,15 @@ if TYPE_CHECKING:
         from typing_extensions import override
 
     from ......___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from ......___lo_pip___.oxt_logger.logger_config import LoggerConfig
     from ......___lo_pip___.config import Config
 else:
-    override = lambda func: func  # noqa: E731
+
+    def override(func):
+        return func
+
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger  # noqa: F401
+    from ___lo_pip___.oxt_logger.logger_config import LoggerConfig  # noqa: F401
     from ___lo_pip___.config import Config  # noqa: F401
 
 if os.name == "nt":
@@ -111,6 +116,8 @@ class PyCellEditProcessMgr(ProcessMgr):
         self._fn_on_menu_insert_lp_fn = self._on_menu_insert_lp_fn
         self._fn_on_menu_range_select_result = self._on_menu_range_select_result
         self._active_process = ""
+        self._pkg_info = PkgInfo()
+        self._config = Config()
         self._current_client_msg: Any = None
 
     @override
@@ -121,9 +128,18 @@ class PyCellEditProcessMgr(ProcessMgr):
         Returns:
             str: The path to the `shell_edit.py` script.
         """
-
-        root = Path(__file__).parent
-        return str(Path(root, "shell_edit.py"))
+        pkg_location = self._pkg_info.get_package_location("librepythonista_py_edit")
+        if pkg_location:
+            self.log.debug("Package Location: %s", pkg_location)
+            return str(Path(f"{pkg_location}") / "cell_edit.py")
+        else:
+            self.log.debug(
+                "Package Not Found librepythonista_py_edit. Trying default.",
+            )
+            config = Config()
+            return str(
+                Path(config.site_packages) / "librepythonista_py_edit" / "cell_edit.py"
+            )
 
     @override
     def handle_client(self, process_id: str) -> None:
@@ -168,13 +184,13 @@ class PyCellEditProcessMgr(ProcessMgr):
                 if not raw_msg_len:
                     break
                 msg_len = struct.unpack("!I", raw_msg_len)[0]
-                data = self.socket_manager.receive_all(
+                byte_data = self.socket_manager.receive_all(
                     length=msg_len, process_id=process_id
                 )
-                if not data:
+                if not byte_data:
                     self.log.debug("No data received")
                     break
-                message = data.decode()
+                message = byte_data.decode(encoding="utf-8")
                 json_dict = cast(Dict[str, Any], json.loads(message))
                 msg_cmd = json_dict.get("cmd")
                 last_cmd = msg_cmd
@@ -188,10 +204,24 @@ class PyCellEditProcessMgr(ProcessMgr):
                     break
                 if msg_cmd == "destroyed":
                     self.log.debug("Received destroyed command.")
-                    # self.socket_manager.close_socket(process_id)
-                    data = json_dict.get("data", {})
-                    window_config = data.get("window_config", {})
+                    data: Dict[str, Any] = json_dict.get("data", {})
+                    # self.log.debug(f"Data: {data}")
+                    window_config: Dict[str, Any] = data.get("window_config", {})
                     update_window_config(window_config)
+                    logs: Dict[str, str] = data.get("logs", {})
+                    if self.log.is_debug:
+                        stdout = cast(List[str], logs.get("stdout", []))
+                        if stdout:
+                            for line in stdout:
+                                self.log.debug("stdout: %s", line)
+                        else:
+                            self.log.debug("No stdout logs")
+                    stderr = cast(List[str], logs.get("stderr", []))
+                    if stderr:
+                        for line in stderr:
+                            self.log.error("stderr: %s", line)
+                    else:
+                        self.log.debug("No stderr logs")
                     break
                 elif msg_cmd == "webview_ready":
                     self.log.debug("Webview is ready, sending code")
@@ -249,6 +279,17 @@ class PyCellEditProcessMgr(ProcessMgr):
                             {"cmd": "action_completed", "response_data": result},
                             process_id,
                         )
+                elif msg_cmd == "logs":
+                    self.log.debug("Received logs from client")
+                    log_data: Dict[str, Dict[str, str]] = json_dict.get("data", {})
+                    logs: Dict[str, str] = log_data.get("logs", {})
+                    if self.log.is_debug:
+                        stdout = cast(List[str], logs.get("stdout", []))
+                        for line in stdout:
+                            self.log.debug("stdout: %s", line)
+                    stderr = cast(List[str], logs.get("stderr", []))
+                    for line in stderr:
+                        self.log.error("stderr: %s", line)
                 else:
                     self.log.error(f"Unknown message ID: {msg_cmd}")
 
@@ -307,11 +348,18 @@ class PyCellEditProcessMgr(ProcessMgr):
                         "cell": self.cell,
                         "sheet": self.sheet,
                         "runtime_uid": self.doc.runtime_uid,
+                        "is_flatpak": self._config.is_flatpak,
+                        "is_snap": self._config.is_snap,
+                        "is_app_image": self._config.is_app_image,
+                        "python_path": str(self._config.python_path),
+                        "extension_version": self._config.extension_version,
+                        "extension_display_name": self._config.extension_display_name,
                     },
                     "resources": cast(Dict[str, str], self._gbl_cache[key]),
                     "theme": {"is_doc_dark": self._calc_theme.is_document_dark()},
                     "module_source_code": self._get_source_code(),
                     "window_config": wv_config.to_dict(),
+                    "log_config": LoggerConfig().to_dict(),
                 },
             }
         elif action == "validate_code":

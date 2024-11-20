@@ -81,6 +81,7 @@ class ProcessMgr(ABC):
         self._term_events = TerminateEvents()
         self._term_events.add_event_notify_termination(self._on_notify_termination)
         self._server = None
+        self._read_output_thread = False
 
     def _on_notify_termination(self, src: Any, event: EventArgs) -> None:
         """
@@ -128,7 +129,7 @@ class ProcessMgr(ABC):
         try:
             env = os.environ.copy()
             config = Config()
-            script_path = self.get_script_path()
+            entry_point = self.get_script_path()
 
             current_pythonpath = env.get("PYTHONPATH", "")
             additional_paths = os.pathsep.join(sys.path)
@@ -139,27 +140,65 @@ class ProcessMgr(ABC):
             )
 
             if self.log.is_debug:
-                self.log.debug(f"Starting shell_edit: {script_path}")
+                self.log.debug(f"Starting shell_edit: {entry_point}")
                 self.log.debug(f"Python Path: {config.python_path}")
 
             if self._server is None:
-                server_socket, port = self.socket_manager.create_server_socket()
-                self._server = server_socket, port
+                server_socket, host, port, socket_file = (
+                    self.socket_manager.create_server_socket()
+                )
+                self._server = server_socket, host, port, socket_file
             else:
-                server_socket, port = self._server
+                server_socket, host, port, socket_file = self._server
 
             process_id = str(uuid4())
 
             is_dbg = "debug" if self.log.is_debug else "no_debug"
 
+            # if config.is_flatpak:
+            #     p_args = [
+            #         "flatpak",
+            #         "run",
+            #         "--branch=stable",
+            #         "--arch=x86_64",
+            #         "com.github.amourspirit.librepythonista.shelledit",
+            #         "--process-id",
+            #         process_id,
+            #         "--port",
+            #         str(port),
+            #         "--debug",
+            #         is_dbg,
+            #     ]
+            #     if self.log.is_debug:
+            #         self.log.debug(f"Flatpak args: {p_args}")
+            #     process = subprocess.Popen(
+            #         p_args,
+            #         env=env,
+            #         stdout=subprocess.PIPE,
+            #         stderr=subprocess.PIPE,
+            #         text=True,
+            #         startupinfo=None,
+            #     )
+            # else:
+            p_args = [
+                str(config.python_path),
+                entry_point,
+                "--process-id",
+                process_id,
+                "--host",
+                host,
+                "--port",
+                str(port),
+                "--socket-path",
+                socket_file,
+                "--debug",
+                is_dbg,
+            ]
+            if self.log.is_debug:
+                self.log.debug(f"args: {p_args}")
+
             process = subprocess.Popen(
-                [
-                    str(config.python_path),
-                    script_path,
-                    process_id,
-                    str(port),
-                    is_dbg,
-                ],
+                p_args,
                 env=env,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
@@ -192,9 +231,10 @@ class ProcessMgr(ABC):
                     if process_id in self.process_pool:
                         del self.process_pool[process_id]
 
-            threading.Thread(
-                target=self.read_output, args=(process, process_id), daemon=True
-            ).start()
+            if self.read_output_thread:
+                threading.Thread(
+                    target=self.read_output, args=(process, process_id), daemon=True
+                ).start()
             return process_id
         except Exception as e:
             self.log.exception(f"Error starting subprocess: {e}")
@@ -295,6 +335,12 @@ class ProcessMgr(ABC):
 
         Ensures:
             - The subprocess is removed from the process pool when finished.
+
+        Note:
+            - The ``read_output_thread`` property must be set to True to enable this method to run in a separate thread.
+            - When ``read_output_thread`` is set to False, this method will not be executed.
+            - ``read_output_thread`` must be set to true before starting ``start_subprocess`` is called to enable output reading.
+            - ``read_output_thread`` is set to False by default.
         """
 
         try:
@@ -321,7 +367,9 @@ class ProcessMgr(ABC):
             with self.lock:
                 if process_id in self.process_pool:
                     del self.process_pool[process_id]
-                    self.log.debug(f"Subprocess {process_id} removed from process pool")
+                    self.log.debug(
+                        "Subprocess %s removed from process pool", process_id
+                    )
 
     def terminate_server(self):
         """
@@ -332,8 +380,20 @@ class ProcessMgr(ABC):
         """
 
         if self._server:
-            server_socket, _ = self._server
+            server_socket, host, port, socket_file = self._server
+            self.log.debug("Terminating server socket")
             server_socket.close()
+            try:
+                if socket_file:
+                    if os.path.exists(socket_file):
+                        self.log.debug("Removing socket file: %s", socket_file)
+                        os.remove(socket_file)
+                    else:
+                        self.log.debug("Socket file does not exist: %s", socket_file)
+                else:
+                    self.log.debug("No socket file to remove")
+            except Exception as e:
+                self.log.error(f"Error removing socket file: {e}")
             self._server = None
 
     def __del__(self):
@@ -345,3 +405,20 @@ class ProcessMgr(ABC):
         with contextlib.suppress(Exception):
             self.terminate_all_subprocesses()
             self.terminate_server()
+
+    @property
+    def read_output_thread(self):
+        """
+        Returns the thread responsible for reading output.
+        This method provides access to the thread that handles the reading of output
+        from a subprocess or another source. Default value is ``False``.
+
+        Returns:
+            threading.Thread: The thread responsible for reading output.
+        """
+
+        return self._read_output_thread
+
+    @read_output_thread.setter
+    def read_output_thread(self, value):
+        self._read_output_thread = value

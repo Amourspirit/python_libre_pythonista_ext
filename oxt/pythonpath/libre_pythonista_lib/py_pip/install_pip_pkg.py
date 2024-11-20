@@ -9,10 +9,14 @@ import urllib.request
 import urllib.error
 from pathlib import Path
 import json
-import uno
 
 from ooodev.loader import Lo
-from ooodev.dialog.msgbox import MessageBoxResultsEnum, MessageBoxType, MsgBox, MessageBoxButtonsEnum
+from ooodev.dialog.msgbox import (
+    MessageBoxResultsEnum,
+    MessageBoxType,
+    MsgBox,
+    MessageBoxButtonsEnum,
+)
 
 from ooodev.dialog.input import Input
 
@@ -30,7 +34,9 @@ if TYPE_CHECKING:
     from ....___lo_pip___.events.named_events import GenNamedEvent
     from ....___lo_pip___.events.lo_events import LoEvents
     from ....___lo_pip___.events.args.event_args import EventArgs
-    from ....___lo_pip___.install.progress_window.progress_dialog_true import ProgressDialogTrue
+    from ....___lo_pip___.install.progress_window.progress_dialog_true import (
+        ProgressDialogTrue,
+    )
     from ....___lo_pip___.lo_util.target_path import TargetPath
     from ....___lo_pip___.install.progress import Progress
 else:
@@ -42,13 +48,14 @@ else:
     from ___lo_pip___.events.named_events import GenNamedEvent
     from ___lo_pip___.events.lo_events import LoEvents
     from ___lo_pip___.events.args.event_args import EventArgs
-    from ___lo_pip___.install.progress_window.progress_dialog_true import ProgressDialogTrue
+    from ___lo_pip___.install.progress_window.progress_dialog_true import (
+        ProgressDialogTrue,
+    )
     from ___lo_pip___.lo_util.target_path import TargetPath
     from ___lo_pip___.install.progress import Progress
 
 
 class InstallPipPkg:
-
     def __init__(self) -> None:
         self._log = OxtLogger(log_name=self.__class__.__name__)
         self._ctx = Lo.get_context()
@@ -70,7 +77,9 @@ class InstallPipPkg:
         # By hooking the event we can add the rule to the list of rules that will be checked.
         # This will allow a dialog progress window to be displayed.
         self._fn_on_progress_rules_event = self._on_progress_rules_event
-        self._events.on(GenNamedEvent.PROGRESS_RULES_EVENT, self._fn_on_progress_rules_event)
+        self._events.on(
+            GenNamedEvent.PROGRESS_RULES_EVENT, self._fn_on_progress_rules_event
+        )
 
     def _on_progress_rules_event(self, args: Any, event_arg: EventArgs) -> None:
         # add the ProgressDialogTrue rule to the rules list to get the progress dialog to display
@@ -97,7 +106,9 @@ class InstallPipPkg:
             if self._is_valid_pypi_package(name):
                 self._log.debug(f"Package {name} is a valid PyPI package.")
             else:
-                msg = self._rr.resolve_string("msg12").format(name)  # Package {} not found
+                msg = self._rr.resolve_string("msg12").format(
+                    name
+                )  # Package {} not found
                 MsgBox.msgbox(
                     msg,
                     title=self._rr.resolve_string("msg01"),
@@ -111,7 +122,9 @@ class InstallPipPkg:
             self.log.debug(
                 f"InstallPipPkg.install() Starting install Thread. Package: {name}, Version: {ver}, Force install: {force_install}"
             )
-            thread = threading.Thread(target=self._install_pkg, args=(name, ver, force_install), daemon=True)
+            thread = threading.Thread(
+                target=self._install_pkg, args=(name, ver, force_install), daemon=True
+            )
             thread.start()
         else:
             self._log.debug("User cancelled the install package operation.")
@@ -137,7 +150,9 @@ class InstallPipPkg:
             return
         if pkg_name in self._config.no_pip_remove:
             MsgBox.msgbox(
-                self._rr.resolve_string("msg17").format(pkg_name),  # Package {} is protected and can not be removed
+                self._rr.resolve_string("msg17").format(
+                    pkg_name
+                ),  # Package {} is protected and can not be removed
                 title=self._rr.resolve_string("msg01"),
                 boxtype=MessageBoxType.ERRORBOX,
             )
@@ -145,7 +160,9 @@ class InstallPipPkg:
             return
         if not self.is_package_installed(pkg_name):
             MsgBox.msgbox(
-                self._rr.resolve_string("mbmsg010").format(pkg_name),  # Package {} is not installed
+                self._rr.resolve_string("mbmsg010").format(
+                    pkg_name
+                ),  # Package {} is not installed
                 title=self._rr.resolve_string("msg01"),  # Error
                 boxtype=MessageBoxType.ERRORBOX,
             )
@@ -153,14 +170,18 @@ class InstallPipPkg:
             return
         # display a message box ask the user to confirm the uninstall
         result = MsgBox.msgbox(
-            self._rr.resolve_string("msg18").format(pkg_name),  # Are your sure you want to remove {}
+            self._rr.resolve_string("msg18").format(
+                pkg_name
+            ),  # Are your sure you want to remove {}
             title=self._rr.resolve_string("title14"),  # Confirm
             boxtype=MessageBoxType.QUERYBOX,
             buttons=MessageBoxButtonsEnum.BUTTONS_YES_NO,
         )
         if result == MessageBoxResultsEnum.YES.value:
             # Run _un_install_pkg in a separate thread
-            thread = threading.Thread(target=self._un_install_pkg, args=(pkg_name,), daemon=True)
+            thread = threading.Thread(
+                target=self._un_install_pkg, args=(pkg_name,), daemon=True
+            )
             thread.start()
 
     def is_package_installed(self, pkg: str) -> bool:
@@ -185,11 +206,15 @@ class InstallPipPkg:
                 )
             else:
                 version_specifier = ""
-                self._log.debug(f"_parse_pip_install_string() Package name: {package_name}, No version specifier)")
+                self._log.debug(
+                    f"_parse_pip_install_string() Package name: {package_name}, No version specifier)"
+                )
             result = package_name, version_specifier
         else:
             result = pip_string, ""
-            self._log.debug(f"_parse_pip_install_string() Package name: {result[0]}, No version specifier")
+            self._log.debug(
+                f"_parse_pip_install_string() Package name: {result[0]}, No version specifier"
+            )
         return result
 
     def _is_valid_pypi_package(self, pkg: str) -> bool:
@@ -227,14 +252,18 @@ class InstallPipPkg:
                 )
                 self._post_install()
                 MsgBox.msgbox(
-                    self._rr.resolve_string("msg13").format(pkg),  # Package {} installed successfully
+                    self._rr.resolve_string("msg13").format(
+                        pkg
+                    ),  # Package {} installed successfully
                     title=self._rr.resolve_string("title02"),
                     boxtype=MessageBoxType.INFOBOX,
                 )
                 self._log.info(f"Package {pkg} installed successfully.")
             else:
                 MsgBox.msgbox(
-                    self._rr.resolve_string("msg14").format(pkg),  # Package {} installation failed
+                    self._rr.resolve_string("msg14").format(
+                        pkg
+                    ),  # Package {} installation failed
                     title=self._rr.resolve_string("msg01"),
                     boxtype=MessageBoxType.ERRORBOX,
                 )
@@ -251,14 +280,18 @@ class InstallPipPkg:
             with contextlib.suppress(Exception):
                 self._remove_changed(pkg, self._get_site_packages_dir(pkg))
             MsgBox.msgbox(
-                self._rr.resolve_string("msg15").format(pkg),  # Package {} removed successfully
+                self._rr.resolve_string("msg15").format(
+                    pkg
+                ),  # Package {} removed successfully
                 title=self._rr.resolve_string("title02"),
                 boxtype=MessageBoxType.INFOBOX,
             )
             self._log.info(f"Package {pkg} removed successfully.")
         else:
             MsgBox.msgbox(
-                self._rr.resolve_string("msg16").format(pkg),  # Package {} removal failed
+                self._rr.resolve_string("msg16").format(
+                    pkg
+                ),  # Package {} removal failed
                 title=self._rr.resolve_string("msg01"),
                 boxtype=MessageBoxType.ERRORBOX,
             )
@@ -318,11 +351,17 @@ class InstallPipPkg:
 
     def _get_file_names(self, path: str) -> List[str]:
         # only get the file names in the specified path
-        return [name for name in os.listdir(path) if os.path.isfile(os.path.join(path, name))]
+        return [
+            name
+            for name in os.listdir(path)
+            if os.path.isfile(os.path.join(path, name))
+        ]
 
     def _get_directory_names(self, path: str) -> List[str]:
         """Get the directory names in the specified path."""
-        return [name for name in os.listdir(path) if os.path.isdir(os.path.join(path, name))]
+        return [
+            name for name in os.listdir(path) if os.path.isdir(os.path.join(path, name))
+        ]
 
     def _save_changed(
         self,
@@ -349,7 +388,9 @@ class InstallPipPkg:
 
         try:
             json_str = _create_json()
-            json_path = os.path.join(pth, f"{self._config.lo_implementation_name}_{pkg}.json")
+            json_path = os.path.join(
+                pth, f"{self._config.lo_implementation_name}_{pkg}.json"
+            )
             with open(json_path, "w") as f:
                 f.write(json_str)
             self._log.info(f"New directories and files saved to {json_path}")
@@ -358,7 +399,9 @@ class InstallPipPkg:
 
     def _delete_json_file(self, path: str, pkg: str) -> None:
         """Delete the JSON file if it exists."""
-        json_path = os.path.join(path, f"{self._config.lo_implementation_name}_{pkg}.json")
+        json_path = os.path.join(
+            path, f"{self._config.lo_implementation_name}_{pkg}.json"
+        )
         if os.path.exists(json_path):
             os.remove(json_path)
             self._log.info(f"Deleted {json_path}")
@@ -366,7 +409,9 @@ class InstallPipPkg:
     # get the json data from the file if it exists
     def _get_json_data(self, path: str, pkg: str) -> Dict[str, Any]:
         """Get the JSON data from the file if it exists."""
-        json_path = os.path.join(path, f"{self._config.lo_implementation_name}_{pkg}.json")
+        json_path = os.path.join(
+            path, f"{self._config.lo_implementation_name}_{pkg}.json"
+        )
         if os.path.exists(json_path):
             with open(json_path, "r") as f:
                 self.log.debug(f"_get_json_data() Reading JSON file {json_path}")
@@ -376,7 +421,9 @@ class InstallPipPkg:
 
     def _remove_json_data(self, path: str, pkg: str) -> None:
         """Remove the JSON data if it exists."""
-        json_path = os.path.join(path, f"{self._config.lo_implementation_name}_{pkg}.json")
+        json_path = os.path.join(
+            path, f"{self._config.lo_implementation_name}_{pkg}.json"
+        )
         if os.path.exists(json_path):
             os.remove(json_path)
             self._log.info(f"Deleted {json_path}")
