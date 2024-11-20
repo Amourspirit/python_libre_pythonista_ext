@@ -1,8 +1,6 @@
 from __future__ import annotations
 from typing import Any, cast
 
-import uno
-
 from .dialog_base import DialogBase
 
 from com.sun.star.awt.MessageBoxType import MESSAGEBOX
@@ -37,7 +35,9 @@ class MessageDialog(DialogBase):
         title = str(self.args.get("title", ""))
         message = str(self.args.get("message", ""))
         toolkit = cast(XMessageBoxFactory, self.parent.getToolkit())
-        dialog = toolkit.createMessageBox(self.parent, box_type, buttons, title, message)
+        dialog = toolkit.createMessageBox(
+            self.parent, box_type, buttons, title, message
+        )
         n = dialog.execute()
         dialog.dispose()  # type: ignore
         return n

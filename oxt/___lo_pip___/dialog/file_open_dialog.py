@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, cast, Any
+from typing import TYPE_CHECKING, cast
 from .dialog_base import DialogBase
 
 from ..oxt_logger import OxtLogger
@@ -31,7 +31,9 @@ class FileOpenDialog(DialogBase):
         self._logger.debug("FileOpenDialog.__init__")
         self.args = kwargs
         try:
-            AvailableServiceNames = self.ctx.getServiceManager().getAvailableServiceNames()
+            AvailableServiceNames = (
+                self.ctx.getServiceManager().getAvailableServiceNames()
+            )
             if "com.sun.star.ui.dialogs.SystemFilePicker" in AvailableServiceNames:
                 self.file_picker_service = "com.sun.star.ui.dialogs.SystemFilePicker"
             elif "com.sun.star.ui.dialogs.GtkFilePicker" in AvailableServiceNames:
@@ -73,5 +75,7 @@ class FileOpenDialog(DialogBase):
             raise
 
     def _substitute_variables(self, uri):
-        path_sub = cast("PathSubstitution", self.create("com.sun.star.util.PathSubstitution"))
+        path_sub = cast(
+            "PathSubstitution", self.create("com.sun.star.util.PathSubstitution")
+        )
         return path_sub.substituteVariables(uri, True)

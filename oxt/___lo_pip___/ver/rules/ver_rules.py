@@ -1,11 +1,10 @@
 from __future__ import annotations
-from typing import Iterable, List, Type, Dict
+from typing import Iterable, List, Type
 from .ver_proto import VerProto
 from .carrot import Carrot
 from .equals import Equals
 from .greater import Greater
 from .greater_equal import GreaterEqual
-from .greater import Greater
 from .lesser_equal import LesserEqual
 from .lesser import Lesser
 from .not_equals import NotEquals
@@ -143,7 +142,9 @@ class VerRules:
 
         return is_valid
 
-    def get_installed_is_valid_by_rules(self, rules: Iterable[VerProto], check_version: str) -> bool:
+    def get_installed_is_valid_by_rules(
+        self, rules: Iterable[VerProto], check_version: str
+    ) -> bool:
         """
         Gets if the installed version is valid when compared to this rule.
 

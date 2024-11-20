@@ -1,15 +1,13 @@
 from __future__ import annotations
 from typing import Any, Tuple, Sequence, TYPE_CHECKING, cast
-import uno
 
 from .dialog_base import DialogBase
 from ..lo_util.resource_resolver import ResourceResolver
 
 from com.sun.star.awt.PosSize import POS, SIZE, POSSIZE  # type: ignore
-from com.sun.star.beans import PropertyValue  # struct
+from com.sun.star.beans import PropertyValue
 from com.sun.star.awt import XActionListener
 from com.sun.star.awt import XControl
-
 
 if TYPE_CHECKING:
     from com.sun.star.form.control import CommandButton  # service
@@ -78,7 +76,10 @@ class RuntimeDialogBase(DialogBase):
             return ()
         if len(prop_names) != len(prop_values):
             raise ValueError("prop_names and prop_values must have same length.")
-        return tuple(PropertyValue(Name=name, Value=value) for name, value in zip(prop_names, prop_values))
+        return tuple(
+            PropertyValue(Name=name, Value=value)
+            for name, value in zip(prop_names, prop_values)
+        )
 
     def create_dialog(
         self,
@@ -91,8 +92,13 @@ class RuntimeDialogBase(DialogBase):
         prop_values: Sequence[Any] | None = None,
     ):
         """Create base dialog."""
-        dialog = cast("UnoControlDialog", self.create("com.sun.star.awt.UnoControlDialog"))
-        dialog_model = cast("UnoControlDialogModel", self.create("com.sun.star.awt.UnoControlDialogModel"))
+        dialog = cast(
+            "UnoControlDialog", self.create("com.sun.star.awt.UnoControlDialog")
+        )
+        dialog_model = cast(
+            "UnoControlDialogModel",
+            self.create("com.sun.star.awt.UnoControlDialogModel"),
+        )
         dialog_model.ResourceResolver = ResourceResolver(self.ctx).resource_resolver  # type: ignore
         dialog.setModel(dialog_model)
         dialog.setVisible(False)
@@ -131,7 +137,10 @@ class RuntimeDialogBase(DialogBase):
         action: XActionListener | None = None,
     ):
         """Create and add new button."""
-        btn = cast("CommandButton", self.create_control(name, "Button", pos, size, prop_names, prop_values))
+        btn = cast(
+            "CommandButton",
+            self.create_control(name, "Button", pos, size, prop_names, prop_values),
+        )
         btn.setActionCommand(command)
         if action:
             btn.addActionListener(action)
@@ -157,7 +166,13 @@ class RuntimeDialogBase(DialogBase):
     ):
         """Create and add new tree."""
         self.create_control(
-            name, "com.sun.star.awt.tree.TreeControlModel", pos, size, prop_names, prop_values, full_name=True
+            name,
+            "com.sun.star.awt.tree.TreeControlModel",
+            pos,
+            size,
+            prop_names,
+            prop_values,
+            full_name=True,
         )
 
     def get(self, name: str) -> XControl:
