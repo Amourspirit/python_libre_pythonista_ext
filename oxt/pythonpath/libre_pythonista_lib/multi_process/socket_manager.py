@@ -63,15 +63,28 @@ class SocketManager:
         config = Config()
 
         host = "localhost"
+        sock_file = ""
+        sock_file_name = "librepythonista_edit.sock"
         if config.is_win:
             server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             server_socket.bind((host, 0))  # Bind to an available port
             _, port = server_socket.getsockname()  # host, port
             self._socket_file = ""
         else:
+            if config.is_flatpak:
+                # tmp = (
+                #     Path(os.environ.get("XDG_RUNTIME_DIR", "/tmp"))
+                #     / "librepythonista_tmp"
+                # )
+                home_dir = Path.home()
+                tmp = home_dir / ".librepythonista_tmp"
+                sock_file = f"~/.librepythonista_tmp/{sock_file_name}"
+                if not tmp.exists():
+                    tmp.mkdir()
+            else:
+                tmp = Path(tempfile.gettempdir())
             port = 0
-            tmp = Path(tempfile.gettempdir())
-            socket_path = tmp / "librepythonista_edit.sock"
+            socket_path = tmp / sock_file_name
             if socket_path.exists():
                 socket_path.unlink()
             self._socket_file = str(socket_path)
@@ -81,6 +94,11 @@ class SocketManager:
 
         server_socket.listen(1)
         server_socket.settimeout(self.socket_timeout_sec)  # Set a timeout of 10 seconds
+        if sock_file:
+            # sock_file is a string and needs to be expanded.
+            # The client will handle expanding the path.
+            return server_socket, host, port, sock_file
+
         return server_socket, host, port, self._socket_file
 
     def accept_client(

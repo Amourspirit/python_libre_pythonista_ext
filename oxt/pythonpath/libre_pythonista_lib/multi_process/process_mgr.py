@@ -8,6 +8,7 @@ import sys
 import contextlib
 from uuid import uuid4
 from abc import ABC, abstractmethod
+from pathlib import Path
 
 from ooodev.adapter.frame.terminate_events import TerminateEvents
 from ooodev.events.args.event_args import EventArgs
@@ -132,7 +133,24 @@ class ProcessMgr(ABC):
             entry_point = self.get_script_path()
 
             current_pythonpath = env.get("PYTHONPATH", "")
+            # if config.is_flatpak:
+            #     additional_paths = os.pathsep.join(
+            #         [
+            #             str(
+            #                 Path.home()
+            #                 / ".var/app/org.libreoffice.LibreOffice/sandbox/lib/python3.12/site-packages"
+            #             ),
+            #             os.pathsep.join(sys.path),
+            #         ]
+            #     )
+            #     env["PYTHONPATH"] = (
+            #         f"{additional_paths}{os.pathsep}{current_pythonpath}"
+            #         if current_pythonpath
+            #         else additional_paths
+            #     )
+            # else:
             additional_paths = os.pathsep.join(sys.path)
+
             env["PYTHONPATH"] = (
                 f"{current_pythonpath}{os.pathsep}{additional_paths}"
                 if current_pythonpath
@@ -155,51 +173,55 @@ class ProcessMgr(ABC):
 
             is_dbg = "debug" if self.log.is_debug else "no_debug"
 
-            # if config.is_flatpak:
-            #     p_args = [
-            #         "flatpak",
-            #         "run",
-            #         "--branch=stable",
-            #         "--arch=x86_64",
-            #         "com.github.amourspirit.librepythonista.shelledit",
-            #         "--process-id",
-            #         process_id,
-            #         "--port",
-            #         str(port),
-            #         "--debug",
-            #         is_dbg,
-            #     ]
-            #     if self.log.is_debug:
-            #         self.log.debug(f"Flatpak args: {p_args}")
-            #     process = subprocess.Popen(
-            #         p_args,
-            #         env=env,
-            #         stdout=subprocess.PIPE,
-            #         stderr=subprocess.PIPE,
-            #         text=True,
-            #         startupinfo=None,
-            #     )
-            # else:
-            p_args = [
-                str(config.python_path),
-                entry_point,
-                "--process-id",
-                process_id,
-                "--host",
-                host,
-                "--port",
-                str(port),
-                "--socket-path",
-                socket_file,
-                "--debug",
-                is_dbg,
-            ]
+            if config.is_flatpak:
+                p_args = [
+                    "/usr/bin/flatpak-spawn",
+                    "--host",
+                    "flatpak",
+                    "run",
+                    # "--branch=stable",
+                    # "--arch=x86_64",
+                    "--command=cell_edit",
+                    "com.github.amourspirit.librepythonista.PyEditor",
+                    "--process-id",
+                    process_id,
+                    # "--host",
+                    # host,
+                    # "--port",
+                    # str(port),
+                    "--socket-path",
+                    socket_file,  # may start with ~
+                    "--debug",
+                    is_dbg,
+                ]
+            else:
+                p_args = [
+                    str(config.python_path),
+                    entry_point,
+                    "--process-id",
+                    process_id,
+                    "--host",
+                    host,
+                    "--port",
+                    str(port),
+                    "--socket-path",
+                    socket_file,  # may start with ~
+                    "--debug",
+                    is_dbg,
+                ]
+            if config.is_flatpak:
+                p_args.append("--kind")
+                p_args.append("flatpak")
+            elif config.is_snap:
+                p_args.append("--kind")
+                p_args.append("snap")
+
             if self.log.is_debug:
                 self.log.debug(f"args: {p_args}")
 
             process = subprocess.Popen(
                 p_args,
-                env=env,
+                env=None if config.is_flatpak else env,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
@@ -385,6 +407,8 @@ class ProcessMgr(ABC):
             server_socket.close()
             try:
                 if socket_file:
+                    if socket_file.startswith("~"):
+                        socket_file = os.path.expanduser(socket_file)
                     if os.path.exists(socket_file):
                         self.log.debug("Removing socket file: %s", socket_file)
                         os.remove(socket_file)

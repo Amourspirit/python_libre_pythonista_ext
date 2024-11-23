@@ -27,7 +27,7 @@ lp_code_dir = "librepythonista" # The directory where the libre_pythonista code 
 [tool.oxt.config]
 auto_install_in_site_packages = true # https://tinyurl.com/ymeh4c9j#auto_install_in_site_packages
 build_dir = "build" # https://tinyurl.com/ymeh4c9j#build_dir
-dist_dir = "tmp_dist" # "dist" https://tinyurl.com/ymeh4c9j#dist_dir should be changed to someting like dist, tmp_dist is not included in git
+dist_dir = "tmp_dist" # "dist" https://tinyurl.com/ymeh4c9j#dist_dir should be changed to something like dist, tmp_dist is not included in git
 install_wheel = true # https://tinyurl.com/ymeh4c9j#install_wheel
 oxt_name = "LibrePythonista" # https://tinyurl.com/ymeh4c9j#oxt_name
 py_pkg_dir = "py_pkgs" # https://tinyurl.com/ymeh4c9j#py_pkg_dir
@@ -48,7 +48,7 @@ install_on_no_uninstall_permission = true # https://tinyurl.com/ymeh4c9j#install
 oo_types_uno = "" # https://tinyurl.com/ymeh4c9j#oo_types_uno
 oo_types_office = "" # https://tinyurl.com/ymeh4c9j#oo_types_office
 unload_after_install = false # https://tinyurl.com/ymeh4c9j#unload_after_install
-run_imports = ["ooodev", "verr", "sortedcontainers"] # These are required for LibrePythonista dispataches to work. https://tinyurl.com/ymeh4c9j#run_imports
+run_imports = ["ooodev", "verr", "sortedcontainers"] # These are required for LibrePythonista dispatches to work. https://tinyurl.com/ymeh4c9j#run_imports
 run_imports2 = ["pandas", "numpy", "matplotlib"] # second level imports. These are required for LibrePythonista to work
 run_imports_linux = [] # https://tinyurl.com/ymeh4c9j#run_imports_linux
 run_imports_macos = [] # https://tinyurl.com/ymeh4c9j#run_imports_macos
@@ -132,7 +132,7 @@ debugpy = ">=1.8"
 # cefpython3=">=66.1"
 # pywebview = ">=5"
 # jedi = ">=0.19"
-librepythonista-python-editor=">=0.1.6"
+librepythonista-python-editor=">=0.1.7"
 
 [tool.oxt.experimental.requirements_macos]
 # https://tinyurl.com/ymeh4c9j#tooloxtrequirements_macos
@@ -141,7 +141,7 @@ librepythonista-python-editor=">=0.1.6"
 # pyobjc = ">=10.3.1"
 # pywebview = ">=5"
 # jedi = ">=0.19"
-librepythonista-python-editor=">=0.1.6"
+librepythonista-python-editor=">=0.1.7"
 
 [tool.oxt.experimental.requirements_linux]
 # https://tinyurl.com/ymeh4c9j#tooloxtrequirements_linux
@@ -151,7 +151,7 @@ librepythonista-python-editor=">=0.1.6"
 # PySide2 = ">=5"
 # pywebview = ">=5"
 # jedi = ">=0.19"
-librepythonista-python-editor=">=0.1.6"
+librepythonista-python-editor=">=0.1.7"
 
 [tool.oxt.isolate]
 # https://tinyurl.com/ymeh4c9j#tooloxtisolate

@@ -316,6 +316,25 @@ class PyCellEditProcessMgr(ProcessMgr):
         """
 
         if action == "get_info":
+
+            def get_log_config() -> Dict[str, str]:
+                log_config = LoggerConfig()
+                info = log_config.to_dict()
+                if self._config.is_flatpak:
+                    self.log.debug("get_log_config() Flatpak detected")
+                    p = (
+                        Path.home()
+                        / ".librepythonista_tmp"
+                        / f"{self._config.lo_implementation_name}.log"
+                    )
+                    if not p.parent.exists():
+                        p.parent.mkdir()
+                    self.log.debug("Log File: %s", p)
+                    info["log_file"] = str(p)
+                else:
+                    self.log.debug("get_log_config() Not Flatpak")
+                return info
+
             # Get the resources for the given parameters
             key = "lp_editor_resources"
             if not self._gbl_cache[key]:
@@ -355,11 +374,11 @@ class PyCellEditProcessMgr(ProcessMgr):
                         "extension_version": self._config.extension_version,
                         "extension_display_name": self._config.extension_display_name,
                     },
+                    "log_config": get_log_config(),
                     "resources": cast(Dict[str, str], self._gbl_cache[key]),
                     "theme": {"is_doc_dark": self._calc_theme.is_document_dark()},
-                    "module_source_code": self._get_source_code(),
                     "window_config": wv_config.to_dict(),
-                    "log_config": LoggerConfig().to_dict(),
+                    "module_source_code": self._get_source_code(),
                 },
             }
         elif action == "validate_code":
