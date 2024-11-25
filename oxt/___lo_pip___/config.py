@@ -834,6 +834,24 @@ class Config(metaclass=Singleton):
         """
         return self._basic_config.oxt_name
 
+    @property
+    def flatpak_libre_pythonista_py_editor(self) -> str:
+        """
+        Gets the flatpak LibrePythonista python editor such as ``io.github.amourspirit.LibrePythonista_PyEditor``.
+
+        The value for this property can be set in pyproject.toml (tool.libre_pythonista.config.flatpak_libre_pythonista_py_editor)
+        """
+        return self._basic_config.flatpak_libre_pythonista_py_editor
+
+    @property
+    def flatpak_libre_pythonista_py_editor_cell_cmd(self) -> str:
+        """
+        Gets the flatpak LibrePythonista python editor cell command such as ``cell_edit``.
+
+        The value for this property can be set in pyproject.toml (tool.libre_pythonista.config.flatpak_libre_pythonista_py_editor_cell_cmd)
+        """
+        return self._basic_config.flatpak_libre_pythonista_py_editor_cell_cmd
+
     # region tool.libre_pythonista.config
     @property
     def calc_props_json_name(self) -> str:

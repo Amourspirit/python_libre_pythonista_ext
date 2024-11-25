@@ -295,6 +295,30 @@ class JsonConfig(metaclass=Singleton):
             )
 
         try:
+            self._flatpak_libre_pythonista_py_editor = cast(
+                str,
+                self._cfg["tool"]["libre_pythonista"]["config"][
+                    "flatpak_libre_pythonista_py_editor"
+                ],
+            )
+        except Exception:
+            self._flatpak_libre_pythonista_py_editor = (
+                "io.github.amourspirit.LibrePythonista_PyEditor"
+            )
+
+        try:
+            self._flatpak_libre_pythonista_py_editor_cell_cmd = cast(
+                str,
+                self._cfg["tool"]["libre_pythonista"]["config"][
+                    "flatpak_libre_pythonista_py_editor_cell_cmd"
+                ],
+            )
+        except Exception:
+            self._flatpak_libre_pythonista_py_editor_cell_cmd = "cell_edit"
+
+        # endregion tool.libre_pythonista.config
+
+        try:
             self._extension_version = cast(str, self._cfg["tool"]["poetry"]["version"])
         except Exception:
             self._extension_version = ""
@@ -330,7 +354,6 @@ class JsonConfig(metaclass=Singleton):
             )
         except Exception:
             self._lp_debug_port = 5679
-        # endregion tool.libre_pythonista.config
         self._validate()
         self._warnings()
 
@@ -416,6 +439,13 @@ class JsonConfig(metaclass=Singleton):
         json_config["py_script_sheet_ctl_click"] = self._py_script_sheet_ctl_click
         json_config["py_script_sheet_on_calculate"] = self._py_script_sheet_on_calculate
         json_config["no_pip_remove"] = self._no_pip_remove
+
+        json_config["flatpak_libre_pythonista_py_editor"] = (
+            self._flatpak_libre_pythonista_py_editor
+        )
+        json_config["flatpak_libre_pythonista_py_editor_cell_cmd"] = (
+            self._flatpak_libre_pythonista_py_editor_cell_cmd
+        )
         # endregion tool.libre_pythonista.config
 
         # save the file
@@ -524,6 +554,13 @@ class JsonConfig(metaclass=Singleton):
             self._extension_version.count(".") == 2
         ), "extension_version must contain two periods"
         assert isinstance(self._no_pip_remove, list), "no_pip_remove must be a list"
+
+        assert isinstance(
+            self._flatpak_libre_pythonista_py_editor, str
+        ), "flatpak_libre_pythonista_py_editor must be a string"
+        assert isinstance(
+            self._flatpak_libre_pythonista_py_editor_cell_cmd, str
+        ), "flatpak_libre_pythonista_py_editor_cell_cmd must be a string"
         # endregion tool.libre_pythonista.config
 
     def _warnings(self) -> None:

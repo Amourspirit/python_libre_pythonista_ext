@@ -66,6 +66,13 @@ class BasicConfig(metaclass=ConfigMeta):
         self._py_script_sheet_ctl_click = str(kwargs["py_script_sheet_ctl_click"])
         self._py_script_sheet_on_calculate = str(kwargs["py_script_sheet_on_calculate"])
         self._no_pip_remove = set(kwargs["no_pip_remove"])
+
+        self._flatpak_libre_pythonista_py_editor = str(
+            kwargs["flatpak_libre_pythonista_py_editor"]
+        )
+        self._flatpak_libre_pythonista_py_editor_cell_cmd = str(
+            kwargs["flatpak_libre_pythonista_py_editor_cell_cmd"]
+        )
         # endregion tool.libre_pythonista.config
 
         if "requirements" not in kwargs:
@@ -210,6 +217,24 @@ class BasicConfig(metaclass=ConfigMeta):
         The value for this property can be set in pyproject.toml (tool.poetry.version)
         """
         return self._extension_version
+
+    @property
+    def flatpak_libre_pythonista_py_editor(self) -> str:
+        """
+        Gets the flatpak LibrePythonista python editor such as ``io.github.amourspirit.LibrePythonista_PyEditor``.
+
+        The value for this property can be set in pyproject.toml (tool.libre_pythonista.config.flatpak_libre_pythonista_py_editor)
+        """
+        return self._flatpak_libre_pythonista_py_editor
+
+    @property
+    def flatpak_libre_pythonista_py_editor_cell_cmd(self) -> str:
+        """
+        Gets the flatpak LibrePythonista python editor cell command such as ``cell_edit``.
+
+        The value for this property can be set in pyproject.toml (tool.libre_pythonista.config.flatpak_libre_pythonista_py_editor_cell_cmd)
+        """
+        return self._flatpak_libre_pythonista_py_editor_cell_cmd
 
     @property
     def has_locals(self) -> bool:
