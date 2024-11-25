@@ -11,9 +11,11 @@ class DialogBase:
         self.ctx = ctx
         self.service_manager = cast(XMultiComponentFactory, ctx.getServiceManager())
 
-    def create(self, name: str, arguments: tuple | None = None):
+    def create(self, name: str, arguments: tuple | None = None) -> Any:
         """Create service instance."""
         if arguments:
-            return self.service_manager.createInstanceWithArgumentsAndContext(name, arguments, self.ctx)
+            return self.service_manager.createInstanceWithArgumentsAndContext(
+                name, arguments, self.ctx
+            )
         else:
             return self.service_manager.createInstanceWithContext(name, self.ctx)

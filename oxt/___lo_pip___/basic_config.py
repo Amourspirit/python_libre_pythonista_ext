@@ -52,6 +52,9 @@ class BasicConfig(metaclass=ConfigMeta):
         self._run_imports_macos = set(kwargs["run_imports_macos"])
         self._run_imports_win = set(kwargs["run_imports_win"])
         self._oxt_name = str(kwargs["oxt_name"])
+        self._require_install_name_match = bool(
+            kwargs.get("require_install_name_match", False)
+        )
 
         # region tool.libre_pythonista.config
         self._cell_cp_prefix = str(kwargs["cell_cp_prefix"])
@@ -384,6 +387,13 @@ class BasicConfig(metaclass=ConfigMeta):
         The value for this property can be set in pyproject.toml (tool.libre_pythonista.py_script_sheet_on_calculate)
         """
         return self._py_script_sheet_on_calculate
+
+    @property
+    def require_install_name_match(self) -> bool:
+        """
+        Gets the flag indicating if the package name must match the install name.
+        """
+        return self._require_install_name_match
 
     @property
     def requirements(self) -> Dict[str, str]:

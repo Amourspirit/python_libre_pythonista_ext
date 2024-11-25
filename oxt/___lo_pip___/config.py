@@ -98,6 +98,7 @@ class Config(metaclass=Singleton):
             self._package_location = Path(
                 self._extension_info.get_extension_loc(self.lo_identifier, True)
             ).resolve()
+            self._package_name = self._package_location.stem
             self._python_major_minor = self._get_python_major_minor()
 
             self._is_user_installed = False
@@ -639,6 +640,14 @@ class Config(metaclass=Singleton):
         return self._package_location
 
     @property
+    def package_name(self) -> str:
+        """
+        Gets the LibreOffice package name minus the ``.oxt`` extension.
+        This value is derived from the package location.
+        """
+        return self._package_name
+
+    @property
     def extension_info(self) -> ExtensionInfo:
         """
         Gets the LibreOffice extension info.
@@ -761,6 +770,13 @@ class Config(metaclass=Singleton):
         If this is set to ``True`` then CPython will be symlinked on Linux AppImage and Mac OS.
         """
         return self._basic_config.sym_link_cpython
+
+    @property
+    def require_install_name_match(self) -> bool:
+        """
+        Gets the flag indicating if the package name must match the install name.
+        """
+        return self._basic_config.require_install_name_match
 
     @property
     def run_imports(self) -> Set[str]:

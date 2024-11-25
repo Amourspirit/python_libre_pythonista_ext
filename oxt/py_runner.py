@@ -3,16 +3,19 @@ from __future__ import unicode_literals, annotations
 import contextlib
 from typing import TYPE_CHECKING, Any, cast, Tuple
 from pathlib import Path
-import uno
-import unohelper
 import sys
 import os
 import time
 import threading
 
-# os.environ["OOODEV_SKIP_AUTOLOAD"] = "1"
+import unohelper
+import uno
 
+# os.environ["OOODEV_SKIP_AUTOLOAD"] = "1"
+from com.sun.star.awt import WindowDescriptor
 from com.sun.star.task import XJob
+from com.sun.star.awt.WindowClass import SIMPLE
+from com.sun.star.awt.WindowAttribute import SHOW
 
 if TYPE_CHECKING:
     # just for design time
@@ -154,6 +157,27 @@ class ___lo_implementation_name___(unohelper.Base, XJob):
             f"{self._config.extension_display_name} version {self._config.extension_version} execute starting"
         )
         self._logger.debug("___lo_implementation_name___ executing")
+        if self._config.require_install_name_match:
+            if self._config.oxt_name != self._config.package_name:
+                msg = f"Oxt name: {self._config.oxt_name} does not match installed name: {self._config.package_name}. The extensions must be named {self._config.oxt_name}.oxt before installing. Rename extension to {self._config.oxt_name}.oxt and reinstall."
+                self._logger.error(msg)
+                try:
+                    msg = self.resource_resolver.resolve_string("msg22").format(
+                        self._config.oxt_name,
+                        self._config.package_name,
+                        self._config.oxt_name,
+                        self._config.oxt_name,
+                    )
+                    self._display_message(
+                        msg=msg,
+                        title=self.resource_resolver.resolve_string("msg01"),
+                        suppress_error=True,
+                    )
+                    # self._error_msg = self.resource_resolver.resolve_string("msg05")
+                except Exception as err:
+                    self._logger.error(err, exc_info=True)
+                return
+        # self._logger.debug("Arguments: %s", args)
         try:
             self._job_event_name = self._get_event_name(args)
         except Exception as err:
@@ -503,17 +527,12 @@ class ___lo_implementation_name___(unohelper.Base, XJob):
         self, msg: str, title: str = "Message", suppress_error: bool = False
     ) -> None:
         try:
-            from ___lo_pip___.dialog.message_dialog import MessageDialog  # type: ignore
-
-            ctx = uno.getComponentContext()
-
-            if tk := ctx.ServiceManager.createInstance("com.sun.star.awt.Toolkit"):  # type: ignore
-                top_win = tk.getTopWindow(0)
+            if TYPE_CHECKING:
+                from .___lo_pip___.dialog.message_dialog import MessageDialog  # type: ignore
             else:
-                top_win = None
-            msg_box = MessageDialog(
-                ctx=self.ctx, parent=top_win, message=msg, title=title
-            )  # type: ignore
+                from ___lo_pip___.dialog.message_dialog import MessageDialog  # type: ignore
+
+            msg_box = MessageDialog(ctx=self.ctx, parent=None, message=msg, title=title)  # type: ignore
             _ = msg_box.execute()
         except Exception as err:
             if not suppress_error:
@@ -741,47 +760,54 @@ class ___lo_implementation_name___(unohelper.Base, XJob):
 
     # endregion Isolate
 
+    # region Implementation
+
     # region Debug
 
     def _show_extra_debug_info(self):
-        self._logger.debug(f"Config Package Location: {self._config.package_location}")
-        self._logger.debug(f"Config Python Path: {self._config.python_path}")
-        self._logger.debug(f"Config Site Packages Path: {self._config.site_packages}")
+        self._logger.debug("Config Package Location: %s", self._config.package_location)
+        self._logger.debug("Config Package Name: %s", self._config.package_name)
+        self._logger.debug("Config Python Path: %s", self._config.python_path)
+        self._logger.debug("Config Site Packages Path: %s", self._config.site_packages)
         self._logger.debug(
-            f"Config Is User Installed: {self._config.is_user_installed}"
+            "Config Is User Installed: %s", self._config.is_user_installed
         )
         self._logger.debug(
-            f"Config Is Share Installed: {self._config.is_shared_installed}"
+            "Config Is Share Installed: %s", self._config.is_shared_installed
         )
         self._logger.debug(
-            f"Config Is Bundle Installed: {self._config.is_bundled_installed}"
-        )
-
-        self._logger.debug(f"Session - LibreOffice Share: {self._session.share}")
-        self._logger.debug(
-            f"Session - LibreOffice Share Python: {self._session.shared_py_scripts}"
-        )
-        self._logger.debug(
-            f"Session - LibreOffice Share Scripts: {self._session.shared_scripts}"
-        )
-        self._logger.debug(f"Session - LibreOffice Username: {self._session.user_name}")
-        self._logger.debug(
-            f"Session - LibreOffice User Profile: {self._session.user_profile}"
-        )
-        self._logger.debug(
-            f"Session - LibreOffice User Scripts: {self._session.user_scripts}"
+            "Config Is Bundle Installed: %s", self._config.is_bundled_installed
         )
 
-        self._logger.debug(f"Util.config - Module: {self._util.config('Module')}")
+        self._logger.debug("Session - LibreOffice Share: %s", self._session.share)
         self._logger.debug(
-            f"Util.config - UserConfig: {self._util.config('UserConfig')}"
-        )
-        self._logger.debug(f"Util.config - Config: {self._util.config('Config')}")
-        self._logger.debug(
-            f"Util.config - BasePathUserLayer: {self._util.config('BasePathUserLayer')}"
+            "Session - LibreOffice Share Python: %s", self._session.shared_py_scripts
         )
         self._logger.debug(
-            f"Util.config - BasePathShareLayer: {self._util.config('BasePathShareLayer')}"
+            "Session - LibreOffice Share Scripts: %s", self._session.shared_scripts
+        )
+        self._logger.debug(
+            "Session - LibreOffice Username: %s", self._session.user_name
+        )
+        self._logger.debug(
+            "Session - LibreOffice User Profile: %s", self._session.user_profile
+        )
+        self._logger.debug(
+            "Session - LibreOffice User Scripts: %s", self._session.user_scripts
+        )
+
+        self._logger.debug("Util.config - Module: %s", self._util.config("Module"))
+        self._logger.debug(
+            "Util.config - UserConfig: %s", self._util.config("UserConfig")
+        )
+        self._logger.debug("Util.config - Config: %s", self._util.config("Config"))
+        self._logger.debug(
+            "Util.config - BasePathUserLayer: %s",
+            self._util.config("BasePathUserLayer"),
+        )
+        self._logger.debug(
+            "Util.config - BasePathShareLayer: %s",
+            self._util.config("BasePathShareLayer"),
         )
 
     # endregion Debug
@@ -813,7 +839,6 @@ class ___lo_implementation_name___(unohelper.Base, XJob):
 
 # endregion XJob
 
-# region Implementation
 
 g_TypeTable = {}
 # python loader looks for a static g_ImplementationHelper variable

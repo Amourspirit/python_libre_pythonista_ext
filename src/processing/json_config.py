@@ -194,6 +194,13 @@ class JsonConfig(metaclass=Singleton):
         except Exception:
             self._log_indent = 0
 
+        try:
+            self._require_install_name_match = cast(
+                bool, self._cfg["tool"]["oxt"]["config"]["require_install_name_match"]
+            )
+        except Exception:
+            self._require_install_name_match = False
+
         # region tool.libre_pythonista.config
         try:
             self._cell_custom_prop_prefix = cast(
@@ -421,6 +428,7 @@ class JsonConfig(metaclass=Singleton):
         json_config["has_locals"] = self._config.has_locals
         json_config["libreoffice_debug_port"] = self._libreoffice_debug_port
         json_config["lp_debug_port"] = self._lp_debug_port
+        json_config["require_install_name_match"] = self._require_install_name_match
 
         # region tool.libre_pythonista.config
         json_config["cell_cp_prefix"] = self._cell_custom_prop_prefix
@@ -529,6 +537,9 @@ class JsonConfig(metaclass=Singleton):
             self._libreoffice_debug_port, int
         ), "libreoffice_debug_port must be a int"
         assert isinstance(self._lp_debug_port, int), "lp_debug_port must be a int"
+        assert isinstance(
+            self._require_install_name_match, bool
+        ), "require_install_name_match must be a bool"
         # region tool.libre_pythonista.config
         assert isinstance(
             self._cell_custom_prop_prefix, str
