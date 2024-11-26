@@ -12,6 +12,7 @@ from ..config import Config
 from ..ver.rules.ver_rules import VerRules
 from ..oxt_logger import OxtLogger
 from ..meta.singleton import Singleton
+from ..install.py_packages.packages import Packages
 
 
 class RequirementsCheck(metaclass=Singleton):
@@ -71,63 +72,23 @@ class RequirementsCheck(metaclass=Singleton):
         Returns:
             bool: ``True`` if requirements are installed; Otherwise, ``False``.
         """
-        result = all(
-            self._is_valid_version(name=name, ver=ver) == 0
-            for name, ver in self._config.requirements.items()
-        )
-        if not result:
-            self._logger.error("Requirements not met.")
+        try:
+            packages = Packages()
+            req_dic = self._config.requirements.copy()
+
+            # let packages override requirements
+            for pkg in packages.packages:
+                req_dic[pkg.name] = f"{pkg.restriction}{pkg.version}"
+
+            for name, ver in req_dic.items():
+                result = self._is_valid_version(name=name, ver=ver) == 0
+                if not result:
+                    self._logger.error(f"Requirements not met for {name} {ver}")
+                    return False
+
+        except Exception:
+            self._logger.exception("Error checking requirements.")
             return False
-        if self._config.is_linux:
-            result = all(
-                self._is_valid_version(name=name, ver=ver) == 0
-                for name, ver in self._config.requirements_linux.items()
-            )
-            if not result:
-                self._logger.error("Linux Requirements not met.")
-                return False
-
-            if self._config.lp_settings.experimental_editor:
-                result = all(
-                    self._is_valid_version(name=name, ver=ver) == 0
-                    for name, ver in self._config.experimental_requirements_linux.items()
-                )
-                if not result:
-                    self._logger.error("Linux Experimental Requirements not met.")
-                    return False
-
-        elif self._config.is_win:
-            result = all(
-                self._is_valid_version(name=name, ver=ver) == 0
-                for name, ver in self._config.requirements_win.items()
-            )
-            if not result:
-                self._logger.error("Windows Requirements not met.")
-                return False
-            if self._config.lp_settings.experimental_editor:
-                result = all(
-                    self._is_valid_version(name=name, ver=ver) == 0
-                    for name, ver in self._config.experimental_requirements_win.items()
-                )
-                if not result:
-                    self._logger.error("Windows Experimental Requirements not met.")
-                    return False
-        elif self._config.is_mac:
-            result = all(
-                self._is_valid_version(name=name, ver=ver) == 0
-                for name, ver in self._config.requirements_macos.items()
-            )
-            if not result:
-                self._logger.error("Mac Requirements not met.")
-                return False
-            if self._config.lp_settings.experimental_editor:
-                result = all(
-                    self._is_valid_version(name=name, ver=ver) == 0
-                    for name, ver in self._config.experimental_requirements_macos.items()
-                )
-                if not result:
-                    self._logger.error("MacOs Experimental Requirements not met.")
-                    return False
 
         self._logger.info("Requirements met.")
         return True

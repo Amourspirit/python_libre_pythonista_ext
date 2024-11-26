@@ -20,51 +20,6 @@ class JsonConfig(metaclass=Singleton):
         )
 
         try:
-            self._requirements_linux = cast(
-                Dict[str, str], self._cfg["tool"]["oxt"]["requirements_linux"]
-            )
-        except Exception:
-            self._requirements_linux = {}
-
-        try:
-            self._requirements_macos = cast(
-                Dict[str, str], self._cfg["tool"]["oxt"]["requirements_macos"]
-            )
-        except Exception:
-            self._requirements_macos = {}
-
-        try:
-            self._requirements_win = cast(
-                Dict[str, str], self._cfg["tool"]["oxt"]["requirements_win"]
-            )
-        except Exception:
-            self._requirements_win = {}
-
-        try:
-            self._experimental_requirements_linux = cast(
-                Dict[str, str],
-                self._cfg["tool"]["oxt"]["experimental"]["requirements_linux"],
-            )
-        except Exception:
-            self._experimental_requirements_linux = {}
-
-        try:
-            self._experimental_requirements_macos = cast(
-                Dict[str, str],
-                self._cfg["tool"]["oxt"]["experimental"]["requirements_macos"],
-            )
-        except Exception:
-            self._experimental_requirements_macos = {}
-
-        try:
-            self._experimental_requirements_win = cast(
-                Dict[str, str],
-                self._cfg["tool"]["oxt"]["experimental"]["requirements_win"],
-            )
-        except Exception:
-            self._experimental_requirements_win = {}
-
-        try:
             self._zip_preinstall_pure = cast(
                 bool, self._cfg["tool"]["oxt"]["config"]["zip_preinstall_pure"]
             )
@@ -361,6 +316,23 @@ class JsonConfig(metaclass=Singleton):
             )
         except Exception:
             self._lp_debug_port = 5679
+
+        # region Requirements Rule
+        # Access a specific table
+        try:
+            self._py_packages = cast(
+                List[Dict[str, str]], self._cfg["tool"]["oxt"]["py_packages"]
+            )
+        except Exception:
+            self._py_packages = []
+
+        try:
+            self._lp_editor_py_packages = cast(
+                List[Dict[str, str]], self._cfg["tool"]["oxt"]["lp_editor_py_packages"]
+            )
+        except Exception:
+            self._lp_editor_py_packages = []
+        # endregion Requirements Rule
         self._validate()
         self._warnings()
 
@@ -386,6 +358,7 @@ class JsonConfig(metaclass=Singleton):
         )
         json_config["extension_display_name"] = token.get_token_value("display_name")
         json_config["oxt_name"] = token.get_token_value("oxt_name")
+        json_config["lo_pip"] = token.get_token_value("lo_pip")
 
         json_config["zipped_preinstall_pure"] = self._zip_preinstall_pure
         json_config["auto_install_in_site_packages"] = (
@@ -413,18 +386,7 @@ class JsonConfig(metaclass=Singleton):
         json_config["log_indent"] = self._log_indent
         # update the requirements
         json_config["requirements"] = self._requirements
-        json_config["requirements_linux"] = self._requirements_linux
-        json_config["requirements_macos"] = self._requirements_macos
-        json_config["requirements_win"] = self._requirements_win
-        json_config["experimental_requirements_linux"] = (
-            self._experimental_requirements_linux
-        )
-        json_config["experimental_requirements_macos"] = (
-            self._experimental_requirements_macos
-        )
-        json_config["experimental_requirements_win"] = (
-            self._experimental_requirements_win
-        )
+
         json_config["has_locals"] = self._config.has_locals
         json_config["libreoffice_debug_port"] = self._libreoffice_debug_port
         json_config["lp_debug_port"] = self._lp_debug_port
@@ -456,6 +418,11 @@ class JsonConfig(metaclass=Singleton):
         )
         # endregion tool.libre_pythonista.config
 
+        # region Requirements Rule
+        json_config["py_packages"] = self._py_packages
+        json_config["lp_editor_py_packages"] = self._lp_editor_py_packages
+        # endregion Requirements Rule
+
         # save the file
         with open(json_config_path, "w", encoding="utf-8") as f:
             json.dump(json_config, f, indent=4)
@@ -470,24 +437,7 @@ class JsonConfig(metaclass=Singleton):
             self._run_imports_macos, list
         ), "run_imports_macos must be a list"
         assert isinstance(self._run_imports_win, list), "run_imports_win must be a list"
-        assert isinstance(
-            self._requirements_linux, dict
-        ), "requirements for linux must be a dict"
-        assert isinstance(
-            self._requirements_macos, dict
-        ), "requirements for mac os must be a dict"
-        assert isinstance(
-            self._requirements_win, dict
-        ), "requirements for windows must be a dict"
-        assert isinstance(
-            self._experimental_requirements_linux, dict
-        ), "experimental requirements for linux must be a dict"
-        assert isinstance(
-            self._experimental_requirements_macos, dict
-        ), "experimental requirements for mac os must be a dict"
-        assert isinstance(
-            self._experimental_requirements_win, dict
-        ), "experimental requirements for windows must be a dict"
+
         assert isinstance(
             self._zip_preinstall_pure, bool
         ), "zip_preinstall_pure must be a bool"

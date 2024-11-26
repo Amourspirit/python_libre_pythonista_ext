@@ -96,8 +96,6 @@ lp_experimental_editor=true
 [tool.oxt.requirements]
 # https://tinyurl.com/ymeh4c9j#tooloxtrequirements
 # https://python-poetry.org/docs/dependency-specification/
-typing-extensions = ">=4.12.2"
-verr = ">=1.1.2"
 pandas = ">=2"
 odfpy = ">=1.4"
 ooo-dev-tools = ">=0.50.0"
@@ -106,55 +104,21 @@ seaborn = ">=0.13"
 sortedcontainers = ">=2.4.0"
 debugpy = ">=1.8"
 
-[tool.oxt.requirements_linux]
-# https://tinyurl.com/ymeh4c9j#tooloxtrequirements_linux
-# any linux specific requirements
-# These requirements take precedence over the general requirements
-# qtpy = ">=2.4.1"
-# PySide2 = ">=5"
-# pywebview = ">=5"
+[[tool.oxt.py_packages]]
+# https://tinyurl.com/ymeh4c9j#tooloxtpy_packages
+name="typing-extensions"
+version="4.12.2"
 
-[tool.oxt.requirements_macos]
-# https://tinyurl.com/ymeh4c9j#tooloxtrequirements_macos
-# any macos specific requirements
-# These requirements take precedence over the general requirements
-# pyobjc = ">=10.3.1"
-# pywebview = ">=5"
+[[tool.oxt.py_packages]]
+name="verr"
+version="1.1.2"
 
-[tool.oxt.requirements_win]
-# https://tinyurl.com/ymeh4c9j#tooloxtrequirements_win
-# any windows specific requirements
-# These requirements take precedence over the general requirements
-# cefpython3=">=66.1"
-# pywebview = ">=5"
+[[tool.oxt.lp_editor_py_packages]]
+name="librepythonista-python-editor"
+version="0.1.7"
+platforms=["all"]
+ignore_platforms=["flatpak", "snap"]
 
-[tool.oxt.experimental.requirements_win]
-# https://tinyurl.com/ymeh4c9j#tooloxtrequirements_win
-# any windows specific requirements
-# These requirements take precedence over the general requirements
-# cefpython3=">=66.1"
-# pywebview = ">=5"
-# jedi = ">=0.19"
-librepythonista-python-editor=">=0.1.7"
-
-[tool.oxt.experimental.requirements_macos]
-# https://tinyurl.com/ymeh4c9j#tooloxtrequirements_macos
-# any macos specific requirements
-# These requirements take precedence over the general requirements
-# pyobjc = ">=10.3.1"
-# pywebview = ">=5"
-# jedi = ">=0.19"
-librepythonista-python-editor=">=0.1.7"
-
-[tool.oxt.experimental.requirements_linux]
-# https://tinyurl.com/ymeh4c9j#tooloxtrequirements_linux
-# any linux specific requirements
-# These requirements take precedence over the general requirements
-# qtpy = ">=2.4.1"
-# PySide2 = ">=5"
-# pywebview = ">=5"
-# jedi = ">=0.19"
-librepythonista-python-editor=">=0.1.7"
 
 [tool.oxt.isolate]
 # https://tinyurl.com/ymeh4c9j#tooloxtisolate
@@ -219,13 +183,6 @@ oooscript = "^1.1.3"
 lxml = "^4.9.3"
 sortedcontainers-stubs = "^2.4.2"
 debuggy = "^3.0.1"
-# pyobjc = [{version = ">=10.3.1", markers = "sys_platform == 'darwin'"}]
-# pywebview = [
-#     {extras = ["qt"], version = "^5.3.2", markers = "sys_platform != 'win32'"},
-# 	{extras = ["cef"], version = "^5.3.2", markers = "sys_platform == 'win32'"},
-#     {version = "^5.3.2", markers = "sys_platform == 'darwin'"},
-# ]
-# jedi = "^0.19.1"
 
 [tool.poetry.group.linux.dependencies]
 pandas = ">=2.0.3"

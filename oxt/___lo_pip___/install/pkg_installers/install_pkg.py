@@ -17,8 +17,9 @@ from ...lo_util.resource_resolver import ResourceResolver
 from ...lo_util.target_path import TargetPath
 from ...oxt_logger import OxtLogger
 from ...ver.rules.ver_rules import VerRules, VerProto
-from ..download import Download
 from ..progress import Progress
+from ..download import Download
+from ..py_packages.packages import Packages
 
 
 # https://docs.python.org/3.8/library/importlib.metadata.html#module-importlib.metadata
@@ -394,38 +395,43 @@ class InstallPkg:
         self._logger.info("Installing packages…")
 
         if req is None:
+            packages = Packages()
+
             req = self._config.requirements.copy()
+            req.update(packages.to_dict())
+
             self._logger.debug(
                 "Using experimental editor: %s",
                 self._config.lp_settings.experimental_editor,
             )
-            if self._config.is_linux:
-                req.update(self._config.requirements_linux)
-                if self._config.lp_settings.experimental_editor:
-                    if self._logger.is_debug:
-                        self._logger.debug(
-                            "Adding experimental requirements for linux: %s",
-                            self.config.experimental_requirements_linux,
-                        )
-                    req.update(self._config.experimental_requirements_linux)
-            if self._config.is_win:
-                req.update(self._config.requirements_win)
-                if self._config.lp_settings.experimental_editor:
-                    if self._logger.is_debug:
-                        self._logger.debug(
-                            "Adding experimental requirements for windows: %s",
-                            self.config.experimental_requirements_win,
-                        )
-                    req.update(self._config.experimental_requirements_win)
-            if self._config.is_mac:
-                req.update(self._config.requirements_macos)
-                if self._config.lp_settings.experimental_editor:
-                    if self._logger.is_debug:
-                        self._logger.debug(
-                            "Adding experimental requirements for macos: %s",
-                            self.config.experimental_requirements_macos,
-                        )
-                    req.update(self._config.experimental_requirements_macos)
+
+            # if self._config.is_linux:
+            #     req.update(self._config.requirements_linux)
+            #     if self._config.lp_settings.experimental_editor:
+            #         if self._logger.is_debug:
+            #             self._logger.debug(
+            #                 "Adding experimental requirements for linux: %s",
+            #                 self.config.experimental_requirements_linux,
+            #             )
+            #         req.update(self._config.experimental_requirements_linux)
+            # if self._config.is_win:
+            #     req.update(self._config.requirements_win)
+            #     if self._config.lp_settings.experimental_editor:
+            #         if self._logger.is_debug:
+            #             self._logger.debug(
+            #                 "Adding experimental requirements for windows: %s",
+            #                 self.config.experimental_requirements_win,
+            #             )
+            #         req.update(self._config.experimental_requirements_win)
+            # if self._config.is_mac:
+            #     req.update(self._config.requirements_macos)
+            #     if self._config.lp_settings.experimental_editor:
+            #         if self._logger.is_debug:
+            #             self._logger.debug(
+            #                 "Adding experimental requirements for macos: %s",
+            #                 self.config.experimental_requirements_macos,
+            #             )
+            #         req.update(self._config.experimental_requirements_macos)
         else:
             self._logger.debug("Using requirements from parameter.")
 

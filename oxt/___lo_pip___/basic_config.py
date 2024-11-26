@@ -22,6 +22,7 @@ class BasicConfig(metaclass=ConfigMeta):
     def __init__(self, **kwargs) -> None:
         self._author_names = cast(List[str], kwargs.get("author_names", []))
         self._py_pkg_dir = str(kwargs["py_pkg_dir"])
+        self._lo_pip_dir = str(kwargs["lo_pip"])
         self._lo_identifier = str(kwargs["lo_identifier"])
         self._lo_implementation_name = str(kwargs["lo_implementation_name"])
         self._zipped_preinstall_pure = bool(kwargs["zipped_preinstall_pure"])
@@ -83,33 +84,6 @@ class BasicConfig(metaclass=ConfigMeta):
         self._requirements: Dict[str, str] = dict(**kwargs["requirements"])
         if "requirements_linux" not in kwargs:
             kwargs["requirements_linux"] = {}
-        self._requirements_linux: Dict[str, str] = dict(**kwargs["requirements_linux"])
-
-        if "requirements_macos" not in kwargs:
-            kwargs["requirements_macos"] = {}
-        self._requirements_macos: Dict[str, str] = dict(**kwargs["requirements_macos"])
-
-        if "requirements_win" not in kwargs:
-            kwargs["requirements_win"] = {}
-        self._requirements_win: Dict[str, str] = dict(**kwargs["requirements_win"])
-
-        if "experimental_requirements_linux" not in kwargs:
-            kwargs["experimental_requirements_linux"] = {}
-        self._experimental_requirements_linux: Dict[str, str] = dict(
-            **kwargs["experimental_requirements_linux"]
-        )
-
-        if "experimental_requirements_macos" not in kwargs:
-            kwargs["experimental_requirements_macos"] = {}
-        self._experimental_requirements_macos: Dict[str, str] = dict(
-            **kwargs["experimental_requirements_macos"]
-        )
-
-        if "experimental_requirements_win" not in kwargs:
-            kwargs["experimental_requirements_win"] = {}
-        self._experimental_requirements_win: Dict[str, str] = dict(
-            **kwargs["experimental_requirements_win"]
-        )
 
         self._libreoffice_debug_port = int(kwargs.get("libreoffice_debug_port", 0))
         self._lp_debug_port = int(kwargs.get("lp_debug_port", 0))
@@ -163,36 +137,6 @@ class BasicConfig(metaclass=ConfigMeta):
         If this is set to ``True`` then the dialog is owned by the LibreOffice desktop window.
         """
         return self._dialog_desktop_owned
-
-    @property
-    def experimental_requirements_linux(self) -> Dict[str, str]:
-        """
-        Gets the set of experimental requirements specific to Linux.
-        The value for this property can be set in pyproject.toml (tool.oxt.requirements_linux)
-        The key is the name of the package and the value is the version number.
-        Example: {"requests": ">=2.25.1"}
-        """
-        return self._experimental_requirements_linux
-
-    @property
-    def experimental_requirements_macos(self) -> Dict[str, str]:
-        """
-        Gets the set of experimental requirements specific to Mac OS.
-        The value for this property can be set in pyproject.toml (tool.oxt.requirements_macos)
-        The key is the name of the package and the value is the version number.
-        Example: {"requests": ">=2.25.1"}
-        """
-        return self._experimental_requirements_macos
-
-    @property
-    def experimental_requirements_win(self) -> Dict[str, str]:
-        """
-        Gets the set of experimental requirements specific to Windows.
-        The value for this property can be set in pyproject.toml (tool.oxt.requirements_win)
-        The key is the name of the package and the value is the version number.
-        Example: {"requests": ">=2.25.1"}
-        """
-        return self._experimental_requirements_win
 
     @property
     def extension_display_name(self) -> str:
@@ -308,6 +252,15 @@ class BasicConfig(metaclass=ConfigMeta):
         return self._log_indent
 
     @property
+    def lo_pip_dir(self) -> str:
+        """
+        Gets the Main Library directory name for this extension.
+
+        The value for this property can be set in pyproject.toml (tool.oxt.token.lo_pip)
+        """
+        return self._lo_pip_dir
+
+    @property
     def lp_code_dir(self) -> str:
         """
         Gets name of the directory where LibrePythonista code is stored.
@@ -406,36 +359,6 @@ class BasicConfig(metaclass=ConfigMeta):
         Example: {"requests": ">=2.25.1"}
         """
         return self._requirements
-
-    @property
-    def requirements_linux(self) -> Dict[str, str]:
-        """
-        Gets the set of requirements specific to Linux.
-        The value for this property can be set in pyproject.toml (tool.oxt.requirements_linux)
-        The key is the name of the package and the value is the version number.
-        Example: {"requests": ">=2.25.1"}
-        """
-        return self._requirements_linux
-
-    @property
-    def requirements_macos(self) -> Dict[str, str]:
-        """
-        Gets the set of requirements specific to Mac OS.
-        The value for this property can be set in pyproject.toml (tool.oxt.requirements_macos)
-        The key is the name of the package and the value is the version number.
-        Example: {"requests": ">=2.25.1"}
-        """
-        return self._requirements_macos
-
-    @property
-    def requirements_win(self) -> Dict[str, str]:
-        """
-        Gets the set of requirements specific to Windows.
-        The value for this property can be set in pyproject.toml (tool.oxt.requirements_win)
-        The key is the name of the package and the value is the version number.
-        Example: {"requests": ">=2.25.1"}
-        """
-        return self._requirements_win
 
     @property
     def resource_dir_name(self) -> str:

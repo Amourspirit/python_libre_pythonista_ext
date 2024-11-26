@@ -1,5 +1,4 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
 import subprocess
 import os
 import signal
@@ -21,7 +20,9 @@ class Progress:
     def start(self) -> None:
         """Start the progress indicator as a terminal window."""
         if self._progress_obj is None:
-            self._logger.debug("No terminal found. Progress indicator will not be shown.")
+            self._logger.debug(
+                "No terminal found. Progress indicator will not be shown."
+            )
             return
         self._progress_obj.start(msg=self._start_msg, title=self._title)
 

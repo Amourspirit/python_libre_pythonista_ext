@@ -12,10 +12,7 @@ import unohelper
 import uno
 
 # os.environ["OOODEV_SKIP_AUTOLOAD"] = "1"
-from com.sun.star.awt import WindowDescriptor
 from com.sun.star.task import XJob
-from com.sun.star.awt.WindowClass import SIMPLE
-from com.sun.star.awt.WindowAttribute import SHOW
 
 if TYPE_CHECKING:
     # just for design time
