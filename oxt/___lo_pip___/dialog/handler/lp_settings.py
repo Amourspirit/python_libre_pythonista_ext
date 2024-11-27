@@ -149,20 +149,58 @@ class SettingsDialogHandler(XContainerWindowEventHandler, unohelper.Base):
             "names": ("ExperimentalEditor",),
             "values": (self._use_experimental_editor,),  # type: ignore
         }
-        self._logger.debug("_save_data settings: %s", settings)
-        self._config_writer(settings)
         if self._has_options_changed():
             try:
-                title = self._resource_resolver.resolve_string("msg02")
-                msg = self._resource_resolver.resolve_string("msg03")
+                if self._config.is_flatpak and self._use_experimental_editor:
+                    if TYPE_CHECKING:
+                        from ...gen_util.flatpak_util import is_flatpak_app_installed
+                    else:
+                        from ___lo_pip___.gen_util.flatpak_util import (
+                            is_flatpak_app_installed,
+                        )
+
+                    fp_installed = is_flatpak_app_installed(
+                        "io.github.amourspirit.LibrePythonista_PyEditor", self._logger
+                    )
+                    if not fp_installed:
+                        self._show_flatpak_msg(window)
+                        self._logger.info(
+                            "Flatpak LibrePythonista-PyEditor not installed. Settings not updated."
+                        )
+                        return
+                title = self._resource_resolver.resolve_string("mbtitle015")
+                msg = self._resource_resolver.resolve_string("mbmsg015")
                 _ = MessageDialog(
                     self.ctx,
                     window.getPeer(),
                     title=title,
                     message=msg,
                 ).execute()
+
+                self._logger.debug("_save_data settings: %s", settings)
+                self._config_writer(settings)
             except Exception as err:
                 self._logger.error("_save_data: %s", err, exc_info=True)
+
+    def _show_flatpak_msg(self, window: UnoControlDialog):
+        title = self._resource_resolver.resolve_string("mbtitle015")
+        # msg = self._resource_resolver.resolve_string("msg04")
+        msg = self._resource_resolver.resolve_string("mbmsg016")
+
+        result = MessageDialog(
+            self.ctx,
+            window.getPeer(),
+            title=title,
+            message=msg,
+            buttons=3,  # Yes, No
+        ).execute()
+        if result == 2:
+            if TYPE_CHECKING:
+                from ...gen_util.flatpak_util import open_url_in_browser
+            else:
+                from ___lo_pip___.gen_util.flatpak_util import open_url_in_browser
+            url = self._config.flatpak_libre_pythonista_py_editor_install_url
+            open_url_in_browser(url, self._logger)
 
     def _load_data(self, window: UnoControlDialog, ev_name: str):
         # sourcery skip: extract-method

@@ -278,6 +278,17 @@ class JsonConfig(metaclass=Singleton):
         except Exception:
             self._flatpak_libre_pythonista_py_editor_cell_cmd = "cell_edit"
 
+        try:
+            self._flatpak_libre_pythonista_py_editor_install_url = cast(
+                str,
+                self._cfg["tool"]["libre_pythonista"]["config"][
+                    "flatpak_libre_pythonista_py_editor_install_url"
+                ],
+            )
+        except Exception:
+            self._flatpak_libre_pythonista_py_editor_install_url = (
+                "https://github.com/Amourspirit/LibrePythonista_PyEditor/wiki"
+            )
         # endregion tool.libre_pythonista.config
 
         try:
@@ -415,6 +426,9 @@ class JsonConfig(metaclass=Singleton):
         )
         json_config["flatpak_libre_pythonista_py_editor_cell_cmd"] = (
             self._flatpak_libre_pythonista_py_editor_cell_cmd
+        )
+        json_config["flatpak_libre_pythonista_py_editor_install_url"] = (
+            self._flatpak_libre_pythonista_py_editor_install_url
         )
         # endregion tool.libre_pythonista.config
 

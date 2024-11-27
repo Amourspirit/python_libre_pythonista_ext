@@ -809,6 +809,15 @@ class Config(metaclass=Singleton):
         return self._basic_config.flatpak_libre_pythonista_py_editor_cell_cmd
 
     @property
+    def flatpak_libre_pythonista_py_editor_install_url(self) -> str:
+        """
+        Gets the flatpak LibrePythonista python editor install instructions url.
+
+        The value for this property can be set in pyproject.toml (tool.libre_pythonista.config.flatpak_libre_pythonista_py_editor_install_url)
+        """
+        return self._basic_config.flatpak_libre_pythonista_py_editor_install_url
+
+    @property
     def lo_pip_dir(self) -> str:
         """
         Gets the Main Library directory name for this extension.

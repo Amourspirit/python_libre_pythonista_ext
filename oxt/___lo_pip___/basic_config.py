@@ -77,6 +77,9 @@ class BasicConfig(metaclass=ConfigMeta):
         self._flatpak_libre_pythonista_py_editor_cell_cmd = str(
             kwargs["flatpak_libre_pythonista_py_editor_cell_cmd"]
         )
+        self._flatpak_libre_pythonista_py_editor_install_url = str(
+            kwargs["flatpak_libre_pythonista_py_editor_install_url"]
+        )
         # endregion tool.libre_pythonista.config
 
         if "requirements" not in kwargs:
@@ -182,6 +185,15 @@ class BasicConfig(metaclass=ConfigMeta):
         The value for this property can be set in pyproject.toml (tool.libre_pythonista.config.flatpak_libre_pythonista_py_editor_cell_cmd)
         """
         return self._flatpak_libre_pythonista_py_editor_cell_cmd
+
+    @property
+    def flatpak_libre_pythonista_py_editor_install_url(self) -> str:
+        """
+        Gets the flatpak LibrePythonista python editor install instructions url.
+
+        The value for this property can be set in pyproject.toml (tool.libre_pythonista.config.flatpak_libre_pythonista_py_editor_install_url)
+        """
+        return self._flatpak_libre_pythonista_py_editor_install_url
 
     @property
     def has_locals(self) -> bool:
