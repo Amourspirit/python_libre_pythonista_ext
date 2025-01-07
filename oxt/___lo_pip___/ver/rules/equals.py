@@ -103,4 +103,4 @@ class Equals(VerRuleBase):
         Returns:
             bool: True if the installed version is valid, False otherwise.
         """
-        return self.get_version_is_valid(check_version) >= 0
+        return self.get_version_is_valid(check_version) == 0

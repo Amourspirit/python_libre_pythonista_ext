@@ -1,14 +1,16 @@
 from __future__ import annotations
 from typing import Iterable, List, Type
-from .ver_proto import VerProto
 from .carrot import Carrot
 from .equals import Equals
+from .equals_star import EqualsStar
 from .greater import Greater
 from .greater_equal import GreaterEqual
-from .lesser_equal import LesserEqual
 from .lesser import Lesser
+from .lesser_equal import LesserEqual
 from .not_equals import NotEquals
 from .tilde import Tilde
+from .tilde_eq import TildeEq
+from .ver_proto import VerProto
 from .wildcard import Wildcard
 
 # https://www.darius.page/pipdev/
@@ -68,12 +70,14 @@ class VerRules:
     def _register_known_rules(self):
         self._reg_rule(rule=Carrot)
         self._reg_rule(rule=Equals)
+        self._reg_rule(rule=EqualsStar)
         self._reg_rule(rule=Greater)
         self._reg_rule(rule=GreaterEqual)
         self._reg_rule(rule=Lesser)
         self._reg_rule(rule=LesserEqual)
         self._reg_rule(rule=NotEquals)
         self._reg_rule(rule=Tilde)
+        self._reg_rule(rule=TildeEq)
         self._reg_rule(rule=Wildcard)
 
     def split_and_strip(self, string: str) -> List[str]:
@@ -134,31 +138,22 @@ class VerRules:
         Returns:
             bool: True if the installed version is valid, False otherwise.
         """
-        # sourcery skip: class-extract-method
         rules = self.get_matched_rules(vstr)
-        is_valid = True
-        for rule in rules:
-            is_valid = is_valid and rule.get_installed_is_valid(check_version)
+        return self.get_installed_is_valid_by_rules(rules, check_version)
 
-        return is_valid
-
-    def get_installed_is_valid_by_rules(
-        self, rules: Iterable[VerProto], check_version: str
-    ) -> bool:
+    def get_installed_is_valid_by_rules(self, rules: Iterable[VerProto], check_version: str) -> bool:
         """
         Gets if the installed version is valid when compared to this rule.
 
         Args:
-            rules (List[VerProto]): List of rules to check
+            rules (Iterable[VerProto]): List of rules to check
             check_version (str): The installed version to check. Eg: ``1.2.3``
 
         Returns:
             bool: True if the installed version is valid, False otherwise.
         """
-        is_valid = True
-        for rule in rules:
-            is_valid = is_valid and rule.get_installed_is_valid(check_version)
-
-        return is_valid
+        if not rules:
+            return False
+        return all(rule.get_installed_is_valid(check_version) for rule in rules)
 
     # endregion Methods

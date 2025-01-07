@@ -36,10 +36,9 @@ def test_src_manager_simple(loader) -> None:
         from libre_pythonista_lib.code import py_source_mgr
         from libre_pythonista_lib.code import cell_cache
 
-    def on_cell(src: Any, event_args: EventArgs) -> None:
+    def on_cell(src: Any, event_args: EventArgs) -> None:  # noqa: ANN401
         ed = cast(DotDict, event_args.event_data)
         if ed.result is not None:
-
             doc = cast(CalcDoc, ed.doc)
             sheet = doc.sheets[ed.sheet_idx]
             address = (ed.col, ed.row)
@@ -51,7 +50,7 @@ def test_src_manager_simple(loader) -> None:
         sheet = doc.sheets[0]
         cell = sheet["A1"]
         cell.value = 1
-        cell_cache.CellCache.reset_instance()
+        cell_cache.CellCache.reset_instance(doc)
         mgr = py_source_mgr.PySourceManager(doc)
         mgr.subscribe_after_source_update(cb=on_cell)
         mgr.add_source("print('Hello World!')\nx = 22", cell=cell.cell_obj)
@@ -98,7 +97,7 @@ def test_src_manager_simple(loader) -> None:
             doc.close()
 
 
-def test_src_manager_across_down(loader, tmp_path) -> None:
+def test_src_manager_across_down(loader, tmp_path) -> None:  # noqa: ANN001
     """
     This test is writing rows and columns into the sheet.
     Each cell is a code cell that has a value of the previous cell + 1.
@@ -118,7 +117,7 @@ def test_src_manager_across_down(loader, tmp_path) -> None:
         from libre_pythonista_lib.code import py_source_mgr
         from libre_pythonista_lib.code import cell_cache
 
-    def on_cell(src: Any, event_args: EventArgs) -> None:
+    def on_cell(src: Any, event_args: EventArgs) -> None:  # noqa: ANN401
         ed = cast(DotDict, event_args.event_data)
         if ed.result is not None:
             doc = cast(CalcDoc, ed.doc)
@@ -131,7 +130,7 @@ def test_src_manager_across_down(loader, tmp_path) -> None:
         doc = CalcDoc.create_doc(loader=loader)
         sheet = doc.sheets[0]
         sheet_idx = sheet.sheet_index
-        cell_cache.CellCache.reset_instance()
+        cell_cache.CellCache.reset_instance(doc)
         mgr = py_source_mgr.PySourceManager(doc)
         mgr.subscribe_after_source_update(cb=on_cell)
 
@@ -194,7 +193,6 @@ def test_src_manager_across_down(loader, tmp_path) -> None:
 
 
 def test_src_manager_remove_cell_code(loader) -> None:
-
     if TYPE_CHECKING:
         from build.pythonpath.libre_pythonista_lib.code import py_source_mgr
         from build.pythonpath.libre_pythonista_lib.code import cell_cache
@@ -216,7 +214,7 @@ def test_src_manager_remove_cell_code(loader) -> None:
         sheet = doc.sheets[0]
         cell = sheet["A1"]
         cell.value = 1
-        cell_cache.CellCache.reset_instance()
+        cell_cache.CellCache.reset_instance(doc)
         mgr = py_source_mgr.PySourceManager(doc)
         mgr.subscribe_after_source_update(cb=on_cell)
 
@@ -283,7 +281,6 @@ def test_code_formula(loader) -> None:
     def on_cell(src: Any, event_args: EventArgs) -> None:
         ed = cast(DotDict, event_args.event_data)
         if ed.result is not None:
-
             doc = cast(CalcDoc, ed.doc)
             sheet = doc.sheets[ed.sheet_idx]
             address = (ed.col, ed.row)
@@ -300,7 +297,7 @@ def test_code_formula(loader) -> None:
         sheet = doc.sheets[0]
         cell = sheet["A1"]
         cell.value = 1
-        cell_cache.CellCache.reset_instance()
+        cell_cache.CellCache.reset_instance(doc)
         mgr = py_source_mgr.PySourceManager(doc)
         mgr.subscribe_after_source_update(cb=on_cell)
         mgr.add_source(get_formula(), cell=cell.cell_obj)

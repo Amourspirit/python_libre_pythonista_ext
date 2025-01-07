@@ -1,11 +1,22 @@
-[tool.poetry]
+[project]
 name = "LibrePythonista"
 version = "0.6.1"
 description = "Python For LibreOffice Calc"
-authors = [":Barry-Thomas-Paul: Moss <4193389+Amourspirit@users.noreply.github.com>"]
-license = "Apache"
 readme = "README.md"
-packages = [{ include = "src" }]
+requires-python = ">=3.8"
+license = {text="OSI Approved :: Apache Software License"}
+keywords = ["pip", "libreoffice","uno", "pyuno"]
+dependencies = [
+    "ooo-dev-tools>=0.50.0",
+    "oooenv>=0.2.4",
+    "pandas>=2",
+    "sortedcontainers>=2.4.0",
+    "toml>=0.10.2",
+    "typing-extensions>=4.12.2",
+]
+authors = [
+    {name = ":Barry-Thomas-Paul: Moss", email = "librepythonista.lifter091@passmail.net"}]
+
 
 # See: https://github.com/Amourspirit/python-libreoffice-pip/wiki/pyproject.toml
 [tool.libre_pythonista.config]
@@ -168,36 +179,27 @@ es = "Extensión para agregar administración de paquetes Python y Pip dentro de
 "3.12" = { url = "https://www.python.org/ftp/python/3.12.7/python-3.12.7-embed-amd64.zip", md5="4c0a5a44d4ca1d0bc76fe08ea8b76adc" }
 "3.13" = { url = "https://www.python.org/ftp/python/3.13.0/python-3.13.0rc3-embed-amd64.zip", md5="93d8329cd1c8d09f64c28191942c11ce" }
 
-[tool.poetry.dependencies]
-python = "^3.8"
-toml = "^0.10.2"
-typing-extensions = ">=4.12.2"
-ooo-dev-tools = ">=0.50.0"
-sortedcontainers = ">=2.4.0"
-oooenv = ">=0.2.4"
-
-[tool.poetry.group.dev.dependencies]
-types-scriptforge = ">=2.0.1"
-pytest = "^7.4.0"
-pytest-dotenv = "^0.5.2"
-black = "^24.8.0"
-oooscript = "^1.1.3"
-lxml = "^4.9.3"
-sortedcontainers-stubs = "^2.4.2"
-debuggy = "^3.0.1"
-
-[tool.poetry.group.linux.dependencies]
-pandas = ">=2.0.3"
-matplotlib = ">=3.7.5"
-
-[tool.poetry.group.windows.dependencies]
-pandas = ">=2"
-matplotlib = ">=3.7.5"
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
-# build-backend="setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "pytest-dotenv>=0.5.2",
+    "pytest>=8.3.4",
+    "oooscript>=2.1.1",
+    "lxml>=5.3.0",
+    "debuggy>=3.0.1",
+    "oooenv>=0.2.4",
+    "matplotlib>=3.7.5",
+    "pytest-mock>=3.14.0",
+]
+
+[tool.hatch.build]
+include = [
+    "build/**/*",
+]
 
 
 [tool.pylint.'MESSAGES CONTROL']
@@ -212,10 +214,58 @@ include = ["src"]
 reportMissingModuleSource = false
 
 [tool.ruff]
-extended-select = ["ANN", "C4", "N", "SIM", "TCH"]
+# https://docs.astral.sh/ruff/configuration/
+
 ignore = ["E501"]
 show-fixes = true
-target = "py38"
+target-version = "py38"
+line-length = 119
+
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    "__pypackages__",
+    "build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "site-packages",
+    ".venv",
+    "tmp",
+]
+src = ["otx", "src"]
+
+[tool.ruff.lint]
+select = ["ANN", "C4", "N", "SIM"]
+ignore = []
+
+[tool.ruff.format]
+exclude = ["tmp", ".devcontainer", ".githooks", ".github", ".hypothesis", ".idea", ".pytest_cache", ".venv", ".vscode", "cmds", "dist", "docs", "*.pyi"]
+
+# Like Black, use double quotes for strings.
+quote-style = "double"
+
+# Like Black, indent with spaces, rather than tabs.
+indent-style = "space"
+
+# Like Black, respect magic trailing commas.
+skip-magic-trailing-comma = false
+
+# Like Black, automatically detect the appropriate line ending.
+line-ending = "auto"
+
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

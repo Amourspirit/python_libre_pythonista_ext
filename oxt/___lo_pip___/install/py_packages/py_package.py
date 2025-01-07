@@ -11,9 +11,10 @@ class PyPackage:
         self._restriction: str = ">="
         self._platforms: Set[str] = {"all"}
         self._ignore_platforms: Set[str] = set()
+        self._python_versions: Set[str] = set()
 
     def __repr__(self) -> str:
-        return f"<{self.__class__.__name__} ({self.name} {self.restriction} {self.version} {self.platforms} {self.ignore_platforms})>"
+        return f"<{self.__class__.__name__} ({self.name} {self.restriction} {self.version} {self.platforms} {self.ignore_platforms} {self.python_versions})>"
 
     def is_platform(self, platform: str) -> bool:
         """
@@ -28,6 +29,9 @@ class PyPackage:
         Returns:
             bool: True if the operating system is supported or if the value is "all", otherwise False.
         """
+        if "all" in self.platforms:
+            return True
+
         if platform in self.ignore_platforms:
             return False
         return platform in self.platforms
@@ -53,8 +57,9 @@ class PyPackage:
             name (str): The name of the installation. Defaults to an empty string if not provided.
             version (str): The version of the installation. Defaults to an empty string if not provided.
             restriction (str, optional): The restriction for the installation. Defaults to ">=" if not provided.
-            platforms (list, optional): A list of platforms for the installation. Defaults a=to ["all"] if not provided.
+            platforms (list, optional): A list of platforms for the installation. Defaults to ["all"] if not provided.
             ignore_platforms (list, optional): A list of platforms to ignore for the installation. Defaults to an empty list if not provided.
+            python_versions (list, optional): A list of python versions for the installation. Defaults to an empty list if not provided.
 
         Returns:
             PyPackage: An instance of PyPackage initialized with the provided data.
@@ -66,6 +71,7 @@ class PyPackage:
         gi.restriction = kwargs.get("restriction", gi.restriction)
         gi.platforms = set(kwargs.get("platforms", gi.platforms))
         gi.ignore_platforms = set(kwargs.get("ignore_platforms", gi.ignore_platforms))
+        gi.python_versions = set(kwargs.get("python_versions", gi.python_versions))
         return gi
 
     def __hash__(self) -> int:
@@ -76,6 +82,7 @@ class PyPackage:
                 self.restriction,
                 frozenset(self.platforms),
                 frozenset(self.ignore_platforms),
+                frozenset(self.python_versions),
             )
         )
 
@@ -91,7 +98,12 @@ class PyPackage:
 
     @property
     def version(self) -> str:
-        """Gets/sets the version of the package such as ``1.0.0``."""
+        """
+        Gets/sets the version of the package such as ``1.0.0``.
+
+        Note:
+            For wildcard version, use ``*`` and set restriction to ``==``.
+        """
         return self._version
 
     @version.setter
@@ -100,7 +112,14 @@ class PyPackage:
 
     @property
     def restriction(self) -> str:
-        """Gets/sets the restriction such as ``>=``."""
+        """
+        Gets/sets the restriction such as ``>=``.
+
+        Acceptable values include ``==``, ``>=``, ``<=``, ``>``, ``<``, ``~=``, ``~``, ``^``.
+
+        Note:
+            For wildcard version, use ``==`` and set version to ``*``.
+        """
         return self._restriction
 
     @restriction.setter
@@ -140,6 +159,22 @@ class PyPackage:
     @ignore_platforms.setter
     def ignore_platforms(self, value: Set[str]) -> None:
         self._ignore_platforms = value
+
+    @property
+    def python_versions(self) -> Set[str]:
+        """
+        Gets the python versions for the installation rules.
+
+        A single version in the set can be ``==3.8``, ``>=3.9``, ``<3.10`` or ``<=3.2``.
+
+        Returns:
+            Set[str]: A set of python versions.
+        """
+        return self._python_versions
+
+    @python_versions.setter
+    def python_versions(self, value: Set[str]) -> None:
+        self._python_versions = value
 
     @property
     def pip_install(self) -> Dict[str, str]:

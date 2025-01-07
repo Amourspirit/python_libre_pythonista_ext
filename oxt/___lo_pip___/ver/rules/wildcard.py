@@ -39,18 +39,8 @@ class Wildcard(VerRuleBase):
 
     def get_is_match(self) -> bool:
         """Check if the version matches the given string."""
-        vl_en = len(self.vstr)
-        if vl_en == 0:
-            return False
-        if not self._starts_with_equal(self.vstr):
-            return False
-        if not self.vstr.endswith("*"):
-            return False
-        try:
-            versions = self.get_versions()
-            return len(versions) >= 1
-        except Exception:
-            return False
+        return self.vstr == "==*"
+        # all other wildcards are handled by the EqualsStar class
 
     def get_versions(self) -> List[ReqVersion]:
         """Get the list of versions."""

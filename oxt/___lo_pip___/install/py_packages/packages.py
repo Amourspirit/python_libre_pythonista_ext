@@ -1,12 +1,14 @@
 from __future__ import annotations
 from typing import List, Dict
-
+import sys
 
 from .py_package import PyPackage
 from .package_config import PackageConfig
 from .lp_editor_package_config import LpEditorPackageConfig
 from ...config import Config
 from ...oxt_logger import OxtLogger
+from ...ver.req_version import ReqVersion
+from ...ver.rules.ver_rules import VerRules
 
 
 class Packages:
@@ -19,42 +21,73 @@ class Packages:
         self._config = Config()
         self._log = OxtLogger(log_name=self.__class__.__name__)
         self._packages: List[PyPackage] = []
+        self._py_ver = self._get_py_ver()
         self._load_packages()
+
+    def _get_py_ver(self) -> str:
+        # This is here for easier testing. It can be mocked in tests.
+        return f"{sys.version_info[0]}.{sys.version_info[1]}.{sys.version_info[2]}"
 
     def _load_packages(self) -> None:
         """
         Load rules from config
         """
+        ver_rules = VerRules()
+
+        def check_version_constraints(rule: PyPackage) -> bool:
+            if not rule.python_versions:
+                return True
+            current_ver = ReqVersion(self._py_ver)
+            for py_ver in rule.python_versions:
+                constraint_ver = ReqVersion(py_ver)
+                if constraint_ver.prefix == ">":
+                    if current_ver >= constraint_ver:
+                        return False
+                elif constraint_ver.prefix == ">=":
+                    if current_ver < constraint_ver:
+                        return False
+                elif constraint_ver.prefix == "<":
+                    if current_ver >= constraint_ver:
+                        return False
+                elif constraint_ver.prefix == "<=":
+                    if current_ver > constraint_ver:
+                        return False
+                elif constraint_ver.prefix == "!=":
+                    if constraint_ver == current_ver:
+                        return False
+                elif constraint_ver.prefix == "==":
+                    if constraint_ver != current_ver:
+                        return False
+                else:
+                    raise ValueError(f"Unsupported operator: {constraint_ver.prefix}")
+            return True
 
         def is_valid(rule: PyPackage) -> bool:
-            if self._config.is_flatpak:
-                if rule.is_ignored_platform("flatpak"):
-                    self._log.debug("%s is ignored for flatpak", rule.name)
-                    return False
-                else:
-                    self._log.debug("%s is valid for flatpak", rule.name)
-            else:
-                self._log.debug("Not flatpak")
+            nonlocal ver_rules
 
-            if self._config.is_snap:
-                if rule.is_ignored_platform("snap"):
-                    self._log.debug("%s is ignored for snap}", rule.name)
-                    return False
-                else:
-                    self._log.debug("%s is valid for snap}", rule.name)
+            if check_version_constraints(rule):
+                self._log.debug("Python version %s for %s satisfies all constraints.", self._py_ver, rule.name)
             else:
-                self._log.debug("Not snap")
-
-            if rule.is_platform("all"):
-                return True
+                self._log.debug(
+                    self._log.debug(
+                        "Python version %s for %s does not satisfies all constraints.", self._py_ver, rule.name
+                    )
+                )
+                return False
 
             if self._config.is_win:
-                os_name = "win"
+                platform = "win"
             elif self._config.is_mac:
-                os_name = "mac"
+                platform = "mac"
+            elif self._config.is_flatpak:
+                platform = "flatpak"
+            elif self._config.is_snap:
+                platform = "snap"
             else:
-                os_name = "linux"
-            return rule.is_platform(os_name)
+                platform = "linux"
+            if rule.is_ignored_platform(platform):
+                return False
+            return rule.is_platform(platform)
 
         pkg_cfg = PackageConfig()
         for rule in pkg_cfg.py_packages:
@@ -102,14 +135,13 @@ class Packages:
         Args:
             pkg (PyPackage): Rule to register
         """
-        with self._log.indent(True):
-            if pkg in self._packages:
-                self._log.debug("add_pkg() Rule Already added: %s", pkg)
-                return
-            self._log.debug("add_pkg() Adding Rule %s", self.__class__.__name__, pkg)
-            self._add_pkg(pkg=pkg)
+        if pkg in self._packages:
+            self._log.debug("add_pkg() Rule Already added: %s", pkg)
+            return
+        self._log.debug("add_pkg() Adding Rule %s", pkg)
+        self._add_pkg(pkg=pkg)
 
-    def remove_package(self, pkg: PyPackage):
+    def remove_package(self, pkg: PyPackage) -> None:
         """
         Removes Package
 
@@ -119,16 +151,15 @@ class Packages:
         Raises:
             ValueError: If an error occurs
         """
-        with self._log.indent(True):
-            try:
-                self._packages.remove(pkg)
-                self._log.debug("remove_package() Removed rule: %s,", pkg)
-            except ValueError as e:
-                msg = f"{self.__class__.__name__}.unregister_rule() Unable to unregister rule."
-                self._log.error(msg)
-                raise ValueError(msg) from e
+        try:
+            self._packages.remove(pkg)
+            self._log.debug("remove_package() Removed rule: %s,", pkg)
+        except ValueError as e:
+            msg = f"{self.__class__.__name__}.unregister_rule() Unable to unregister rule."
+            self._log.error(msg)
+            raise ValueError(msg) from e
 
-    def _add_pkg(self, pkg: PyPackage):
+    def _add_pkg(self, pkg: PyPackage) -> None:
         self._packages.append(pkg)
 
     def __repr__(self) -> str:

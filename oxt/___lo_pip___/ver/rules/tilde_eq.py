@@ -11,9 +11,11 @@ from .ver_rule_base import VerRuleBase
 # https://peps.python.org/pep-0440/#compatible-release
 
 
-class Tilde(VerRuleBase):
+class TildeEq(VerRuleBase):
     """
     A class to represent a tilde version.
+
+    A compatible release clause consists of the compatible release operator ``~=`` and a version identifier.
 
     Tilde requirements specify a minimal version with some ability to update.
     If you specify a major, minor, and patch version or only a major and minor version, only patch-level changes are allowed.
@@ -23,23 +25,20 @@ class Tilde(VerRuleBase):
     def get_is_match(self) -> bool:
         """Check if the version matches the given string."""
         v_len = len(self.vstr)
-        if v_len < 2:
+        if v_len < 3:
             return False
-        if not self.vstr.startswith("~"):
+        if not self.vstr.startswith("~="):
             return False
-        if not self._starts_with_digits_dot_or_digit_only(self.vstr[1:].lstrip()):
+        if not self._starts_with_digits_dot(self.vstr[2:].lstrip()):
             return False
-
         try:
-            ver = self.vstr[1:].strip()
-            chk_ver = ReqVersion(f"=={ver}")
-            if chk_ver.base_version != chk_ver.public:
-                # if the version has a pre-release, post-release, dev-release, etc.
-                # This is not supported by the tilde operator.
-                return False
-
             versions = self.get_versions()
-            return len(versions) == 2
+            if not len(versions) == 2:
+                return False
+            v1 = versions[0]
+            if not v1.version_parts.has_minor:
+                return False
+            return True
         except Exception:
             return False
 
@@ -48,57 +47,27 @@ class Tilde(VerRuleBase):
         # Single digit version is not valid such as ~=1
         # All version that start with ~= will have a ending version that ends with post# where # is a number.
 
-        ver = self.vstr[1:].strip()
+        ver = self.vstr[2:].strip()
         if ver == "":
             return []
-
-        if not self._starts_with_digits_dot_or_digit_only(ver):
+        if not self._starts_with_digits_dot(ver):
             return []
 
         chk_ver = ReqVersion(f"=={ver}")
         vp = chk_ver.version_parts
 
         if vp.has_minor and vp.has_micro:
-            # ~1.2.3    >=1.2.3 <1.3.0
+            # ~=3.1.2    >=3.1.2 <3.2.0
             v1 = ReqVersion(f">={ver}")
             v2 = ReqVersion(f"<{v1.major}.{v1.minor + 1}.0")
             return [v1, v2]
 
-        if vp.has_minor:
-            # ~1.2      >=1.2.0 <1.3.0
-            v1 = ReqVersion(f">={chk_ver.major}.{chk_ver.minor}.0")
-            v2 = ReqVersion(f"<{v1.major}.{v1.minor + 1}.0")
-            return [v1, v2]
-
-        # ~1    >=1.0.0 <2.0.0
-        v1 = ReqVersion(f">={chk_ver.major}.0.0")
+        # Version string must have at least a minor version to be valid.
+        # ~=3.1a1: version 3.1a1 or later, but not version 4.0.0 or later.
+        # ~=2.2: version 2.2.0 or later, but not version 3.0.0 or later.
+        v1 = chk_ver.copy(prefix=">=")
         v2 = ReqVersion(f"<{v1.major + 1}.0.0")
         return [v1, v2]
-
-    # def _get_v2(self, v1: ReqVersion) -> ReqVersion:
-    #     """Get the second version."""
-    #     # second version will end with post# where # is a number.
-    #     # if version is 'a' or 'dev' or 'post' or 'rc' or 'pre' then the post
-    #     # number will be increased by one.
-    #     # Example:
-    #     #   ~=1.2.3a1 -> 1.2.4.post2
-    #     #   ~=1.2dev3 -> 1.3.1.post4
-    #     #   ~=1.2rc5 -> 1.3.1.post6
-
-    #     post_int = 1
-    #     if v1.pre is not None:
-    #         post_int = v1.pre[1] + 1
-    #     elif v1.post is not None:
-    #         post_int = v1.post + 1
-    #     elif v1.dev is not None:
-    #         post_int = v1.dev + 1
-
-    #     if v1.micro > 0:
-    #         vstr = f"<{v1.major}.{v1.minor + 1}"
-    #     elif v1.minor > 0:
-    #         vstr = f"<{v1.major}.{v1.minor + 1}"
-    #     else:
-    #         return ReqVersion(f"<{v1.major + 1}.0.0")
 
     def get_versions_str(self) -> str:
         """Get the list of versions as strings."""
