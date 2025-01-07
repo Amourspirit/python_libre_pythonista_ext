@@ -133,22 +133,7 @@ class ProcessMgr(ABC):
             entry_point = self.get_script_path()
 
             current_pythonpath = env.get("PYTHONPATH", "")
-            # if config.is_flatpak:
-            #     additional_paths = os.pathsep.join(
-            #         [
-            #             str(
-            #                 Path.home()
-            #                 / ".var/app/org.libreoffice.LibreOffice/sandbox/lib/python3.12/site-packages"
-            #             ),
-            #             os.pathsep.join(sys.path),
-            #         ]
-            #     )
-            #     env["PYTHONPATH"] = (
-            #         f"{additional_paths}{os.pathsep}{current_pythonpath}"
-            #         if current_pythonpath
-            #         else additional_paths
-            #     )
-            # else:
+
             additional_paths = os.pathsep.join(sys.path)
 
             env["PYTHONPATH"] = (
@@ -188,6 +173,23 @@ class ProcessMgr(ABC):
                     "--debug",
                     is_dbg,
                 ]
+            elif config.is_snap:
+                p_args = [
+                    # "/usr/bin/snap",
+                    "snapctl",
+                    "run",
+                    "librepythonista-pyeditor",
+                    "--process-id",
+                    process_id,
+                    # "--socket-path",
+                    # socket_file,  # may start with ~
+                    "--host",
+                    host,
+                    "--port",
+                    str(port),
+                    "--debug",
+                    is_dbg,
+                ]
             else:
                 p_args = [
                     str(config.python_path),
@@ -211,7 +213,8 @@ class ProcessMgr(ABC):
                 p_args.append("snap")
 
             if self.log.is_debug:
-                self.log.debug(f"args: {p_args}")
+                self.log.debug("args: %s", p_args)
+                self.log.debug("Command: %s", " ".join(p_args))
 
             process = subprocess.Popen(
                 p_args,

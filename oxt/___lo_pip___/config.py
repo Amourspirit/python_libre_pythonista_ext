@@ -900,6 +900,15 @@ class Config(metaclass=Singleton):
         """
         return self._basic_config.py_script_sheet_on_calculate
 
+    @property
+    def lp_py_cell_edit_sock_timeout(self) -> int:
+        """
+        Gets the LibrePythonista python cell edit socket timeout.
+
+        The value for this property can be set in pyproject.toml (tool.libre_pythonista.config.lp_py_cell_edit_sock_timeout)
+        """
+        return self._basic_config.lp_py_cell_edit_sock_timeout
+
     # endregion tool.libre_pythonista.config
     @property
     def lp_settings(self) -> LpSettings:

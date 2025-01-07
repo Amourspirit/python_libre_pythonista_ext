@@ -9,8 +9,6 @@ from pathlib import Path
 import os
 
 
-_SOCKET_TIMEOUT_SEC = 10
-
 if TYPE_CHECKING:
     from ....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
     from ....___lo_pip___.config import Config
@@ -45,8 +43,8 @@ class SocketManager:
             lock (threading.Lock): A lock to ensure thread safety.
             socket_timeout_sec (int): The timeout period for socket operations. Default is 10 seconds.
         """
-        global _SOCKET_TIMEOUT_SEC
-        self.socket_timeout_sec = _SOCKET_TIMEOUT_SEC
+        config = Config()
+        self.socket_timeout_sec = config.lp_py_cell_edit_sock_timeout
         self._socket_pool: Dict[str, socket.socket] = {}
         self._socket_file = ""
         self.log = OxtLogger(log_name=self.__class__.__name__)
@@ -61,21 +59,18 @@ class SocketManager:
             Tuple[socket.socket, str, int, str]: A tuple containing the server socket object, host, port number, socket_file it is bound to.
         """
         config = Config()
+        force_tcp = False  # for debugging, default is False
 
         host = "localhost"
         sock_file = ""
         sock_file_name = "librepythonista_edit.sock"
-        if config.is_win:
+        if config.is_win or config.is_snap or force_tcp:
             server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             server_socket.bind((host, 0))  # Bind to an available port
             _, port = server_socket.getsockname()  # host, port
             self._socket_file = ""
         else:
             if config.is_flatpak:
-                # tmp = (
-                #     Path(os.environ.get("XDG_RUNTIME_DIR", "/tmp"))
-                #     / "librepythonista_tmp"
-                # )
                 home_dir = Path.home()
                 tmp = home_dir / ".librepythonista_tmp"
                 sock_file = f"~/.librepythonista_tmp/{sock_file_name}"
@@ -121,11 +116,12 @@ class SocketManager:
             client_socket, _ = server_socket.accept()
             with self.lock:
                 self._socket_pool[process_id] = client_socket
-            self.log.debug(f"Client connected to subprocess {process_id}")
+            self.log.debug("Client connected to subprocess %s", process_id)
             return client_socket
         except socket.timeout:
             self.log.error(
-                f"Accept timed out. No client connected within {_SOCKET_TIMEOUT_SEC} seconds."
+                "Accept timed out. No client connected within %s seconds.",
+                self.socket_timeout_sec,
             )
             server_socket.close()
             raise
@@ -154,7 +150,8 @@ class SocketManager:
             try:
                 if process_id not in self._socket_pool:
                     self.log.error(
-                        f"send_message() Process {process_id} not found in socket pool"
+                        "send_message() Process %s not found in socket pool",
+                        process_id,
                     )
                     return
                 sock = self._socket_pool[process_id]
@@ -162,7 +159,9 @@ class SocketManager:
                 message_bytes = json_message.encode(encoding="utf-8")
                 message_length = struct.pack("!I", len(message_bytes))
                 self.log.debug(
-                    f"Sending message to client: {json_message} to process {process_id}"
+                    "Sending message to client: %s to process %s",
+                    json_message,
+                    process_id,
                 )
                 sock.sendall(message_length + message_bytes)
             except Exception:

@@ -26,6 +26,7 @@ lp_code_dir = "librepythonista" # The directory where the libre_pythonista code 
 flatpak_libre_pythonista_py_editor="io.github.amourspirit.LibrePythonista_PyEditor"
 flatpak_libre_pythonista_py_editor_cell_cmd="cell_edit"
 flatpak_libre_pythonista_py_editor_install_url="https://github.com/Amourspirit/LibrePythonista_PyEditor/wiki"
+lp_py_cell_edit_sock_timeout=30 # number of seconds, default 10, to wait for the socket to connect the the cell py editor.
 
 [tool.oxt.config]
 auto_install_in_site_packages = true # https://tinyurl.com/ymeh4c9j#auto_install_in_site_packages

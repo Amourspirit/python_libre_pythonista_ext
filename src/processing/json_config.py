@@ -289,6 +289,16 @@ class JsonConfig(metaclass=Singleton):
             self._flatpak_libre_pythonista_py_editor_install_url = (
                 "https://github.com/Amourspirit/LibrePythonista_PyEditor/wiki"
             )
+
+        try:
+            self._lp_py_cell_edit_sock_timeout = cast(
+                int,
+                self._cfg["tool"]["libre_pythonista"]["config"][
+                    "lp_py_cell_edit_sock_timeout"
+                ],
+            )
+        except Exception:
+            self._lp_py_cell_edit_sock_timeout = 10
         # endregion tool.libre_pythonista.config
 
         try:
@@ -430,6 +440,8 @@ class JsonConfig(metaclass=Singleton):
         json_config["flatpak_libre_pythonista_py_editor_install_url"] = (
             self._flatpak_libre_pythonista_py_editor_install_url
         )
+
+        json_config["lp_py_cell_edit_sock_timeout"] = self._lp_py_cell_edit_sock_timeout
         # endregion tool.libre_pythonista.config
 
         # region Requirements Rule
@@ -565,6 +577,10 @@ class JsonConfig(metaclass=Singleton):
         if lp_experimental_editor != "false":
             warnings.append(
                 f"'lp_experimental_editor' is set to '{lp_experimental_editor}'. This is for development. Set to 'false' for production."
+            )
+        if self._lp_py_cell_edit_sock_timeout > 10:
+            warnings.append(
+                f"'lp_py_cell_edit_sock_timeout' is set to '{self._lp_py_cell_edit_sock_timeout}'. Set to 10 for production."
             )
         if warnings:
             print("JsonConfig Warnings:")

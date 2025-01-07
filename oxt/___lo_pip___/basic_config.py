@@ -80,6 +80,7 @@ class BasicConfig(metaclass=ConfigMeta):
         self._flatpak_libre_pythonista_py_editor_install_url = str(
             kwargs["flatpak_libre_pythonista_py_editor_install_url"]
         )
+        self._lp_py_cell_edit_sock_timeout = int(kwargs["lp_py_cell_edit_sock_timeout"])
         # endregion tool.libre_pythonista.config
 
         if "requirements" not in kwargs:
@@ -235,6 +236,15 @@ class BasicConfig(metaclass=ConfigMeta):
         The value for this property can be set in pyproject.toml (tool.oxt.token.lo_identifier)
         """
         return self._lo_identifier
+
+    @property
+    def lp_py_cell_edit_sock_timeout(self) -> int:
+        """
+        Gets the LibrePythonista python cell edit socket timeout.
+
+        The value for this property can be set in pyproject.toml (tool.libre_pythonista.config.lp_py_cell_edit_sock_timeout)
+        """
+        return self._lp_py_cell_edit_sock_timeout
 
     @property
     def libreoffice_debug_port(self) -> int:
