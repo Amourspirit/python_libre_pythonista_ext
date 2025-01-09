@@ -20,7 +20,6 @@ from ...lo_util.resource_resolver import ResourceResolver
 from ...settings.settings import Settings
 from ...oxt_logger import OxtLogger
 from ..message_dialog import MessageDialog
-from ...install.py_packages.packages import Packages
 
 
 if TYPE_CHECKING:
@@ -111,7 +110,11 @@ class ButtonUninstallListener(XActionListener, unohelper.Base):
             success = True
             self._log.debug("_uninstall_items() uninstall_pkgs: %s", self.dialog_handler.uninstall_pkgs)
             for item in self.dialog_handler.uninstall_pkgs:
-                success = success and installer.uninstall(item, remove_tracking_file=True)
+                try:
+                    success = success and installer.uninstall(item, remove_tracking_file=True)
+                except Exception as e:
+                    self._log.error("_uninstall_items(): %s", e, exc_info=True)
+                    success = False
             self.dialog_handler.uninstall_pkgs.clear()
             return success
         except Exception as e:
@@ -253,6 +256,7 @@ class OptionsDialogUninstallHandler(DialogBase, XContainerWindowEventHandler, un
         return
 
     def _add_package_checks(self) -> None:
+        from ...install.py_packages.packages import Packages
         pkgs = Packages()
         all_pkgs = pkgs.get_all_packages(all_pkg=True)
         names = sorted({pkg.name for pkg in all_pkgs})

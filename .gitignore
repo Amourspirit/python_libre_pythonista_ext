@@ -218,3 +218,4 @@ user.env
 !.devcontainer/res/scripts
 tmp/
 tmp_dist/
+.python-version
