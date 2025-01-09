@@ -86,4 +86,9 @@
       <value>___lp_experimental_editor___</value>
     </prop>
   </node>
+  <node oor:name="Install">
+    <prop oor:name="NoInstallPackages" oor:type="oor:string-list">
+      <value></value>
+    </prop>
+  </node>
 </oor:component-data>

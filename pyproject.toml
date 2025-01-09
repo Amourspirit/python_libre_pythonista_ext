@@ -109,10 +109,8 @@ lp_experimental_editor=true
 [tool.oxt.requirements]
 # https://tinyurl.com/ymeh4c9j#tooloxtrequirements
 # https://python-poetry.org/docs/dependency-specification/
-pandas = ">=2"
 odfpy = ">=1.4"
 ooo-dev-tools = ">=0.50.0"
-matplotlib = ">=3.7.5"
 seaborn = ">=0.13"
 sortedcontainers = ">=2.4.0"
 debugpy = ">=1.8"
@@ -125,6 +123,44 @@ version="4.12.2"
 [[tool.oxt.py_packages]]
 name="verr"
 version="1.1.2"
+
+
+[[tool.oxt.py_packages]]
+# https://amour_spirit.pyscriptapps.com/version-runner/latest/
+name="pandas"
+version="2.0"
+restriction="~"
+platforms=["all"]
+python_versions=["<=3.9"]
+
+[[tool.oxt.py_packages]]
+name="pandas"
+version="2.2"
+restriction=">="
+platforms=["all"]
+python_versions=[">=3.9"]
+
+[[tool.oxt.py_packages]]
+name="matplotlib"
+version="3.7.0"
+restriction="~"
+platforms=["all"]
+python_versions=["<3.9"]
+
+[[tool.oxt.py_packages]]
+name="matplotlib"
+version="3.9.0"
+restriction="~"
+platforms=["all"]
+python_versions=[">=3.9", "<3.10"]
+
+[[tool.oxt.py_packages]]
+name="matplotlib"
+version="3.10.0"
+restriction=">="
+platforms=["all"]
+python_versions=[">=3.10"]
+
 
 [[tool.oxt.lp_editor_py_packages]]
 name="librepythonista-python-editor"

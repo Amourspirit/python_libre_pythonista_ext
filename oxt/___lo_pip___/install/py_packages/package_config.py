@@ -1,6 +1,6 @@
 from __future__ import annotations
 from pathlib import Path
-from typing import Dict, List
+from typing import Any, cast, Dict, List
 import json
 
 from ...basic_config import BasicConfig
@@ -18,7 +18,10 @@ class PackageConfig:
         with open(config_file, "r") as file:
             data = json.load(file)
 
-        self._py_packages = data.get(self._get_packages_name(), [])
+        pkg_name = self._get_packages_name()
+        self._py_packages = cast(List[Dict[str, Any]], data.get(pkg_name, []))
+        for pkg in self._py_packages:
+            pkg["pkg_type"] = pkg_name
 
     def _find_lo_pip_dir(self, lp_pip: str) -> Path:
         current_dir = Path(__file__).parent
@@ -33,7 +36,7 @@ class PackageConfig:
 
     # region Properties
     @property
-    def py_packages(self) -> List[Dict[str, str]]:
+    def py_packages(self) -> List[Dict[str, Any]]:
         return self._py_packages
 
     # endregion Properties

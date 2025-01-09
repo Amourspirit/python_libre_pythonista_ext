@@ -1,20 +1,37 @@
 from __future__ import annotations
-from typing import Dict, Set, Tuple
+from typing import Any, cast, Dict, Set, Tuple
 
 
 class PyPackage:
     """General INstallation rules for a package."""
 
-    def __init__(self) -> None:
-        self._name: str = ""
-        self._version: str = ""
-        self._restriction: str = ">="
-        self._platforms: Set[str] = {"all"}
-        self._ignore_platforms: Set[str] = set()
-        self._python_versions: Set[str] = set()
+    def __init__(self, **kwargs: Any) -> None:  # noqa: ANN401
+        """
+        Initialize the package with the given keyword arguments.
+        Args:
+            **kwargs: Arbitrary keyword arguments.
+                - name (str, optional): The name of the package.
+                - version (str, optional): The version of the package.
+                - restriction (str, optional): Any restrictions for the package.
+                - pkg_type (str, optional): The type of package such as ``lp_editor_py_packages`` or ``py_packages``.
+                - platforms (Iterable, optional): A set of platforms the package supports.
+                - ignore_platforms (Iterable, optional): A set of platforms to ignore.
+                - python_versions (Iterable, optional): A set of Python versions the package supports.
+        """
+
+        self._name = cast(str, kwargs.get("name", ""))
+        self._version = cast(str, kwargs.get("version", ""))
+        self._restriction = cast(str, kwargs.get("restriction", ">="))
+        self._pkg_type = cast(str, kwargs.get("pkg_type", ""))
+        self._platforms = set(kwargs.get("platforms", ["all"]))
+        self._ignore_platforms = set(kwargs.get("ignore_platforms", []))
+        self._python_versions = set(kwargs.get("python_versions", []))
 
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__} ({self.name} {self.restriction} {self.version} {self.platforms} {self.ignore_platforms} {self.python_versions})>"
+
+    def __copy__(self) -> PyPackage:
+        return self.copy()
 
     def is_platform(self, platform: str) -> bool:
         """
@@ -48,8 +65,42 @@ class PyPackage:
         """
         return platform in self.ignore_platforms
 
+    def to_dict(self) -> Dict[str, Any]:
+        """
+        Converts the current instance to a dictionary.
+
+        Returns:
+            Dict[str, str]: A dictionary containing the package information.
+        """
+        return {
+            "name": self.name,
+            "version": self.version,
+            "restriction": self.restriction,
+            "pkg_type": self._pkg_type,
+            "platforms": list(self.platforms),
+            "ignore_platforms": list(self.ignore_platforms),
+            "python_versions": list(self.python_versions),
+        }
+
+    def copy(self) -> PyPackage:
+        """
+        Creates a copy of the current instance.
+
+        Returns:
+            PyPackage: A copy of the current instance.
+        """
+        gi = PyPackage()
+        gi.name = self.name
+        gi.version = self.version
+        gi.restriction = self.restriction
+        gi.pkg_type = self.pkg_type
+        gi.platforms = self.platforms.copy()
+        gi.ignore_platforms = self.ignore_platforms.copy()
+        gi.python_versions = self.python_versions.copy()
+        return gi
+
     @classmethod
-    def from_dict(cls, **kwargs: str) -> PyPackage:
+    def from_dict(cls, **kwargs: Any) -> PyPackage:  # noqa: ANN401
         """
         Creates an instance of PyPackage from a dictionary.
 
@@ -66,9 +117,10 @@ class PyPackage:
         """
 
         gi = cls()
-        gi.name = kwargs.get("name", "")
-        gi.version = kwargs.get("version", "")
-        gi.restriction = kwargs.get("restriction", gi.restriction)
+        gi.name = cast(str, kwargs.get("name", ""))
+        gi.version = cast(str, kwargs.get("version", ""))
+        gi.restriction = cast(str, kwargs.get("restriction", gi.restriction))
+        gi.pkg_type = cast(str, kwargs.get("pkg_type", gi.pkg_type))
         gi.platforms = set(kwargs.get("platforms", gi.platforms))
         gi.ignore_platforms = set(kwargs.get("ignore_platforms", gi.ignore_platforms))
         gi.python_versions = set(kwargs.get("python_versions", gi.python_versions))
@@ -80,6 +132,7 @@ class PyPackage:
                 self.name,
                 self.version,
                 self.restriction,
+                self.pkg_type,
                 frozenset(self.platforms),
                 frozenset(self.ignore_platforms),
                 frozenset(self.python_versions),
@@ -195,5 +248,19 @@ class PyPackage:
             Tuple[str, str]: A tuple containing the name and version of the package.
         """
         return self.name, f"{self.restriction}{self.version}"
+
+    @property
+    def pkg_type(self) -> str:
+        """
+        Gets/sets the package type such as ``lp_editor_py_packages`` or ``py_packages``.
+
+        Returns:
+            str: The package type.
+        """
+        return self._pkg_type
+
+    @pkg_type.setter
+    def pkg_type(self, value: str) -> None:
+        self._pkg_type = value
 
     # endregion Properties

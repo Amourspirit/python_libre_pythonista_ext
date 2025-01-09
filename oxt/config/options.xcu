@@ -36,6 +36,26 @@
                         <value>0</value>
                     </prop>
                 </node>
+                <node oor:name="___lo_identifier___.uninstall" oor:op="fuse">
+                    <prop oor:name="Id">
+                        <value>___lo_identifier___</value>
+                    </prop>
+                    <prop oor:name="Label">
+                        <value xml:lang="en-US">Uninstall</value>
+                    </prop>
+                    <prop oor:name="OptionsPage">
+                        <value>%origin%/../dialogs/uninstall.xdl</value>
+                    </prop>
+                    <prop oor:name="EventHandlerService">
+                        <value>___lo_implementation_name___.OptUninstallPage</value>
+                    </prop>
+                    <prop oor:name="GroupId">
+                        <value></value>
+                    </prop>
+                    <prop oor:name="GroupIndex">
+                        <value>0</value>
+                    </prop>
+                </node>
                 <node oor:name="___lo_identifier___.logging" oor:op="fuse">
                     <prop oor:name="Id">
                         <value>___lo_identifier___</value>
@@ -56,26 +76,6 @@
                         <value>0</value>
                     </prop>
                 </node>
-                <!-- <node oor:name="___lo_identifier___.ex" oor:op="fuse">
-                <prop oor:name="Id">
-                    <value>___lo_identifier___</value>
-                </prop>
-                <prop oor:name="Label">
-                    <value xml:lang="en-US">Example</value>
-                </prop>
-                <prop oor:name="OptionsPage">
-                    <value>%origin%/../dialogs/example.xdl</value>
-                </prop>
-                <prop oor:name="EventHandlerService">
-                    <value>___lo_implementation_name___.Example</value>
-                </prop>
-                <prop oor:name="GroupId">
-                    <value></value>
-                </prop>
-                <prop oor:name="GroupIndex">
-                    <value>0</value>
-                </prop>
-            </node> -->
             </node>
         </node>
     </node>
