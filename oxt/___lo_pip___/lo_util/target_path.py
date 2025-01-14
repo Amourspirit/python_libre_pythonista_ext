@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import List
 import os
 import platform
 from pathlib import Path
@@ -30,6 +31,23 @@ class TargetPath(metaclass=Singleton):
         bits = "32" if is_32_bit else "64"
         target = install_dir / f"Python{self._config.python_major_minor.replace('.', '')}/{bits}/site-packages"
         return str(target)
+
+    def get_targets(self) -> List[str]:
+        """
+        Retrieves a list of target paths. Such as ``site-packages`` and an additional target path if applicable.
+
+        Returns:
+            List[str]: A list containing the primary site-packages path and,
+                if applicable, an additional target path.
+
+        Note:
+            Result ``[0]`` will always be ``site-packages`` path.
+        """
+
+        targets = [self._config.site_packages]
+        if self.has_other_target and self.target != self._config.site_packages:
+            targets.append(self.target)
+        return targets
 
     def ensure_exist(self) -> None:
         """Ensures the target path exists."""

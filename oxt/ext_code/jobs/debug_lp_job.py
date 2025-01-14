@@ -9,17 +9,12 @@ from com.sun.star.task import XJob
 
 
 def _conditions_met() -> bool:
+    result = False
     with contextlib.suppress(Exception):
         from ___lo_pip___.install.requirements_check import RequirementsCheck  # type: ignore
 
-        result = RequirementsCheck().run_imports_ready()
-        if not result:
-            return False
-    try:
-        __import__("debugpy")
-    except (ModuleNotFoundError, ImportError):
-        return False
-    return True
+        result = RequirementsCheck().run_imports_ready("debugpy")
+    return result
 
 
 if TYPE_CHECKING:

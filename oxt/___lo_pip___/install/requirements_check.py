@@ -7,6 +7,7 @@ No Internet needed.
 from __future__ import annotations
 import sys
 
+import importlib.util
 from importlib.metadata import PackageNotFoundError, version
 
 from ..config import Config
@@ -26,46 +27,69 @@ class RequirementsCheck(metaclass=Singleton):
         self._config = Config()
         self._ver_rules = VerRules()
 
-    def run_imports_ready(self) -> bool:
+    def run_imports_ready(self, *other_mods: str) -> bool:
         """
         Check if the run imports are ready.
 
         Returns:
             bool: ``True`` if all run imports are ready; Otherwise, ``False``.
         """
+        for oth in other_mods:
+            spec = importlib.util.find_spec(oth)
+            if spec is None:
+                self._log.warning("Import %s failed.", oth)
+                return False
+
         if not self._config.run_imports:
             return True
 
         for imp in self._config.run_imports:
-            try:
-                __import__(imp)
-            except (ModuleNotFoundError, ImportError):
-                self._log.warning(f"Import {imp} failed.")
+            spec = importlib.util.find_spec(imp)
+            if spec is None:
+                self._log.warning("Import %s failed.", imp)
                 return False
+            # try:
+            #     __import__(imp)
+            # except (ModuleNotFoundError, ImportError):
+            #     self._log.warning(f"Import {imp} failed.")
+            #     return False
 
         if self._config.is_linux:
             for imp in self._config.run_imports_linux:
-                try:
-                    __import__(imp)
-                except (ModuleNotFoundError, ImportError):
-                    self._log.warning(f"Linux Import {imp} failed.")
+                spec = importlib.util.find_spec(imp)
+                if spec is None:
+                    self._log.warning("Import %s failed.", imp)
                     return False
+                # try:
+                #     __import__(imp)
+                # except (ModuleNotFoundError, ImportError):
+                #     self._log.warning(f"Linux Import {imp} failed.")
+                #     return False
 
         if self._config.is_mac:
             for imp in self._config.run_imports_macos:
-                try:
-                    __import__(imp)
-                except (ModuleNotFoundError, ImportError):
-                    self._log.warning(f"Mac Import {imp} failed.")
+                spec = importlib.util.find_spec(imp)
+                if spec is None:
+                    self._log.warning("Import %s failed.", imp)
                     return False
+                # try:
+                #     __import__(imp)
+                # except (ModuleNotFoundError, ImportError):
+                #     self._log.warning(f"Mac Import {imp} failed.")
+                #     return False
 
         if self._config.is_win:
             for imp in self._config.run_imports_win:
-                try:
-                    __import__(imp)
-                except (ModuleNotFoundError, ImportError):
-                    self._log.warning(f"Windows Import {imp} failed.")
+                spec = importlib.util.find_spec(imp)
+                if spec is None:
+                    self._log.warning("Import %s failed.", imp)
                     return False
+                # try:
+                #     __import__(imp)
+                # except (ModuleNotFoundError, ImportError):
+                #     self._log.warning(f"Windows Import {imp} failed.")
+                #     return False
+        self._log.debug("All runtime imports are ready.")
         return True
 
     def check_requirements(self) -> bool:

@@ -266,6 +266,14 @@ class JsonConfig(metaclass=Singleton):
         except Exception:
             self._lp_debug_port = 5679
 
+        try:
+            self._cmd_clean_file_prefix = cast(
+                str,
+                self._cfg["tool"]["oxt"]["config"]["cmd_clean_file_prefix"],
+            )
+        except Exception:
+            self._cmd_clean_file_prefix = ""
+
         # region Requirements Rule
         # Access a specific table
         try:
@@ -330,6 +338,7 @@ class JsonConfig(metaclass=Singleton):
         json_config["libreoffice_debug_port"] = self._libreoffice_debug_port
         json_config["lp_debug_port"] = self._lp_debug_port
         json_config["require_install_name_match"] = self._require_install_name_match
+        json_config["cmd_clean_file_prefix"] = self._cmd_clean_file_prefix
 
         # region tool.libre_pythonista.config
         json_config["cell_cp_prefix"] = self._cell_custom_prop_prefix
@@ -388,9 +397,9 @@ class JsonConfig(metaclass=Singleton):
         assert isinstance(self._uninstall_on_update, bool), "uninstall_on_update must be a bool"
         assert isinstance(self._unload_after_install, bool), "unload_after_install must be a bool"
         assert isinstance(self._log_indent, int), "log_indent must be a int"
-        assert isinstance(
-            self._install_on_no_uninstall_permission, bool
-        ), "_install_on_no_uninstall_permission must be a bool"
+        assert isinstance(self._install_on_no_uninstall_permission, bool), (
+            "_install_on_no_uninstall_permission must be a bool"
+        )
         assert isinstance(self._run_imports, list), "run_imports must be a list"
         assert isinstance(self._run_imports2, list), "run_imports2 must be a list"
         assert isinstance(self._libreoffice_debug_port, int), "libreoffice_debug_port must be a int"
@@ -404,16 +413,18 @@ class JsonConfig(metaclass=Singleton):
         assert isinstance(self._lp_code_dir, str), "lp_code_dir must be a string"
         assert isinstance(self._lp_default_log_format, str), "log format must be a string"
         assert self._lp_default_log_format, "lp_default_log_format must not be an empty string"
+        assert isinstance(self._cmd_clean_file_prefix, str), "cmd_clean_file_prefix must be a string"
+        assert len(self._cmd_clean_file_prefix) > 0, "cmd_clean_file_prefix must not be an empty string"
         # validate the extension version is a valid python version
         assert self._extension_version.count(".") == 2, "extension_version must contain two periods"
         assert isinstance(self._no_pip_remove, list), "no_pip_remove must be a list"
 
-        assert isinstance(
-            self._flatpak_libre_pythonista_py_editor, str
-        ), "flatpak_libre_pythonista_py_editor must be a string"
-        assert isinstance(
-            self._flatpak_libre_pythonista_py_editor_cell_cmd, str
-        ), "flatpak_libre_pythonista_py_editor_cell_cmd must be a string"
+        assert isinstance(self._flatpak_libre_pythonista_py_editor, str), (
+            "flatpak_libre_pythonista_py_editor must be a string"
+        )
+        assert isinstance(self._flatpak_libre_pythonista_py_editor_cell_cmd, str), (
+            "flatpak_libre_pythonista_py_editor_cell_cmd must be a string"
+        )
         # endregion tool.libre_pythonista.config
 
     def _warnings(self) -> None:

@@ -26,9 +26,7 @@ class BasicConfig(metaclass=ConfigMeta):
         self._lo_identifier = str(kwargs["lo_identifier"])
         self._lo_implementation_name = str(kwargs["lo_implementation_name"])
         self._zipped_preinstall_pure = bool(kwargs["zipped_preinstall_pure"])
-        self._auto_install_in_site_packages = bool(
-            kwargs["auto_install_in_site_packages"]
-        )
+        self._auto_install_in_site_packages = bool(kwargs["auto_install_in_site_packages"])
         self._install_wheel = bool(kwargs["install_wheel"])
         self._has_locals = bool(kwargs["has_locals"])
         self._window_timeout = int(kwargs["window_timeout"])
@@ -42,9 +40,7 @@ class BasicConfig(metaclass=ConfigMeta):
         self._isolate_windows = set(kwargs["isolate_windows"])
         self._sym_link_cpython = bool(kwargs["sym_link_cpython"])
         self._uninstall_on_update = bool(kwargs["uninstall_on_update"])
-        self._install_on_no_uninstall_permission = bool(
-            kwargs["install_on_no_uninstall_permission"]
-        )
+        self._install_on_no_uninstall_permission = bool(kwargs["install_on_no_uninstall_permission"])
         self._unload_after_install = bool(kwargs["unload_after_install"])
         self._log_indent = int(kwargs.get("log_indent", 0))
         self._run_imports = set(kwargs["run_imports"])
@@ -53,9 +49,9 @@ class BasicConfig(metaclass=ConfigMeta):
         self._run_imports_macos = set(kwargs["run_imports_macos"])
         self._run_imports_win = set(kwargs["run_imports_win"])
         self._oxt_name = str(kwargs["oxt_name"])
-        self._require_install_name_match = bool(
-            kwargs.get("require_install_name_match", False)
-        )
+        self._require_install_name_match = bool(kwargs.get("require_install_name_match", False))
+
+        self._cmd_clean_file_prefix = str(kwargs["cmd_clean_file_prefix"])
 
         # region tool.libre_pythonista.config
         self._cell_cp_prefix = str(kwargs["cell_cp_prefix"])
@@ -71,12 +67,8 @@ class BasicConfig(metaclass=ConfigMeta):
         self._py_script_sheet_on_calculate = str(kwargs["py_script_sheet_on_calculate"])
         self._no_pip_remove = set(kwargs["no_pip_remove"])
 
-        self._flatpak_libre_pythonista_py_editor = str(
-            kwargs["flatpak_libre_pythonista_py_editor"]
-        )
-        self._flatpak_libre_pythonista_py_editor_cell_cmd = str(
-            kwargs["flatpak_libre_pythonista_py_editor_cell_cmd"]
-        )
+        self._flatpak_libre_pythonista_py_editor = str(kwargs["flatpak_libre_pythonista_py_editor"])
+        self._flatpak_libre_pythonista_py_editor_cell_cmd = str(kwargs["flatpak_libre_pythonista_py_editor_cell_cmd"])
         self._flatpak_libre_pythonista_py_editor_install_url = str(
             kwargs["flatpak_libre_pythonista_py_editor_install_url"]
         )
@@ -119,6 +111,15 @@ class BasicConfig(metaclass=ConfigMeta):
             When running in a dev container (Codespace), this value is always set to ``True``.
         """
         return self._auto_install_in_site_packages
+
+    @property
+    def cmd_clean_file_prefix(self) -> str:
+        """
+        Gets the command clean file prefix.
+
+        The value for this property can be set in pyproject.toml (tool.oxt.config.cmd_clean_file_prefix)
+        """
+        return self._cmd_clean_file_prefix
 
     @property
     def default_locale(self) -> List[str]:

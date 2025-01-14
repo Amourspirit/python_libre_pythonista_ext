@@ -58,6 +58,7 @@ class InstallPkg:
         self._logger = self._get_logger()
         self._flag_upgrade = flag_upgrade
         self._show_progress = bool(kwargs.get("show_progress", self._config.show_progress))
+        self._saved_json_files = set()
         self._resource_resolver = ResourceResolver(ctx=self.ctx)
         self._target_path = TargetPath()
         self._no_pip_remove = self._config.no_pip_remove.copy()  # {"pip", "setuptools", "wheel"}
@@ -81,6 +82,26 @@ class InstallPkg:
             return version(package_name)
         except PackageNotFoundError:
             return ""
+
+    def unload_module(self, module_name: str) -> None:
+        """
+        Unloads a module from the sys.modules dictionary.
+        This method removes the specified module from the sys.modules dictionary,
+        effectively unloading it from the current Python session.
+
+        Args:
+            module_name (str): The name of the module to unload.
+
+        Returns:
+            None
+        """
+
+        if module_name in sys.modules:
+            self.log.debug("Unloading module %s", module_name)
+            del sys.modules[module_name]
+            self.log.debug("Module %s unloaded", module_name)
+        else:
+            self.log.debug("Module %s not loaded", module_name)
 
     def _cmd_pip(self, *args: str) -> List[str]:
         cmd: List[str] = [str(self._path_python), "-m", "pip", *args]
@@ -239,6 +260,7 @@ class InstallPkg:
             search_pattern = os.path.join(directory, pattern)
             return glob.glob(search_pattern)
 
+        success = True
         step = 1
         self.log.debug(
             "Attempting to uninstalling package via json package info for %s: Step %i",
@@ -249,7 +271,7 @@ class InstallPkg:
         self._remove_changed(site_packages_dir, pkg)
 
         if not target:
-            target = self._target_path.get_package_target(pkg)
+            target = self.target_path.get_package_target(pkg)
         if self.log.is_debug:
             self.log.debug("uninstall_package() pkg: %s, target: %s", pkg, target)
             if os.path.exists(target):
@@ -262,12 +284,12 @@ class InstallPkg:
         dist_info_dir = self.find_dist_info(pkg, target)
         self.log.debug("uninstall_package() dist_info_dir: %s", dist_info_dir)
 
-        success = True
         step = 2
 
         if dist_info_dir:
             if os.path.exists(dist_info_dir):
                 try:
+                    self.on_removing_dir(Path(dist_info_dir), pkg)
                     shutil.rmtree(dist_info_dir)
                     self.log.info(
                         "uninstall_package() Successfully removed %s. Step %i",
@@ -289,6 +311,7 @@ class InstallPkg:
 
         if os.path.exists(package_dir):
             try:
+                self.on_removing_dir(Path(package_dir), pkg)
                 shutil.rmtree(package_dir)
                 self.log.info(
                     "uninstall_package() Successfully removed %s from %s. Step %i",
@@ -321,6 +344,7 @@ class InstallPkg:
             for dist_info_dir in dist_info_dirs:
                 if os.path.exists(dist_info_dir):
                     try:
+                        self.on_removing_dir(Path(dist_info_dir), pkg)
                         shutil.rmtree(dist_info_dir)
                         self.log.info(
                             "uninstall_package() Successfully removed %s. Step %i",
@@ -357,6 +381,7 @@ class InstallPkg:
 
         if success and (pkg_dir := self.get_package_installation_dir(pkg)):
             try:
+                self.on_removing_dir(Path(pkg_dir), pkg)
                 shutil.rmtree(pkg_dir)
                 self.log.info(
                     "uninstall_package() Successfully removed %s. Step %i",
@@ -399,6 +424,13 @@ class InstallPkg:
         my_env["PYTHONPATH"] = py_path
         return my_env
 
+    def on_extension_install(self) -> None:
+        """
+        Called when the extension is installed.
+        """
+        # chance to write batch uninstall files in inherited classes
+        pass
+
     def install(self, req: Dict[str, str] | None = None, force: bool = False) -> bool:
         """
         Install all the packages in the configuration if they are not already installed and meet requirements.
@@ -414,11 +446,15 @@ class InstallPkg:
         self._logger.info("Installing packages…")
 
         if req is None:
+            is_ext_install = True
             packages = Packages()
 
-            req = self._config.requirements.copy()
-            req.update(packages.to_dict())
+            req = packages.to_dict()
+            req.update(self._config.requirements)
+            # req = self._config.requirements.copy()
+            # req.update(packages.to_dict())
         else:
+            is_ext_install = False
             self._logger.debug("Using requirements from parameter.")
 
         if not req:
@@ -469,6 +505,8 @@ class InstallPkg:
                             return False
             result = result and self._install_pkg(name, ",".join(ver_lst), force)
         self._logger.info("Installing packages Done!")
+        if is_ext_install:
+            self.on_extension_install()
         return result
 
     def install_file(self, pth: str | Path, force: bool = False) -> bool:
@@ -670,6 +708,7 @@ class InstallPkg:
             json_path = os.path.join(pth, f"{self._config.lo_implementation_name}_{pkg}.json")
             with open(json_path, "w") as f:
                 f.write(json_str)
+            self._saved_json_files.add(json_path)
             self._logger.info("New directories and files saved to %s", json_path)
         except Exception as e:
             self._logger.exception("Error saving new directories and files: %s", e)
@@ -678,6 +717,7 @@ class InstallPkg:
         """Delete the JSON file if it exists."""
         json_path = os.path.join(path, f"{self._config.lo_implementation_name}_{pkg}.json")
         if os.path.exists(json_path):
+            self.on_removing_tracker_file(Path(json_path))
             os.remove(json_path)
             self._logger.info(f"Deleted {json_path}")
 
@@ -695,9 +735,22 @@ class InstallPkg:
 
         return j_contents
 
+    def on_removing_dir(self, dir_path: Path, pkg_name: str) -> None:
+        """Remove the directory."""
+        pass
+
+    def on_removing_file(self, file_path: Path, pkg_name: str) -> None:
+        """Remove the file."""
+        pass
+
+    def on_removing_tracker_file(self, file_path: Path) -> None:
+        """Remove the tracker file."""
+        pass
+
     # check and see if there are any directories and files that need to be removed. Us the Json file to get the data
     def _remove_changed(self, pth: str, pkg: str) -> None:
         """Remove the new directories and files."""
+        self._logger.debug("_remove_changed() Removing new directories and files. Package: %s, Path: %s", pkg, pth)
         data_dict = self._get_json_data(pth, pkg)
         data: Dict[str, str] = data_dict.get("data", {})
         new_dirs = set(data.get("new_dirs", []))
@@ -708,6 +761,7 @@ class InstallPkg:
             dir_path = os.path.join(pth, d)
             try:
                 if os.path.exists(dir_path):
+                    self.on_removing_dir(Path(dir_path), pkg)
                     shutil.rmtree(dir_path)
                     self._logger.debug("_remove_changed() Removed directory: %s", d)
                 else:
@@ -720,6 +774,7 @@ class InstallPkg:
             file_path = Path(pth, f)
             try:
                 if os.path.exists(file_path):
+                    self.on_removing_file(file_path, pkg)
                     file_path.unlink()
                     self._logger.debug("_remove_changed() Removed file: %s", f)
                 else:
@@ -732,6 +787,7 @@ class InstallPkg:
             file_path = Path(pth, "bin", f)
             try:
                 if file_path.exists():
+                    self.on_removing_file(file_path, pkg)
                     file_path.unlink()
                     self._logger.debug("_remove_changed() Removed file from bin: %s", f)
                 else:
@@ -744,6 +800,7 @@ class InstallPkg:
             file_path = Path(pth, "lib", f)
             try:
                 if file_path.exists():
+                    self.on_removing_file(file_path, pkg)
                     file_path.unlink()
                     self._logger.debug("_remove_changed() Removed file from lib: %s", f)
                 else:
@@ -756,6 +813,7 @@ class InstallPkg:
             file_path = Path(pth, "include", f)
             try:
                 if file_path.exists():
+                    self.on_removing_file(file_path, pkg)
                     file_path.unlink()
                     self._logger.debug("_remove_changed() Removed file from include: %s", f)
                 else:
@@ -820,3 +878,11 @@ class InstallPkg:
     @property
     def no_pip_install(self) -> Set[str]:
         return self._no_pip_install
+
+    @property
+    def target_path(self) -> TargetPath:
+        return self._target_path
+
+    @property
+    def saved_json_files(self) -> Set[str]:
+        return self._saved_json_files

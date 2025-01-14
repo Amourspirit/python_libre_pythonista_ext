@@ -5,7 +5,9 @@ import sys
 from pathlib import Path
 import subprocess
 import contextlib
+import importlib.util
 from importlib.metadata import PackageNotFoundError, version
+import warnings
 
 from ooodev.loader import Lo
 from ooodev.dialog.msgbox import MessageBoxType, MsgBox
@@ -101,31 +103,48 @@ class PkgInfo:
                 return True
         return False
 
+    def find_module_location(self, package_name: str) -> str:
+        """
+        Finds the location of a Python module without importing it.
+
+        Args:
+            module_name: The name of the module to find.
+
+        Returns:
+            The path to the module's file, or None if the module is not found.
+        """
+        try:
+            spec = importlib.util.find_spec(package_name)
+            if spec is None:
+                return ""
+            if spec.origin:
+                p = Path(spec.origin)
+                if p.is_file():
+                    return str(p.parent)
+                return spec.origin
+            return ""
+        except Exception as e:
+            self._log.error(f"Error finding module location: {e}")
+            return ""
+
     def get_package_location(self, package_name: str, auto_unload: bool = True) -> str:
         """
         Get the installation location of a specified package.
 
         Args:
             package_name (str): The name of the package to locate.
-            auto_unload (bool): Unload the package after getting the location. Default is True.
+            auto_unload (bool, optional): Unload the package after getting the location.
+                This parameter is not used and exist for legacy reasons.
 
         Returns:
             str: The file path to the package's installation location, or empty string if not found.
+
+        .. deprecated:: 0.7
+            This method is deprecated and will be removed in a future version.
+            Use `find_module_location` instead.
         """
-        module = None
-        try:
-            module = __import__(package_name)
-            p = Path(getattr(module, "__file__", ""))
-            if p.is_file():
-                return str(p.parent)
-            if p.is_dir():
-                return str(p)
-        except (ImportError, ModuleNotFoundError):
-            return ""
-        finally:
-            if module and auto_unload:
-                del module
-        return ""
+        warnings.warn("This function is deprecated. Use new_function instead.", DeprecationWarning, stacklevel=2)
+        return self.find_module_location(package_name)
 
     def show_installed(self) -> None:
         """Install pip packages."""
@@ -149,13 +168,9 @@ class PkgInfo:
 
         if self.is_package_installed(pkg_name):
             if ver := self.get_package_version(pkg_name):
-                msg = self._rr.resolve_string("mbmsg011").format(
-                    pkg_name, ver
-                )  # Package {} version {} is installed
+                msg = self._rr.resolve_string("mbmsg011").format(pkg_name, ver)  # Package {} version {} is installed
             else:
-                msg = self._rr.resolve_string("mbmsg009").format(
-                    pkg_name
-                )  # Package {} is installed
+                msg = self._rr.resolve_string("mbmsg009").format(pkg_name)  # Package {} is installed
             MsgBox.msgbox(
                 msg,  # Package {} is installed
                 title=self._rr.resolve_string("title02"),
@@ -164,9 +179,7 @@ class PkgInfo:
             self._log.info(f"Package {pkg_name} is installed.")
         else:
             MsgBox.msgbox(
-                self._rr.resolve_string("mbmsg010").format(
-                    pkg_name
-                ),  # Package {} is not installed
+                self._rr.resolve_string("mbmsg010").format(pkg_name),  # Package {} is not installed
                 title=self._rr.resolve_string("title02"),
                 boxtype=MessageBoxType.INFOBOX,
             )
@@ -199,11 +212,7 @@ class PkgInfo:
                 return ""
 
             return next(
-                (
-                    line.split(":", 1)[1].strip()
-                    for line in result.stdout.splitlines()
-                    if line.startswith("Version:")
-                ),
+                (line.split(":", 1)[1].strip() for line in result.stdout.splitlines() if line.startswith("Version:")),
                 "",
             )
         except UnicodeDecodeError as e:

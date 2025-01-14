@@ -53,6 +53,13 @@ class InstallPkg:
                 self._logger.error("Not all package were installed!")
             return result
 
+        if self._config.is_win:
+            self._logger.info("Windows detected, installing packages via Windows installer")
+            result = self._install_win(req=req, force=force)
+            if not result:
+                self._logger.error("Not all package were installed!")
+            return result
+
         self._logger.info("Installing packages via default installer")
         result = self._install_default(req=req, force=force)
         if not result:
@@ -70,6 +77,19 @@ class InstallPkg:
         Returns:
             bool: True if successful, False otherwise.
         """
+        if self._config.is_flatpak:
+            self._logger.info("Flatpak detected, installing packages via Flatpak installer")
+            result = self._install_flatpak_file(pth=pth, force=force)
+            if not result:
+                self._logger.error("install_file(): Not all package were installed!")
+            return result
+
+        if self._config.is_win:
+            self._logger.info("Windows detected, installing packages via Windows installer")
+            result = self._install_win_file(pth=pth, force=force)
+            if not result:
+                self._logger.error("install_file(): Not all package were installed!")
+            return result
         self._logger.info("install_file(): Installing packages via default installer")
         result = self._install_default_file(pth=pth, force=force)
         if not result:
@@ -95,6 +115,13 @@ class InstallPkg:
                 self._logger.error("Not all package were uninstalled!")
             return result
 
+        if self._config.is_win:
+            self._logger.info("Windows detected, uninstalling packages via Windows installer")
+            result = self._uninstall_win(pkg=pkg, target=target, remove_tracking_file=remove_tracking_file)
+            if not result:
+                self._logger.error("Not all package were uninstalled!")
+            return result
+
         self._logger.info("Uninstalling packages via default installer")
         result = self._uninstall_default(pkg=pkg, target=target, remove_tracking_file=remove_tracking_file)
         if not result:
@@ -107,10 +134,22 @@ class InstallPkg:
         installer = InstallPkg(ctx=self.ctx, flag_upgrade=self._flag_upgrade)
         return installer.install(req=req, force=force)
 
+    def _install_win(self, req: Dict[str, str] | None, force: bool) -> bool:
+        from .pkg_installers.install_pkg_win import InstallPkgWin
+
+        installer = InstallPkgWin(ctx=self.ctx, flag_upgrade=self._flag_upgrade)
+        return installer.install(req=req, force=force)
+
     def _install_default_file(self, pth: str | Path, force: bool = False) -> bool:
         from .pkg_installers.install_pkg import InstallPkg
 
         installer = InstallPkg(ctx=self.ctx, flag_upgrade=self._flag_upgrade)
+        return installer.install_file(pth=pth, force=force)
+
+    def _install_win_file(self, pth: str | Path, force: bool = False) -> bool:
+        from .pkg_installers.install_pkg_win import InstallPkgWin
+
+        installer = InstallPkgWin(ctx=self.ctx, flag_upgrade=self._flag_upgrade)
         return installer.install_file(pth=pth, force=force)
 
     def _install_flatpak(self, req: Dict[str, str] | None, force: bool) -> bool:
@@ -119,10 +158,22 @@ class InstallPkg:
         installer = InstallPkgFlatpak(ctx=self.ctx, flag_upgrade=self._flag_upgrade)
         return installer.install(req=req, force=force)
 
+    def _install_flatpak_file(self, pth: str | Path, force: bool = False) -> bool:
+        from .pkg_installers.install_pkg_flatpak import InstallPkgFlatpak
+
+        installer = InstallPkgFlatpak(ctx=self.ctx, flag_upgrade=self._flag_upgrade)
+        return installer.install_file(pth=pth, force=force)
+
     def _uninstall_default(self, pkg: str, target: str = "", remove_tracking_file: bool = False) -> bool:
         from .pkg_installers.install_pkg import InstallPkg
 
         installer = InstallPkg(ctx=self.ctx, flag_upgrade=self._flag_upgrade)
+        return installer.uninstall_pkg(pkg=pkg, target=target, remove_tracking_file=remove_tracking_file)
+
+    def _uninstall_win(self, pkg: str, target: str = "", remove_tracking_file: bool = False) -> bool:
+        from .pkg_installers.install_pkg_win import InstallPkgWin
+
+        installer = InstallPkgWin(ctx=self.ctx, flag_upgrade=self._flag_upgrade)
         return installer.uninstall_pkg(pkg=pkg, target=target, remove_tracking_file=remove_tracking_file)
 
     def _uninstall_flatpak(self, pkg: str, target: str = "", remove_tracking_file: bool = False) -> bool:
@@ -130,12 +181,6 @@ class InstallPkg:
 
         installer = InstallPkgFlatpak(ctx=self.ctx, flag_upgrade=self._flag_upgrade)
         return installer.uninstall_pkg(pkg=pkg, target=target, remove_tracking_file=remove_tracking_file)
-
-    def _install_flatpak_file(self, pth: str | Path, force: bool = False) -> bool:
-        from .pkg_installers.install_pkg_flatpak import InstallPkgFlatpak
-
-        installer = InstallPkgFlatpak(ctx=self.ctx, flag_upgrade=self._flag_upgrade)
-        return installer.install_file(pth=pth, force=force)
 
     def get_package_version(self, package_name: str) -> str:
         """
