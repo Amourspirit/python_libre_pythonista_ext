@@ -236,7 +236,10 @@ class ButtonOthListener(XActionListener, unohelper.Base):
             if cmd == "Info":
                 self._action_info(rEvent)
             elif cmd == "CopyCmd":
-                self._action_copy_cmd(rEvent)
+                if self.dialog_handler.is_win:
+                    self._action_copy_cmd_ps(rEvent)
+                else:
+                    self._action_copy_cmd_bash(rEvent)
         except Exception as err:
             self._logger.error("actionPerformed() %s", err, exc_info=True)
             raise err
@@ -248,6 +251,9 @@ class ButtonOthListener(XActionListener, unohelper.Base):
         msg = self.dialog_handler._resource_resolver.resolve_string("mbmsg021")
         if self.dialog_handler.is_win:
             msg += "\n\n" + self.dialog_handler._resource_resolver.resolve_string("win001")
+        else:
+            # Linux and Mac
+            msg += "\n\n" + self.dialog_handler._resource_resolver.resolve_string("linux001")
         _ = MessageDialog(
             self.dialog_handler.ctx,
             window.getPeer(),
@@ -256,7 +262,7 @@ class ButtonOthListener(XActionListener, unohelper.Base):
             type=INFOBOX,
         ).execute()
 
-    def _action_copy_cmd(self, ev: Any) -> None:  # noqa: ANN401
+    def _action_copy_cmd_ps(self, ev: Any) -> None:  # noqa: ANN401
         self._logger.debug("_action_copy_cmd() ButtonListener.actionPerformed")
         cmd_file = Path(
             file_util.get_user_profile_path(True),
@@ -264,6 +270,28 @@ class ButtonOthListener(XActionListener, unohelper.Base):
         )
         # powershell.exe -Command
         command = f'powershell.exe -File "{cmd_file}" -ExecutionPolicy Bypass'
+        copy_to_clipboard(command)
+        self._logger.debug(f"Copied to clipboard lbl_log: {command}")
+        title = self.dialog_handler._resource_resolver.resolve_string("mbtitle022")
+        msg = self.dialog_handler._resource_resolver.resolve_string("mbmsg022")
+        window = self.dialog_handler.window
+        if window is None:
+            raise Exception("Window is not initialized")
+        _ = MessageDialog(
+            self.dialog_handler.ctx,
+            window.getPeer(),
+            title=title,
+            message=msg,
+        ).execute()
+
+    def _action_copy_cmd_bash(self, ev: Any) -> None:  # noqa: ANN401
+        self._logger.debug("_action_copy_cmd() ButtonListener.actionPerformed")
+        cmd_file = Path(
+            file_util.get_user_profile_path(True),
+            f"{self.dialog_handler.config.cmd_clean_file_prefix}{self.dialog_handler.config.lo_implementation_name}.sh",
+        )
+        # powershell.exe -Command
+        command = f'bash "{cmd_file}"'
         copy_to_clipboard(command)
         self._logger.debug(f"Copied to clipboard lbl_log: {command}")
         title = self.dialog_handler._resource_resolver.resolve_string("mbtitle022")
@@ -427,15 +455,14 @@ class OptionsDialogUninstallHandler(DialogBase, XContainerWindowEventHandler, un
                 lbl = cast(UnoControlFixedText, window.getControl("lblUninstall"))
                 model = cast(UnoControlFixedTextModel, lbl.Model)  # type: ignore
                 model.Label = self._resource_resolver.resolve_string(model.Label)
-                if self.is_win:
-                    self._add_win_uninstall_items()
+                self._add_copy_cmd()
 
         except Exception as err:
             self._logger.error("_load_data(): %s", err, exc_info=True)
             raise err
         return
 
-    def _add_win_uninstall_items(self) -> None:
+    def _add_copy_cmd(self) -> None:
         if self._window is None:
             raise Exception("Window is not initialized")
         btn_uninstall = cast(UnoControlButton, self._window.getControl("UninstallItems"))

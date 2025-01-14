@@ -70,12 +70,12 @@ implementation_services = ("com.sun.star.task.Job",)
 
 
 # region XJob
-class ___lo_implementation_name___(unohelper.Base, XJob):
+class ___lo_implementation_name___(unohelper.Base, XJob):  # noqa: N801
     """Python UNO Component that implements the com.sun.star.task.Job interface."""
 
     # region Init
 
-    def __init__(self, ctx):
+    def __init__(self, ctx: Any) -> None:  # noqa: ANN401
         self._this_pth = os.path.dirname(__file__)
         self._error_msg = ""
         self._job_event_name = ""
@@ -92,6 +92,7 @@ class ___lo_implementation_name___(unohelper.Base, XJob):
         self.ctx = ctx
         self._user_path = ""
         self._resource_resolver: ResourceResolver | None = None
+        self._is_init = False
         with contextlib.suppress(Exception):
             user_path = self._get_user_profile_path(True, self.ctx)
             # logger.debug(f"Init: user_path: {user_path}")
@@ -152,7 +153,7 @@ class ___lo_implementation_name___(unohelper.Base, XJob):
             f"{self._config.extension_display_name} version {self._config.extension_version} execute starting"
         )
         self._logger.debug("___lo_implementation_name___ executing")
-        if self._config.require_install_name_match:
+        if self._config.require_install_name_match:  # noqa: SIM102
             if self._config.oxt_name != self._config.package_name:
                 msg = f"Oxt name: {self._config.oxt_name} does not match installed name: {self._config.package_name}. The extensions must be named {self._config.oxt_name}.oxt before installing. Rename extension to {self._config.oxt_name}.oxt and reinstall."
                 self._logger.error(msg)
@@ -198,6 +199,7 @@ class ___lo_implementation_name___(unohelper.Base, XJob):
 
             if requirements_met:
                 self._logger.debug("Requirements are met. Nothing more to do.")
+                self._init_checks()
                 self._log_ex_time(self._start_time)
                 return
 
@@ -216,7 +218,7 @@ class ___lo_implementation_name___(unohelper.Base, XJob):
 
             if self._delay_start:
 
-                def _on_window_opened(source: Any, event_args: EventArgs, *args, **kwargs) -> None:
+                def _on_window_opened(source: Any, event_args: EventArgs, *args, **kwargs) -> None:  # noqa: ANN002, ANN003, ANN401
                     self.on_window_opened(source=source, event_args=event_args, *args, **kwargs)
 
                 self._fn_on_window_opened = _on_window_opened
@@ -289,6 +291,7 @@ class ___lo_implementation_name___(unohelper.Base, XJob):
             self._handel_bz2()
 
             self._post_install()
+            self._init_checks()
 
             if has_window:
                 self._display_complete_dialog()
@@ -413,8 +416,21 @@ class ___lo_implementation_name___(unohelper.Base, XJob):
     # endregion Register/Unregister sys paths
 
     # region other methods
+    def _init_checks(self) -> None:
+        if self._is_init:
+            self._logger.debug("Already initialized. Skipping init checks.")
+            return
+        self._is_init = True
+        try:
+            from ___lo_pip___.initializer import Initializer  # type: ignore
 
-    def on_window_opened(self, source: Any, event_args: EventArgs, *args, **kwargs) -> None:
+            init = Initializer()
+            init.run_checks()
+            self._logger.debug("Init checks done.")
+        except Exception:
+            self._logger.exception("Error running init checks")
+
+    def on_window_opened(self, source: Any, event_args: EventArgs, *args, **kwargs) -> None:  # noqa: ANN002, ANN003, ANN401
         """is invoked when a LibreOffice top window is activated."""
         if self._twl is None:
             return
@@ -516,7 +532,7 @@ class ___lo_implementation_name___(unohelper.Base, XJob):
         total_time = end_time - start_time
         self._logger.info(f"{self._config.lo_implementation_name} execution time: {total_time:.3f} seconds")
 
-    def _get_user_profile_path(self, as_sys_path: bool = True, ctx: Any = None) -> str:
+    def _get_user_profile_path(self, as_sys_path: bool = True, ctx: Any = None) -> str:  # noqa: ANN401
         """
         Returns the path to the user profile directory.
 
@@ -767,9 +783,9 @@ class ___lo_implementation_name___(unohelper.Base, XJob):
 # endregion XJob
 
 
-g_TypeTable = {}
+g_TypeTable = {}  # noqa: N816
 # python loader looks for a static g_ImplementationHelper variable
-g_ImplementationHelper = unohelper.ImplementationHelper()
+g_ImplementationHelper = unohelper.ImplementationHelper()  # noqa: N816
 
 # add the FormatFactory class to the implementation container,
 # which the loader uses to register/instantiate the component.

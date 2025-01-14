@@ -10,7 +10,7 @@ from ..pkg_install_data import PkgInstallData
 from ....lo_util.str_list import StrList
 
 
-class BatchWriterPs1(BatchWriter):
+class BatchWriterBash(BatchWriter):
     def __init__(self) -> None:
         super().__init__()
         self._line_sep = "\n"  # os.linesep
@@ -23,25 +23,22 @@ class BatchWriterPs1(BatchWriter):
         Args:
             sw (StringWriter): The StringWriter to write to.
         """
-        sw.append("function Remove-Folders {")
+        sw.append("remove_dirs() {")
         with sw.indented():
-            sw.append("param(")
+            sw.append("local IFS=$'\\n' # Set Internal Field Separator to newline")
+            sw.append("local -a folders=($@)")
+            sw.append('for folder in "${folders[@]}"; do')
             with sw.indented():
-                sw.append("[string[]]$folders")
-            sw.append(")")
-
-        with sw.indented():
-            sw.append("foreach ($folder in $folders) {")
-            with sw.indented():
-                sw.append("if (Test-Path $folder) {")
+                sw.append('if [[ -d "$folder" ]]; then')
                 with sw.indented():
-                    sw.append("Remove-Item -Path $folder -Recurse -Force")
-                    sw.append('Write-Host "Deleted folder: $($folder)"')
-                sw.append("} else {")
+                    sw.append('rm -rf "$folder"')
+                    sw.append('echo "Deleted folder: $folder"')
+                    sw.append('rm -rf "$folder"')
+                sw.append("else")
                 with sw.indented():
-                    sw.append('Write-Warning "Folder not found: $($folder)"')
-                sw.append("}")
-            sw.append("}")
+                    sw.append('echo "Folder not found: $folder"')
+                sw.append("fi")
+            sw.append("done")
         sw.append("}")
         sw.append()
 
@@ -52,25 +49,21 @@ class BatchWriterPs1(BatchWriter):
         Args:
             sw (StringWriter): The StringWriter to write to.
         """
-        sw.append("function Remove-Files {")
+        sw.append("remove_files() {")
         with sw.indented():
-            sw.append("param(")
+            sw.append("local IFS=$'\\n' # Set Internal Field Separator to newline")
+            sw.append("local -a files=($@)")
+            sw.append('for file in "${files[@]}"; do')
             with sw.indented():
-                sw.append("[string[]]$files")
-            sw.append(")")
-
-        with sw.indented():
-            sw.append("foreach ($file in $files) {")
-            with sw.indented():
-                sw.append("if (Test-Path $file) {")
+                sw.append('if [[ -f "$file" ]]; then')
                 with sw.indented():
-                    sw.append("Remove-Item -Path $file -Force")
-                    sw.append('Write-Host "Deleted file: $($file)"')
-                sw.append("} else {")
+                    sw.append('rm -f "$file"')
+                    sw.append('echo "Deleted file: $file"')
+                sw.append("else")
                 with sw.indented():
-                    sw.append('Write-Warning "File not found: $($file)"')
-                sw.append("}")
-            sw.append("}")
+                    sw.append('echo "File not found: $file"')
+                sw.append("fi")
+            sw.append("done")
         sw.append("}")
         sw.append()
 
@@ -85,16 +78,14 @@ class BatchWriterPs1(BatchWriter):
         if not dirs:
             return
 
-        dir_lines = f",{self._line_sep}".join([f'{d}"' for d in dirs]).split(self._line_sep)
-
-        sw.append("$foldersToDelete = @(")
-        with sw.indented():
-            for d in dir_lines:
-                p = Path(target_path, d)
-                sw.append(f'"{p}')
+        sw.append("dirs_to_remove=$(cat << EOF")
+        for d in dirs:
+            p = Path(target_path, d)
+            sw.append(str(p))
+        sw.append("EOF")
         sw.append(")")
         sw.append()
-        sw.append("Remove-Folders -folders $foldersToDelete")
+        sw.append('remove_dirs "${dirs_to_remove[@]}"')
         sw.append()
 
     def _write_remove_files(self, target_path: str, sw: StrList, files: Iterable[str]) -> None:
@@ -108,16 +99,14 @@ class BatchWriterPs1(BatchWriter):
         if not files:
             return
 
-        file_lines = f",{self._line_sep}".join([f'{f}"' for f in files]).split(self._line_sep)
-
-        sw.append("$filesToDelete = @(")
-        with sw.indented():
-            for f in file_lines:
-                p = Path(target_path, f)
-                sw.append(f'"{p}')
+        sw.append("files_to_remove=$(cat << EOF")
+        for f in files:
+            p = Path(target_path, f)
+            sw.append(str(p))
+        sw.append("EOF")
         sw.append(")")
         sw.append()
-        sw.append("Remove-Files -files $filesToDelete")
+        sw.append('remove_files "${files_to_remove[@]}"')
         sw.append()
 
     def _write_output_for_pkg(self, pkg: PkgInstallData, sw: StrList) -> None:
@@ -221,6 +210,6 @@ class BatchWriterPs1(BatchWriter):
 
             self._script_file = Path(
                 file_util.get_user_profile_path(True),
-                f"{self.config.cmd_clean_file_prefix}{self.config.lo_implementation_name}.ps1",
+                f"{self.config.cmd_clean_file_prefix}{self.config.lo_implementation_name}.sh",
             )
         return self._script_file

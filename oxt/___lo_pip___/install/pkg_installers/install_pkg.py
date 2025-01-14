@@ -428,8 +428,15 @@ class InstallPkg:
         """
         Called when the extension is installed.
         """
-        # chance to write batch uninstall files in inherited classes
-        pass
+        # Mac and Linux
+        from .batch.batch_writer_bash import BatchWriterBash
+
+        try:
+            writer = BatchWriterBash()
+            writer.write_file()
+            self.log.info("Cleanup script written to %s", writer.script_file)
+        except Exception as e:
+            self.log.exception("Error writing cleanup script: %s", e)
 
     def install(self, req: Dict[str, str] | None = None, force: bool = False) -> bool:
         """

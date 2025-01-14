@@ -8,7 +8,6 @@ import _ctypes
 from ...oxt_logger import OxtLogger
 from .install_pkg import InstallPkg
 from .batch.batch_writer_ps1 import BatchWriterPs1
-from ...input_output import file_util
 
 if TYPE_CHECKING:
     try:
@@ -59,13 +58,8 @@ class InstallPkgWin(InstallPkg):
     @override
     def on_extension_install(self) -> None:
         try:
-            out_file = Path(
-                file_util.get_user_profile_path(True),
-                f"{self.config.cmd_clean_file_prefix}{self.config.lo_implementation_name}.ps1",
-            )
-            writer = BatchWriterPs1(self)
-            with out_file.open("w", encoding="utf-8") as f:
-                f.write(writer.get_contents())
-            self.log.info("Cleanup script written to %s", out_file)
+            writer = BatchWriterPs1()
+            writer.write_file()
+            self.log.info("Cleanup script written to %s", writer.script_file)
         except Exception as e:
             self.log.exception("Error writing cleanup script: %s", e)

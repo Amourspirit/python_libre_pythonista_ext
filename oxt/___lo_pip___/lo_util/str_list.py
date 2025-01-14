@@ -23,7 +23,7 @@ class StrList:
         self._sep = sep
         self._iter_index = 0
         self._indent = 0
-        self._indent_str = "   "
+        self._indent_str = "    "
 
     # region Methods
     def append(self, value: str = "", no_indent: bool = False) -> StrList:
