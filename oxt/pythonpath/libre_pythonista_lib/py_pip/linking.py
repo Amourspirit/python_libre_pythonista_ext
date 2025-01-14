@@ -2,10 +2,14 @@ from __future__ import annotations
 from typing import Any, cast, Dict, TYPE_CHECKING
 import threading
 import time
-import uno
 
 from ooodev.loader import Lo
-from ooodev.dialog.msgbox import MessageBoxType, MsgBox, MessageBoxButtonsEnum, MessageBoxResultsEnum
+from ooodev.dialog.msgbox import (
+    MessageBoxType,
+    MsgBox,
+    MessageBoxButtonsEnum,
+    MessageBoxResultsEnum,
+)
 
 # from ..dialog.user_input.input import Input
 
@@ -17,7 +21,9 @@ if TYPE_CHECKING:
     from ....___lo_pip___.events.lo_events import LoEvents
     from ....___lo_pip___.events.args.event_args import EventArgs
     from ....___lo_pip___.events.named_events import GenNamedEvent
-    from ....___lo_pip___.install.progress_window.progress_dialog_true import ProgressDialogTrue
+    from ....___lo_pip___.install.progress_window.progress_dialog_true import (
+        ProgressDialogTrue,
+    )
     from ....___lo_pip___.install.progress import Progress
 else:
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
@@ -27,7 +33,9 @@ else:
     from ___lo_pip___.events.lo_events import LoEvents
     from ___lo_pip___.events.args.event_args import EventArgs
     from ___lo_pip___.events.named_events import GenNamedEvent
-    from ___lo_pip___.install.progress_window.progress_dialog_true import ProgressDialogTrue
+    from ___lo_pip___.install.progress_window.progress_dialog_true import (
+        ProgressDialogTrue,
+    )
     from ___lo_pip___.install.progress import Progress
 
 
@@ -49,7 +57,9 @@ class Linking:
         # By hooking the event we can add the rule to the list of rules that will be checked.
         # This will allow a dialog progress window to be displayed.
         self._fn_on_progress_rules_event = self._on_progress_rules_event
-        self._events.on(GenNamedEvent.PROGRESS_RULES_EVENT, self._fn_on_progress_rules_event)
+        self._events.on(
+            GenNamedEvent.PROGRESS_RULES_EVENT, self._fn_on_progress_rules_event
+        )
 
     def _on_progress_rules_event(self, args: Any, event_arg: EventArgs) -> None:
         # add the ProgressDialogTrue rule to the rules list to get the progress dialog to display
@@ -69,7 +79,9 @@ class Linking:
         """
         if not self.is_linking_needed():
             MsgBox.msgbox(
-                self._rr.resolve_string("mbmsg012"),  # No Linking need on this installation of LibreOffice
+                self._rr.resolve_string(
+                    "mbmsg012"
+                ),  # No Linking need on this installation of LibreOffice
                 title=self._rr.resolve_string("mbtitle012"),  # No Links
                 boxtype=MessageBoxType.INFOBOX,
             )
@@ -93,7 +105,9 @@ class Linking:
         """
         if not self.is_linking_needed():
             MsgBox.msgbox(
-                self._rr.resolve_string("mbmsg012"),  # No Linking need on this installation of LibreOffice
+                self._rr.resolve_string(
+                    "mbmsg012"
+                ),  # No Linking need on this installation of LibreOffice
                 title=self._rr.resolve_string("mbtitle012"),  # No Links
                 boxtype=MessageBoxType.INFOBOX,
             )

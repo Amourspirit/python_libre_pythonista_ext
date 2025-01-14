@@ -1,9 +1,18 @@
 ARG LO_VERSION
+ARG UV_VERSION=0.5.5
+ARG UVSRC=ghcr.io/astral-sh/uv:$UV_VERSION
+
+# Lifehack
+# see https://stackoverflow.com/questions/43473236/docker-build-arg-and-copy
+FROM $UVSRC AS uv_full_src
+
 FROM linuxserver/libreoffice:${LO_VERSION}
 
 ARG POETRY_VERSION
 ARG CODE_PORT=2002
 ARG CONFIG_DIR=/config
+
+
 
 # Had Error: Compilation error in psutil/_psutil_linux
 # See Github: https://github.com/giampaolo/psutil//issues/664
@@ -20,11 +29,9 @@ RUN apk update \
     subversion \
     make \
     openssh-client-default \
-    openssh\
+    openssh \
     zip
-#   libreoffice-sdk
-
-# https://pkgs.alpinelinux.org/package/edge/community/x86_64/libreoffice-sdk
+    # libreoffice-sdk
 
 # https://pkgs.alpinelinux.org/package/edge/main/x86/subversion
 # subversion can be used to download github repos subfolders. Great for downloading just a single folder from a repo.
@@ -60,11 +67,9 @@ RUN sed -i "s/\/bin\/ash/\/bin\/bash/g" /etc/passwd \
 # Codespaces mounts its own /tmp directory, so we need to create a new one
 COPY ../.devcontainer/res $CONFIG_DIR/.tmp/res
 COPY ../.devcontainer/root/rc.sh /etc/profile.d/10bashrc.sh
-COPY ./.devcontainer/root/bashrc.sh $CONFIG_DIR/.bashrc
-COPY ../.devcontainer/root/bash_custom.sh $CONFIG_DIR/.bashrc_custom
+COPY ../.devcontainer/root/bashrc.sh $CONFIG_DIR/.bashrc
+COPY ./.devcontainer/root/bash_custom.sh $CONFIG_DIR/.bashrc_custom
 
-
-# ENV HOME=$CONFIG_DIR \
 ENV RUN_ENV=${RUN_ENV} \
     LANG=C.UTF-8 \
     PYTHONFAULTHANDLER=1 \
@@ -73,10 +78,9 @@ ENV RUN_ENV=${RUN_ENV} \
     PIP_NO_CACHE_DIR=off \
     PIP_DISABLE_PIP_VERSION_CHECK=on \
     PIP_DEFAULT_TIMEOUT=100 \
-    POETRY_VERSION=${POETRY_VERSION} \
-    LO_CONN_PORT=${CODE_PORT}
-    # ENV=$CONFIG_DIR/.bashrc
-    # PATH="$CONFIG_DIR/.cargo/bin:$PATH"
+    LO_CONN_PORT=${CODE_PORT} \
+    UV_LINK_MODE=copy
+
 
 
 RUN if [ x"$LOCAL_GIT_AUTHOR_NAME" != "x" ]; then git config --global user.name "$LOCAL_GIT_AUTHOR_NAME" || true; fi \
@@ -88,18 +92,23 @@ RUN MY_PY_VER=$(python -c "import sys; major, minor = sys.version_info[:2]; prin
     && if [ -f "/usr/lib/python$MY_PY_VER/EXTERNALLY-MANAGED" ]; then \
     rm "/usr/lib/python$MY_PY_VER/EXTERNALLY-MANAGED"; fi
 
-RUN  /usr/bin/pip install "setuptools==75.1.0"
-# install poetry and requirements.txt using pip
-RUN  /usr/bin/pip install "poetry==$POETRY_VERSION" \
-    && if [ -f "$CONFIG_DIR/.tmp/res/req/requirements.txt" ]; then \
-    /usr/bin/pip install --no-cache-dir -r "$CONFIG_DIR/.tmp/res/req/requirements.txt"; fi
 
-WORKDIR /workspace/python_libre_pythonista_ext
-COPY ../*.toml ../*.lock ./
-# && poetry install $(test "$RUN_ENV" == production && echo "--no-dev") --no-interaction --no-ansi --no-root --no-cache\
-RUN poetry config virtualenvs.in-project true \
-    && poetry install --no-interaction --no-ansi --no-root --no-cache --without linux,windows \
-    && sed -i "s/include-system-site-packages = false/include-system-site-packages = false/g" /workspace/python_libre_pythonista_ext/.venv/pyvenv.cfg
+WORKDIR /workspace/libreoffice_pip_ext
+COPY ../*.toml ../*.lock ../*.md ./
+
+
+# COPY --from=ghcr.io/astral-sh/uv:0.5.5 /uv /uvx /bin/
+COPY --from=uv_full_src /uv /uvx /bin/
+ENV VIRTUAL_ENV=/workspace/libreoffice_pip_ext/.venv
+
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --frozen --no-install-project $(test "$RUN_ENV" == production && echo "--no-dev") \
+    && sed -i "s/include-system-site-packages = false/include-system-site-packages = true/g" /workspace/libreoffice_pip_ext/.venv/pyvenv.cfg \
+    && if [ -f "$CONFIG_DIR/.tmp/res/req/requirements.txt" ]; then \
+    uv pip install --requirement "$CONFIG_DIR/.tmp/res/req/requirements.txt"; fi
+
+
+
 
 # Many of these environment variable are required for python and LibreOffice imports to work correctly.
 # For instance without proper environment vars: from com.sun.star.frame import XComponentLoader # results in error
@@ -112,7 +121,7 @@ RUN poetry config virtualenvs.in-project true \
 #   This is by design so that LibreOfffice will use the virtual environment python by default.
 #   This is done by adding the virtual environment path to the beginning of the PATH environment variable.
 #   When Poetry installls the virtual environment it will be modified to include the system site packages.
-ENV PATH="/workspace/python_libre_pythonista_ext/.venv/bin:/usr/lib/libreoffice/program:/usr/lib/libreoffice/sdk/bin:$PATH" \
+ENV PATH="/workspace/libreoffice_pip_ext/.venv/bin:/usr/lib/libreoffice/program:$PATH" \
     URE_BOOTSTRAP="file:///usr/lib/libreoffice/program/fundamentalrc" \
     # PYTHONPATH="/usr/lib/libreoffice/program/../program:$PYTHONPATH" \
     PYTHONPATH="/usr/lib/libreoffice/program:$PYTHONPATH" \
@@ -120,32 +129,15 @@ ENV PATH="/workspace/python_libre_pythonista_ext/.venv/bin:/usr/lib/libreoffice/
     LD_LIBRARY_PATH="/usr/lib/libreoffice/sdk/lib:/usr/lib/libreoffice/program:/usr/lib/jvm/java-1.8-openjdk/jre/lib/amd64/client:/usr/lib/jvm/java-1.8-openjdk/jre/lib/amd64/server:/usr/lib/jvm/java-1.8-openjdk/jre/lib/amd64/native_threads:/usr/lib/jvm/java-1.8-openjdk/jre/lib/amd64" \
     OFFICE_HOME="/usr/lib/libreoffice" \
     OFFICE_PROGRAM_PATH="/usr/lib/libreoffice/program" \
-    UNO_PATH="/usr/lib/libreoffice/program" \
-    OO_SDK_NAME="libreoffice_sdk" \
-    OO_SDK_HOME="/usr/lib/libreoffice/sdk" \
-    OO_SDK_MAKE_HOME="/usr/bin" \
-    OO_SDK_CAT_HOME="/bin" \
-    OO_SDK_SED_HOME="/bin" \
-    OO_SDK_ZIP_HOME="usr/bin" \
-    OO_SDK_URE_BIN_DIR="/usr/lib/libreoffice/program" \
-    OO_SDK_URE_LIB_DIR="/usr/lib/libreoffice/program" \
-    OO_SDK_URE_JAVA_DIR="/usr/lib/libreoffice/program/classes" \
-    OO_SDK_JAVA_HOME="/usr/lib/jvm/java-1.8-openjdk" \
-    OO_SDK_OUTPUT_DIR="/config" \
-    OO_SDK_OUT="/config/libreoffice_sdk" \
-    OO_TYPES_UNO="/usr/lib/libreoffice/program/types.rdb" \
-    OO_TYPES_OFFICE="/usr/lib/libreoffice/program/types/offapi.rdb"
-
-# OO_TYPES_UNO and OO_TYPES_OFFICE are not part of the default configuration but can be used to for idl purporses.
-# $ unoidl-write $OO_TYPES_UNO $OO_TYPES_OFFICE "${PWD}"/idl/MyFile.idl "${PWD}"/build/MyFile.rdb
+    UNO_PATH="/usr/lib/libreoffice/program"
 
 # Cannot persist python version into build here so, get the python version and run all the commands the use it.
 RUN MY_PY_VER=$(python -c "import sys; major, minor = sys.version_info[:2]; print(f'{major}.{minor}');" ) \
     && echo "Python version: $MY_PY_VER" \
-    && echo "/workspace/python_libre_pythonista_ext" >> "/workspace/python_libre_pythonista_ext/.venv/lib/python$MY_PY_VER/site-packages/ooo_dev_tools.pth" \
-    && echo "/usr/lib/libreoffice/program" >> "/workspace/python_libre_pythonista_ext/.venv/lib/python$MY_PY_VER/site-packages/libreoffice_program.pth"
+    && echo "/workspace/libreoffice_pip_ext" >> "/workspace/libreoffice_pip_ext/.venv/lib/python$MY_PY_VER/site-packages/ooo_dev_tools.pth" \
+    && echo "/usr/lib/libreoffice/program" >> "/workspace/libreoffice_pip_ext/.venv/lib/python$MY_PY_VER/site-packages/libreoffice_program.pth"
 
-WORKDIR /workspace/python_libre_pythonista_ext
+WORKDIR /workspace/libreoffice_pip_ext
 
 # EXPOSE $CODE_PORT
 COPY ../.devcontainer/root/defaults /defaults
@@ -168,4 +160,3 @@ RUN chmod -R +x "$CONFIG_DIR/.tmp/res/scripts" \
     && chmod +x "/usr/local/bin/gitget"
 
 # ENTRYPOINT ["/usr/local/bin/startup.sh"]
-

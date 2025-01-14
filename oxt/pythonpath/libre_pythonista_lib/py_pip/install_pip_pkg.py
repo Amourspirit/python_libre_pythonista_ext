@@ -9,10 +9,14 @@ import urllib.request
 import urllib.error
 from pathlib import Path
 import json
-import uno
 
 from ooodev.loader import Lo
-from ooodev.dialog.msgbox import MessageBoxResultsEnum, MessageBoxType, MsgBox, MessageBoxButtonsEnum
+from ooodev.dialog.msgbox import (
+    MessageBoxResultsEnum,
+    MessageBoxType,
+    MsgBox,
+    MessageBoxButtonsEnum,
+)
 
 from ooodev.dialog.input import Input
 
@@ -30,7 +34,9 @@ if TYPE_CHECKING:
     from ....___lo_pip___.events.named_events import GenNamedEvent
     from ....___lo_pip___.events.lo_events import LoEvents
     from ....___lo_pip___.events.args.event_args import EventArgs
-    from ....___lo_pip___.install.progress_window.progress_dialog_true import ProgressDialogTrue
+    from ....___lo_pip___.install.progress_window.progress_dialog_true import (
+        ProgressDialogTrue,
+    )
     from ....___lo_pip___.lo_util.target_path import TargetPath
     from ....___lo_pip___.install.progress import Progress
 else:
@@ -42,13 +48,14 @@ else:
     from ___lo_pip___.events.named_events import GenNamedEvent
     from ___lo_pip___.events.lo_events import LoEvents
     from ___lo_pip___.events.args.event_args import EventArgs
-    from ___lo_pip___.install.progress_window.progress_dialog_true import ProgressDialogTrue
+    from ___lo_pip___.install.progress_window.progress_dialog_true import (
+        ProgressDialogTrue,
+    )
     from ___lo_pip___.lo_util.target_path import TargetPath
     from ___lo_pip___.install.progress import Progress
 
 
 class InstallPipPkg:
-
     def __init__(self) -> None:
         self._log = OxtLogger(log_name=self.__class__.__name__)
         self._ctx = Lo.get_context()
@@ -105,8 +112,7 @@ class InstallPipPkg:
                 )
                 self._log.warning(f"Package {name} not found.")
                 return
-            # self._install_pkg(name, ver, dlg.force_install)
-            # Run _install_pkg in a separate thread
+
             force_install = dlg.force_install
             self.log.debug(
                 f"InstallPipPkg.install() Starting install Thread. Package: {name}, Version: {ver}, Force install: {force_install}"
@@ -207,24 +213,9 @@ class InstallPipPkg:
         """Install a package using pip."""
         self._log.debug(f"InstallPipPkg._install_pkg({pkg}, {version}, {force})")
         try:
-            site_packages_dir = self._get_site_packages_dir(pkg)
-            before_dirs = self._get_directory_names(site_packages_dir)
-            before_files = self._get_file_names(site_packages_dir)
-
             install = InstallPkg(ctx=self._ctx)
             result = install.install(req={pkg: version}, force=force)
             if result:
-                self._delete_json_file(site_packages_dir, pkg)
-                after_dirs = self._get_directory_names(site_packages_dir)
-                after_files = self._get_file_names(site_packages_dir)
-                self._save_changed(
-                    pkg=pkg,
-                    pth=site_packages_dir,
-                    before_files=before_files,
-                    after_files=after_files,
-                    before_dirs=before_dirs,
-                    after_dirs=after_dirs,
-                )
                 self._post_install()
                 MsgBox.msgbox(
                     self._rr.resolve_string("msg13").format(pkg),  # Package {} installed successfully
@@ -247,9 +238,7 @@ class InstallPipPkg:
         """Install a package using pip."""
         self._log.debug(f"InstallPipPkg._un_install_pkg({pkg})")
         install = InstallPkg(ctx=self._ctx)
-        if install.uninstall(pkg):
-            with contextlib.suppress(Exception):
-                self._remove_changed(pkg, self._get_site_packages_dir(pkg))
+        if install.uninstall(pkg, remove_tracking_file=True):
             MsgBox.msgbox(
                 self._rr.resolve_string("msg15").format(pkg),  # Package {} removed successfully
                 title=self._rr.resolve_string("title02"),
@@ -310,108 +299,6 @@ class InstallPipPkg:
             if progress:
                 progress.kill()
         self._log.debug("Post Install Done")
-
-    # region Json directory methods
-    def _get_site_packages_dir(self, pkg: str) -> str:
-        """Get the site-packages directory."""
-        return self._target_path.get_package_target(pkg)
-
-    def _get_file_names(self, path: str) -> List[str]:
-        # only get the file names in the specified path
-        return [name for name in os.listdir(path) if os.path.isfile(os.path.join(path, name))]
-
-    def _get_directory_names(self, path: str) -> List[str]:
-        """Get the directory names in the specified path."""
-        return [name for name in os.listdir(path) if os.path.isdir(os.path.join(path, name))]
-
-    def _save_changed(
-        self,
-        pkg: str,
-        pth: str,
-        before_files: List[str],
-        after_files: List[str],
-        before_dirs: List[str],
-        after_dirs: List[str],
-    ) -> None:
-        """Save the new directory names to a JSON file."""
-
-        def _create_json() -> str:
-            """Create a JSON file with the file names."""
-            new_dirs = list(set(after_dirs) - set(before_dirs))
-            new_files = list(set(after_files) - set(before_files))
-            data = {
-                "id": f"{self._config.oxt_name}_pip_pkg",
-                "package": pkg,
-                "version": self._config.extension_version,
-                "data": {"new_dirs": new_dirs, "new_files": new_files},
-            }
-            return json.dumps(data, indent=4)
-
-        try:
-            json_str = _create_json()
-            json_path = os.path.join(pth, f"{self._config.lo_implementation_name}_{pkg}.json")
-            with open(json_path, "w") as f:
-                f.write(json_str)
-            self._log.info(f"New directories and files saved to {json_path}")
-        except Exception as e:
-            self._log.exception(f"Error saving new directories and files: {e}")
-
-    def _delete_json_file(self, path: str, pkg: str) -> None:
-        """Delete the JSON file if it exists."""
-        json_path = os.path.join(path, f"{self._config.lo_implementation_name}_{pkg}.json")
-        if os.path.exists(json_path):
-            os.remove(json_path)
-            self._log.info(f"Deleted {json_path}")
-
-    # get the json data from the file if it exists
-    def _get_json_data(self, path: str, pkg: str) -> Dict[str, Any]:
-        """Get the JSON data from the file if it exists."""
-        json_path = os.path.join(path, f"{self._config.lo_implementation_name}_{pkg}.json")
-        if os.path.exists(json_path):
-            with open(json_path, "r") as f:
-                self.log.debug(f"_get_json_data() Reading JSON file {json_path}")
-                return json.load(f)
-        self.log.debug(f"_get_json_data() JSON file {json_path} does not exist.")
-        return {}
-
-    def _remove_json_data(self, path: str, pkg: str) -> None:
-        """Remove the JSON data if it exists."""
-        json_path = os.path.join(path, f"{self._config.lo_implementation_name}_{pkg}.json")
-        if os.path.exists(json_path):
-            os.remove(json_path)
-            self._log.info(f"Deleted {json_path}")
-
-    # check and see if there are any directories and files that need to be removed. Us the Json file to get the data
-    def _remove_changed(self, pkg: str, pth: str) -> None:
-        """Remove the new directories and files."""
-        data_dict = self._get_json_data(pth, pkg)
-        data: Dict[str, str] = data_dict.get("data", {})
-        new_dirs = data.get("new_dirs", [])
-        new_files = data.get("new_files", [])
-        for d in new_dirs:
-            dir_path = os.path.join(pth, d)
-            try:
-                if os.path.exists(dir_path):
-                    shutil.rmtree(dir_path)
-                    self._log.info(f"_remove_changed() Removed directory: {d}")
-                else:
-                    self._log.debug(f"_remove_changed() Directory {d} does not exist.")
-            except Exception as e:
-                self._log.error(f"_remove_changed() Error removing directory {d}: {e}")
-        for f in new_files:
-            file_path = os.path.join(pth, f)
-            try:
-                if os.path.exists(file_path):
-                    os.remove(file_path)
-                    self._log.info(f"_remove_changed() Removed file: {f}")
-                else:
-                    self._log.debug(f"_remove_changed() File {f} does not exist.")
-            except Exception as e:
-                self._log.error(f"_remove_changed() Error removing file {f}: {e}")
-        self._remove_json_data(pth, pkg)
-        self._log.info("Removed new directories and files.")
-
-    # endregion Json directory methods
 
     @property
     def log(self) -> OxtLogger:

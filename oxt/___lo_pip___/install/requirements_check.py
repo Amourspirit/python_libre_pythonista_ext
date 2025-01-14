@@ -5,63 +5,91 @@ No Internet needed.
 """
 
 from __future__ import annotations
+import sys
 
+import importlib.util
 from importlib.metadata import PackageNotFoundError, version
 
 from ..config import Config
 from ..ver.rules.ver_rules import VerRules
 from ..oxt_logger import OxtLogger
 from ..meta.singleton import Singleton
+from .py_packages.packages import Packages
+from .py_packages.py_package import PyPackage
+from ..settings.install_settings import InstallSettings
 
 
 class RequirementsCheck(metaclass=Singleton):
     """Requirements Check class."""
 
     def __init__(self) -> None:
-        self._logger = OxtLogger(log_name=__name__)
+        self._log = OxtLogger(log_name=__name__)
         self._config = Config()
         self._ver_rules = VerRules()
 
-    def run_imports_ready(self) -> bool:
+    def run_imports_ready(self, *other_mods: str) -> bool:
         """
         Check if the run imports are ready.
 
         Returns:
             bool: ``True`` if all run imports are ready; Otherwise, ``False``.
         """
+        for oth in other_mods:
+            spec = importlib.util.find_spec(oth)
+            if spec is None:
+                self._log.warning("Import %s failed.", oth)
+                return False
+
         if not self._config.run_imports:
             return True
 
         for imp in self._config.run_imports:
-            try:
-                __import__(imp)
-            except (ModuleNotFoundError, ImportError):
-                self._logger.warning(f"Import {imp} failed.")
+            spec = importlib.util.find_spec(imp)
+            if spec is None:
+                self._log.warning("Import %s failed.", imp)
                 return False
+            # try:
+            #     __import__(imp)
+            # except (ModuleNotFoundError, ImportError):
+            #     self._log.warning(f"Import {imp} failed.")
+            #     return False
 
         if self._config.is_linux:
             for imp in self._config.run_imports_linux:
-                try:
-                    __import__(imp)
-                except (ModuleNotFoundError, ImportError):
-                    self._logger.warning(f"Linux Import {imp} failed.")
+                spec = importlib.util.find_spec(imp)
+                if spec is None:
+                    self._log.warning("Import %s failed.", imp)
                     return False
+                # try:
+                #     __import__(imp)
+                # except (ModuleNotFoundError, ImportError):
+                #     self._log.warning(f"Linux Import {imp} failed.")
+                #     return False
 
         if self._config.is_mac:
             for imp in self._config.run_imports_macos:
-                try:
-                    __import__(imp)
-                except (ModuleNotFoundError, ImportError):
-                    self._logger.warning(f"Mac Import {imp} failed.")
+                spec = importlib.util.find_spec(imp)
+                if spec is None:
+                    self._log.warning("Import %s failed.", imp)
                     return False
+                # try:
+                #     __import__(imp)
+                # except (ModuleNotFoundError, ImportError):
+                #     self._log.warning(f"Mac Import {imp} failed.")
+                #     return False
 
         if self._config.is_win:
             for imp in self._config.run_imports_win:
-                try:
-                    __import__(imp)
-                except (ModuleNotFoundError, ImportError):
-                    self._logger.warning(f"Windows Import {imp} failed.")
+                spec = importlib.util.find_spec(imp)
+                if spec is None:
+                    self._log.warning("Import %s failed.", imp)
                     return False
+                # try:
+                #     __import__(imp)
+                # except (ModuleNotFoundError, ImportError):
+                #     self._log.warning(f"Windows Import {imp} failed.")
+                #     return False
+        self._log.debug("All runtime imports are ready.")
         return True
 
     def check_requirements(self) -> bool:
@@ -71,65 +99,42 @@ class RequirementsCheck(metaclass=Singleton):
         Returns:
             bool: ``True`` if requirements are installed; Otherwise, ``False``.
         """
-        result = all(
-            self._is_valid_version(name=name, ver=ver) == 0
-            for name, ver in self._config.requirements.items()
-        )
-        if not result:
-            self._logger.error("Requirements not met.")
+        install_settings = InstallSettings()
+        config_req = self._config.requirements.copy()
+        for pkg in install_settings.no_install_packages:
+            if pkg in config_req:
+                self._log.debug("Package %s is in the no install list. Not checking and continuing.", pkg)
+                del config_req[pkg]
+
+        requirements_met = all(self._is_valid_version(name=name, ver=ver) == 0 for name, ver in config_req.items())
+        if not requirements_met:
+            self._log.error("Requirements not met. Tested config requirements.")
             return False
-        if self._config.is_linux:
-            result = all(
-                self._is_valid_version(name=name, ver=ver) == 0
-                for name, ver in self._config.requirements_linux.items()
-            )
-            if not result:
-                self._logger.error("Linux Requirements not met.")
-                return False
 
-            if self._config.lp_settings.experimental_editor:
-                result = all(
-                    self._is_valid_version(name=name, ver=ver) == 0
-                    for name, ver in self._config.experimental_requirements_linux.items()
-                )
-                if not result:
-                    self._logger.error("Linux Experimental Requirements not met.")
-                    return False
+        ver_rules = VerRules()
 
-        elif self._config.is_win:
-            result = all(
-                self._is_valid_version(name=name, ver=ver) == 0
-                for name, ver in self._config.requirements_win.items()
-            )
-            if not result:
-                self._logger.error("Windows Requirements not met.")
+        def check_installed_valid(pkg: PyPackage) -> bool:
+            nonlocal ver_rules, install_settings
+            if pkg.name in install_settings.no_install_packages:
+                self._log.debug("Package %s is in the no install list. Not checking and continuing.", pkg.name)
+                return True
+            ver_str = self._get_package_version(pkg.name)
+            if not ver_str:
+                self._log.debug("Package %s not installed ...", pkg.name)
                 return False
-            if self._config.lp_settings.experimental_editor:
-                result = all(
-                    self._is_valid_version(name=name, ver=ver) == 0
-                    for name, ver in self._config.experimental_requirements_win.items()
-                )
-                if not result:
-                    self._logger.error("Windows Experimental Requirements not met.")
-                    return False
-        elif self._config.is_mac:
-            result = all(
-                self._is_valid_version(name=name, ver=ver) == 0
-                for name, ver in self._config.requirements_macos.items()
-            )
-            if not result:
-                self._logger.error("Mac Requirements not met.")
-                return False
-            if self._config.lp_settings.experimental_editor:
-                result = all(
-                    self._is_valid_version(name=name, ver=ver) == 0
-                    for name, ver in self._config.experimental_requirements_macos.items()
-                )
-                if not result:
-                    self._logger.error("MacOs Experimental Requirements not met.")
-                    return False
+            try:
+                _, pkg_ver = pkg.name_version
+                return ver_rules.get_installed_is_valid(vstr=pkg_ver, check_version=ver_str)
+            except Exception as e:
+                self._log.error(e)
+            return False
 
-        self._logger.info("Requirements met.")
+        pkgs = Packages()
+        requirements_met = all(check_installed_valid(pkg) for pkg in pkgs.packages)
+        if not requirements_met:
+            self._log.info("Requirements not met. Tested py_packages.")
+            return False
+        self._log.info("Requirements are met")
         return True
 
     def _get_package_version(self, package_name: str) -> str:
@@ -160,32 +165,34 @@ class RequirementsCheck(metaclass=Singleton):
         """
         pkg_ver = self._get_package_version(name)
         if not pkg_ver:
-            self._logger.debug(f"Package {name} not installed.")
+            self._log.debug("Package %s not installed.", name)
             return 2
 
         if not ver:
             # set default version to >=0.0.0
             ver = "==*"
         rules = self._ver_rules.get_matched_rules(ver)
-        self._logger.debug(f"Found Package {name} {pkg_ver} already installed ...")
+        self._log.debug("Found Package %s %s already installed ...", name, pkg_ver)
         if not rules:
             if pkg_ver:
-                self._logger.info(
-                    f"Package {name} {pkg_ver} already installed, no rules"
-                )
+                self._log.info("Package %s %s already installed, no rules", name, pkg_ver)
             else:
-                self._logger.error(f"Unable to find rules for {name} {ver}")
+                self._log.error("Unable to find rules for %s %s", name, ver)
             return -1
 
-        rules_pass = self._ver_rules.get_installed_is_valid_by_rules(
-            rules=rules, check_version=pkg_ver
-        )
+        rules_pass = self._ver_rules.get_installed_is_valid_by_rules(rules=rules, check_version=pkg_ver)
         if rules_pass is False:
-            self._logger.info(
-                f"Package {name} {pkg_ver} already installed. It does not meet requirements specified by: {ver}"
+            self._log.info(
+                "Package %s %s already installed. It does not meet requirements specified by: %s",
+                name,
+                pkg_ver,
+                ver,
             )
             return 1
-        self._logger.info(
-            f"Package {name} {pkg_ver} already installed. Requirements met for constraints: {ver}"
+        self._log.info(
+            "Package %s %s already installed. Requirements met for constraints: %s",
+            name,
+            pkg_ver,
+            ver,
         )
         return 0

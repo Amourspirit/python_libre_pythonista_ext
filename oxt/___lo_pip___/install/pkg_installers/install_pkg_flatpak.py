@@ -1,6 +1,6 @@
 from __future__ import annotations
 import subprocess
-
+from pathlib import Path
 
 # import pkg_resources
 from ...oxt_logger import OxtLogger
@@ -27,6 +27,9 @@ class InstallPkgFlatpak(InstallPkg):
         Returns:
             bool: True if successful, False otherwise.
         """
+        if pkg in self.no_pip_install:
+            self._logger.debug("_install_pkg() %s is in the no install list. Not Installing and continuing.", pkg)
+            return True
 
         if not self.config.site_packages:
             self._logger.error(
@@ -57,10 +60,16 @@ class InstallPkgFlatpak(InstallPkg):
             is_ignore = True
             before_dirs = []
             before_files = []
+            before_bin_files = []
+            before_lib_files = []
+            before_inc_files = []
         else:
             is_ignore = False
             before_dirs = self._get_directory_names(site_packages_dir)
             before_files = self._get_file_names(site_packages_dir)
+            before_bin_files = self._get_file_names(Path(site_packages_dir, "bin"))
+            before_lib_files = self._get_file_names(Path(site_packages_dir, "lib"))
+            before_inc_files = self._get_file_names(Path(site_packages_dir, "include"))
 
         progress: Progress | None = None
         if self._config.show_progress and self.show_progress:
@@ -73,27 +82,16 @@ class InstallPkgFlatpak(InstallPkg):
         else:
             self._logger.debug("Progress Window is disabled")
 
-        if STARTUP_INFO:
-            process = subprocess.run(
-                cmd,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                encoding="utf-8",
-                errors="replace",
-                text=True,
-                env=self._get_env(),
-                startupinfo=STARTUP_INFO,
-            )
-        else:
-            process = subprocess.run(
-                cmd,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                encoding="utf-8",
-                errors="replace",
-                text=True,
-                env=self._get_env(),
-            )
+        process = subprocess.run(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            encoding="utf-8",
+            errors="replace",
+            text=True,
+            env=self._get_env(),
+            startupinfo=STARTUP_INFO,
+        )
 
         if progress:
             self._logger.debug("Ending Progress Window")
@@ -103,14 +101,22 @@ class InstallPkgFlatpak(InstallPkg):
                 self._delete_json_file(site_packages_dir, pkg)
                 after_dirs = self._get_directory_names(site_packages_dir)
                 after_files = self._get_file_names(site_packages_dir)
-                self._save_changed(
-                    pkg=pkg,
-                    pth=site_packages_dir,
-                    before_files=before_files,
-                    after_files=after_files,
-                    before_dirs=before_dirs,
-                    after_dirs=after_dirs,
-                )
+                after_bin_files = self._get_file_names(Path(site_packages_dir, "bin"))
+                after_lib_files = self._get_file_names(Path(site_packages_dir, "lib"))
+                after_inc_files = self._get_file_names(Path(site_packages_dir, "include"))
+                changes = {
+                    "before_files": before_files,
+                    "before_dirs": before_dirs,
+                    "before_bin_files": before_bin_files,
+                    "before_lib_files": before_lib_files,
+                    "before_inc_files": before_inc_files,
+                    "after_files": after_files,
+                    "after_dirs": after_dirs,
+                    "after_bin_files": after_bin_files,
+                    "after_lib_files": after_lib_files,
+                    "after_inc_files": after_inc_files,
+                }
+                self._save_changed(pkg=pkg, pth=site_packages_dir, changes=changes)
             self._logger.info(msg)
             return True
         else:

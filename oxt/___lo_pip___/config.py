@@ -74,13 +74,8 @@ class Config(metaclass=Singleton):
 
             self._session = Session()
             self._extension_info = ExtensionInfo()
-            self._auto_install_in_site_packages = (
-                self._basic_config.auto_install_in_site_packages
-            )
-            if (
-                not self._auto_install_in_site_packages
-                and os.getenv("DEV_CONTAINER", "") == "1"
-            ):
+            self._auto_install_in_site_packages = self._basic_config.auto_install_in_site_packages
+            if not self._auto_install_in_site_packages and os.getenv("DEV_CONTAINER", "") == "1":
                 # if running in a dev container (Codespace)
                 self._auto_install_in_site_packages = True
             self._log_level = logger_config.log_level
@@ -95,9 +90,8 @@ class Config(metaclass=Singleton):
             util = Util()
 
             # self._package_location = Path(file_util.get_package_location(self._lo_identifier, True))
-            self._package_location = Path(
-                self._extension_info.get_extension_loc(self.lo_identifier, True)
-            ).resolve()
+            self._package_location = Path(self._extension_info.get_extension_loc(self.lo_identifier, True)).resolve()
+            self._package_name = self._package_location.stem
             self._python_major_minor = self._get_python_major_minor()
 
             self._is_user_installed = False
@@ -109,9 +103,7 @@ class Config(metaclass=Singleton):
                 self._python_path = Path(self.join(util.config("Module"), "python.exe"))
                 self._site_packages = self._get_windows_site_packages_dir()
             elif self._is_mac:
-                self._python_path = Path(
-                    self.join(util.config("Module"), "..", "Resources", "python")
-                ).resolve()
+                self._python_path = Path(self.join(util.config("Module"), "..", "Resources", "python")).resolve()
                 self._site_packages = self._get_mac_site_packages_dir()
             elif self._is_app_image:
                 self._python_path = Path(self.join(util.config("Module"), "python"))
@@ -190,10 +182,7 @@ class Config(metaclass=Singleton):
             if site.USER_SITE:
                 site_packages = Path(site.USER_SITE).resolve()
             else:
-                site_packages = (
-                    Path.home()
-                    / f".local/lib/python{self.python_major_minor}/site-packages"
-                )
+                site_packages = Path.home() / f".local/lib/python{self.python_major_minor}/site-packages"
             site_packages.mkdir(parents=True, exist_ok=True)
         return str(site_packages)
 
@@ -202,9 +191,7 @@ class Config(metaclass=Singleton):
         sand_box = os.getenv("FLATPAK_SANDBOX_DIR", "") or str(
             Path.home() / ".var/app/org.libreoffice.LibreOffice/sandbox"
         )
-        site_packages = (
-            Path(sand_box) / f"lib/python{self.python_major_minor}/site-packages"
-        )
+        site_packages = Path(sand_box) / f"lib/python{self.python_major_minor}/site-packages"
         site_packages.mkdir(parents=True, exist_ok=True)
         return str(site_packages)
 
@@ -218,8 +205,7 @@ class Config(metaclass=Singleton):
                 site_packages = Path(site.USER_SITE).resolve()
             else:
                 site_packages = (
-                    Path.home()
-                    / f"Library/LibreOfficePython/{self.python_major_minor}/lib/python/site-packages"
+                    Path.home() / f"Library/LibreOfficePython/{self.python_major_minor}/lib/python/site-packages"
                 )
             site_packages.mkdir(parents=True, exist_ok=True)
         return str(site_packages)
@@ -234,8 +220,7 @@ class Config(metaclass=Singleton):
                 site_packages = Path(site.USER_SITE).resolve()
             else:
                 site_packages = (
-                    Path.home()
-                    / f"'/AppData/Roaming/Python/Python{self.python_major_minor}/site-packages'"
+                    Path.home() / f"'/AppData/Roaming/Python/Python{self.python_major_minor}/site-packages'"
                 )
             site_packages.mkdir(parents=True, exist_ok=True)
         return str(site_packages)
@@ -289,36 +274,6 @@ class Config(metaclass=Singleton):
         This is the default locale to use if the locale is not set in the LibreOffice configuration.
         """
         return "-".join(self.default_locale)
-
-    @property
-    def experimental_requirements_linux(self) -> Dict[str, str]:
-        """
-        Gets the set of experimental requirements specific to Linux.
-        The value for this property can be set in pyproject.toml (tool.oxt.requirements_linux)
-        The key is the name of the package and the value is the version number.
-        Example: {"requests": ">=2.25.1"}
-        """
-        return self.basic_config.experimental_requirements_linux
-
-    @property
-    def experimental_requirements_macos(self) -> Dict[str, str]:
-        """
-        Gets the set of experimental requirements specific to Mac OS.
-        The value for this property can be set in pyproject.toml (tool.oxt.requirements_macos)
-        The key is the name of the package and the value is the version number.
-        Example: {"requests": ">=2.25.1"}
-        """
-        return self.basic_config.experimental_requirements_macos
-
-    @property
-    def experimental_requirements_win(self) -> Dict[str, str]:
-        """
-        Gets the set of experimental requirements specific to Windows.
-        The value for this property can be set in pyproject.toml (tool.oxt.requirements_win)
-        The key is the name of the package and the value is the version number.
-        Example: {"requests": ">=2.25.1"}
-        """
-        return self.basic_config.experimental_requirements_win
 
     @property
     def url_pip(self) -> str:
@@ -404,36 +359,6 @@ class Config(metaclass=Singleton):
         Example: {"requests": ">=2.25.1"}
         """
         return self._basic_config.requirements
-
-    @property
-    def requirements_linux(self) -> Dict[str, str]:
-        """
-        Gets the set of requirements for Linux.
-        The value for this property can be set in pyproject.toml (tool.oxt.requirements_linux)
-        The key is the name of the package and the value is the version number.
-        Example: {"requests": ">=2.25.1"}
-        """
-        return self._basic_config.requirements_linux
-
-    @property
-    def requirements_macos(self) -> Dict[str, str]:
-        """
-        Gets the set of requirements for macOS.
-        The value for this property can be set in pyproject.toml (tool.oxt.requirements_macos)
-        The key is the name of the package and the value is the version number.
-        Example: {"requests": ">=2.25.1"}
-        """
-        return self._basic_config.requirements_macos
-
-    @property
-    def requirements_win(self) -> Dict[str, str]:
-        """
-        Gets the set of requirements for Windows.
-        The value for this property can be set in pyproject.toml (tool.oxt.requirements_win)
-        The key is the name of the package and the value is the version number.
-        Example: {"requests": ">=2.25.1"}
-        """
-        return self._basic_config.requirements_win
 
     @property
     def zipped_preinstall_pure(self) -> bool:
@@ -639,6 +564,14 @@ class Config(metaclass=Singleton):
         return self._package_location
 
     @property
+    def package_name(self) -> str:
+        """
+        Gets the LibreOffice package name minus the ``.oxt`` extension.
+        This value is derived from the package location.
+        """
+        return self._package_name
+
+    @property
     def extension_info(self) -> ExtensionInfo:
         """
         Gets the LibreOffice extension info.
@@ -763,6 +696,13 @@ class Config(metaclass=Singleton):
         return self._basic_config.sym_link_cpython
 
     @property
+    def require_install_name_match(self) -> bool:
+        """
+        Gets the flag indicating if the package name must match the install name.
+        """
+        return self._basic_config.require_install_name_match
+
+    @property
     def run_imports(self) -> Set[str]:
         """
         Gets the set of imports that are required to run this extension.
@@ -828,11 +768,56 @@ class Config(metaclass=Singleton):
     @property
     def oxt_name(self) -> str:
         """
-        Gets the Otx name of the extension without the ``.otx`` extension.
+        Gets the Oxt name of the extension without the ``.oxt`` extension.
 
         The value for this property can be set in pyproject.toml (tool.oxt.token.oxt_name)
         """
         return self._basic_config.oxt_name
+
+    @property
+    def flatpak_libre_pythonista_py_editor(self) -> str:
+        """
+        Gets the flatpak LibrePythonista python editor such as ``io.github.amourspirit.LibrePythonista_PyEditor``.
+
+        The value for this property can be set in pyproject.toml (tool.libre_pythonista.config.flatpak_libre_pythonista_py_editor)
+        """
+        return self._basic_config.flatpak_libre_pythonista_py_editor
+
+    @property
+    def flatpak_libre_pythonista_py_editor_cell_cmd(self) -> str:
+        """
+        Gets the flatpak LibrePythonista python editor cell command such as ``cell_edit``.
+
+        The value for this property can be set in pyproject.toml (tool.libre_pythonista.config.flatpak_libre_pythonista_py_editor_cell_cmd)
+        """
+        return self._basic_config.flatpak_libre_pythonista_py_editor_cell_cmd
+
+    @property
+    def flatpak_libre_pythonista_py_editor_install_url(self) -> str:
+        """
+        Gets the flatpak LibrePythonista python editor install instructions url.
+
+        The value for this property can be set in pyproject.toml (tool.libre_pythonista.config.flatpak_libre_pythonista_py_editor_install_url)
+        """
+        return self._basic_config.flatpak_libre_pythonista_py_editor_install_url
+
+    @property
+    def lo_pip_dir(self) -> str:
+        """
+        Gets the Main Library directory name for this extension.
+
+        The value for this property can be set in pyproject.toml (tool.oxt.token.lo_pip)
+        """
+        return self._basic_config.lo_pip_dir
+
+    @property
+    def cmd_clean_file_prefix(self) -> str:
+        """
+        Gets the command clean file prefix.
+
+        The value for this property can be set in pyproject.toml (tool.oxt.config.cmd_clean_file_prefix)
+        """
+        return self._basic_config.cmd_clean_file_prefix
 
     # region tool.libre_pythonista.config
     @property
@@ -907,6 +892,15 @@ class Config(metaclass=Singleton):
         The value for this property can be set in pyproject.toml (tool.libre_pythonista.py_script_sheet_on_calculate)
         """
         return self._basic_config.py_script_sheet_on_calculate
+
+    @property
+    def lp_py_cell_edit_sock_timeout(self) -> int:
+        """
+        Gets the LibrePythonista python cell edit socket timeout.
+
+        The value for this property can be set in pyproject.toml (tool.libre_pythonista.config.lp_py_cell_edit_sock_timeout)
+        """
+        return self._basic_config.lp_py_cell_edit_sock_timeout
 
     # endregion tool.libre_pythonista.config
     @property

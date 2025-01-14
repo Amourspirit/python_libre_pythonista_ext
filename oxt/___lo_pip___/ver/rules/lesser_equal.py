@@ -81,7 +81,7 @@ class LesserEqual(VerRuleBase):
             if len(versions) != 1:
                 return -2
             v1 = versions[0]
-            return 0 if check_ver < v1 or check_ver == v1 else 1
+            return 0 if check_ver <= v1 else 1
         except Exception:
             return -2
 
@@ -95,4 +95,4 @@ class LesserEqual(VerRuleBase):
         Returns:
             bool: True if the installed version is valid, False otherwise.
         """
-        return self.get_version_is_valid(check_version) >= 0
+        return self.get_version_is_valid(check_version) == 0

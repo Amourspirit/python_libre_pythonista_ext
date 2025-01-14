@@ -20,28 +20,24 @@ class Tilde(VerRuleBase):
     If you only specify a major version, then minor- and patch-level changes are allowed.
     """
 
-    def _starts_with_digits_and_dot(self, string: str) -> bool:
-        """Test if a string starts with one or more digits followed by a dot.
-
-        Args:
-            string (str): The input string.
-
-        Returns:
-            bool: True if the string matches the pattern, False otherwise.
-        """
-        pattern = r"^\d+\."
-        return bool(re.match(pattern, string))
-
     def get_is_match(self) -> bool:
         """Check if the version matches the given string."""
         v_len = len(self.vstr)
-        if v_len < 3:
+        if v_len < 2:
             return False
-        if not self.vstr.startswith("~="):
+        if not self.vstr.startswith("~"):
             return False
-        if not self._starts_with_digits_and_dot(self.vstr[2:].lstrip()):
+        if not self._starts_with_digits_dot_or_digit_only(self.vstr[1:].lstrip()):
             return False
+
         try:
+            ver = self.vstr[1:].strip()
+            chk_ver = ReqVersion(f"=={ver}")
+            if chk_ver.base_version != chk_ver.public:
+                # if the version has a pre-release, post-release, dev-release, etc.
+                # This is not supported by the tilde operator.
+                return False
+
             versions = self.get_versions()
             return len(versions) == 2
         except Exception:
@@ -52,16 +48,31 @@ class Tilde(VerRuleBase):
         # Single digit version is not valid such as ~=1
         # All version that start with ~= will have a ending version that ends with post# where # is a number.
 
-        ver = self.vstr[2:].strip()
+        ver = self.vstr[1:].strip()
         if ver == "":
             return []
-        if not self._starts_with_digits_and_dot(ver):
+
+        if not self._starts_with_digits_dot_or_digit_only(ver):
             return []
-        v1 = ReqVersion(f">={ver}")
-        if v1.micro > 0 or v1.minor > 0:
+
+        chk_ver = ReqVersion(f"=={ver}")
+        vp = chk_ver.version_parts
+
+        if vp.has_minor and vp.has_micro:
+            # ~1.2.3    >=1.2.3 <1.3.0
+            v1 = ReqVersion(f">={ver}")
             v2 = ReqVersion(f"<{v1.major}.{v1.minor + 1}.0")
-        else:
-            v2 = ReqVersion(f"<{v1.major + 1}.0.0")
+            return [v1, v2]
+
+        if vp.has_minor:
+            # ~1.2      >=1.2.0 <1.3.0
+            v1 = ReqVersion(f">={chk_ver.major}.{chk_ver.minor}.0")
+            v2 = ReqVersion(f"<{v1.major}.{v1.minor + 1}.0")
+            return [v1, v2]
+
+        # ~1    >=1.0.0 <2.0.0
+        v1 = ReqVersion(f">={chk_ver.major}.0.0")
+        v2 = ReqVersion(f"<{v1.major + 1}.0.0")
         return [v1, v2]
 
     # def _get_v2(self, v1: ReqVersion) -> ReqVersion:

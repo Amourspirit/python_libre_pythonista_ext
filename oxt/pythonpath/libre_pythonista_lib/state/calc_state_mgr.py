@@ -4,6 +4,8 @@ Manages the state of the document and Sheets.
 
 from __future__ import annotations
 from typing import Any, cast, Dict, TYPE_CHECKING
+import importlib.util
+
 from ooodev.calc import CalcDoc
 from ooodev.events.args.event_args import EventArgs
 from ooodev.utils.helper.dot_dict import DotDict
@@ -63,17 +65,13 @@ class CalcStateMgr(SingletonBase):
             self._log.debug(f"Initializing {self.__class__.__name__}")
         self._config = Config()
         self._sfa = Sfa()
-        self._lp_code_dir = (
-            f"vnd.sun.star.tdoc:/{self._doc.runtime_uid}/{self._config.lp_code_dir}"
-        )
+        self._lp_code_dir = f"vnd.sun.star.tdoc:/{self._doc.runtime_uid}/{self._config.lp_code_dir}"
         self._props: Dict[str, Any] = {}
         self._se = SharedEvent(doc)
         self._calc_event_ensured = False
         self._fn_on_lp_doc_events_ensured = self._on_lp_doc_events_ensured
         # CalcDocMgr is a singleton and it creates and instance of CalcStateMgr.
-        self._se.subscribe_event(
-            LP_DOC_EVENTS_ENSURED, self._fn_on_lp_doc_events_ensured
-        )
+        self._se.subscribe_event(LP_DOC_EVENTS_ENSURED, self._fn_on_lp_doc_events_ensured)
         self._is_first_init = True
 
     def _init_state_mgr(self) -> None:
@@ -95,9 +93,7 @@ class CalcStateMgr(SingletonBase):
     def _on_lp_doc_events_ensured(self, src: Any, event: EventArgs) -> None:
         self._log.debug("_on_lp_doc_events_ensured() Entered.")
         # runtime_uid
-        if isinstance(event.event_data, DotDict) and hasattr(
-            event.event_data, "run_id"
-        ):
+        if isinstance(event.event_data, DotDict) and hasattr(event.event_data, "run_id"):
             uid = event.event_data.run_id
         else:
             uid = self.runtime_uid  # noqa # type: ignore
@@ -145,11 +141,8 @@ class CalcStateMgr(SingletonBase):
             del self._props[key]
 
     def is_import_available(self, module_name: str) -> bool:
-        try:
-            __import__(module_name)
-        except (ModuleNotFoundError, ImportError):
-            return False
-        return True
+        spec = importlib.util.find_spec(module_name)
+        return spec is not None
 
     @property
     def is_pythonista_doc(self) -> bool:
@@ -247,9 +240,7 @@ class CalcStateMgr(SingletonBase):
         try:
             return self._imports2_ready
         except AttributeError:
-            self._imports2_ready = all(
-                self.is_import_available(imp) for imp in self._config.run_imports2
-            )
+            self._imports2_ready = all(self.is_import_available(imp) for imp in self._config.run_imports2)
         return self._imports2_ready
 
     @property

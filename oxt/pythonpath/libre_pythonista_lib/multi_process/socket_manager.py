@@ -4,14 +4,17 @@ import socket
 import struct
 import threading
 import json
+import tempfile
+from pathlib import Path
+import os
 
-
-_SOCKET_TIMEOUT_SEC = 10
 
 if TYPE_CHECKING:
     from ....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from ....___lo_pip___.config import Config
 else:
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from ___lo_pip___.config import Config
 
 
 class SocketManager:
@@ -22,7 +25,7 @@ class SocketManager:
     Methods:
         __init__(log: OxtLogger):
             Initializes the SocketManager with a logger, a socket pool, and a lock.
-        create_server_socket() -> Tuple[socket.socket, int]:
+        create_server_socket() -> Tuple[socket.socket, str, int, str]:
         accept_client(server_socket: socket.socket, process_id: str) -> socket.socket:
         send_message(message: Dict[str, Any], process_id: str) -> None:
         receive_all(length: int, process_id: str) -> bytes:
@@ -40,25 +43,58 @@ class SocketManager:
             lock (threading.Lock): A lock to ensure thread safety.
             socket_timeout_sec (int): The timeout period for socket operations. Default is 10 seconds.
         """
-        global _SOCKET_TIMEOUT_SEC
-        self.socket_timeout_sec = _SOCKET_TIMEOUT_SEC
+        config = Config()
+        self.socket_timeout_sec = config.lp_py_cell_edit_sock_timeout
         self._socket_pool: Dict[str, socket.socket] = {}
+        self._socket_file = ""
         self.log = OxtLogger(log_name=self.__class__.__name__)
         self.lock = threading.Lock()
 
-    def create_server_socket(self) -> Tuple[socket.socket, int]:
+    def create_server_socket(self) -> Tuple[socket.socket, str, int, str]:
         """
-        Creates a server socket bound to an available port on localhost.
+        Creates a server socket bound to an available port on localhost on Windows.
+        For Unix-based systems, it creates a server socket bound to a temporary file.
 
         Returns:
-            Tuple[socket.socket, int]: A tuple containing the server socket object and the port number it is bound to.
+            Tuple[socket.socket, str, int, str]: A tuple containing the server socket object, host, port number, socket_file it is bound to.
         """
-        server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        server_socket.bind(("localhost", 0))  # Bind to an available port
-        host, port = server_socket.getsockname()
+        config = Config()
+        force_tcp = False  # for debugging, default is False
+
+        host = "localhost"
+        sock_file = ""
+        sock_file_name = "librepythonista_edit.sock"
+        if config.is_win or config.is_snap or force_tcp:
+            server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            server_socket.bind((host, 0))  # Bind to an available port
+            _, port = server_socket.getsockname()  # host, port
+            self._socket_file = ""
+        else:
+            if config.is_flatpak:
+                home_dir = Path.home()
+                tmp = home_dir / ".librepythonista_tmp"
+                sock_file = f"~/.librepythonista_tmp/{sock_file_name}"
+                if not tmp.exists():
+                    tmp.mkdir()
+            else:
+                tmp = Path(tempfile.gettempdir())
+            port = 0
+            socket_path = tmp / sock_file_name
+            if socket_path.exists():
+                socket_path.unlink()
+            self._socket_file = str(socket_path)
+            server_socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+            server_socket.bind(self._socket_file)
+            os.chmod(socket_path, 0o600)  # Restrict access to the socket
+
         server_socket.listen(1)
         server_socket.settimeout(self.socket_timeout_sec)  # Set a timeout of 10 seconds
-        return server_socket, port
+        if sock_file:
+            # sock_file is a string and needs to be expanded.
+            # The client will handle expanding the path.
+            return server_socket, host, port, sock_file
+
+        return server_socket, host, port, self._socket_file
 
     def accept_client(
         self, server_socket: socket.socket, process_id: str
@@ -80,11 +116,12 @@ class SocketManager:
             client_socket, _ = server_socket.accept()
             with self.lock:
                 self._socket_pool[process_id] = client_socket
-            self.log.debug(f"Client connected to subprocess {process_id}")
+            self.log.debug("Client connected to subprocess %s", process_id)
             return client_socket
         except socket.timeout:
             self.log.error(
-                f"Accept timed out. No client connected within {_SOCKET_TIMEOUT_SEC} seconds."
+                "Accept timed out. No client connected within %s seconds.",
+                self.socket_timeout_sec,
             )
             server_socket.close()
             raise
@@ -113,15 +150,18 @@ class SocketManager:
             try:
                 if process_id not in self._socket_pool:
                     self.log.error(
-                        f"send_message() Process {process_id} not found in socket pool"
+                        "send_message() Process %s not found in socket pool",
+                        process_id,
                     )
                     return
                 sock = self._socket_pool[process_id]
                 json_message = json.dumps(message)
-                message_bytes = json_message.encode()
+                message_bytes = json_message.encode(encoding="utf-8")
                 message_length = struct.pack("!I", len(message_bytes))
                 self.log.debug(
-                    f"Sending message to client: {json_message} to process {process_id}"
+                    "Sending message to client: %s to process %s",
+                    json_message,
+                    process_id,
                 )
                 sock.sendall(message_length + message_bytes)
             except Exception:
@@ -168,3 +208,8 @@ class SocketManager:
             if process_id in self._socket_pool:
                 self._socket_pool[process_id].close()
                 del self._socket_pool[process_id]
+
+    @property
+    def socket_file(self):
+        """Gets the path to the Unix domain socket file."""
+        return self._socket_file

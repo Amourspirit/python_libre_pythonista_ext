@@ -44,7 +44,7 @@ def build_code(root_dir):
     # run make.py in a subprocess
     make_py = root_dir / "make.py"
     assert make_py.exists()
-    _ = subprocess.run(f"python make.py build --no-dist", shell=True, check=True, cwd=str(root_dir))
+    _ = subprocess.run(f"uv run {make_py} build --no-dist -i", shell=True, check=True, cwd=str(root_dir))
     return True
 
 

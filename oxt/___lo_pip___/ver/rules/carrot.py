@@ -3,6 +3,8 @@ from typing import Any, List
 from ..req_version import ReqVersion
 from .ver_rule_base import VerRuleBase
 
+# see: https://python-poetry.org/docs/dependency-specification/
+
 
 class Carrot(VerRuleBase):
     """
@@ -11,6 +13,17 @@ class Carrot(VerRuleBase):
     Caret requirements allow SemVer compatible updates to a specified version.
     An update is allowed if the new version number does not modify the left-most non-zero digit
     in the major, minor, patch grouping.
+
+    Note:
+        The caret requirement is specified with a leading ``^`` character.
+
+        -``^1.2.3`` is ``>=1.2.3 <2.0.0``
+        - ``^1.2`` is ``>=1.2.0 <2.0.0``
+        - ``^1`` is ``>=1.0.0 <2.0.0``
+        - ``^0.2.3`` is ``>=0.2.3 <0.3.0``
+        - ``^0.0.3`` is ``>=0.0.3 <0.0.4``
+        - ``^0.0`` is ``>=0.0.0 <0.1.0``
+        - ``^0`` is ``>=0.0.0 <1.0.0``
     """
 
     # def __call__(self, *args: Any, **kwds: Any) -> Any:
@@ -25,6 +38,11 @@ class Carrot(VerRuleBase):
         if not self.vstr.startswith("^"):
             return False
         try:
+            ver = self.vstr[1:].strip()
+            suffix = self.extract_suffix(ver)
+            if suffix:
+                # carrot does not support suffixes
+                return False
             versions = self.get_versions()
             return len(versions) == 2
         except Exception:
@@ -35,8 +53,46 @@ class Carrot(VerRuleBase):
         ver = self.vstr[1:].strip()
         if ver == "":
             return []
-        v1 = ReqVersion(f">={ver}")
-        v2 = ReqVersion(f"<{v1.major + 1}.0.0")
+
+        chk_ver = ReqVersion(f"=={ver}")
+        vp = chk_ver.version_parts
+
+        if vp.has_minor and vp.has_micro:
+            # ^1.2.3    >=1.2.3 <2.0.0
+            v1 = ReqVersion(f">={ver}")
+            if chk_ver.major == 0 and chk_ver.minor == 0:
+                # ^0.0.3	>=0.0.3 <0.0.4
+                v2 = ReqVersion(f"<0.0.{chk_ver.micro + 1}")
+            elif chk_ver.major == 0:
+                # ^0.2.3	>=0.2.3 <0.3.0
+                v2 = ReqVersion(f"<0.{chk_ver.minor + 1}.0")
+            else:
+                v2 = ReqVersion(f"<{v1.major + 1}.0.0")
+            return [v1, v2]
+
+        if vp.has_minor:
+            if chk_ver.major == 0 and chk_ver.minor == 0:
+                # ^0.0      >=0.0.0 <0.1.0
+                v1 = ReqVersion(">=0.0.0")
+                v2 = ReqVersion("<0.1.0")
+            else:
+                # ^1.2      >=1.2.0 <2.0.0
+                v1 = ReqVersion(f">={chk_ver.major}.{chk_ver.minor}.0")
+                v2 = ReqVersion(f"<{v1.major + 1}.0.0")
+            return [v1, v2]
+
+        if chk_ver.major == 0:
+            # ^0    >=0.0.0 <1.0.0
+            v1 = ReqVersion(">=0.0.0")
+            v2 = ReqVersion("<1.0.0")
+        else:
+            # ^1   >=1.0.0 <2.0.0
+            v1 = ReqVersion(f">={chk_ver.major}.0.0")
+            v2 = ReqVersion(f"<{v1.major + 1}.0.0")
+
+        # if suffix:
+        #     v_first = ReqVersion(f">={chk_ver.major}.0.0")
+
         return [v1, v2]
 
     def get_versions_str(self) -> str:
@@ -63,6 +119,8 @@ class Carrot(VerRuleBase):
         try:
             check_ver = ReqVersion(f"=={check_version}")
             versions = self.get_versions()
+            if len(versions) != 2:
+                return -2
             v1 = versions[0]
             v2 = versions[1]
             if check_ver >= v1 and check_ver < v2:
@@ -81,4 +139,4 @@ class Carrot(VerRuleBase):
         Returns:
             bool: True if the installed version is valid, False otherwise.
         """
-        return self.get_version_is_valid(check_version) >= 0
+        return self.get_version_is_valid(check_version) == 0

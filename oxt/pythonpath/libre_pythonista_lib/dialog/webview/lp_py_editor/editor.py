@@ -1,7 +1,7 @@
 from __future__ import annotations
 import queue
 import time
-from typing import Any, cast, Dict, TYPE_CHECKING
+from typing import Any, List, cast, Dict, TYPE_CHECKING
 import struct
 import subprocess
 import threading
@@ -14,7 +14,6 @@ from ooodev.events.args.event_args import EventArgs
 from ooodev.events.lo_events import LoEvents
 from ooodev.globals import GblEvents
 from ooodev.globals import GTC
-from ooodev.loader import Lo
 from ooodev.theme.theme_calc import ThemeCalc
 from ooodev.utils.data_type.range_obj import RangeObj
 
@@ -27,6 +26,7 @@ from ....res.res_resolver import ResResolver
 from ....code import py_module
 from ....const.event_const import GBL_DOC_CLOSING
 from ....config.dialog.wv_code_cfg import WvCodeCfg
+from ....py_pip.pkg_info import PkgInfo
 # from ...listener.top_listener_rng import TopListenerRng
 
 if TYPE_CHECKING:
@@ -37,10 +37,15 @@ if TYPE_CHECKING:
         from typing_extensions import override
 
     from ......___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from ......___lo_pip___.oxt_logger.logger_config import LoggerConfig
     from ......___lo_pip___.config import Config
 else:
-    override = lambda func: func  # noqa: E731
+
+    def override(func):
+        return func
+
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger  # noqa: F401
+    from ___lo_pip___.oxt_logger.logger_config import LoggerConfig  # noqa: F401
     from ___lo_pip___.config import Config  # noqa: F401
 
 if os.name == "nt":
@@ -53,9 +58,7 @@ _MANAGERS: Dict[str, PyCellEditProcessMgr] = {}
 
 
 class PyCellCodeEdit(CellCodeEdit):
-    def __init__(
-        self, inst_id: str, cell: CalcCell, url_str: str = "", src_code: str = ""
-    ):
+    def __init__(self, inst_id: str, cell: CalcCell, url_str: str = "", src_code: str = ""):
         CellCodeEdit.__init__(self, inst_id, cell, url_str, src_code)
 
     @override
@@ -98,9 +101,7 @@ class PyCellEditProcessMgr(ProcessMgr):
         self.sheet = sheet
         self.cell = cell
         self.doc = CalcDoc.from_current_doc()
-        self.cache_key = (
-            f"doc_{self.doc.runtime_uid}_sheet_{self.sheet}_cell_{self.cell}"
-        )
+        self.cache_key = f"doc_{self.doc.runtime_uid}_sheet_{self.sheet}_cell_{self.cell}"
         self.py_instance = PyInstance(self.doc)
         self.log.debug(f"Sheet: {self.sheet}, Cell: {self.cell}")
         calc_sheet = self.doc.sheets[sheet]
@@ -111,6 +112,8 @@ class PyCellEditProcessMgr(ProcessMgr):
         self._fn_on_menu_insert_lp_fn = self._on_menu_insert_lp_fn
         self._fn_on_menu_range_select_result = self._on_menu_range_select_result
         self._active_process = ""
+        self._pkg_info = PkgInfo()
+        self._config = Config()
         self._current_client_msg: Any = None
 
     @override
@@ -121,9 +124,16 @@ class PyCellEditProcessMgr(ProcessMgr):
         Returns:
             str: The path to the `shell_edit.py` script.
         """
-
-        root = Path(__file__).parent
-        return str(Path(root, "shell_edit.py"))
+        pkg_location = self._pkg_info.find_module_location("librepythonista_py_edit")
+        if pkg_location:
+            self.log.debug("Package Location: %s", pkg_location)
+            return str(Path(f"{pkg_location}") / "cell_edit.py")
+        else:
+            self.log.debug(
+                "Package Not Found librepythonista_py_edit. Trying default.",
+            )
+            config = Config()
+            return str(Path(config.site_packages) / "librepythonista_py_edit" / "cell_edit.py")
 
     @override
     def handle_client(self, process_id: str) -> None:
@@ -154,27 +164,21 @@ class PyCellEditProcessMgr(ProcessMgr):
                     wv_cfg.from_dict(window_config)
                     wv_cfg.save()
                 except Exception:
-                    self.log.debug(
-                        "Error updating window configuration. LibreOffice Window may be closed."
-                    )
+                    self.log.debug("Error updating window configuration. LibreOffice Window may be closed.")
             else:
                 self.log.debug("No window configuration received")
 
         try:
             while True:
-                raw_msg_len = self.socket_manager.receive_all(
-                    length=4, process_id=process_id
-                )
+                raw_msg_len = self.socket_manager.receive_all(length=4, process_id=process_id)
                 if not raw_msg_len:
                     break
                 msg_len = struct.unpack("!I", raw_msg_len)[0]
-                data = self.socket_manager.receive_all(
-                    length=msg_len, process_id=process_id
-                )
-                if not data:
+                byte_data = self.socket_manager.receive_all(length=msg_len, process_id=process_id)
+                if not byte_data:
                     self.log.debug("No data received")
                     break
-                message = data.decode()
+                message = byte_data.decode(encoding="utf-8")
                 json_dict = cast(Dict[str, Any], json.loads(message))
                 msg_cmd = json_dict.get("cmd")
                 last_cmd = msg_cmd
@@ -188,19 +192,31 @@ class PyCellEditProcessMgr(ProcessMgr):
                     break
                 if msg_cmd == "destroyed":
                     self.log.debug("Received destroyed command.")
-                    # self.socket_manager.close_socket(process_id)
-                    data = json_dict.get("data", {})
-                    window_config = data.get("window_config", {})
+                    data: Dict[str, Any] = json_dict.get("data", {})
+                    # self.log.debug(f"Data: {data}")
+                    window_config: Dict[str, Any] = data.get("window_config", {})
                     update_window_config(window_config)
+                    logs: Dict[str, str] = data.get("logs", {})
+                    if self.log.is_debug:
+                        stdout = cast(List[str], logs.get("stdout", []))
+                        if stdout:
+                            for line in stdout:
+                                self.log.debug("stdout: %s", line)
+                        else:
+                            self.log.debug("No stdout logs")
+                    stderr = cast(List[str], logs.get("stderr", []))
+                    if stderr:
+                        for line in stderr:
+                            self.log.error("stderr: %s", line)
+                    else:
+                        self.log.debug("No stderr logs")
                     break
                 elif msg_cmd == "webview_ready":
                     self.log.debug("Webview is ready, sending code")
                     # code = "html = '<h2>Hello World!</h2>'\nj_data = {'a': 1, 'b': 2}\n"
                     py_src = self.py_instance[self.calc_cell.cell_obj]
                     code = py_src.source_code
-                    self.socket_manager.send_message(
-                        {"cmd": "code", "data": code}, process_id
-                    )
+                    self.socket_manager.send_message({"cmd": "code", "data": code}, process_id)
                 elif msg_cmd == "general_message":
                     gen_msg = json_dict.get("data", "")
                     self.log.debug(
@@ -217,14 +233,8 @@ class PyCellEditProcessMgr(ProcessMgr):
                     if code == current_code:
                         self.log.debug("Code is the same. No update required.")
                         continue
-                    self.log.debug(
-                        "Received code from client"
-                        if code
-                        else "Received code from client with no data"
-                    )
-                    inst = PyCellCodeEdit(
-                        inst_id=process_id, cell=self.calc_cell, src_code=code
-                    )
+                    self.log.debug("Received code from client" if code else "Received code from client with no data")
+                    inst = PyCellCodeEdit(inst_id=process_id, cell=self.calc_cell, src_code=code)
                     inst.update_cell()
                     inst = None
                     self.log.debug("Code updated")
@@ -235,9 +245,7 @@ class PyCellEditProcessMgr(ProcessMgr):
                 elif msg_cmd == "request_action":
                     action = cast(str, json_dict.get("action", ""))
                     params = json_dict.get("params", {})
-                    self.log.debug(
-                        f"Received request for action '{action}' with params: {params}"
-                    )
+                    self.log.debug(f"Received request for action '{action}' with params: {params}")
                     # Perform the requested action
                     result = self.perform_action(action, params)
                     msg = result.get("message", "")
@@ -249,6 +257,17 @@ class PyCellEditProcessMgr(ProcessMgr):
                             {"cmd": "action_completed", "response_data": result},
                             process_id,
                         )
+                elif msg_cmd == "logs":
+                    self.log.debug("Received logs from client")
+                    log_data: Dict[str, Dict[str, str]] = json_dict.get("data", {})
+                    logs: Dict[str, str] = log_data.get("logs", {})
+                    if self.log.is_debug:
+                        stdout = cast(List[str], logs.get("stdout", []))
+                        for line in stdout:
+                            self.log.debug("stdout: %s", line)
+                    stderr = cast(List[str], logs.get("stderr", []))
+                    for line in stderr:
+                        self.log.error("stderr: %s", line)
                 else:
                     self.log.error(f"Unknown message ID: {msg_cmd}")
 
@@ -275,23 +294,30 @@ class PyCellEditProcessMgr(ProcessMgr):
         """
 
         if action == "get_info":
+
+            def get_log_config() -> Dict[str, str]:
+                log_config = LoggerConfig()
+                info = log_config.to_dict()
+                if self._config.is_flatpak:
+                    self.log.debug("get_log_config() Flatpak detected")
+                    p = Path.home() / ".librepythonista_tmp" / f"{self._config.lo_implementation_name}.log"
+                    if not p.parent.exists():
+                        p.parent.mkdir()
+                    self.log.debug("Log File: %s", p)
+                    info["log_file"] = str(p)
+                else:
+                    self.log.debug("get_log_config() Not Flatpak")
+                return info
+
             # Get the resources for the given parameters
             key = "lp_editor_resources"
             if not self._gbl_cache[key]:
                 self._gbl_cache[key] = {
-                    "mnuAutoLpFn": self._res.resolve_string("mnuAutoLpFn").replace(
-                        "~", "", 1
-                    ),
-                    "mnuSelectRng": self._res.resolve_string("mnuSelectRng").replace(
-                        "~", "", 1
-                    ),
-                    "mnuValidate": self._res.resolve_string("mnuValidate").replace(
-                        "~", "", 1
-                    ),
+                    "mnuAutoLpFn": self._res.resolve_string("mnuAutoLpFn").replace("~", "", 1),
+                    "mnuSelectRng": self._res.resolve_string("mnuSelectRng").replace("~", "", 1),
+                    "mnuValidate": self._res.resolve_string("mnuValidate").replace("~", "", 1),
                     "mnuCode": self._res.resolve_string("mnuCode").replace("~", "", 1),
-                    "mnuInsert": self._res.resolve_string("mnuInsert").replace(
-                        "~", "", 1
-                    ),
+                    "mnuInsert": self._res.resolve_string("mnuInsert").replace("~", "", 1),
                     "mbtitle001": self._res.resolve_string("mbtitle001"),
                     "mbmsg001": self._res.resolve_string("mbmsg001"),
                     "log09": self._res.resolve_string("log09"),
@@ -307,11 +333,18 @@ class PyCellEditProcessMgr(ProcessMgr):
                         "cell": self.cell,
                         "sheet": self.sheet,
                         "runtime_uid": self.doc.runtime_uid,
+                        "is_flatpak": self._config.is_flatpak,
+                        "is_snap": self._config.is_snap,
+                        "is_app_image": self._config.is_app_image,
+                        "python_path": str(self._config.python_path),
+                        "extension_version": self._config.extension_version,
+                        "extension_display_name": self._config.extension_display_name,
                     },
+                    "log_config": get_log_config(),
                     "resources": cast(Dict[str, str], self._gbl_cache[key]),
                     "theme": {"is_doc_dark": self._calc_theme.is_document_dark()},
-                    "module_source_code": self._get_source_code(),
                     "window_config": wv_config.to_dict(),
+                    "module_source_code": self._get_source_code(),
                 },
             }
         elif action == "validate_code":
@@ -352,16 +385,12 @@ class PyCellEditProcessMgr(ProcessMgr):
                         result_queue.put(self._current_client_msg)
                         return
                     time.sleep(0.1)
-                result_queue.put(
-                    {"status": "error", "message": "pass", "data": "timeout"}
-                )
+                result_queue.put({"status": "error", "message": "pass", "data": "timeout"})
 
             # Create a queue to store the result
             result_queue = queue.Queue()
             # Start the monitor_client_msg function in a separate thread
-            monitor_thread = threading.Thread(
-                target=monitor_client_msg, args=(result_queue,), daemon=True
-            )
+            monitor_thread = threading.Thread(target=monitor_client_msg, args=(result_queue,), daemon=True)
             monitor_thread.start()
 
             # Wait for the thread to complete
@@ -398,16 +427,12 @@ class PyCellEditProcessMgr(ProcessMgr):
                         result_queue.put(self._current_client_msg)
                         return
                     time.sleep(0.1)
-                result_queue.put(
-                    {"status": "error", "message": "pass", "data": "timeout"}
-                )
+                result_queue.put({"status": "error", "message": "pass", "data": "timeout"})
 
             # Create a queue to store the result
             result_queue = queue.Queue()
             # Start the monitor_client_msg function in a separate thread
-            monitor_thread = threading.Thread(
-                target=monitor_client_msg, args=(result_queue,), daemon=True
-            )
+            monitor_thread = threading.Thread(target=monitor_client_msg, args=(result_queue,), daemon=True)
             monitor_thread.start()
 
             # Wait for the thread to complete
@@ -426,9 +451,7 @@ class PyCellEditProcessMgr(ProcessMgr):
     def _get_source_code(self) -> str:
         try:
             init_src = py_module.get_module_init_code()
-            mod_src = self.py_instance.get_module_source_code(
-                max_cell=self.calc_cell.cell_obj, include_max=False
-            )
+            mod_src = self.py_instance.get_module_source_code(max_cell=self.calc_cell.cell_obj, include_max=False)
             return f"{init_src}\n{mod_src}"
         except Exception:
             self.log.exception("Error getting source code")
@@ -444,9 +467,7 @@ class PyCellEditProcessMgr(ProcessMgr):
         log = self.log
         try:
             glbs = GblEvents()
-            glbs.unsubscribe_event(
-                "GlobalCalcRangeSelector", self._fn_on_menu_insert_lp_fn
-            )
+            glbs.unsubscribe_event("GlobalCalcRangeSelector", self._fn_on_menu_insert_lp_fn)
         except Exception:
             log.error(
                 "_on_menu_insert_lp_fn() unsubscribing from GlobalCalcRangeSelector",
@@ -468,9 +489,7 @@ class PyCellEditProcessMgr(ProcessMgr):
             )
             fn_str = af.generate_fn()
             if not fn_str:
-                self.log.error(
-                    "_on_menu_insert_lp_fn() Error generating function string"
-                )
+                self.log.error("_on_menu_insert_lp_fn() Error generating function string")
                 self._current_client_msg = "aborted"
                 return
 
@@ -491,9 +510,7 @@ class PyCellEditProcessMgr(ProcessMgr):
 
             # _ = TopListenerRng(self.doc)
             glbs = GblEvents()
-            glbs.subscribe_event(
-                "GlobalCalcRangeSelector", self._fn_on_menu_insert_lp_fn
-            )
+            glbs.subscribe_event("GlobalCalcRangeSelector", self._fn_on_menu_insert_lp_fn)
             self.doc.dispatch_cmd(UNO_DISPATCH_SEL_RNG)
             self.log.debug(f"Command Dispatched: {UNO_DISPATCH_SEL_RNG}")
 
@@ -508,9 +525,7 @@ class PyCellEditProcessMgr(ProcessMgr):
             log = self.log
             try:
                 glbs = GblEvents()
-                glbs.unsubscribe_event(
-                    "GlobalCalcRangeSelector", self._fn_on_menu_range_select_result
-                )
+                glbs.unsubscribe_event("GlobalCalcRangeSelector", self._fn_on_menu_range_select_result)
             except Exception:
                 log.error(
                     "_on_menu_range_select_result() unsubscribing from GlobalCalcRangeSelector",
@@ -524,9 +539,7 @@ class PyCellEditProcessMgr(ProcessMgr):
                 try:
                     range_obj = cast(RangeObj, event.event_data.rng_obj.copy())
 
-                    self.log.debug(
-                        f"_on_menu_range_select_result() Range Selection: {range_obj.to_string(True)}"
-                    )
+                    self.log.debug(f"_on_menu_range_select_result() Range Selection: {range_obj.to_string(True)}")
 
                     if range_obj.sheet_idx == self.calc_cell.cell_obj.sheet_idx:
                         if range_obj.is_single_cell():
@@ -565,9 +578,7 @@ class PyCellEditProcessMgr(ProcessMgr):
         self.log.debug("_write_range_sel_popup() Write Range Selection Popup")
         try:
             glbs = GblEvents()
-            glbs.subscribe_event(
-                "GlobalCalcRangeSelector", self._fn_on_menu_range_select_result
-            )
+            glbs.subscribe_event("GlobalCalcRangeSelector", self._fn_on_menu_range_select_result)
             self.doc.dispatch_cmd(UNO_DISPATCH_SEL_RNG)
             self.log.debug(f"Command Dispatched: {UNO_DISPATCH_SEL_RNG}")
             # sheet.set_active()
@@ -608,9 +619,7 @@ def main(sheet: str, cell: str) -> None:
     global _MANAGERS
     log = OxtLogger(log_name="shell_edit")
     socket_manager = SocketManager()
-    process_manager = PyCellEditProcessMgr(
-        socket_manager=socket_manager, sheet=sheet, cell=cell
-    )
+    process_manager = PyCellEditProcessMgr(socket_manager=socket_manager, sheet=sheet, cell=cell)
     _MANAGERS[process_manager.cache_key] = process_manager
 
     subprocess_id = process_manager.start_subprocess()

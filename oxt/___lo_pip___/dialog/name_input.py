@@ -1,6 +1,5 @@
 from __future__ import annotations
 from typing import Any, cast, TYPE_CHECKING
-import uno
 
 from .run_time_dialog_base import RuntimeDialogBase
 
@@ -42,7 +41,10 @@ class NameInput(RuntimeDialogBase):
         self.create_button(
             "btn_ok",
             "ok",
-            pos=(self.WIDTH - self.BUTTON_WIDTH * 2 - margin * 2, self.BUTTON_HEIGHT + margin * 2),
+            pos=(
+                self.WIDTH - self.BUTTON_WIDTH * 2 - margin * 2,
+                self.BUTTON_HEIGHT + margin * 2,
+            ),
             size=(self.BUTTON_WIDTH, self.BUTTON_HEIGHT),
             prop_names=("DefaultButton", "Label", "PushButtonType"),
             prop_values=(True, "OK", 1),
@@ -50,7 +52,10 @@ class NameInput(RuntimeDialogBase):
         self.create_button(
             "btn_cancel",
             "cancel",
-            pos=(self.WIDTH - self.BUTTON_WIDTH - margin, self.BUTTON_HEIGHT + margin * 2),
+            pos=(
+                self.WIDTH - self.BUTTON_WIDTH - margin,
+                self.BUTTON_HEIGHT + margin * 2,
+            ),
             size=(self.BUTTON_WIDTH, self.BUTTON_HEIGHT),
             prop_names=("Label", "PushButtonType"),
             prop_values=("Cancel", 2),
@@ -63,5 +68,5 @@ class NameInput(RuntimeDialogBase):
             edit_ctl.setSelection(Selection(0, len(self.default)))
         self._is_init = True
 
-    def _result(self):
+    def _result(self):  # type: ignore
         return self.get_text("edit_name")

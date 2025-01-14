@@ -15,59 +15,10 @@ class JsonConfig(metaclass=Singleton):
     def __init__(self) -> None:
         self._config = Config()
         self._cfg = toml.load(self._config.toml_path)
-        self._requirements = cast(
-            Dict[str, str], self._cfg["tool"]["oxt"]["requirements"]
-        )
+        self._requirements = cast(Dict[str, str], self._cfg["tool"]["oxt"]["requirements"])
 
         try:
-            self._requirements_linux = cast(
-                Dict[str, str], self._cfg["tool"]["oxt"]["requirements_linux"]
-            )
-        except Exception:
-            self._requirements_linux = {}
-
-        try:
-            self._requirements_macos = cast(
-                Dict[str, str], self._cfg["tool"]["oxt"]["requirements_macos"]
-            )
-        except Exception:
-            self._requirements_macos = {}
-
-        try:
-            self._requirements_win = cast(
-                Dict[str, str], self._cfg["tool"]["oxt"]["requirements_win"]
-            )
-        except Exception:
-            self._requirements_win = {}
-
-        try:
-            self._experimental_requirements_linux = cast(
-                Dict[str, str],
-                self._cfg["tool"]["oxt"]["experimental"]["requirements_linux"],
-            )
-        except Exception:
-            self._experimental_requirements_linux = {}
-
-        try:
-            self._experimental_requirements_macos = cast(
-                Dict[str, str],
-                self._cfg["tool"]["oxt"]["experimental"]["requirements_macos"],
-            )
-        except Exception:
-            self._experimental_requirements_macos = {}
-
-        try:
-            self._experimental_requirements_win = cast(
-                Dict[str, str],
-                self._cfg["tool"]["oxt"]["experimental"]["requirements_win"],
-            )
-        except Exception:
-            self._experimental_requirements_win = {}
-
-        try:
-            self._zip_preinstall_pure = cast(
-                bool, self._cfg["tool"]["oxt"]["config"]["zip_preinstall_pure"]
-            )
+            self._zip_preinstall_pure = cast(bool, self._cfg["tool"]["oxt"]["config"]["zip_preinstall_pure"])
         except Exception:
             self._zip_preinstall_pure = False
         try:
@@ -78,35 +29,25 @@ class JsonConfig(metaclass=Singleton):
         except Exception:
             self._auto_install_in_site_packages = False
         try:
-            self._install_wheel = cast(
-                bool, self._cfg["tool"]["oxt"]["config"]["install_wheel"]
-            )
+            self._install_wheel = cast(bool, self._cfg["tool"]["oxt"]["config"]["install_wheel"])
         except Exception:
             self._install_wheel = False
         try:
-            self._window_timeout = int(
-                self._cfg["tool"]["oxt"]["config"]["window_timeout"]
-            )
+            self._window_timeout = int(self._cfg["tool"]["oxt"]["config"]["window_timeout"])
         except Exception:
             self._window_timeout = 5
         try:
-            self._dialog_desktop_owned = cast(
-                bool, self._cfg["tool"]["oxt"]["config"]["dialog_desktop_owned"]
-            )
+            self._dialog_desktop_owned = cast(bool, self._cfg["tool"]["oxt"]["config"]["dialog_desktop_owned"])
         except Exception:
             self._dialog_desktop_owned = False
 
         try:
-            self._default_locale = cast(
-                list, self._cfg["tool"]["oxt"]["config"]["default_locale"]
-            )
+            self._default_locale = cast(list, self._cfg["tool"]["oxt"]["config"]["default_locale"])
         except Exception:
             self._default_locale = ["en", "US"]
         # resource_dir_name
         try:
-            self._resource_dir_name = cast(
-                str, self._cfg["tool"]["oxt"]["config"]["resource_dir_name"]
-            )
+            self._resource_dir_name = cast(str, self._cfg["tool"]["oxt"]["config"]["resource_dir_name"])
         except Exception:
             self._resource_dir_name = "resources"
         try:
@@ -117,90 +58,73 @@ class JsonConfig(metaclass=Singleton):
             self._resource_properties_prefix = "pipstrings"
 
         try:
-            self._isolate_windows = cast(
-                List[str], self._cfg["tool"]["oxt"]["isolate"]["windows"]
-            )
+            self._isolate_windows = cast(List[str], self._cfg["tool"]["oxt"]["isolate"]["windows"])
         except Exception:
             self._isolate_windows = []
 
         try:
-            self._sym_link_cpython = cast(
-                bool, self._cfg["tool"]["oxt"]["config"]["sym_link_cpython"]
-            )
+            self._sym_link_cpython = cast(bool, self._cfg["tool"]["oxt"]["config"]["sym_link_cpython"])
         except Exception:
             self._sym_link_cpython = False
         try:
-            self._uninstall_on_update = cast(
-                bool, self._cfg["tool"]["oxt"]["config"]["uninstall_on_update"]
-            )
+            self._uninstall_on_update = cast(bool, self._cfg["tool"]["oxt"]["config"]["uninstall_on_update"])
         except Exception:
             self._uninstall_on_update = True
         try:
             self._install_on_no_uninstall_permission = cast(
                 bool,
-                self._cfg["tool"]["oxt"]["config"][
-                    "install_on_no_uninstall_permission"
-                ],
+                self._cfg["tool"]["oxt"]["config"]["install_on_no_uninstall_permission"],
             )
         except Exception:
             self._install_on_no_uninstall_permission = True
 
         try:
-            self._unload_after_install = cast(
-                bool, self._cfg["tool"]["oxt"]["config"]["unload_after_install"]
-            )
+            self._unload_after_install = cast(bool, self._cfg["tool"]["oxt"]["config"]["unload_after_install"])
         except Exception:
             self._unload_after_install = True
 
         try:
-            self._run_imports = cast(
-                list, self._cfg["tool"]["oxt"]["config"]["run_imports"]
-            )
+            self._run_imports = cast(list, self._cfg["tool"]["oxt"]["config"]["run_imports"])
         except Exception:
             self._run_imports = []
 
         try:
-            self._run_imports_linux = cast(
-                list, self._cfg["tool"]["oxt"]["config"]["run_imports_linux"]
-            )
+            self._run_imports_linux = cast(list, self._cfg["tool"]["oxt"]["config"]["run_imports_linux"])
         except Exception:
             self._run_imports_linux = []
 
         try:
-            self._run_imports_macos = cast(
-                list, self._cfg["tool"]["oxt"]["config"]["run_imports_macos"]
-            )
+            self._run_imports_macos = cast(list, self._cfg["tool"]["oxt"]["config"]["run_imports_macos"])
         except Exception:
             self._run_imports_macos = []
 
         try:
-            self._run_imports_win = cast(
-                list, self._cfg["tool"]["oxt"]["config"]["run_imports_win"]
-            )
+            self._run_imports_win = cast(list, self._cfg["tool"]["oxt"]["config"]["run_imports_win"])
         except Exception:
             self._run_imports_win = []
 
         try:
-            self._run_imports2 = cast(
-                list, self._cfg["tool"]["oxt"]["config"]["run_imports2"]
-            )
+            self._run_imports2 = cast(list, self._cfg["tool"]["oxt"]["config"]["run_imports2"])
         except Exception:
             self._run_imports2 = []
 
         try:
-            self._log_indent = cast(
-                int, self._cfg["tool"]["oxt"]["config"]["log_indent"]
-            )
+            self._log_indent = cast(int, self._cfg["tool"]["oxt"]["config"]["log_indent"])
         except Exception:
             self._log_indent = 0
+
+        try:
+            self._require_install_name_match = cast(
+                bool, self._cfg["tool"]["oxt"]["config"]["require_install_name_match"]
+            )
+        except Exception:
+            self._require_install_name_match = False
 
         # region tool.libre_pythonista.config
         try:
             self._cell_custom_prop_prefix = cast(
                 str,
-                self._cfg["tool"]["libre_pythonista"]["config"][
-                    "cell_custom_prop_prefix"
-                ],
+                self._cfg["tool"]["libre_pythonista"]["config"]["cell_custom_prop_prefix"],
             )
         except Exception:
             self._cell_custom_prop_prefix = "libre_pythonista_"
@@ -208,9 +132,7 @@ class JsonConfig(metaclass=Singleton):
         try:
             self._cell_custom_prop_codename = cast(
                 str,
-                self._cfg["tool"]["libre_pythonista"]["config"][
-                    "cell_custom_prop_codename"
-                ],
+                self._cfg["tool"]["libre_pythonista"]["config"]["cell_custom_prop_codename"],
             )
         except Exception:
             self._cell_custom_prop_codename = "codename"
@@ -218,9 +140,7 @@ class JsonConfig(metaclass=Singleton):
         try:
             self._py_script_sheet_ctl_click = cast(
                 str,
-                self._cfg["tool"]["libre_pythonista"]["config"][
-                    "py_script_sheet_ctl_click"
-                ],
+                self._cfg["tool"]["libre_pythonista"]["config"]["py_script_sheet_ctl_click"],
             )
         except Exception:
             self._py_script_sheet_ctl_click = "control_handler.py"
@@ -228,9 +148,7 @@ class JsonConfig(metaclass=Singleton):
         try:
             self._py_script_sheet_on_calculate = cast(
                 str,
-                self._cfg["tool"]["libre_pythonista"]["config"][
-                    "py_script_sheet_on_calculate"
-                ],
+                self._cfg["tool"]["libre_pythonista"]["config"]["py_script_sheet_on_calculate"],
             )
         except Exception:
             self._py_script_sheet_on_calculate = "share_event.py"
@@ -252,55 +170,76 @@ class JsonConfig(metaclass=Singleton):
             self._calc_props_json_name = "_calc_props.json"
 
         try:
-            self._lp_code_dir = cast(
-                str, self._cfg["tool"]["libre_pythonista"]["config"]["lp_code_dir"]
-            )
+            self._lp_code_dir = cast(str, self._cfg["tool"]["libre_pythonista"]["config"]["lp_code_dir"])
         except Exception:
             self._lp_code_dir = "librepythonista"
 
         try:
             self._lp_default_log_format = cast(
                 str,
-                self._cfg["tool"]["libre_pythonista"]["config"][
-                    "lp_default_log_format"
-                ],
+                self._cfg["tool"]["libre_pythonista"]["config"]["lp_default_log_format"],
             )
         except Exception:
-            self._lp_default_log_format = (
-                "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-            )
+            self._lp_default_log_format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 
         try:
             self._macro_lp_sheet_ctl_click = cast(
                 str,
-                self._cfg["tool"]["libre_pythonista"]["config"][
-                    "macro_lp_sheet_ctl_click"
-                ],
+                self._cfg["tool"]["libre_pythonista"]["config"]["macro_lp_sheet_ctl_click"],
             )
         except Exception:
-            self._macro_lp_sheet_ctl_click = (
-                "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-            )
+            self._macro_lp_sheet_ctl_click = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 
         try:
             self._macro_sheet_on_calculate = cast(
                 str,
-                self._cfg["tool"]["libre_pythonista"]["config"][
-                    "macro_sheet_on_calculate"
-                ],
+                self._cfg["tool"]["libre_pythonista"]["config"]["macro_sheet_on_calculate"],
             )
         except Exception:
-            self._macro_sheet_on_calculate = (
-                "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+            self._macro_sheet_on_calculate = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+
+        try:
+            self._flatpak_libre_pythonista_py_editor = cast(
+                str,
+                self._cfg["tool"]["libre_pythonista"]["config"]["flatpak_libre_pythonista_py_editor"],
+            )
+        except Exception:
+            self._flatpak_libre_pythonista_py_editor = "io.github.amourspirit.LibrePythonista_PyEditor"
+
+        try:
+            self._flatpak_libre_pythonista_py_editor_cell_cmd = cast(
+                str,
+                self._cfg["tool"]["libre_pythonista"]["config"]["flatpak_libre_pythonista_py_editor_cell_cmd"],
+            )
+        except Exception:
+            self._flatpak_libre_pythonista_py_editor_cell_cmd = "cell_edit"
+
+        try:
+            self._flatpak_libre_pythonista_py_editor_install_url = cast(
+                str,
+                self._cfg["tool"]["libre_pythonista"]["config"]["flatpak_libre_pythonista_py_editor_install_url"],
+            )
+        except Exception:
+            self._flatpak_libre_pythonista_py_editor_install_url = (
+                "https://github.com/Amourspirit/LibrePythonista_PyEditor/wiki"
             )
 
         try:
-            self._extension_version = cast(str, self._cfg["tool"]["poetry"]["version"])
+            self._lp_py_cell_edit_sock_timeout = cast(
+                int,
+                self._cfg["tool"]["libre_pythonista"]["config"]["lp_py_cell_edit_sock_timeout"],
+            )
         except Exception:
-            self._extension_version = ""
+            self._lp_py_cell_edit_sock_timeout = 10
+        # endregion tool.libre_pythonista.config
 
         try:
-            self._extension_license = cast(str, self._cfg["tool"]["poetry"]["license"])
+            self._extension_license = cast(str, self._cfg["project"]["license"])
+        except Exception:
+            self._extension_license = ""
+
+        try:
+            self._extension_version = cast(str, self._cfg["project"]["version"])
         except Exception:
             self._extension_license = ""
 
@@ -310,9 +249,7 @@ class JsonConfig(metaclass=Singleton):
             self._author_names = []
 
         try:
-            self._no_pip_remove = cast(
-                list, self._cfg["tool"]["oxt"]["config"]["no_pip_remove"]
-            )
+            self._no_pip_remove = cast(list, self._cfg["tool"]["oxt"]["config"]["no_pip_remove"])
         except Exception:
             self._no_pip_remove = ["pip", "setuptools", "wheel"]
 
@@ -325,12 +262,30 @@ class JsonConfig(metaclass=Singleton):
             self._libreoffice_debug_port = 5678
 
         try:
-            self._lp_debug_port = cast(
-                int, self._cfg["tool"]["oxt"]["config"]["token"]["lp_debug_port"]
-            )
+            self._lp_debug_port = cast(int, self._cfg["tool"]["oxt"]["config"]["token"]["lp_debug_port"])
         except Exception:
             self._lp_debug_port = 5679
-        # endregion tool.libre_pythonista.config
+
+        try:
+            self._cmd_clean_file_prefix = cast(
+                str,
+                self._cfg["tool"]["oxt"]["config"]["cmd_clean_file_prefix"],
+            )
+        except Exception:
+            self._cmd_clean_file_prefix = ""
+
+        # region Requirements Rule
+        # Access a specific table
+        try:
+            self._py_packages = cast(List[Dict[str, str]], self._cfg["tool"]["oxt"]["py_packages"])
+        except Exception:
+            self._py_packages = []
+
+        try:
+            self._lp_editor_py_packages = cast(List[Dict[str, str]], self._cfg["tool"]["oxt"]["lp_editor_py_packages"])
+        except Exception:
+            self._lp_editor_py_packages = []
+        # endregion Requirements Rule
         self._validate()
         self._warnings()
 
@@ -351,16 +306,13 @@ class JsonConfig(metaclass=Singleton):
         token = Token()
         json_config["py_pkg_dir"] = token.get_token_value("py_pkg_dir")
         json_config["lo_identifier"] = token.get_token_value("lo_identifier")
-        json_config["lo_implementation_name"] = token.get_token_value(
-            "lo_implementation_name"
-        )
+        json_config["lo_implementation_name"] = token.get_token_value("lo_implementation_name")
         json_config["extension_display_name"] = token.get_token_value("display_name")
         json_config["oxt_name"] = token.get_token_value("oxt_name")
+        json_config["lo_pip"] = token.get_token_value("lo_pip")
 
         json_config["zipped_preinstall_pure"] = self._zip_preinstall_pure
-        json_config["auto_install_in_site_packages"] = (
-            self._auto_install_in_site_packages
-        )
+        json_config["auto_install_in_site_packages"] = self._auto_install_in_site_packages
         json_config["install_wheel"] = self._install_wheel
         json_config["window_timeout"] = self._window_timeout
         json_config["dialog_desktop_owned"] = self._dialog_desktop_owned
@@ -370,9 +322,7 @@ class JsonConfig(metaclass=Singleton):
         json_config["isolate_windows"] = self._isolate_windows
         json_config["sym_link_cpython"] = self._sym_link_cpython
         json_config["uninstall_on_update"] = self._uninstall_on_update
-        json_config["install_on_no_uninstall_permission"] = (
-            self._install_on_no_uninstall_permission
-        )
+        json_config["install_on_no_uninstall_permission"] = self._install_on_no_uninstall_permission
         json_config["unload_after_install"] = self._unload_after_install
         json_config["run_imports"] = self._run_imports
         json_config["run_imports2"] = self._run_imports2
@@ -383,27 +333,16 @@ class JsonConfig(metaclass=Singleton):
         json_config["log_indent"] = self._log_indent
         # update the requirements
         json_config["requirements"] = self._requirements
-        json_config["requirements_linux"] = self._requirements_linux
-        json_config["requirements_macos"] = self._requirements_macos
-        json_config["requirements_win"] = self._requirements_win
-        json_config["experimental_requirements_linux"] = (
-            self._experimental_requirements_linux
-        )
-        json_config["experimental_requirements_macos"] = (
-            self._experimental_requirements_macos
-        )
-        json_config["experimental_requirements_win"] = (
-            self._experimental_requirements_win
-        )
+
         json_config["has_locals"] = self._config.has_locals
         json_config["libreoffice_debug_port"] = self._libreoffice_debug_port
         json_config["lp_debug_port"] = self._lp_debug_port
+        json_config["require_install_name_match"] = self._require_install_name_match
+        json_config["cmd_clean_file_prefix"] = self._cmd_clean_file_prefix
 
         # region tool.libre_pythonista.config
         json_config["cell_cp_prefix"] = self._cell_custom_prop_prefix
-        json_config["cell_cp_codename"] = (
-            f"{self._cell_custom_prop_prefix}{self._cell_custom_prop_codename}"
-        )
+        json_config["cell_cp_codename"] = f"{self._cell_custom_prop_prefix}{self._cell_custom_prop_codename}"
         json_config["general_code_name"] = self._general_codename
         json_config["calc_props_json_name"] = self._calc_props_json_name
         json_config["lp_code_dir"] = self._lp_code_dir
@@ -416,7 +355,20 @@ class JsonConfig(metaclass=Singleton):
         json_config["py_script_sheet_ctl_click"] = self._py_script_sheet_ctl_click
         json_config["py_script_sheet_on_calculate"] = self._py_script_sheet_on_calculate
         json_config["no_pip_remove"] = self._no_pip_remove
+
+        json_config["flatpak_libre_pythonista_py_editor"] = self._flatpak_libre_pythonista_py_editor
+        json_config["flatpak_libre_pythonista_py_editor_cell_cmd"] = self._flatpak_libre_pythonista_py_editor_cell_cmd
+        json_config["flatpak_libre_pythonista_py_editor_install_url"] = (
+            self._flatpak_libre_pythonista_py_editor_install_url
+        )
+
+        json_config["lp_py_cell_edit_sock_timeout"] = self._lp_py_cell_edit_sock_timeout
         # endregion tool.libre_pythonista.config
+
+        # region Requirements Rule
+        json_config["py_packages"] = self._py_packages
+        json_config["lp_editor_py_packages"] = self._lp_editor_py_packages
+        # endregion Requirements Rule
 
         # save the file
         with open(json_config_path, "w", encoding="utf-8") as f:
@@ -425,105 +377,54 @@ class JsonConfig(metaclass=Singleton):
     def _validate(self) -> None:
         """Validate"""
         assert isinstance(self._requirements, dict), "requirements must be a dict"
-        assert isinstance(
-            self._run_imports_linux, list
-        ), "run_imports_linux must be a list"
-        assert isinstance(
-            self._run_imports_macos, list
-        ), "run_imports_macos must be a list"
+        assert isinstance(self._run_imports_linux, list), "run_imports_linux must be a list"
+        assert isinstance(self._run_imports_macos, list), "run_imports_macos must be a list"
         assert isinstance(self._run_imports_win, list), "run_imports_win must be a list"
-        assert isinstance(
-            self._requirements_linux, dict
-        ), "requirements for linux must be a dict"
-        assert isinstance(
-            self._requirements_macos, dict
-        ), "requirements for mac os must be a dict"
-        assert isinstance(
-            self._requirements_win, dict
-        ), "requirements for windows must be a dict"
-        assert isinstance(
-            self._experimental_requirements_linux, dict
-        ), "experimental requirements for linux must be a dict"
-        assert isinstance(
-            self._experimental_requirements_macos, dict
-        ), "experimental requirements for mac os must be a dict"
-        assert isinstance(
-            self._experimental_requirements_win, dict
-        ), "experimental requirements for windows must be a dict"
-        assert isinstance(
-            self._zip_preinstall_pure, bool
-        ), "zip_preinstall_pure must be a bool"
-        assert isinstance(
-            self._auto_install_in_site_packages, bool
-        ), "auto_install_in_site_packages must be a bool"
+
+        assert isinstance(self._zip_preinstall_pure, bool), "zip_preinstall_pure must be a bool"
+        assert isinstance(self._auto_install_in_site_packages, bool), "auto_install_in_site_packages must be a bool"
         assert isinstance(self._install_wheel, bool), "install_wheel must be a bool"
         assert isinstance(self._window_timeout, int), "window_timeout must be an int"
-        assert isinstance(
-            self._dialog_desktop_owned, bool
-        ), "dialog_desktop_owned must be a bool"
+        assert isinstance(self._dialog_desktop_owned, bool), "dialog_desktop_owned must be a bool"
         assert isinstance(self._default_locale, list), "default_locale must be a list"
-        assert (
-            len(self._default_locale) > 0
-        ), "default_locale must have at least 1 elements"
-        assert (
-            len(self._default_locale) < 4
-        ), "default_locale must have no more then three elements"
-        assert isinstance(
-            self._resource_dir_name, str
-        ), "resource_dir_name must be a string"
-        assert (
-            len(self._resource_dir_name) > 0
-        ), "resource_dir_name must not be an empty string"
-        assert isinstance(
-            self._resource_properties_prefix, str
-        ), "resource_properties_prefix must be a string"
-        assert (
-            len(self._resource_properties_prefix) > 0
-        ), "resource_properties_prefix must not be an empty string"
-        assert isinstance(
-            self._sym_link_cpython, bool
-        ), "sym_link_cpython must be a bool"
-        assert isinstance(
-            self._uninstall_on_update, bool
-        ), "uninstall_on_update must be a bool"
-        assert isinstance(
-            self._unload_after_install, bool
-        ), "unload_after_install must be a bool"
+        assert len(self._default_locale) > 0, "default_locale must have at least 1 elements"
+        assert len(self._default_locale) < 4, "default_locale must have no more then three elements"
+        assert isinstance(self._resource_dir_name, str), "resource_dir_name must be a string"
+        assert len(self._resource_dir_name) > 0, "resource_dir_name must not be an empty string"
+        assert isinstance(self._resource_properties_prefix, str), "resource_properties_prefix must be a string"
+        assert len(self._resource_properties_prefix) > 0, "resource_properties_prefix must not be an empty string"
+        assert isinstance(self._sym_link_cpython, bool), "sym_link_cpython must be a bool"
+        assert isinstance(self._uninstall_on_update, bool), "uninstall_on_update must be a bool"
+        assert isinstance(self._unload_after_install, bool), "unload_after_install must be a bool"
         assert isinstance(self._log_indent, int), "log_indent must be a int"
-        assert isinstance(
-            self._install_on_no_uninstall_permission, bool
-        ), "_install_on_no_uninstall_permission must be a bool"
+        assert isinstance(self._install_on_no_uninstall_permission, bool), (
+            "_install_on_no_uninstall_permission must be a bool"
+        )
         assert isinstance(self._run_imports, list), "run_imports must be a list"
         assert isinstance(self._run_imports2, list), "run_imports2 must be a list"
-        assert isinstance(
-            self._libreoffice_debug_port, int
-        ), "libreoffice_debug_port must be a int"
+        assert isinstance(self._libreoffice_debug_port, int), "libreoffice_debug_port must be a int"
         assert isinstance(self._lp_debug_port, int), "lp_debug_port must be a int"
+        assert isinstance(self._require_install_name_match, bool), "require_install_name_match must be a bool"
         # region tool.libre_pythonista.config
-        assert isinstance(
-            self._cell_custom_prop_prefix, str
-        ), "cell_custom_prop_prefix must be a string"
-        assert isinstance(
-            self._cell_custom_prop_codename, str
-        ), "cell_custom_prop_codename must be a string"
-        assert isinstance(
-            self._general_codename, str
-        ), "general_codename must be a string"
-        assert isinstance(
-            self._calc_props_json_name, str
-        ), "calc_props_json_name must be a string"
+        assert isinstance(self._cell_custom_prop_prefix, str), "cell_custom_prop_prefix must be a string"
+        assert isinstance(self._cell_custom_prop_codename, str), "cell_custom_prop_codename must be a string"
+        assert isinstance(self._general_codename, str), "general_codename must be a string"
+        assert isinstance(self._calc_props_json_name, str), "calc_props_json_name must be a string"
         assert isinstance(self._lp_code_dir, str), "lp_code_dir must be a string"
-        assert isinstance(
-            self._lp_default_log_format, str
-        ), "log format must be a string"
-        assert (
-            self._lp_default_log_format
-        ), "lp_default_log_format must not be an empty string"
+        assert isinstance(self._lp_default_log_format, str), "log format must be a string"
+        assert self._lp_default_log_format, "lp_default_log_format must not be an empty string"
+        assert isinstance(self._cmd_clean_file_prefix, str), "cmd_clean_file_prefix must be a string"
+        assert len(self._cmd_clean_file_prefix) > 0, "cmd_clean_file_prefix must not be an empty string"
         # validate the extension version is a valid python version
-        assert (
-            self._extension_version.count(".") == 2
-        ), "extension_version must contain two periods"
+        assert self._extension_version.count(".") == 2, "extension_version must contain two periods"
         assert isinstance(self._no_pip_remove, list), "no_pip_remove must be a list"
+
+        assert isinstance(self._flatpak_libre_pythonista_py_editor, str), (
+            "flatpak_libre_pythonista_py_editor must be a string"
+        )
+        assert isinstance(self._flatpak_libre_pythonista_py_editor_cell_cmd, str), (
+            "flatpak_libre_pythonista_py_editor_cell_cmd must be a string"
+        )
         # endregion tool.libre_pythonista.config
 
     def _warnings(self) -> None:
@@ -535,17 +436,11 @@ class JsonConfig(metaclass=Singleton):
         lp_experimental_editor = str(token.get_token_value("lp_experimental_editor"))
 
         if self._log_indent > 0:
-            warnings.append(
-                f"'tool.oxt.config.log_indent' is set to {self._log_indent}. Set to 0 for production."
-            )
+            warnings.append(f"'tool.oxt.config.log_indent' is set to {self._log_indent}. Set to 0 for production.")
         if dist_dir == "tmp_dist":
-            warnings.append(
-                "'tool.oxt.config.dist_dir' is set to the default value of 'tmp_dist'."
-            )
+            warnings.append("'tool.oxt.config.dist_dir' is set to the default value of 'tmp_dist'.")
         if log_level != "INFO":
-            warnings.append(
-                f"'tool.oxt.config.log_level' is set to '{log_level}'. Set to INFO for production."
-            )
+            warnings.append(f"'tool.oxt.config.log_level' is set to '{log_level}'. Set to INFO for production.")
         if "indent_str" in log_format:
             warnings.append(
                 "'tool.oxt.config.log_format' contains 'indent_str'. This is for debugging. Remove for production."
@@ -553,6 +448,10 @@ class JsonConfig(metaclass=Singleton):
         if lp_experimental_editor != "false":
             warnings.append(
                 f"'lp_experimental_editor' is set to '{lp_experimental_editor}'. This is for development. Set to 'false' for production."
+            )
+        if self._lp_py_cell_edit_sock_timeout > 10:
+            warnings.append(
+                f"'lp_py_cell_edit_sock_timeout' is set to '{self._lp_py_cell_edit_sock_timeout}'. Set to 10 for production."
             )
         if warnings:
             print("JsonConfig Warnings:")

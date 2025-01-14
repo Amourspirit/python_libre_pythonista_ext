@@ -2,10 +2,12 @@ from __future__ import annotations
 from typing import List, Dict, TYPE_CHECKING
 import os
 import sys
+from pathlib import Path
 import subprocess
 import contextlib
+import importlib.util
 from importlib.metadata import PackageNotFoundError, version
-import uno
+import warnings
 
 from ooodev.loader import Lo
 from ooodev.dialog.msgbox import MessageBoxType, MsgBox
@@ -32,7 +34,6 @@ else:
 
 
 class PkgInfo:
-
     def __init__(self) -> None:
         self._log = OxtLogger(log_name=self.__class__.__name__)
         self._ctx = Lo.get_context()
@@ -98,9 +99,52 @@ class PkgInfo:
         #     )
         # return result.returncode == 0
         with contextlib.suppress(PackageNotFoundError):
-            if ver := version(pkg_name):
+            if version(pkg_name):
                 return True
         return False
+
+    def find_module_location(self, package_name: str) -> str:
+        """
+        Finds the location of a Python module without importing it.
+
+        Args:
+            module_name: The name of the module to find.
+
+        Returns:
+            The path to the module's file, or None if the module is not found.
+        """
+        try:
+            spec = importlib.util.find_spec(package_name)
+            if spec is None:
+                return ""
+            if spec.origin:
+                p = Path(spec.origin)
+                if p.is_file():
+                    return str(p.parent)
+                return spec.origin
+            return ""
+        except Exception as e:
+            self._log.error(f"Error finding module location: {e}")
+            return ""
+
+    def get_package_location(self, package_name: str, auto_unload: bool = True) -> str:
+        """
+        Get the installation location of a specified package.
+
+        Args:
+            package_name (str): The name of the package to locate.
+            auto_unload (bool, optional): Unload the package after getting the location.
+                This parameter is not used and exist for legacy reasons.
+
+        Returns:
+            str: The file path to the package's installation location, or empty string if not found.
+
+        .. deprecated:: 0.7
+            This method is deprecated and will be removed in a future version.
+            Use `find_module_location` instead.
+        """
+        warnings.warn("This function is deprecated. Use new_function instead.", DeprecationWarning, stacklevel=2)
+        return self.find_module_location(package_name)
 
     def show_installed(self) -> None:
         """Install pip packages."""

@@ -52,7 +52,9 @@ class OxtLogger(Logger):
 
         if self._indent_amt > 0:
             # "%(asctime)s %(levelname)s: %(indent_str)s%(message)s"
-            self.formatter = CallbackFormatter(fmt=self._config.log_format, callback=self._fn_on_callback)
+            self.formatter = CallbackFormatter(
+                fmt=self._config.log_format, callback=self._fn_on_callback
+            )
         else:
             self.formatter = logging.Formatter(self._config.log_format)
         add_console_logger = kwargs.get("add_console_logger", False)
@@ -165,6 +167,7 @@ class OxtLogger(Logger):
     @contextmanager
     def noindent(self):
         """Temporarily disable indentation."""
+        indent = 0
         try:
             indent = self.current_indent
             self.current_indent = 0
@@ -220,8 +223,23 @@ class OxtLogger(Logger):
 
 class CallbackFormatter(logging.Formatter):
     # https://stackoverflow.com/questions/17558552/how-do-i-add-custom-field-to-python-log-format-string
-    def __init__(self, fmt=None, datefmt=None, style="%", validate=True, *, defaults=None, callback=None):
-        super().__init__(fmt=fmt, datefmt=datefmt, style=style, validate=validate, defaults=defaults)  # type: ignore
+    def __init__(
+        self,
+        fmt=None,
+        datefmt=None,
+        style="%",
+        validate=True,
+        *,
+        defaults=None,
+        callback=None,
+    ):
+        super().__init__(
+            fmt=fmt,
+            datefmt=datefmt,
+            style=style,  # type: ignore
+            validate=validate,
+            defaults=defaults,
+        )  # type: ignore
         self.callback = callback
 
     def format(self, record):

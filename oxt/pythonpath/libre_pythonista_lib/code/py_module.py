@@ -1,5 +1,6 @@
 from __future__ import annotations
 from typing import Any, TYPE_CHECKING
+import importlib.util
 
 # import importlib
 import types
@@ -20,15 +21,8 @@ else:
 
 
 def is_import_available(module_name: str, class_name: str = "", alias: str = "") -> bool:
-    try:
-        __import__(module_name)
-    except (ModuleNotFoundError, ImportError):
-        return False
-    return True
-    # importer = DynamicImporter(module_name=module_name, class_name=class_name, alias=alias)
-    # if importer.is_module_existing_import():
-    #     return True
-    # return importer.load_module() is not None
+    spec = importlib.util.find_spec(module_name)
+    return spec is not None
 
 
 try:
@@ -80,9 +74,7 @@ def get_module_init_code() -> str:
 
 
 class PyModule:
-
     def __init__(self):
-
         self._log = OxtLogger(log_name=self.__class__.__name__)
 
         self.mod = types.ModuleType("PyMod")

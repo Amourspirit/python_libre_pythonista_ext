@@ -2,7 +2,6 @@ from __future__ import annotations
 from typing import Any
 import threading
 import time
-import uno
 
 from .run_time_dialog_base import RuntimeDialogBase
 from ..config import Config
@@ -20,7 +19,9 @@ class InfiniteProgressDialog(RuntimeDialogBase):
     HEIGHT = MARGIN * 3 + WORKING_HEIGHT * 2
     WIDTH = 400
 
-    def __init__(self, ctx: Any, title: str, msg: str = "Please wait...", parent: Any = None):
+    def __init__(
+        self, ctx: Any, title: str, msg: str = "Please wait...", parent: Any = None
+    ):
         super().__init__(ctx)
         self.title = title
         self._msg = msg
@@ -86,7 +87,9 @@ class InfiniteProgress(threading.Thread):
             my_progress.stop()
     """
 
-    def __init__(self, ctx: Any, title: str = "Infinite Progress", msg: str = "Please wait"):
+    def __init__(
+        self, ctx: Any, title: str = "Infinite Progress", msg: str = "Please wait"
+    ):
         super().__init__()
         self._ctx = ctx
         self._title = title

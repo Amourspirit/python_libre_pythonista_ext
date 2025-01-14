@@ -1,11 +1,22 @@
-[tool.poetry]
+[project]
 name = "LibrePythonista"
-version = "0.6.0"
+version = "0.7.0"
 description = "Python For LibreOffice Calc"
-authors = [":Barry-Thomas-Paul: Moss <4193389+Amourspirit@users.noreply.github.com>"]
-license = "Apache"
 readme = "README.md"
-packages = [{ include = "src" }]
+requires-python = ">=3.8"
+license = {text="OSI Approved :: Apache Software License"}
+keywords = ["pip", "libreoffice","uno", "pyuno"]
+dependencies = [
+    "ooo-dev-tools>=0.50.0",
+    "oooenv>=0.2.4",
+    "pandas>=2",
+    "sortedcontainers>=2.4.0",
+    "toml>=0.10.2",
+    "typing-extensions>=4.12.2",
+]
+authors = [
+    {name = ":Barry-Thomas-Paul: Moss", email = "librepythonista.lifter091@passmail.net"}]
+
 
 # See: https://github.com/Amourspirit/python-libreoffice-pip/wiki/pyproject.toml
 [tool.libre_pythonista.config]
@@ -23,11 +34,15 @@ py_script_sheet_ctl_click = "control_handler.py"
 py_script_sheet_on_calculate = "share_event.py"
 calc_props_json_name = "_calc_props.json" # name of the json file that holds the calc properties an is stored in the document. general_code_name is prepended to the name at runtime.
 lp_code_dir = "librepythonista" # The directory where the libre_pythonista code is stored within the document.
+flatpak_libre_pythonista_py_editor="io.github.amourspirit.LibrePythonista_PyEditor"
+flatpak_libre_pythonista_py_editor_cell_cmd="cell_edit"
+flatpak_libre_pythonista_py_editor_install_url="https://github.com/Amourspirit/LibrePythonista_PyEditor/wiki"
+lp_py_cell_edit_sock_timeout=10 # number of seconds, default 10, to wait for the socket to connect the the cell py editor.
 
 [tool.oxt.config]
 auto_install_in_site_packages = true # https://tinyurl.com/ymeh4c9j#auto_install_in_site_packages
 build_dir = "build" # https://tinyurl.com/ymeh4c9j#build_dir
-dist_dir = "dist" # "dist" https://tinyurl.com/ymeh4c9j#dist_dir should be changed to someting like dist, tmp_dist is not included in git
+dist_dir = "dist" # "dist" https://tinyurl.com/ymeh4c9j#dist_dir should be changed to something like dist, tmp_dist is not included in git
 install_wheel = true # https://tinyurl.com/ymeh4c9j#install_wheel
 oxt_name = "LibrePythonista" # https://tinyurl.com/ymeh4c9j#oxt_name
 py_pkg_dir = "py_pkgs" # https://tinyurl.com/ymeh4c9j#py_pkg_dir
@@ -48,7 +63,7 @@ install_on_no_uninstall_permission = true # https://tinyurl.com/ymeh4c9j#install
 oo_types_uno = "" # https://tinyurl.com/ymeh4c9j#oo_types_uno
 oo_types_office = "" # https://tinyurl.com/ymeh4c9j#oo_types_office
 unload_after_install = false # https://tinyurl.com/ymeh4c9j#unload_after_install
-run_imports = ["ooodev", "verr", "sortedcontainers"] # These are required for LibrePythonista dispataches to work. https://tinyurl.com/ymeh4c9j#run_imports
+run_imports = ["ooodev", "verr", "sortedcontainers"] # These are required for LibrePythonista dispatches to work. https://tinyurl.com/ymeh4c9j#run_imports
 run_imports2 = ["pandas", "numpy", "matplotlib"] # second level imports. These are required for LibrePythonista to work
 run_imports_linux = [] # https://tinyurl.com/ymeh4c9j#run_imports_linux
 run_imports_macos = [] # https://tinyurl.com/ymeh4c9j#run_imports_macos
@@ -56,6 +71,8 @@ run_imports_win = [] # https://tinyurl.com/ymeh4c9j#run_imports_win
 # when log_indent is set indent_str can be used in the format str - "%(asctime)s %(levelname)s - %(indent_str)s%(name)s: %(message)s"
 log_indent = 0 # set to 0 or less to disable; Ignored in windows. Should be set to 0 for production.
 no_pip_remove = ["pip", "setuptools", "wheel"] # https://tinyurl.com/ymeh4c9j#no_pip_remove
+require_install_name_match = true # if true then an error will be raised if the installed package name does not match oxt_name
+cmd_clean_file_prefix = "cleanup_"
 
 [tool.oxt.token]
 # in the form of "token_name": "token_value"
@@ -93,62 +110,65 @@ lp_experimental_editor=false
 [tool.oxt.requirements]
 # https://tinyurl.com/ymeh4c9j#tooloxtrequirements
 # https://python-poetry.org/docs/dependency-specification/
-typing-extensions = ">=4.12.2"
-verr = ">=1.1.2"
-pandas = ">=2"
 odfpy = ">=1.4"
 ooo-dev-tools = ">=0.50.0"
-matplotlib = ">=3.7.5"
 seaborn = ">=0.13"
 sortedcontainers = ">=2.4.0"
 debugpy = ">=1.8"
 
-[tool.oxt.requirements_linux]
-# https://tinyurl.com/ymeh4c9j#tooloxtrequirements_linux
-# any linux specific requirements
-# These requirements take precedence over the general requirements
-# qtpy = ">=2.4.1"
-# PySide2 = ">=5"
-# pywebview = ">=5"
+[[tool.oxt.py_packages]]
+# https://tinyurl.com/ymeh4c9j#tooloxtpy_packages
+name="typing-extensions"
+version="4.12.2"
 
-[tool.oxt.requirements_macos]
-# https://tinyurl.com/ymeh4c9j#tooloxtrequirements_macos
-# any macos specific requirements
-# These requirements take precedence over the general requirements
-# pyobjc = ">=10.3.1"
-# pywebview = ">=5"
+[[tool.oxt.py_packages]]
+name="verr"
+version="1.1.2"
 
-[tool.oxt.requirements_win]
-# https://tinyurl.com/ymeh4c9j#tooloxtrequirements_win
-# any windows specific requirements
-# These requirements take precedence over the general requirements
-# cefpython3=">=66.1"
-# pywebview = ">=5"
 
-[tool.oxt.experimental.requirements_win]
-# https://tinyurl.com/ymeh4c9j#tooloxtrequirements_win
-# any windows specific requirements
-# These requirements take precedence over the general requirements
-cefpython3=">=66.1"
-pywebview = ">=5"
-jedi = ">=0.19"
+[[tool.oxt.py_packages]]
+# https://amour_spirit.pyscriptapps.com/version-runner/latest/
+name="pandas"
+version="2.0"
+restriction="~"
+platforms=["all"]
+python_versions=["<=3.9"]
 
-[tool.oxt.experimental.requirements_macos]
-# https://tinyurl.com/ymeh4c9j#tooloxtrequirements_macos
-# any macos specific requirements
-# These requirements take precedence over the general requirements
-pyobjc = ">=10.3.1"
-pywebview = ">=5"
-jedi = ">=0.19"
+[[tool.oxt.py_packages]]
+name="pandas"
+version="2.2"
+restriction=">="
+platforms=["all"]
+python_versions=[">=3.9"]
 
-[tool.oxt.experimental.requirements_linux]
-# https://tinyurl.com/ymeh4c9j#tooloxtrequirements_linux
-# any linux specific requirements
-# These requirements take precedence over the general requirements
-qtpy = ">=2.4.1"
-PySide2 = ">=5"
-pywebview = ">=5"
-jedi = ">=0.19"
+[[tool.oxt.py_packages]]
+name="matplotlib"
+version="3.7.0"
+restriction="~"
+platforms=["all"]
+python_versions=["<3.9"]
+
+[[tool.oxt.py_packages]]
+name="matplotlib"
+version="3.9.0"
+restriction="~"
+platforms=["all"]
+python_versions=[">=3.9", "<3.10"]
+
+[[tool.oxt.py_packages]]
+name="matplotlib"
+version="3.10.0"
+restriction=">="
+platforms=["all"]
+python_versions=[">=3.10"]
+
+
+[[tool.oxt.lp_editor_py_packages]]
+name="librepythonista-python-editor"
+version="0.1.8"
+platforms=["all"]
+ignore_platforms=["flatpak", "snap"]
+
 
 [tool.oxt.isolate]
 # https://tinyurl.com/ymeh4c9j#tooloxtisolate
@@ -196,43 +216,27 @@ es = "Extensión para agregar administración de paquetes Python y Pip dentro de
 "3.12" = { url = "https://www.python.org/ftp/python/3.12.7/python-3.12.7-embed-amd64.zip", md5="4c0a5a44d4ca1d0bc76fe08ea8b76adc" }
 "3.13" = { url = "https://www.python.org/ftp/python/3.13.0/python-3.13.0rc3-embed-amd64.zip", md5="93d8329cd1c8d09f64c28191942c11ce" }
 
-[tool.poetry.dependencies]
-python = "^3.8"
-toml = "^0.10.2"
-typing-extensions = ">=4.12.2"
-ooo-dev-tools = ">=0.50.0"
-sortedcontainers = ">=2.4.0"
-oooenv = ">=0.2.4"
-
-[tool.poetry.group.dev.dependencies]
-types-scriptforge = ">=2.0.1"
-pytest = "^7.4.0"
-pytest-dotenv = "^0.5.2"
-black = "^24.8.0"
-oooscript = "^1.1.3"
-lxml = "^4.9.3"
-sortedcontainers-stubs = "^2.4.2"
-debuggy = "^3.0.1"
-# pyobjc = [{version = ">=10.3.1", markers = "sys_platform == 'darwin'"}]
-# pywebview = [
-#     {extras = ["qt"], version = "^5.3.2", markers = "sys_platform != 'win32'"},
-# 	{extras = ["cef"], version = "^5.3.2", markers = "sys_platform == 'win32'"},
-#     {version = "^5.3.2", markers = "sys_platform == 'darwin'"},
-# ]
-# jedi = "^0.19.1"
-
-[tool.poetry.group.linux.dependencies]
-pandas = ">=2.0.3"
-matplotlib = ">=3.7.5"
-
-[tool.poetry.group.windows.dependencies]
-pandas = ">=2"
-matplotlib = ">=3.7.5"
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
-# build-backend="setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "pytest-dotenv>=0.5.2",
+    "pytest>=8.3.4",
+    "oooscript>=2.1.1",
+    "lxml>=5.3.0",
+    "debuggy>=3.0.1",
+    "oooenv>=0.2.4",
+    "matplotlib>=3.7.5",
+    "pytest-mock>=3.14.0",
+]
+
+[tool.hatch.build]
+include = [
+    "build/**/*",
+]
 
 
 [tool.pylint.'MESSAGES CONTROL']
@@ -247,10 +251,58 @@ include = ["src"]
 reportMissingModuleSource = false
 
 [tool.ruff]
-extended-select = ["ANN", "C4", "N", "SIM", "TCH"]
+# https://docs.astral.sh/ruff/configuration/
+
 ignore = ["E501"]
 show-fixes = true
-target = "py38"
+target-version = "py38"
+line-length = 119
+
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    "__pypackages__",
+    "build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "site-packages",
+    ".venv",
+    "tmp",
+]
+src = ["otx", "src"]
+
+[tool.ruff.lint]
+select = ["ANN", "C4", "N", "SIM"]
+ignore = []
+
+[tool.ruff.format]
+exclude = ["tmp", ".devcontainer", ".githooks", ".github", ".hypothesis", ".idea", ".pytest_cache", ".venv", ".vscode", "cmds", "dist", "docs", "*.pyi"]
+
+# Like Black, use double quotes for strings.
+quote-style = "double"
+
+# Like Black, indent with spaces, rather than tabs.
+indent-style = "space"
+
+# Like Black, respect magic trailing commas.
+skip-magic-trailing-comma = false
+
+# Like Black, automatically detect the appropriate line ending.
+line-ending = "auto"
+
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
