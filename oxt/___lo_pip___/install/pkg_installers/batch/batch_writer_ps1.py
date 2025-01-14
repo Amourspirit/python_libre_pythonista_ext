@@ -152,7 +152,7 @@ class BatchWriterPs1(BatchWriter):
             self._write_remove_files(str(target_path / "lib"), sw, files)
 
             files = pkg.data.new_inc_files
-            self._write_remove_files(str(target_path / "inc"), sw, files)
+            self._write_remove_files(str(target_path / "include"), sw, files)
         except Exception as e:
             self.installer.log.exception("Error writing output for %s: %s", pkg.package or "unknown", e)
 
