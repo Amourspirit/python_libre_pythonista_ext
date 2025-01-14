@@ -109,6 +109,57 @@ Usually, when a sheet is opened, LibreOffice will ask the user if they want to e
 
 The recommended security setting for LibrePythonista is `Medium`. This setting will allow Python code to run when macros are enabled. To set the security level, go to `Tools -> Options -> LibreOffice -> Security -> Macro Security` and set the security level to `Medium`.
 
+## Uninstall
+
+As of version `0.7.0` LibrePythonista can also uninstall the Python Packages that were installed as part of the extension.
+
+There are two ways to uninstall the extension python packages.
+
+### With LibreOffice Running
+
+The first way is via the extension options from the LibreOffice Extension Manager.
+
+**Note:** LibreOffice must be a fresh start for this method to work. If you are not sure then restart LibreOffice and then try again.
+
+Open the LibreOffice Extension Manager and click on the LibrePythonista extension. Then click on the Options button. Navigate to `LibrePythonista -> Uninstall`. Select the packages to uninstall and click on the `Uninstall` button. This will remove the selected Python packages.
+
+If you want to uninstall the extension then select all the packages and click on the `Uninstall` button. This will remove all the Python packages that were installed as part of the extension.
+Next, Click `OK` to go back to the Extension Manager and then click `Remove` to remove the extension.
+
+**Note:** If the extension is not removed then any python package that was removed will be reinstalled when LibreOffice is restarted.
+
+
+### With LibreOffice Closed
+
+The second way, and the recommended way.
+When LibrePythonista is installed it also writes a script file that can be used to uninstall the extension Python packages. The script location is different depending on the operating system and installation type, such as FlatPak and Snap.
+
+To get the command to uninstall the extension Python packages, open the LibreOffice Extension Manager and click on the LibrePythonista extension. Then click on the Options button. Navigate to `LibrePythonista -> Uninstall`. Select the packages to uninstall and click on the `Copy command` button. This will copy the command to the clipboard.
+
+Next you can uninstall the extension from LibreOffice and then close LibreOffice. Open a terminal (PowerShell on Windows) and paste the command that was copied to the clipboard and press enter. This will remove all the Python packages that were installed as part of the extension.
+
+**Important:** It is important that LibreOffice not be running when this command is run. If LibreOffice is running then the command may not work correctly.
+
+The output will be something like this:
+
+```bash
+bash "/home/username/.config/libreoffice/4/user/cleanup_LibrePythonista.sh"
+Deleted file: /home/username/.local/lib/python3.12/site-packages/LibrePythonista_typing-extensions.json
+Deleted file: /home/username/.local/lib/python3.12/site-packages/LibrePythonista_seaborn.json
+Deleted file: /home/username/.local/lib/python3.12/site-packages/LibrePythonista_matplotlib.json
+Deleted file: /home/username/.local/lib/python3.12/site-packages/LibrePythonista_verr.json
+Deleted file: /home/username/.local/lib/python3.12/site-packages/LibrePythonista_pandas.json
+Deleted file: /home/username/.local/lib/python3.12/site-packages/LibrePythonista_ooo-dev-tools.json
+Deleted file: /home/username/.local/lib/python3.12/site-packages/LibrePythonista_librepythonista-python-editor.json
+Deleted file: /home/username/.local/lib/python3.12/site-packages/LibrePythonista_odfpy.json
+Deleted file: /home/username/.local/lib/python3.12/site-packages/LibrePythonista_debugpy.json
+Deleted file: /home/username/.local/lib/python3.12/site-packages/LibrePythonista_sortedcontainers.json
+Deleted folder: /home/username/.local/lib/python3.12/site-packages/typing_extensions-4.12.2.dist-info
+...
+```
+
+![image](https://github.com/user-attachments/assets/8e83f863-8b1c-4093-b69b-2a69eb78d377)
+
 ## Other Resources
 
 - [LibrePythonista Channel](https://www.youtube.com/@LibrePythonista)
