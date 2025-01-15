@@ -32,12 +32,9 @@ if TYPE_CHECKING:
     from ...___lo_pip___.basic_config import BasicConfig
     import debugpy  # type: ignore
 
-    # from ...pythonpath.libre_pythonista_lib.sheet.listen.sheet_calculation_event_listener import (
-    #     SheetCalculationEventListener,
-    # )
 else:
 
-    def override(func):
+    def override(func):  # noqa: ANN001, ANN201
         return func
 
     _CONDITIONS_MET = _conditions_met()
@@ -73,7 +70,7 @@ class DebugJob(unohelper.Base, XJob):
 
     # region execute
     @override
-    def execute(self, Arguments: Any) -> None:
+    def execute(self, Arguments: Any) -> None:  # noqa: ANN401, N803
         # This job may be executed more then once.
         # When a spreadsheet is put into print preview this is fired.
         # When the print preview is closed this is fired again.
@@ -83,14 +80,14 @@ class DebugJob(unohelper.Base, XJob):
             return
         try:
             if os.getenv("ENABLE_LIBREOFFICE_DEBUG"):
+                if os.getenv("LIBREOFFICE_DEBUG_ATTACHED") == "1":
+                    self._log.debug("Debugger already attached.")
+                    return
                 basic_config = BasicConfig()
-                # Start the debug server on port 5678
+                # Start the debug server
                 if basic_config.libreoffice_debug_port > 0:
                     debugpy.listen(("localhost", basic_config.libreoffice_debug_port))
-                    self._log.debug(
-                        "Waiting for debugger attach on port %i ...",
-                        basic_config.libreoffice_debug_port,
-                    )
+                    self._log.debug("Waiting for debugger attach on port %i ...", basic_config.libreoffice_debug_port)
                 else:
                     self._log.warning(
                         "Debug port not set. Must be set in tool.oxt.token.libreoffice_debug_port of pyproject.toml file. Contact the developer."
@@ -108,7 +105,7 @@ class DebugJob(unohelper.Base, XJob):
             self._log.debug(f"Args Length: {len(Arguments)}")
 
         except Exception:
-            self._log.exception("Error getting current document")
+            self._log.exception("Error attaching debugger")
             return
 
     # endregion execute
@@ -127,8 +124,8 @@ class DebugJob(unohelper.Base, XJob):
 
 # region Implementation
 
-g_TypeTable = {}
-g_ImplementationHelper = unohelper.ImplementationHelper()
+g_TypeTable = {}  # noqa: N816
+g_ImplementationHelper = unohelper.ImplementationHelper()  # noqa: N816
 g_ImplementationHelper.addImplementation(*DebugJob.get_imple())
 
 # endregion Implementation

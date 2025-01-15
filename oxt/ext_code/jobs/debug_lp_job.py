@@ -35,7 +35,7 @@ if TYPE_CHECKING:
     # )
 else:
 
-    def override(func):
+    def override(func):  # noqa: ANN001, ANN201
         return func
 
     _CONDITIONS_MET = _conditions_met()
@@ -57,12 +57,12 @@ class DebugLpJob(unohelper.Base, XJob):
     SERVICE_NAMES = ("com.sun.star.task.Job",)
 
     @classmethod
-    def get_imple(cls):
+    def get_imple(cls) -> tuple:
         return (cls, cls.IMPLE_NAME, cls.SERVICE_NAMES)
 
     # region Init
 
-    def __init__(self, ctx):
+    def __init__(self, ctx: Any) -> None:  # noqa: ANN401
         self.ctx = ctx
         self.document = None
         self._log = self._get_local_logger()
@@ -71,7 +71,7 @@ class DebugLpJob(unohelper.Base, XJob):
 
     # region execute
     @override
-    def execute(self, Arguments: Any) -> None:
+    def execute(self, Arguments: Any) -> None:  # noqa: ANN401, N803
         # This job may be executed more then once.
         # When a spreadsheet is put into print preview this is fired.
         # When the print preview is closed this is fired again.
@@ -81,6 +81,9 @@ class DebugLpJob(unohelper.Base, XJob):
             return
         try:
             if os.getenv("ENABLE_LIBREPYTHONISTA_DEBUG"):
+                if os.getenv("LIBREOFFICE_DEBUG_ATTACHED") == "1":
+                    self._log.debug("Debugger already attached.")
+                    return
                 basic_config = BasicConfig()
                 # Start the debug server on port 5678
                 debugpy.listen(("localhost", basic_config.lp_debug_port))
@@ -93,6 +96,7 @@ class DebugLpJob(unohelper.Base, XJob):
                 debugpy.wait_for_client()
                 os.environ.pop("ENABLE_LIBREPYTHONISTA_DEBUG")
                 os.environ["LIBREPYTHONISTA_DEBUG_ATTACHED"] = "1"
+                os.environ["LIBREOFFICE_DEBUG_ATTACHED"] = "1"
                 self._log.debug("Debugger attached.")
             else:
                 self._log.debug("Debugging is disabled")
@@ -119,8 +123,8 @@ class DebugLpJob(unohelper.Base, XJob):
 
 # region Implementation
 
-g_TypeTable = {}
-g_ImplementationHelper = unohelper.ImplementationHelper()
+g_TypeTable = {}  # noqa: N816
+g_ImplementationHelper = unohelper.ImplementationHelper()  # noqa: N816
 g_ImplementationHelper.addImplementation(*DebugLpJob.get_imple())
 
 # endregion Implementation
