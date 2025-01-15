@@ -75,11 +75,9 @@ class Packages:
                 )
             else:
                 self._log.debug(
-                    self._log.debug(
-                        "is_valid() Python version %s for %s does not satisfies all constraints.",
-                        self._py_ver,
-                        rule.name,
-                    )
+                    "is_valid() Python version %s for %s does not satisfies all constraints.",
+                    self._py_ver,
+                    rule.name,
                 )
                 return False
 
