@@ -87,13 +87,15 @@ class DebugJob(unohelper.Base, XJob):
                 # Start the debug server
                 if basic_config.libreoffice_debug_port > 0:
                     debugpy.listen(("localhost", basic_config.libreoffice_debug_port))
-                    self._log.debug("Waiting for debugger attach on port %i ...", basic_config.libreoffice_debug_port)
                 else:
                     self._log.warning(
                         "Debug port not set. Must be set in tool.oxt.token.libreoffice_debug_port of pyproject.toml file. Contact the developer."
                     )
+                    return
 
                 # Pause execution until debugger is attached
+                print(f"Waiting for debugger attach on port  {basic_config.libreoffice_debug_port}")
+                self._log.debug("Waiting for debugger attach on port %i ...", basic_config.libreoffice_debug_port)
                 debugpy.wait_for_client()
                 # debugpy.trace_this_thread(True)
                 os.environ.pop("ENABLE_LIBREOFFICE_DEBUG")

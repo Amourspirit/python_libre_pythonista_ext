@@ -6,7 +6,7 @@ import subprocess
 import glob
 import json
 from pathlib import Path
-from typing import Any, Dict, List, Tuple, Set
+from typing import Any, cast, Dict, List, Tuple, Set
 
 
 # import pkg_resources
@@ -170,16 +170,12 @@ class InstallPkg:
             is_ignore = True
             before_dirs = []
             before_files = []
-            before_bin_files = []
-            before_lib_files = []
-            before_inc_files = []
+            before_shared = {}
         else:
             is_ignore = False
             before_dirs = self._get_directory_names(site_packages_dir)
             before_files = self._get_file_names(site_packages_dir)
-            before_bin_files = self._get_file_names(Path(site_packages_dir, "bin"))
-            before_lib_files = self._get_file_names(Path(site_packages_dir, "lib"))
-            before_inc_files = self._get_file_names(Path(site_packages_dir, "include"))
+            before_shared = self._get_pip_shared_files(pkg)
 
         progress: Progress | None = None
         if self._config.show_progress and self.show_progress:
@@ -209,20 +205,14 @@ class InstallPkg:
                 self._delete_json_file(site_packages_dir, pkg)
                 after_dirs = self._get_directory_names(site_packages_dir)
                 after_files = self._get_file_names(site_packages_dir)
-                after_bin_files = self._get_file_names(Path(site_packages_dir, "bin"))
-                after_lib_files = self._get_file_names(Path(site_packages_dir, "lib"))
-                after_inc_files = self._get_file_names(Path(site_packages_dir, "include"))
+                after_shared = self._get_pip_shared_files(pkg)
                 changes = {
                     "before_files": before_files,
                     "before_dirs": before_dirs,
-                    "before_bin_files": before_bin_files,
-                    "before_lib_files": before_lib_files,
-                    "before_inc_files": before_inc_files,
+                    "before_shared": before_shared,
                     "after_files": after_files,
                     "after_dirs": after_dirs,
-                    "after_bin_files": after_bin_files,
-                    "after_lib_files": after_lib_files,
-                    "after_inc_files": after_inc_files,
+                    "after_shared": after_shared,
                 }
                 self._save_changed(pkg=pkg, pth=site_packages_dir, changes=changes)
             self._logger.info(msg)
@@ -458,8 +448,6 @@ class InstallPkg:
 
             req = packages.to_dict()
             req.update(self._config.requirements)
-            # req = self._config.requirements.copy()
-            # req.update(packages.to_dict())
         else:
             is_ext_install = False
             self._logger.debug("Using requirements from parameter.")
@@ -651,18 +639,27 @@ class InstallPkg:
         omits = {"bin", "lib", "include", "__pycache__"}
         return [name for name in os.listdir(path) if name not in omits and os.path.isdir(os.path.join(path, name))]
 
-    def _save_changed(
-        self,
-        pkg: str,
-        pth: str,
-        changes: dict,
-        # before_files: List[str],
-        # before_bin_files: List[str],
-        # after_files: List[str],
-        # after_bin_files: List[str],
-        # before_dirs: List[str],
-        # after_dirs: List[str],
-    ) -> None:
+    def _get_pip_shared_files(self, pkg: str) -> Dict[str, Set[str]]:
+        """
+        Retrieves shared files for a given package from specified pip shared directories.
+        This is the files that are in the directories outlined in ``pip_shared_dirs`` in the configuration.
+
+        Args:
+            pkg (str): The name of the package to retrieve shared files for.
+
+        Returns:
+            Dict[str, List[str]]: A dictionary where the keys are pip shared directory names
+                and the values are lists of file names found in those directories.
+        """
+
+        site_packages_dir = self._get_site_packages_dir(pkg)
+        results: Dict[str, Set[str]] = {}
+        for pip_dir in self.config.pip_shared_dirs:
+            files = self._get_file_names(Path(site_packages_dir, pip_dir))
+            results[pip_dir] = set(files)
+        return results
+
+    def _save_changed(self, pkg: str, pth: str, changes: dict) -> None:
         """Save the new directory names to a JSON file."""
 
         def _create_json() -> str:
@@ -673,20 +670,11 @@ class InstallPkg:
             after_files: List[str] = changes.get("after_files", [])
             before_files: List[str] = changes.get("before_files", [])
 
-            after_bin_files: List[str] = changes.get("after_bin_files", [])
-            before_bin_files: List[str] = changes.get("before_bin_files", [])
-
-            after_lib_files: List[str] = changes.get("after_lib_files", [])
-            before_lib_files: List[str] = changes.get("before_lib_files", [])
-
-            after_inc_files: List[str] = changes.get("after_inc_files", [])
-            before_inc_files: List[str] = changes.get("before_inc_files", [])
+            before_shared = cast(Dict[str, Set[str]], changes.get("before_shared", {}))
+            after_shared = cast(Dict[str, Set[str]], changes.get("after_shared", {}))
 
             new_dirs = list(set(after_dirs) - set(before_dirs))
             new_files = list(set(after_files) - set(before_files))
-            new_bin_files = list(set(after_bin_files) - set(before_bin_files))
-            new_lib_files = list(set(after_lib_files) - set(before_lib_files))
-            new_inc_files = list(set(after_inc_files) - set(before_inc_files))
 
             try:
                 pkg_version = self.get_package_version(pkg)
@@ -694,21 +682,23 @@ class InstallPkg:
                 self._logger.error("Error getting package version for '%s': %s", pkg, e)
                 pkg_version = ""
 
-            data = {
+            data = {"new_dirs": new_dirs, "new_files": new_files}
+
+            for key in before_shared:
+                before = before_shared[key]
+                after = after_shared[key]
+                new_shared_files = list(after - before)
+                data[f"new_{key}_files"] = new_shared_files
+
+            json_data = {
                 "id": f"{self._config.oxt_name}_pip_pkg",
                 "type_id": "pkg_tracker",
                 "package": pkg,
                 "package_version": pkg_version,
                 "version": self._config.extension_version,
-                "data": {
-                    "new_dirs": new_dirs,
-                    "new_files": new_files,
-                    "new_bin_files": new_bin_files,
-                    "new_lib_files": new_lib_files,
-                    "new_inc_files": new_inc_files,
-                },
+                "data": data,
             }
-            return json.dumps(data, indent=4)
+            return json.dumps(json_data, indent=4)
 
         try:
             json_str = _create_json()
@@ -737,8 +727,11 @@ class InstallPkg:
             with open(json_path, "r") as f:
                 j_contents = json.load(f)
                 data = j_contents.get("data", {})
-                if "bin" not in data:
-                    data["bin"] = []
+
+                for pip_dir in self.config.pip_shared_dirs:
+                    key = f"new_{pip_dir}_files"
+                    if key not in data:
+                        data[key] = []
 
         return j_contents
 
@@ -761,8 +754,9 @@ class InstallPkg:
         data_dict = self._get_json_data(pth, pkg)
         data: Dict[str, str] = data_dict.get("data", {})
         new_dirs = set(data.get("new_dirs", []))
-        if "bin" in new_dirs:
-            new_dirs.remove("bin")
+        for pip_dir in self.config.pip_shared_dirs:
+            if pip_dir in new_dirs:
+                new_dirs.remove(pip_dir)
 
         for d in new_dirs:
             dir_path = os.path.join(pth, d)
@@ -789,44 +783,20 @@ class InstallPkg:
             except Exception as e:
                 self._logger.error("_remove_changed() Error removing file %s: %s", f, e)
 
-        new_files = data.get("new_bin_files", [])
-        for f in new_files:
-            file_path = Path(pth, "bin", f)
-            try:
-                if file_path.exists():
-                    self.on_removing_file(file_path, pkg)
-                    file_path.unlink()
-                    self._logger.debug("_remove_changed() Removed file from bin: %s", f)
-                else:
-                    self._logger.debug("_remove_changed() File %s does not exist in bin.", f)
-            except Exception as e:
-                self._logger.error("_remove_changed() Error removing file %s from bin: %s", f, e)
-
-        new_files = data.get("new_lib_files", [])
-        for f in new_files:
-            file_path = Path(pth, "lib", f)
-            try:
-                if file_path.exists():
-                    self.on_removing_file(file_path, pkg)
-                    file_path.unlink()
-                    self._logger.debug("_remove_changed() Removed file from lib: %s", f)
-                else:
-                    self._logger.debug("_remove_changed() File %s does not exist in lib.", f)
-            except Exception as e:
-                self._logger.error("_remove_changed() Error removing file %s from lib: %s", f, e)
-
-        new_files = data.get("new_inc_files", [])
-        for f in new_files:
-            file_path = Path(pth, "include", f)
-            try:
-                if file_path.exists():
-                    self.on_removing_file(file_path, pkg)
-                    file_path.unlink()
-                    self._logger.debug("_remove_changed() Removed file from include: %s", f)
-                else:
-                    self._logger.debug("_remove_changed() File %s does not exist in include.", f)
-            except Exception as e:
-                self._logger.error("_remove_changed() Error removing file %s from include: %s", f, e)
+        for pip_dir in self.config.pip_shared_dirs:
+            key = f"new_{pip_dir}_files"
+            new_files = data.get(key, [])
+            for f in new_files:
+                file_path = Path(pth, pip_dir, f)
+                try:
+                    if file_path.exists():
+                        self.on_removing_file(file_path, pkg)
+                        file_path.unlink()
+                        self._logger.debug("_remove_changed() Removed file from bin: %s", f)
+                    else:
+                        self._logger.debug("_remove_changed() File %s does not exist in bin.", f)
+                except Exception as e:
+                    self._logger.error("_remove_changed() Error removing file %s from bin: %s", f, e)
 
         self._logger.info("_remove_changed() Removed new directories and files.")
 

@@ -60,16 +60,12 @@ class InstallPkgFlatpak(InstallPkg):
             is_ignore = True
             before_dirs = []
             before_files = []
-            before_bin_files = []
-            before_lib_files = []
-            before_inc_files = []
+            before_shared = {}
         else:
             is_ignore = False
             before_dirs = self._get_directory_names(site_packages_dir)
             before_files = self._get_file_names(site_packages_dir)
-            before_bin_files = self._get_file_names(Path(site_packages_dir, "bin"))
-            before_lib_files = self._get_file_names(Path(site_packages_dir, "lib"))
-            before_inc_files = self._get_file_names(Path(site_packages_dir, "include"))
+            before_shared = self._get_pip_shared_files(pkg)
 
         progress: Progress | None = None
         if self._config.show_progress and self.show_progress:
@@ -101,20 +97,14 @@ class InstallPkgFlatpak(InstallPkg):
                 self._delete_json_file(site_packages_dir, pkg)
                 after_dirs = self._get_directory_names(site_packages_dir)
                 after_files = self._get_file_names(site_packages_dir)
-                after_bin_files = self._get_file_names(Path(site_packages_dir, "bin"))
-                after_lib_files = self._get_file_names(Path(site_packages_dir, "lib"))
-                after_inc_files = self._get_file_names(Path(site_packages_dir, "include"))
+                after_shared = self._get_pip_shared_files(pkg)
                 changes = {
                     "before_files": before_files,
                     "before_dirs": before_dirs,
-                    "before_bin_files": before_bin_files,
-                    "before_lib_files": before_lib_files,
-                    "before_inc_files": before_inc_files,
+                    "before_shared": before_shared,
                     "after_files": after_files,
                     "after_dirs": after_dirs,
-                    "after_bin_files": after_bin_files,
-                    "after_lib_files": after_lib_files,
-                    "after_inc_files": after_inc_files,
+                    "after_shared": after_shared,
                 }
                 self._save_changed(pkg=pkg, pth=site_packages_dir, changes=changes)
             self._logger.info(msg)

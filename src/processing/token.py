@@ -15,6 +15,7 @@ class Token(metaclass=Singleton):
         tokens = cast(Dict[str, str], cfg["tool"]["oxt"]["token"])
         self._validate_toml_dict(tokens)
         self._tokens: Dict[str, str] = {}
+
         for token, replacement in tokens.items():
             self._tokens[f"___{token}___"] = replacement
         self._tokens["___version___"] = str(cfg["project"]["version"])
@@ -26,8 +27,9 @@ class Token(metaclass=Singleton):
         authors = self._get_authors(cfg)
         self._tokens["___authors___"] = ", ".join(authors)
         self._tokens["___contributors___"] = "\n".join(authors)
+        self._processed_tokens = {}
         for token, replacement in self._tokens.items():
-            self._tokens[token] = self.process(replacement)
+            self._processed_tokens[token] = self.process(replacement)
         self._tokens_remove_whitespace()
 
     # region Methods
@@ -49,6 +51,7 @@ class Token(metaclass=Singleton):
             "delay_startup": bool,
             "log_pip_installs": bool,
             "log_add_console": bool,
+            "libreoffice_debug_port": int,
         }
         for key, value in key_types.items():
             if key not in cfg:
@@ -112,8 +115,8 @@ class Token(metaclass=Singleton):
         }
         for key in keys:
             str_key = f"___{key}___"
-            if str_key in self._tokens:
-                self._tokens[str_key] = remove_spaces(self._tokens[str_key])
+            if str_key in self._processed_tokens:
+                self._processed_tokens[str_key] = remove_spaces(self._processed_tokens[str_key])
 
     def process(self, value: Any) -> str:  # noqa: ANN401
         """Processes the given text."""
@@ -123,19 +126,32 @@ class Token(metaclass=Singleton):
             return str(value)
         if not isinstance(value, str):
             return str(value)
-        for token, replacement in self._tokens.items():
+        for token, replacement in self._processed_tokens.items():
             value = value.replace(token, str(replacement))
 
         return value
 
-    def get_token_value(self, token: str) -> Any:  # noqa: ANN401
+    def get_token_value(self, token: str) -> str:  # noqa: ANN401
         """
         Returns the value of the given token.
 
         Args:
             token (str): The token in normal form (without '___' at the beginning and end).
+
+        Returns:
+            str: The value of the token as a string.
         """
-        return self._tokens.get(f"___{token}___", "")
+        return self._processed_tokens.get(f"___{token}___", "")
+
+    def get_unprocessed_token_value(self, token: str, default: Any = "") -> Any:  # noqa: ANN401
+        """
+        Returns the value of the given token.
+
+        Args:
+            token (str): The token in normal form (without '___' at the beginning and end).
+            default (Any): The default value to return if the token is not found.
+        """
+        return self._tokens.get(f"___{token}___", default)
 
     def _get_authors(self, cfg: Dict[str, Any]) -> List[str]:
         """Returns the authors."""
@@ -151,6 +167,11 @@ class Token(metaclass=Singleton):
     # region Properties
     @property
     def tokens(self) -> Dict[str, str]:
+        """The tokens."""
+        return self._processed_tokens
+
+    @property
+    def unprocessed_tokens(self) -> Dict[str, Any]:
         """The tokens."""
         return self._tokens
 
