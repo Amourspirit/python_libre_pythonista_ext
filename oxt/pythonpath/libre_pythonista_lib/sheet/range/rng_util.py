@@ -114,6 +114,8 @@ class RangeUtil:
         # check an see if we can expand right
         with self._log.indent(True):
             try:
+                if rng.is_single_cell_range():
+                    return True
                 can_expand_right = False
                 rng_vals = rng.range_obj.get_range_values()
                 if rng.range_obj.start.right in rng.range_obj:

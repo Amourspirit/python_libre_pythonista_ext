@@ -1,7 +1,5 @@
 from __future__ import annotations
 from typing import List, Type, TYPE_CHECKING
-import types
-import re
 from .rule_cell_only import RuleCellOnly
 from .rule_empty import RuleEmpty
 from .rule_named_range import RuleNamedRange
@@ -71,7 +69,7 @@ class LpRulesEngine:
             return
         self._rules.insert(index, rule)
 
-    def remove_rule(self, rule: Type[LpRuleT]):
+    def remove_rule(self, rule: Type[LpRuleT]) -> None:
         """
         Unregister Rule
 
@@ -87,7 +85,7 @@ class LpRulesEngine:
             msg = f"{self.__class__.__name__}.unregister_rule() Unable to unregister rule."
             raise ValueError(msg) from e
 
-    def remove_rule_at(self, index: int):
+    def remove_rule_at(self, index: int) -> None:
         """
         Unregister Rule at index
 
@@ -103,10 +101,10 @@ class LpRulesEngine:
             msg = f"{self.__class__.__name__}.unregister_rule() Unable to unregister rule."
             raise ValueError(msg) from e
 
-    def _reg_rule(self, rule: Type[LpRuleT]):
+    def _reg_rule(self, rule: Type[LpRuleT]) -> None:
         self._rules.append(rule)
 
-    def _register_known_rules(self):
+    def _register_known_rules(self) -> None:
         # order matters
         self._reg_rule(rule=RuleEmpty)
         self._reg_rule(rule=RuleRangeOnly)
