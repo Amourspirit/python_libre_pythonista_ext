@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import List, TYPE_CHECKING
+from typing import Any, List, TYPE_CHECKING
 from pathlib import Path
 import ctypes
 import _ctypes
@@ -17,7 +17,7 @@ if TYPE_CHECKING:
         from typing_extensions import override
 else:
 
-    def override(func: Any) -> Any:
+    def override(func: Any) -> Any:  # noqa: ANN401
         return func
 
 

@@ -1,13 +1,13 @@
 from __future__ import annotations
 from pathlib import Path
-from typing import Dict, List, Set, cast
+from typing import Any, Dict, List, Set, cast
 import json
 
 
 class ConfigMeta(type):
     _instance = None
 
-    def __call__(cls, *args, **kwargs):
+    def __call__(cls, *args, **kwargs) -> Any:  # noqa: ANN002, ANN003, ANN401
         if cls._instance is None:
             root = Path(__file__).parent
             config_file = Path(root, "config.json")
@@ -19,7 +19,7 @@ class ConfigMeta(type):
 
 
 class BasicConfig(metaclass=ConfigMeta):
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, **kwargs) -> None:  # noqa: ANN003
         self._author_names = cast(List[str], kwargs.get("author_names", []))
         self._py_pkg_dir = str(kwargs["py_pkg_dir"])
         self._lo_pip_dir = str(kwargs["lo_pip"])
@@ -50,8 +50,8 @@ class BasicConfig(metaclass=ConfigMeta):
         self._run_imports_win = set(kwargs["run_imports_win"])
         self._oxt_name = str(kwargs["oxt_name"])
         self._require_install_name_match = bool(kwargs.get("require_install_name_match", False))
-
         self._cmd_clean_file_prefix = str(kwargs["cmd_clean_file_prefix"])
+        self._pip_shared_dirs = cast(List[str], kwargs.get("pip_shared_dirs", []))
 
         # region tool.libre_pythonista.config
         self._cell_cp_prefix = str(kwargs["cell_cp_prefix"])
@@ -338,6 +338,16 @@ class BasicConfig(metaclass=ConfigMeta):
         The value for this property can be set in pyproject.toml (tool.oxt.token.oxt_name)
         """
         return self._oxt_name
+
+    @property
+    def pip_shared_dirs(self) -> List[str]:
+        """
+        Gets the list of shared directories for pip packages.
+        These are used to build the cleanup scripts.
+
+        The value for this property can be set in pyproject.toml (tool.oxt.config.pip_shared_dirs)
+        """
+        return self._pip_shared_dirs
 
     @property
     def py_pkg_dir(self) -> str:

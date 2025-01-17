@@ -5,24 +5,6 @@ import json
 
 
 class PkgInstallData:
-    class PkgData:
-        def __init__(self) -> None:
-            self.new_dirs: List[str] = []
-            self.new_files: List[str] = []
-            self.new_bin_files: List[str] = []
-            self.new_lib_files: List[str] = []
-            self.new_inc_files: List[str] = []
-
-        @classmethod
-        def from_dict(cls, data: Dict[str, str]) -> PkgInstallData.PkgData:
-            obj = cls()
-            obj.new_dirs.extend(data.get("new_dirs", []))
-            obj.new_files.extend(data.get("new_files", []))
-            obj.new_bin_files.extend(data.get("new_bin_files", []))
-            obj.new_lib_files.extend(data.get("new_lib_files", []))
-            obj.new_inc_files.extend(data.get("new_inc_files", []))
-            return obj
-
     def __init__(self, **kwargs: Any) -> None:  # noqa: ANN401
         self._id = kwargs.get("id", "")
         self._type_id = kwargs.get("type_id", "")
@@ -30,12 +12,14 @@ class PkgInstallData:
         self._package = kwargs.get("package", "")
         self._package_version = kwargs.get("package_version", "")
         self._version = kwargs.get("version", "")
-        data = kwargs.get("data", {})
-        self._data = PkgInstallData.PkgData.from_dict(data)
+        self._data = kwargs.get("data", {})
 
     def save(self, path: Path) -> None:
         with path.open("w") as f:
             json.dump(self._data, f)
+
+    def get_files(self, key: str) -> List[str]:
+        return self._data.get(key, [])
 
     @staticmethod
     def from_file(path: Path) -> PkgInstallData:
@@ -67,5 +51,13 @@ class PkgInstallData:
         return self._version
 
     @property
-    def data(self) -> PkgData:
+    def data(self) -> dict:
         return self._data
+
+    @property
+    def new_dirs(self) -> List[str]:
+        return self.get_files("new_dirs")
+
+    @property
+    def new_files(self) -> List[str]:
+        return self.get_files("new_files")

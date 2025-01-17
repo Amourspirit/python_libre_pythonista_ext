@@ -40,7 +40,7 @@ def _collapse_to_used(sheet: CalcSheet, rng_obj: RangeObj) -> RangeObj:
         return rng_obj
 
 
-def _set_last_lp_result(result: Any, **kwargs) -> Any:
+def _set_last_lp_result(result: Any, **kwargs) -> Any:  # noqa: ANN003, ANN401
     global LAST_LP_RESULT
     log = LogInst()
     dd = DotDict(**kwargs)
@@ -49,15 +49,16 @@ def _set_last_lp_result(result: Any, **kwargs) -> Any:
     if log.is_debug:
         with log.indent(True):
             log.debug(
-                f"lp_mod - _set_last_lp_result() - LAST_LP_RESULT.data Type: {type(LAST_LP_RESULT.data).__name__}"
+                "lp_mod - _set_last_lp_result() - LAST_LP_RESULT.data Type: %s",
+                type(LAST_LP_RESULT.data).__name__,
             )
     return LAST_LP_RESULT.data
 
 
-def _handle_cell_only(addr: str, log: LogInst, **kwargs) -> Any:
+def _handle_cell_only(addr: str, log: LogInst, **kwargs) -> Any:  # noqa: ANN003, ANN401
     global CURRENT_CELL_OBJ
     log.debug("_handle_cell_only() Entered")
-    log.debug(f"lp - Cell Name: {addr}")
+    log.debug("lp - Cell Name: %s", addr)
     gbl_cell = cast(CellObj, CURRENT_CELL_OBJ)
     doc = cast(CalcDoc, Lo.current_doc)
     cm = CellMgr(doc)  # singleton
@@ -67,17 +68,17 @@ def _handle_cell_only(addr: str, log: LogInst, **kwargs) -> Any:
     cell = sheet[cell_obj]
 
     if cm.has_cell(cell_obj=cell.cell_obj):
-        log.debug(f"lp - Cell found in cache: {cell.cell_obj} for sheet: {cell.cell_obj.sheet_idx}")
+        log.debug("lp - Cell found in cache: %s for sheet: %i", cell.cell_obj, cell.cell_obj.sheet_idx)
         py_src = cm.get_py_src(cell_obj=cell.cell_obj)
         return _set_last_lp_result(py_src.value)
-    log.debug(f"lp - Cell not found in cache: {cell.cell_obj} for sheet: {cell.cell_obj.sheet_idx}")
+    log.debug("lp - Cell not found in cache: %s for sheet: %i", cell.cell_obj, cell.cell_obj.sheet_idx)
     log.debug("Returning actual cell value")
     return _set_last_lp_result(cell.value)
 
 
-def _handle_sheet_cell(addr: str, log: LogInst, **kwargs) -> Any:
+def _handle_sheet_cell(addr: str, log: LogInst, **kwargs) -> Any:  # noqa: ANN003, ANN401
     log.debug("_handle_sheet_cell() Entered")
-    log.debug(f"lp - Cell Name: {addr}")
+    log.debug("lp - Cell Name: %s", addr)
     doc = cast(CalcDoc, Lo.current_doc)
     sheet_name, addr_str = addr.split(".")
     calc_sheet = doc.sheets.get_by_name(sheet_name)
@@ -89,18 +90,18 @@ def _handle_sheet_cell(addr: str, log: LogInst, **kwargs) -> Any:
     cell = sheet[cell_obj]
 
     if cm.has_cell(cell_obj=cell.cell_obj):
-        log.debug(f"lp - Cell found in cache: {cell.cell_obj} for sheet: {cell.cell_obj.sheet_idx}")
+        log.debug("lp - Cell found in cache: %s for sheet: %i", cell.cell_obj, cell.cell_obj.sheet_idx)
         py_src = cm.get_py_src(cell_obj=cell.cell_obj)
         return _set_last_lp_result(py_src.value)
-    log.debug(f"lp - Cell not found in cache: {cell.cell_obj} for sheet: {cell.cell_obj.sheet_idx}")
+    log.debug("lp - Cell not found in cache: %s for sheet: %i", cell.cell_obj, cell.cell_obj.sheet_idx)
     log.debug("Returning actual cell value")
     return _set_last_lp_result(cell.value)
 
 
-def _handle_range_only(addr: str, log: LogInst, **kwargs) -> Any:
+def _handle_range_only(addr: str, log: LogInst, **kwargs) -> Any:  # noqa: ANN003, ANN401
     global CURRENT_CELL_OBJ
     log.debug("_handle_range_only() Entered")
-    log.debug(f"lp - Cell Name: {addr}")
+    log.debug("lp - Cell Name: %s", addr)
     collapse = False
     try:
         collapse = bool(kwargs.get("collapse", False))
@@ -108,28 +109,28 @@ def _handle_range_only(addr: str, log: LogInst, **kwargs) -> Any:
         log.warning("collapse parameter must be a boolean value. Using False.")
         collapse = False
 
-    column_types = kwargs.get("column_types", None)
+    column_types = kwargs.get("column_types")
 
     gbl_cell = cast(CellObj, CURRENT_CELL_OBJ)
 
     addr_rng = RangeObj.from_range(addr)
     addr_rng.set_sheet_index(gbl_cell.sheet_idx)
-    log.debug(f"lp - addr_rng: {addr_rng}")
+    log.debug("lp - addr_rng: %s", addr_rng)
 
     doc = cast(CalcDoc, Lo.current_doc)
     sheet = doc.sheets[addr_rng.sheet_idx]
     if collapse:
         addr_rng = _collapse_to_used(sheet, addr_rng)
-        log.debug(f"lp - Collapsed addr_rng: {addr_rng}")
+        log.debug("lp - Collapsed addr_rng: %s", addr_rng)
     cr = sheet.get_range(range_obj=addr_rng)
     pdo = PandasDataObj(cell_rng=cr, col_types=column_types)
     df = pdo.get_data_frame()
     return _set_last_lp_result(df, headers=pdo.has_headers, range_obj=addr_rng)
 
 
-def _handle_sheet_range_only(addr: str, log: LogInst, **kwargs) -> Any:
+def _handle_sheet_range_only(addr: str, log: LogInst, **kwargs) -> Any:  # noqa: ANN003, ANN401
     log.debug("_handle_sheet_range_only() Entered")
-    log.debug(f"lp - Cell Name: {addr}")
+    log.debug("lp - Cell Name: %s", addr)
     collapse = False
     try:
         collapse = bool(kwargs.get("collapse", False))
@@ -137,29 +138,33 @@ def _handle_sheet_range_only(addr: str, log: LogInst, **kwargs) -> Any:
         log.warning("collapse parameter must be a boolean value. Using False.")
         collapse = False
 
-    column_types = kwargs.get("column_types", None)
+    column_types = kwargs.get("column_types")
 
     doc = cast(CalcDoc, Lo.current_doc)
     sheet_name, addr_str = addr.split(".")
     sheet = doc.sheets.get_by_name(sheet_name)
 
-    addr_rng = RangeObj.from_range(addr_str)
+    if doc.range_converter.is_cell_range_name(addr_str):
+        addr_rng = RangeObj.from_range(addr_str)
+    else:
+        addr_rng = doc.range_converter.rng_from_str(addr_str)
+
     addr_rng.set_sheet_index(sheet.sheet_index)
-    log.debug(f"lp - addr_rng: {addr_rng}")
+    log.debug("lp - addr_rng: %s", addr_rng)
 
     if collapse:
         addr_rng = _collapse_to_used(sheet, addr_rng)
-        log.debug(f"lp - Collapsed addr_rng: {addr_rng}")
+        log.debug("lp - Collapsed addr_rng: %s", addr_rng)
     cr = sheet.get_range(range_obj=addr_rng)
     pdo = PandasDataObj(cell_rng=cr, col_types=column_types)
     df = pdo.get_data_frame()
     return _set_last_lp_result(df, headers=pdo.has_headers, range_obj=addr_rng)
 
 
-def _handle_named_range_only(addr: str, log: LogInst, **kwargs) -> Any:
+def _handle_named_range_only(addr: str, log: LogInst, **kwargs) -> Any:  # noqa: ANN003, ANN401
     log.debug("_handle_named_range_only() Entered")
     global CURRENT_CELL_OBJ
-    log.debug(f"lp - Cell Name: {addr}")
+    log.debug("lp - Cell Name: %s", addr)
     gbl_cell = cast(CellObj, CURRENT_CELL_OBJ)
     doc = cast(CalcDoc, Lo.current_doc)
     data_name = addr
@@ -167,96 +172,96 @@ def _handle_named_range_only(addr: str, log: LogInst, **kwargs) -> Any:
 
     if log.is_debug:
         names = sheet.named_ranges.get_element_names()
-        log.debug(f"lp - Sheet Named Ranges: {names}")
+        log.debug("lp - Sheet Named Ranges: %s", names)
 
         names = doc.named_ranges.get_element_names()
-        log.debug(f"lp - Doc Named Ranges: {names}")
+        log.debug("lp - Doc Named Ranges: %s", names)
 
     if sheet.named_ranges.has_by_name(data_name):
-        log.debug(f"lp - Named range found in sheet Name Ranges: {data_name}")
+        log.debug("lp - Named range found in sheet Name Ranges: %s", data_name)
         nc = sheet.named_ranges.get_by_name(data_name)
     elif doc.named_ranges.has_by_name(data_name):
-        log.debug(f"lp - Named range found in doc Named Ranges: {data_name}")
+        log.debug("lp - Named range found in doc Named Ranges: %s", data_name)
         nc = doc.named_ranges.get_by_name(data_name)
         # try to get the current sheet from the named range
     elif doc.database_ranges.has_by_name(data_name):
-        log.debug(f"lp - Named range found in doc Database Ranges: {data_name}")
+        log.debug("lp - Named range found in doc Database Ranges: %s", data_name)
         nc = doc.database_ranges.get_by_name(data_name)
     else:
-        log.error(f"lp - Named range {data_name} not found in sheet or document.")
+        log.error("lp - Named range %s not found in sheet or document.", data_name)
         return _set_last_lp_result(None)
 
     cell_range = cast("SheetCellRange", nc.get_referred_cells())
     return _handle_sheet_range_only(cell_range.AbsoluteName.replace("$", ""), log, **kwargs)
 
 
-def _handle_sheet_named_range_only(addr: str, log: LogInst, **kwargs) -> Any:
+def _handle_sheet_named_range_only(addr: str, log: LogInst, **kwargs) -> Any:  # noqa: ANN003, ANN401
     log.debug("_handle_sheet_named_range_only() Entered")
-    log.debug(f"lp - Cell Name: {addr}")
+    log.debug("lp - Cell Name: %s", addr)
     doc = cast(CalcDoc, Lo.current_doc)
     sheet_name, data_name = addr.split(".")
     sheet = doc.sheets.get_by_name(sheet_name)
 
     if log.is_debug:
         names = sheet.named_ranges.get_element_names()
-        log.debug(f"lp - Sheet Named Ranges: {names}")
+        log.debug("lp - Sheet Named Ranges: %s", names)
 
         names = doc.named_ranges.get_element_names()
-        log.debug(f"lp - Doc Named Ranges: {names}")
+        log.debug("lp - Doc Named Ranges: %s", names)
 
     if sheet.named_ranges.has_by_name(data_name):
-        log.debug(f"lp - Named range found in sheet Name Ranges: {data_name}")
+        log.debug("lp - Named range found in sheet Name Ranges: %s", data_name)
         nc = sheet.named_ranges.get_by_name(data_name)
     elif doc.named_ranges.has_by_name(data_name):
-        log.debug(f"lp - Named range found in doc Named Ranges: {data_name}")
+        log.debug("lp - Named range found in doc Named Ranges: %s", data_name)
         nc = doc.named_ranges.get_by_name(data_name)
         # try to get the current sheet from the named range
     elif doc.database_ranges.has_by_name(data_name):
-        log.debug(f"lp - Named range found in doc Database Ranges: {data_name}")
+        log.debug("lp - Named range found in doc Database Ranges: %s", data_name)
         nc = doc.database_ranges.get_by_name(data_name)
     else:
-        log.error(f"lp - Named range {data_name} not found in sheet or document.")
+        log.error("lp - Named range %s not found in sheet or document.", data_name)
         return _set_last_lp_result(None)
 
     cell_range = cast("SheetCellRange", nc.get_referred_cells())
     return _handle_sheet_range_only(cell_range.AbsoluteName.replace("$", ""), log, **kwargs)
 
 
-def lp(addr: str, **kwargs: Any) -> Any:
+def lp(addr: str, **kwargs: Any) -> Any:  # noqa: ANN401
     global CURRENT_CELL_OBJ, _RULES_ENGINE
     log = LogInst()
-    log.debug(f"lp - Current Cell Obj Global: {CURRENT_CELL_OBJ}")
-    log.debug(f"lp - Input Address: {addr}")
+    log.debug("lp - Current Cell Obj Global: %s", CURRENT_CELL_OBJ)
+    log.debug("lp - Input Address: %s", addr)
     try:
         if not addr:
             return _set_last_lp_result(None)
         rm = _RULES_ENGINE.get_matched_rule(addr)
         rm_value = rm.get_value()
-        log.debug(f"lp - Rule Matched: {rm} for {addr}")
+        log.debug("lp - Rule Matched: %s for %s", rm, addr)
         if rm_value == LpEnum.EMPTY:
-            log.debug(f"lp - Rule found for: {addr}, Empty")
+            log.debug("lp - Rule found for: %s, Empty", addr)
             return _set_last_lp_result(None)
         if rm_value == LpEnum.CELL_ONLY:
-            log.debug(f"lp - Rule found for: {addr}, Cell Only")
+            log.debug("lp - Rule found for: %s, Cell Only", addr)
             return _handle_cell_only(addr, log, **kwargs)
 
         if rm_value == LpEnum.SHEET_CELL:
-            log.debug(f"lp - Rule found for: {addr}, Sheet Cell")
+            log.debug("lp - Rule found for: %s, Sheet Cell", addr)
             return _handle_sheet_cell(addr, log, **kwargs)
 
         if rm_value == LpEnum.RNG_ONLY:
-            log.debug(f"lp - Rule found for: {addr}, Range Only")
+            log.debug("lp - Rule found for: %s, Range Only", addr)
             return _handle_range_only(addr, log, **kwargs)
         if rm_value == LpEnum.SHEET_RNG:
-            log.debug(f"lp - Rule found for: {addr}, Range Only")
+            log.debug("lp - Rule found for: %s, Range Only", addr)
             return _handle_sheet_range_only(addr, log, **kwargs)
         if rm_value == LpEnum.NAMED_RNG:
-            log.debug(f"lp - Rule found for: {addr}, Named Range Only")
+            log.debug("lp - Rule found for: {%s, Named Range Only", addr)
             return _handle_named_range_only(addr, log, **kwargs)
         if rm_value == LpEnum.SHEET_NAMED_RNG:
-            log.debug(f"lp - Rule found for: {addr}, Sheet Named Range Only")
+            log.debug("lp - Rule found for: %s, Sheet Named Range Only", addr)
             return _handle_sheet_named_range_only(addr, log, **kwargs)
-        log.debug(f"lp - Rule not found for: {addr}")
+        log.debug("lp - Rule not found for: %s", addr)
     except Exception as e:
-        log.error(f"lp - Exception: {e}", exc_info=True)
+        log.error("lp - Exception: %s", e, exc_info=True)
         return _set_last_lp_result(None)

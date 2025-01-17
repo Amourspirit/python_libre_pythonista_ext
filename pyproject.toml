@@ -1,6 +1,6 @@
 [project]
 name = "LibrePythonista"
-version = "0.7.0"
+version = "0.7.1"
 description = "Python For LibreOffice Calc"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -73,6 +73,7 @@ log_indent = 0 # set to 0 or less to disable; Ignored in windows. Should be set 
 no_pip_remove = ["pip", "setuptools", "wheel"] # https://tinyurl.com/ymeh4c9j#no_pip_remove
 require_install_name_match = true # if true then an error will be raised if the installed package name does not match oxt_name
 cmd_clean_file_prefix = "cleanup_"
+pip_shared_dirs = ["bin", "lib", "include", "inc", "docs", "config"] # https://tinyurl.com/ymeh4c9j#pip_shared_dirs
 
 [tool.oxt.token]
 # in the form of "token_name": "token_value"

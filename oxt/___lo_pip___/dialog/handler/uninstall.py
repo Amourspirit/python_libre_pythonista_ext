@@ -87,7 +87,7 @@ class ButtonUninstallListener(XActionListener, unohelper.Base):
                     # trying to display a message box here will not work here.
                     # the message box displays for a second or two and then disappears.
                     # This leaves LibreOffice Unresponsive.
-                time.sleep(1)
+                time.sleep(0.3)
 
         if not self._watching_for_uninstall:
             self._watching_for_uninstall = True

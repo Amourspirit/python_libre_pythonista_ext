@@ -9,6 +9,10 @@ from ..config import Config
 from .token import Token
 
 
+def has_whitespace(value: str) -> bool:
+    return any(char.isspace() for char in value)
+
+
 class JsonConfig(metaclass=Singleton):
     """Singleton Class the Config Json."""
 
@@ -254,14 +258,6 @@ class JsonConfig(metaclass=Singleton):
             self._no_pip_remove = ["pip", "setuptools", "wheel"]
 
         try:
-            self._libreoffice_debug_port = cast(
-                int,
-                self._cfg["tool"]["oxt"]["config"]["token"]["libreoffice_debug_port"],
-            )
-        except Exception:
-            self._libreoffice_debug_port = 5678
-
-        try:
             self._lp_debug_port = cast(int, self._cfg["tool"]["oxt"]["config"]["token"]["lp_debug_port"])
         except Exception:
             self._lp_debug_port = 5679
@@ -273,6 +269,11 @@ class JsonConfig(metaclass=Singleton):
             )
         except Exception:
             self._cmd_clean_file_prefix = ""
+
+        try:
+            self._pip_shared_dirs = cast(list, self._cfg["tool"]["oxt"]["config"]["pip_shared_dirs"])
+        except Exception:
+            self._pip_shared_dirs = ["bin", "lib", "include", "inc", "docs", "config"]
 
         # region Requirements Rule
         # Access a specific table
@@ -286,6 +287,7 @@ class JsonConfig(metaclass=Singleton):
         except Exception:
             self._lp_editor_py_packages = []
         # endregion Requirements Rule
+
         self._validate()
         self._warnings()
 
@@ -310,6 +312,7 @@ class JsonConfig(metaclass=Singleton):
         json_config["extension_display_name"] = token.get_token_value("display_name")
         json_config["oxt_name"] = token.get_token_value("oxt_name")
         json_config["lo_pip"] = token.get_token_value("lo_pip")
+        json_config["libreoffice_debug_port"] = token.get_unprocessed_token_value("libreoffice_debug_port", 0)
 
         json_config["zipped_preinstall_pure"] = self._zip_preinstall_pure
         json_config["auto_install_in_site_packages"] = self._auto_install_in_site_packages
@@ -335,7 +338,6 @@ class JsonConfig(metaclass=Singleton):
         json_config["requirements"] = self._requirements
 
         json_config["has_locals"] = self._config.has_locals
-        json_config["libreoffice_debug_port"] = self._libreoffice_debug_port
         json_config["lp_debug_port"] = self._lp_debug_port
         json_config["require_install_name_match"] = self._require_install_name_match
         json_config["cmd_clean_file_prefix"] = self._cmd_clean_file_prefix
@@ -355,6 +357,7 @@ class JsonConfig(metaclass=Singleton):
         json_config["py_script_sheet_ctl_click"] = self._py_script_sheet_ctl_click
         json_config["py_script_sheet_on_calculate"] = self._py_script_sheet_on_calculate
         json_config["no_pip_remove"] = self._no_pip_remove
+        json_config["pip_shared_dirs"] = self._pip_shared_dirs
 
         json_config["flatpak_libre_pythonista_py_editor"] = self._flatpak_libre_pythonista_py_editor
         json_config["flatpak_libre_pythonista_py_editor_cell_cmd"] = self._flatpak_libre_pythonista_py_editor_cell_cmd
@@ -370,9 +373,39 @@ class JsonConfig(metaclass=Singleton):
         json_config["lp_editor_py_packages"] = self._lp_editor_py_packages
         # endregion Requirements Rule
 
+        self._validate_config_dict(json_config)
+
         # save the file
         with open(json_config_path, "w", encoding="utf-8") as f:
             json.dump(json_config, f, indent=4)
+
+    def _validate_config_dict(self, config_dict: Dict[str, str]) -> None:
+        value = config_dict["py_pkg_dir"]
+        assert isinstance(value, str), "py_pkg_dir must be an int"
+        assert len(value) > 0, "py_pkg_dir must not be an empty string"
+        assert not has_whitespace(value), "py_pkg_dir must not contain whitespace"
+
+        value = config_dict["lo_identifier"]
+        assert isinstance(value, str), "lo_identifier must be an int"
+        assert len(value) > 0, "lo_identifier must not be an empty string"
+        assert not has_whitespace(value), "lo_identifier must not contain whitespace"
+
+        value = config_dict["lo_implementation_name"]
+        assert isinstance(value, str), "lo_implementation_name must be an int"
+        assert len(value) > 0, "lo_implementation_name must not be an empty string"
+        assert not has_whitespace(value), "lo_implementation_name must not contain whitespace"
+
+        value = config_dict["oxt_name"]
+        assert isinstance(value, str), "oxt_name must be an int"
+        assert len(value) > 0, "oxt_name must not be an empty string"
+
+        value = config_dict["lo_pip"]
+        assert isinstance(value, str), "lo_pip must be an int"
+        assert len(value) > 0, "lo_pip must not be an empty string"
+        assert not has_whitespace(value), "lo_pip must not contain whitespace"
+
+        value = config_dict["libreoffice_debug_port"]
+        assert isinstance(value, int), "libreoffice_debug_port must be an int"
 
     def _validate(self) -> None:
         """Validate"""
@@ -402,7 +435,6 @@ class JsonConfig(metaclass=Singleton):
         )
         assert isinstance(self._run_imports, list), "run_imports must be a list"
         assert isinstance(self._run_imports2, list), "run_imports2 must be a list"
-        assert isinstance(self._libreoffice_debug_port, int), "libreoffice_debug_port must be a int"
         assert isinstance(self._lp_debug_port, int), "lp_debug_port must be a int"
         assert isinstance(self._require_install_name_match, bool), "require_install_name_match must be a bool"
         # region tool.libre_pythonista.config
@@ -415,6 +447,12 @@ class JsonConfig(metaclass=Singleton):
         assert self._lp_default_log_format, "lp_default_log_format must not be an empty string"
         assert isinstance(self._cmd_clean_file_prefix, str), "cmd_clean_file_prefix must be a string"
         assert len(self._cmd_clean_file_prefix) > 0, "cmd_clean_file_prefix must not be an empty string"
+        assert isinstance(self._pip_shared_dirs, list), "pip_shared_dirs must be a list"
+        for pip_dir in self._pip_shared_dirs:
+            assert isinstance(pip_dir, str), "pip_shared_dirs must be a list of strings"
+            assert len(pip_dir) > 0, "pip_shared_dirs must not be an empty string"
+            assert not has_whitespace(pip_dir), "pip_shared_dirs must not contain whitespace"
+
         # validate the extension version is a valid python version
         assert self._extension_version.count(".") == 2, "extension_version must contain two periods"
         assert isinstance(self._no_pip_remove, list), "no_pip_remove must be a list"

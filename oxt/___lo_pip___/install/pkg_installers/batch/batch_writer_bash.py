@@ -125,20 +125,17 @@ class BatchWriterBash(BatchWriter):
                 raise ValueError("Package name not found")
             target_path = Path(self.target_path.get_package_target(pkg.package))
 
-            dirs = pkg.data.new_dirs
+            dirs = pkg.new_dirs
             self._write_remove_folders(str(target_path), sw, dirs)
 
-            files = pkg.data.new_files
+            files = pkg.new_files
             self._write_remove_files(str(target_path), sw, files)
 
-            files = pkg.data.new_bin_files
-            self._write_remove_files(str(target_path / "bin"), sw, files)
+            for pip_dir in self.config.pip_shared_dirs:
+                key = f"new_{pip_dir}_files"
+                files = pkg.get_files(key)
+                self._write_remove_files(str(target_path / pip_dir), sw, files)
 
-            files = pkg.data.new_lib_files
-            self._write_remove_files(str(target_path / "lib"), sw, files)
-
-            files = pkg.data.new_inc_files
-            self._write_remove_files(str(target_path / "include"), sw, files)
         except Exception as e:
             self.log.exception("Error writing output for %s: %s", pkg.package or "unknown", e)
 
