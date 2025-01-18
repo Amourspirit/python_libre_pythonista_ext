@@ -147,6 +147,8 @@ def _handle_sheet_range_only(addr: str, log: LogInst, **kwargs) -> Any:  # noqa:
     if doc.range_converter.is_cell_range_name(addr_str):
         addr_rng = RangeObj.from_range(addr_str)
     else:
+        # if the range is actually a cell range then handle it as a cell
+        return _handle_sheet_cell(addr, log, **kwargs)
         addr_rng = doc.range_converter.rng_from_str(addr_str)
 
     addr_rng.set_sheet_index(sheet.sheet_index)
