@@ -147,7 +147,8 @@ def _handle_sheet_range_only(addr: str, log: LogInst, **kwargs) -> Any:  # noqa:
     if doc.range_converter.is_cell_range_name(addr_str):
         addr_rng = RangeObj.from_range(addr_str)
     else:
-        addr_rng = doc.range_converter.rng_from_str(addr_str)
+        # if the range is actually a cell range then handle it as a cell
+        return _handle_sheet_cell(addr, log, **kwargs)
 
     addr_rng.set_sheet_index(sheet.sheet_index)
     log.debug("lp - addr_rng: %s", addr_rng)
@@ -192,7 +193,13 @@ def _handle_named_range_only(addr: str, log: LogInst, **kwargs) -> Any:  # noqa:
         return _set_last_lp_result(None)
 
     cell_range = cast("SheetCellRange", nc.get_referred_cells())
-    return _handle_sheet_range_only(cell_range.AbsoluteName.replace("$", ""), log, **kwargs)
+    rng_addr = cell_range.AbsoluteName.replace("$", "")
+    if doc.range_converter.is_cell_range_name(rng_addr):
+        # range return a DataFrame
+        return _handle_sheet_range_only(rng_addr, log, **kwargs)
+    else:
+        # single cell. return the cell value
+        return _handle_sheet_cell(rng_addr, log, **kwargs)
 
 
 def _handle_sheet_named_range_only(addr: str, log: LogInst, **kwargs) -> Any:  # noqa: ANN003, ANN401
