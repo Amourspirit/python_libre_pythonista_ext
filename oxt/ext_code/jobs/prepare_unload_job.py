@@ -51,7 +51,7 @@ if TYPE_CHECKING:
     break_mgr = BreakMgr()
 else:
 
-    def override(func):
+    def override(func):  # noqa: ANN001, ANN201
         return func
 
     _CONDITIONS_MET = _conditions_met()
@@ -78,7 +78,7 @@ else:
 
         # Initialize the breakpoint manager
         break_mgr = BreakMgr()
-        break_mgr.add_breakpoint("PrepareUnloadJob.execute.conditions_met")
+        # break_mgr.add_breakpoint("PrepareUnloadJob.execute.conditions_met")
 # endregion imports
 
 
@@ -134,9 +134,7 @@ class PrepareUnloadJob(XJob, unohelper.Base):
                 else:
                     self._log.debug(f"{key} not found in os.environ")
                 if _CONDITIONS_MET:
-                    break_mgr.check_breakpoint(
-                        "PrepareUnloadJob.execute.conditions_met"
-                    )
+                    break_mgr.check_breakpoint("PrepareUnloadJob.execute.conditions_met")
                     run_time_id = self.document.RuntimeUID
                     try:
                         from ooodev.calc import CalcDoc
@@ -158,36 +156,26 @@ class PrepareUnloadJob(XJob, unohelper.Base):
                             return
 
                         if not state_mgr.is_pythonista_doc:
-                            self._log.debug(
-                                "Document not currently a LibrePythonista. Returning."
-                            )
+                            self._log.debug("Document not currently a LibrePythonista. Returning.")
                             return
 
                         CellMgr.reset_instance(self._doc)
                         view = self._doc.get_view()
-                        view.component.addActivationEventListener(
-                            CodeSheetActivationListener()
-                        )
+                        view.component.addActivationEventListener(CodeSheetActivationListener())
                         for sheet in self._doc.sheets:
                             unique_id = sheet.unique_id
                             if CodeSheetModifyListener.has_listener(unique_id):
-                                listener = CodeSheetModifyListener(
-                                    unique_id
-                                )  # singleton
+                                listener = CodeSheetModifyListener(unique_id)  # singleton
                                 sheet.component.removeModifyListener(listener)
                     except Exception:
-                        self._log.error(
-                            "Error dispatch manager not unregistered", exc_info=True
-                        )
+                        self._log.error("Error dispatch manager not unregistered", exc_info=True)
 
                     try:
                         self._log.debug("Cleaning up LpLog file")
                         if LpLog.has_singleton_instance():
                             lp_log = LpLog()
                             if lp_log.log_path.exists():
-                                self._log.debug(
-                                    f"Removing LpLog file: {lp_log.log_path}"
-                                )
+                                self._log.debug(f"Removing LpLog file: {lp_log.log_path}")
                                 lp_log.log_path.unlink()
                         else:
                             self._log.debug("LpLog instance not found")
@@ -203,9 +191,7 @@ class PrepareUnloadJob(XJob, unohelper.Base):
                     # LoEvents is used to unload various singletons
                     LoEvents().trigger(GBL_DOC_CLOSING, event_args)
 
-                    event_args.event_data = DotDict(
-                        run_id=run_time_id, doc=self.document
-                    )
+                    event_args.event_data = DotDict(run_id=run_time_id, doc=self.document)
                     se.trigger_event(GBL_DOC_CLOSING, event_args)
                     # any class the has the SingletonBase can be used to clear the instance for the uid
                     CellMgr.remove_instance_by_uid(run_time_id)
