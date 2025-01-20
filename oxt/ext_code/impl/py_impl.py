@@ -157,12 +157,13 @@ class PyImpl(unohelper.Base, XPy):
             sheet = doc.sheets[sheet_idx]
             x_cell = sheet.component.getCellRangeByName(cell_address)
             cell = sheet.get_cell(x_cell)
-            self._log.debug(
-                "pyc - Cell %s for sheet index %i has custom properties: %s",
-                cell.cell_obj,
-                cell.cell_obj.sheet_idx,
-                cell.has_custom_properties(),
-            )
+            if self._log.is_debug:
+                self._log.debug(
+                    "pyc - Cell %s for sheet index %i has custom properties: %s",
+                    cell.cell_obj,
+                    cell.cell_obj.sheet_idx,
+                    cell.has_custom_properties(),
+                )
             dd = DotDict(sheet=sheet, cell=cell, event_name=PYC_FORMULA_ENTER)
             eargs = EventArgs(self)
             eargs.event_data = dd
