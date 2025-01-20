@@ -10,6 +10,8 @@ from .lp_fn_obj import LpFnObj
 from .any_fn import AnyFn
 from .lp_fn_value import LpFnValue
 from .lp_fn_plot import LpFnPlot
+
+# from .list_fn import ListFn
 from .code_empty import CodeEmpty
 from ...log.log_inst import LogInst
 
@@ -81,7 +83,7 @@ class CodeRules:
             self._log.debug(f"CodeRules - add_rule_at() Inserting : {rule} at index: {index}")
             self._rules.insert(index, rule)
 
-    def remove_rule(self, rule: CodeRuleT):
+    def remove_rule(self, rule: CodeRuleT) -> None:
         """
         Unregister Rule
 
@@ -94,13 +96,13 @@ class CodeRules:
         with self._log.indent(True):
             try:
                 self._rules.remove(rule)
-                self._log.debug(f"CodeRules - remove_rule() Removed rule: {rule}")
+                self._log.debug("CodeRules - remove_rule() Removed rule: %s", rule)
             except ValueError as e:
                 msg = f"{self.__class__.__name__}.unregister_rule() Unable to unregister rule."
                 self._log.error(msg)
                 raise ValueError(msg) from e
 
-    def remove_rule_at(self, index: int):
+    def remove_rule_at(self, index: int) -> None:
         """
         Unregister Rule at index
 
@@ -119,15 +121,16 @@ class CodeRules:
                 self._log.error(msg)
                 raise ValueError(msg) from e
 
-    def _reg_rule(self, rule: CodeRuleT):
+    def _reg_rule(self, rule: CodeRuleT) -> None:
         self._rules.append(rule)
 
-    def _register_known_rules(self):
+    def _register_known_rules(self) -> None:
         # re.compile(r"^(\w+)\s*=")
         self._reg_rule(rule=CodeEmpty())
         self._reg_rule(rule=RegexLastLine())
         self._reg_rule(rule=RegexLastLine(re.compile(r"^(\w+)$")))
         self._reg_rule(rule=LpFnPlot())
+        # self._reg_rule(rule=ListFn())
         self._reg_rule(rule=AnyFn())
         self._reg_rule(rule=EvalCode())
         self._reg_rule(rule=LpFn())
@@ -158,13 +161,16 @@ class CodeRules:
                 # rules LpFn and LpFnObj already contain the correct DotDict
                 if not isinstance(found_rule, (LpFn, LpFnObj, LpFnPlot, CodeEmpty)):
                     self._log.debug(
-                        f"CodeRules - get_matched_rule() Rule: {found_rule} is not LpFn or LpFnObj. Checking for LpFnValue match."
+                        "CodeRules - get_matched_rule() Rule: {%s is not LpFn or LpFnObj. Checking for LpFnValue match.",
+                        found_rule,
                     )
                     lp_fn_val = LpFnValue()
                     lp_fn_val.data = found_rule.get_value()  # type: ignore
                     lp_fn_val.set_values(mod, code)
                     if lp_fn_val.get_is_match():
-                        self._log.debug(f"CodeRules - get_matched_rule() Swapping rule: {found_rule} for {lp_fn_val}")
+                        self._log.debug(
+                            "CodeRules - get_matched_rule() Swapping rule: %s for %s", found_rule, lp_fn_val
+                        )
                         found_rule = lp_fn_val
                     else:
                         lp_fn_val.reset()

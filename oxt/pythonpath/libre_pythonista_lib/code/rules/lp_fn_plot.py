@@ -32,7 +32,7 @@ class LpFnPlot:
         if not self.code:
             return False
         log = LogInst()
-        log.debug(f"LpFnPlot - get_is_match() Entered.")
+        log.debug("LpFnPlot - get_is_match() Entered.")
         code = str_util.clean_string(self.code)
 
         # plt.show()
@@ -40,7 +40,7 @@ class LpFnPlot:
         #     log.debug(f"LpFnPlot - get_is_match() code:\n{code}")
         last_lp = code.rfind("plt.show(")
         if last_lp < 0:
-            log.debug(f"LpFnPlot - get_is_match() No plt.show() found: {last_lp}")
+            log.debug("LpFnPlot - get_is_match() No plt.show() found: %s", last_lp)
             return False
 
         # get the substring from the last_lp index.
@@ -52,14 +52,15 @@ class LpFnPlot:
             return False
 
         if next_bracket_index != len(s) - 1:
-            log.debug(f"LpFnPlot - get_is_match() Last bracket is not the end of the string: {next_bracket_index}")
+            log.debug("LpFnPlot - get_is_match() Last bracket is not the end of the string: %s", next_bracket_index)
             return False
 
         try:
+            dd = DotDict(data=None)
             if "lp_plot" in self.mod.__dict__:
                 log.debug("LpFnPlot - get_is_match() lp_plot is in module")
                 flat_line = str_util.flatten_str(s)
-                log.debug(f"LpFnPlot - get_is_match() flat_line: {flat_line}")
+                log.debug("LpFnPlot - get_is_match() flat_line: %s", flat_line)
                 first_index = flat_line.find(")")
                 if first_index < 0:
                     log.debug("LpFnPlot - get_is_match() flat_line index of ) Not Found")
@@ -75,7 +76,7 @@ class LpFnPlot:
                 log.debug("LpFnPlot - get_is_match() lp_plot is NOT in module")
             self._result = dd
         except Exception as e:
-            log.error(f"LpFnPlot - get_is_match() Exception: {e}", exc_info=True)
+            log.error("LpFnPlot - get_is_match() Exception: %s", e, exc_info=True)
         return self._result is not None
 
     def get_value(self) -> DotDict:

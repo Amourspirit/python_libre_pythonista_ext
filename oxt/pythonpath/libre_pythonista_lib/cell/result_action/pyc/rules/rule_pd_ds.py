@@ -13,7 +13,7 @@ from .....utils.pandas_util import PandasUtil
 class RulePdDs(RuleBase):
     """Rule for handling pandas DataSeries."""
 
-    def __init__(self, cell: CalcCell, data: Any) -> None:
+    def __init__(self, cell: CalcCell, data: Any) -> None:  # noqa: ANN401
         super().__init__(cell, data)
         self.state_key = self.key_maker.ctl_state_key
 
@@ -39,7 +39,7 @@ class RulePdDs(RuleBase):
     def _set_state(self, state: StateKind) -> None:
         CtlState(self.cell).set_state(state)
 
-    def _pandas_to_array(self) -> Any:
+    def _pandas_to_array(self) -> Any:  # noqa: ANN401
         ds = cast(pd.Series, self.data.data)
         if PandasUtil.is_date_series(ds):
             ds_copy = ds.copy()
@@ -55,7 +55,7 @@ class RulePdDs(RuleBase):
             list_2d.insert(0, ["", ds.name])
         return list_2d
 
-    def action(self) -> Any:
+    def action(self) -> Any:  # noqa: ANN401
         state = self._get_state()
         self._update_properties(
             **{

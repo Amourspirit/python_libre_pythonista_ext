@@ -27,7 +27,7 @@ class AnyFn:
         self.code = code
 
     def get_is_match(self) -> bool:
-        """Check if rules is a match. For this rule the return result is always True."""
+        """Check if rules is a match."""
         self._result = None
         if not self.code:
             return False

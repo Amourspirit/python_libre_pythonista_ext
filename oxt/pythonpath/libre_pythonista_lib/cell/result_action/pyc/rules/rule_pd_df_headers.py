@@ -11,8 +11,7 @@ from .....utils.pandas_util import PandasUtil
 
 
 class RulePdDfHeaders(RuleBase):
-
-    def __init__(self, cell: CalcCell, data: Any) -> None:
+    def __init__(self, cell: CalcCell, data: Any) -> None:  # noqa: ANN401
         super().__init__(cell, data)
         self.state_key = self.key_maker.ctl_state_key
 
@@ -42,7 +41,7 @@ class RulePdDfHeaders(RuleBase):
     def _set_state(self, state: StateKind) -> None:
         CtlState(self.cell).set_state(state)
 
-    def _pandas_to_array(self) -> Any:
+    def _pandas_to_array(self) -> Any:  # noqa: ANN401
         df = cast(pd.DataFrame, self.data.data)
         if PandasUtil.is_describe_output(df):
             arr = PandasUtil.pandas_to_array(df, header_opt=1, index_opt=0, convert=False)
@@ -66,7 +65,7 @@ class RulePdDfHeaders(RuleBase):
             headers[0].insert(0, "")
         return headers + list_values
 
-    def action(self) -> Any:
+    def action(self) -> Any:  # noqa: ANN401
         state = self._get_state()
         self._update_properties(
             **{

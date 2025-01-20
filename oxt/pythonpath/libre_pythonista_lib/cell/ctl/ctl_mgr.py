@@ -20,11 +20,11 @@ if TYPE_CHECKING:
 
 
 class CtlMgr:
-    def __init__(self):
+    def __init__(self) -> None:
         self._log = LogInst()
         self._key_maker = KeyMaker()
 
-    def set_ctl_from_pyc_rule(self, rule: PycRuleT):
+    def set_ctl_from_pyc_rule(self, rule: PycRuleT) -> None:
         """
         Event handler for when a cell custom property is modified.
 
@@ -82,20 +82,21 @@ class CtlMgr:
             km = self._key_maker
             try:
                 self._log.debug(
-                    f"CtlMgr - get_current_ctl_type_from_cell() Getting control type for cell {cell.cell_obj}"
+                    "CtlMgr - get_current_ctl_type_from_cell() Getting control type for cell %s", cell.cell_obj
                 )
 
                 key = km.pyc_rule_key
                 is_deleted = cell.extra_data.get("deleted", False)
                 if is_deleted:
                     self._log.debug(
-                        f"CtlMgr - get_current_ctl_type_from_cell() Cell is deleted: {cell.cell_obj}. Returning None."
+                        "CtlMgr - get_current_ctl_type_from_cell() Cell is deleted: %s. Returning None.", cell.cell_obj
                     )
                     return None
                 else:
                     if not cell.has_custom_property(key):
                         self._log.debug(
-                            f"CtlMgr - get_current_ctl_type_from_cell() No custom property found for cell {cell.cell_obj}. Returning None."
+                            "CtlMgr - get_current_ctl_type_from_cell() No custom property found for cell %s. Returning None.",
+                            cell.cell_obj,
                         )
                         return None
                     rule_name = cell.get_custom_property(key)
@@ -103,11 +104,11 @@ class CtlMgr:
                 ctl_type = self._get_rule(rule_name, cell)
                 if ctl_type:
                     self._log.debug(
-                        f"CtlMgr - get_current_ctl_type_from_cell() Found control type for cell {cell.cell_obj}"
+                        "CtlMgr - get_current_ctl_type_from_cell() Found control type for cell %s", cell.cell_obj
                     )
                 else:
                     self._log.debug(
-                        f"CtlMgr - get_current_ctl_type_from_cell() No control type found for cell {cell.cell_obj}"
+                        "CtlMgr - get_current_ctl_type_from_cell() No control type found for cell %s", cell.cell_obj
                     )
                 return ctl_type
             except Exception:
@@ -190,12 +191,12 @@ class CtlMgr:
             # orig_ctl_type will always be present unless this a new cell.
             orig_ctl_type = self.get_orig_ctl_type_from_cell(cell)
             if current_ctl_type is None and orig_ctl_type is None:
-                self._log.debug(f"CtlMgr - update_ctl() No control type found for cell {cell.cell_obj}. Returning.")
+                self._log.debug("CtlMgr - update_ctl() No control type found for cell %s. Returning.", cell.cell_obj)
                 return
 
             if orig_ctl_type is not None and current_ctl_type is not None and orig_ctl_type == current_ctl_type:
                 self._log.debug(
-                    f"CtlMgr - update_ctl() Control type for cell {cell.cell_obj} has not changed. Updating."
+                    "CtlMgr - update_ctl() Control type for cell %s has not changed. Updating.", cell.cell_obj
                 )
                 ctl = current_ctl_type(cell)
                 ctl.update_ctl()  # refresh size and pos
@@ -206,7 +207,8 @@ class CtlMgr:
                 # if there is no original then this is a new cell that the control has not been added to yet.
                 if orig_ctl_type is None:
                     self._log.debug(
-                        f"CtlMgr - update_ctl() Control type for cell {cell.cell_obj} has changed. Adding new control."
+                        "CtlMgr - update_ctl() Control type for cell %s has changed. Adding new control.",
+                        cell.cell_obj,
                     )
                     ctl = current_ctl_type(cell)
                     ctl.add_ctl()
@@ -214,11 +216,11 @@ class CtlMgr:
                     return
                 # both controls exist and they are different
                 self._log.debug(
-                    f"CtlMgr - update_ctl() Control type for cell {cell.cell_obj} has changed. Removing old control."
+                    "CtlMgr - update_ctl() Control type for cell %s has changed. Removing old control.", cell.cell_obj
                 )
                 old_ctl = orig_ctl_type(cell)
                 old_ctl.remove_ctl()
-                self._log.debug(f"CtlMgr - update_ctl() Removed Old Control. Adding new control.")
+                self._log.debug("CtlMgr - update_ctl() Removed Old Control. Adding new control.")
                 ctl = current_ctl_type(cell)
                 ctl.add_ctl()
                 self._log.debug("CtlMgr - update_ctl() Done.")
@@ -226,7 +228,8 @@ class CtlMgr:
             else:
                 if orig_ctl_type is not None:
                     self._log.debug(
-                        f"CtlMgr - update_ctl() Control type for cell {cell.cell_obj} has been removed. Removing old control."
+                        "CtlMgr - update_ctl() Control type for cell %s has been removed. Removing old control.",
+                        cell.cell_obj,
                     )
                     ctl = orig_ctl_type(cell)
                     ctl.remove_ctl()

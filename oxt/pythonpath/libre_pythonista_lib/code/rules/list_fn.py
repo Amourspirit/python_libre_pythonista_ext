@@ -5,9 +5,10 @@ from ooodev.utils.helper.dot_dict import DotDict
 from ...utils import str_util
 
 
-class EvalCode:
+class ListFn:
     """
-    A class to represent the last dictionary item in a module.
+    A class to get the last function only call of a module.
+    Expected to match ``sum(1, 2)``.
     """
 
     def __init__(self) -> None:
@@ -30,16 +31,28 @@ class EvalCode:
         self._result = None
         if not self.code:
             return False
+        # log = LogInst()
 
-        last_line = str_util.get_last_line(self.code)
+        last_line = str_util.get_last_line(str_util.clean_string(self.code))
+        # log.debug(f"AnyFn - get_is_match() last line: {last_line}")
         if str_util.starts_with_whitespace(last_line):
+            # log.debug(f"AnyFn - get_is_match() starts with whitespace. Not a match.")
             return False
-        result = None
+        if "=" in last_line:
+            # log.debug(f"AnyFn - get_is_match() has assignment. Not a match.")
+            return False
+
+        self._result = None
+        is_list = False
         with contextlib.suppress(Exception):
             glbs = self.mod.__dict__.copy()
-            result = eval(last_line, glbs)
+            exec(f"some_kinda_var = {last_line}", glbs)
+            result = glbs.get("some_kinda_var", None)
+            is_list = isinstance(result, list)
             self._result = DotDict(data=result)
-        return self._result is not None
+        # except Exception as e:
+        #     log.debug(f"AnyFn - get_is_match() exception: {e}")
+        return is_list
 
     def get_value(self) -> DotDict:
         """Get the list of versions. In this case it will be a single version, unless vstr is invalid in which case it will be an empty list."""
@@ -54,4 +67,4 @@ class EvalCode:
         self.code = None
 
     def __repr__(self) -> str:
-        return f"<EvalCode()>"
+        return f"<ListFn()>"

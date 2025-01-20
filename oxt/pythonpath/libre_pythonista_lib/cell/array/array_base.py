@@ -32,7 +32,7 @@ else:
 class ArrayBase(EventsPartial):
     """Manages Formula and Array for DataFrame."""
 
-    def __init__(self, cell: CalcCell):
+    def __init__(self, cell: CalcCell) -> None:
         """
         Constructor
 
@@ -81,7 +81,7 @@ class ArrayBase(EventsPartial):
         formula = formula.lstrip("{").rstrip("}")
         return formula
 
-    def set_formula_array(self, **kwargs: Any) -> None:
+    def set_formula_array(self, **kwargs: Any) -> None:  # noqa: ANN401
         """
         Set the formula for the cell as an array formula.
 
@@ -102,9 +102,9 @@ class ArrayBase(EventsPartial):
             if not formula:
                 formula = self.get_formula()
             if not formula:
-                self.log.error(f"Cell {self.cell.cell_obj} has no formula.")
+                self.log.error("Cell %s has no formula.", self.cell.cell_obj)
                 return
-            self.log.debug(f"set_formula_array() Formula: {formula}")
+            self.log.debug("set_formula_array() Formula: %s", formula)
             cell_obj = self.cell.cell_obj
             rows, cols = self.get_rows_cols()
             ca = cell_obj.get_cell_address()
@@ -144,7 +144,7 @@ class ArrayBase(EventsPartial):
                     self._style.add_style_range(cell_rng)
                 self.trigger_event("dispatch_add_array_formula", eargs)
 
-    def set_formula(self, **kwargs: Any) -> None:
+    def set_formula(self, **kwargs: Any) -> None:  # noqa: ANN401
         """
         Sets the formula for the cell.
 
@@ -157,11 +157,11 @@ class ArrayBase(EventsPartial):
         with self.log.indent(True):
             formula = self.get_formula()
             if not formula:
-                self.log.error(f"Cell {self.cell.cell_obj} has no formula.")
+                self.log.error("Cell %s has no formula.", self.cell.cell_obj)
                 return
             cm = self._cell_mgr
             # cm = CellMgr(self.cell.calc_doc)  # singleton
-            self.log.debug(f"set_formula() Formula: {formula}")
+            self.log.debug("set_formula() Formula: %s", formula)
             cursor = cast("SheetCellCursor", self.cell.calc_sheet.component.createCursorByRange(self.cell.component))  # type: ignore
             cursor.collapseToCurrentArray()
             dd = DotDict()
@@ -210,13 +210,11 @@ class ArrayBase(EventsPartial):
         if self._ctl_state.get_state() != StateKind.ARRAY:
             return False
         # this is an array formula
-        # if the data colum or row is not the same as the sheet range for the array
+        # if the data column or row is not the same as the sheet range for the array
         # then an update is needed.
         rng = self.get_formula_range()
         rows_cols = self.get_rows_cols()
-        if rng.row_count != rows_cols[0] or rng.col_count != rows_cols[1]:
-            return True
-        return False
+        return bool(rng.row_count != rows_cols[0] or rng.col_count != rows_cols[1])
 
     def update(self) -> None:
         """
@@ -226,6 +224,7 @@ class ArrayBase(EventsPartial):
         """
         with self.log.indent(True):
             if not self.update_required():
+                # Warning: If this block is removed then sheets with multiple table will cycle updating endlessly.
                 self.log.debug("No update needed.")
                 return
             self.log.debug("Update needed.")

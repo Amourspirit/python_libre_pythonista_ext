@@ -74,7 +74,6 @@ class LplCell:
         There is not need to call ``RemoveControl()`` before calling this method.
         """
         with self._log.indent(True):
-
             self._log.debug("update_control() Entered")
 
             if self.ctl_state == StateKind.ARRAY:
@@ -88,7 +87,7 @@ class LplCell:
                 self.remove_control()
                 self._log.debug("update_control() Done")
                 return
-            self._log.debug(f"_update_py_event_control() Matched rule: {matched_rule.name}")
+            self._log.debug("_update_py_event_control() Matched rule: %s", matched_rule.name)
             # matched_rule.name is a cell.props.rule_names.RuleNames value.
             # set the pyc rule key custom property for the cell.
             # let update handle removing and adding new control
@@ -138,8 +137,9 @@ class LplCell:
                 return rule.supports_feature(feature)
             except Exception:
                 self._log.error("get_control_supports_feature() Error getting control supports feature", exc_info=True)
+        return False
 
-    def _convert_query_to_dict(self, query: str):
+    def _convert_query_to_dict(self, query: str) -> dict:
         query_dict = parse_qs(query)
         return {k: v[0] for k, v in query_dict.items()}
 

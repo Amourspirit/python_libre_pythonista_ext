@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 class ArrayDS(ArrayBase):
     """Manages Formula and Array for Pandas Series."""
 
-    def __init__(self, cell: CalcCell):
+    def __init__(self, cell: CalcCell) -> None:
         """
         Constructor
 

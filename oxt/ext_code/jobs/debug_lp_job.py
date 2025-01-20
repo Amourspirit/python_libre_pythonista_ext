@@ -81,27 +81,37 @@ class DebugLpJob(unohelper.Base, XJob):
             return
         try:
             if os.getenv("ENABLE_LIBREPYTHONISTA_DEBUG"):
-                if os.getenv("LIBREOFFICE_DEBUG_ATTACHED") == "1":
+                if (
+                    os.getenv("LIBREPYTHONISTA_DEBUG_ATTACHED") == "1"
+                    or os.getenv("LIBREOFFICE_DEBUG_ATTACHED") == "1"
+                ):
                     self._log.debug("Debugger already attached.")
                     return
                 basic_config = BasicConfig()
                 # Start the debug server on port 5678
-                debugpy.listen(("localhost", basic_config.lp_debug_port))
+                if basic_config.lp_debug_port > 0:
+                    debugpy.listen(("localhost", basic_config.lp_debug_port))
+                else:
+                    self._log.warning(
+                        "Debug port not set. Must be set in tool.oxt.token.lp_debug_port of pyproject.toml file. Contact the developer."
+                    )
+                    return
                 self._log.debug(
                     "Waiting for debugger attach on port %i ...",
                     basic_config.lp_debug_port,
                 )
 
                 # Pause execution until debugger is attached
+                print(f"Waiting for debugger attach on port  {basic_config.lp_debug_port}")
                 debugpy.wait_for_client()
                 os.environ.pop("ENABLE_LIBREPYTHONISTA_DEBUG")
                 os.environ["LIBREPYTHONISTA_DEBUG_ATTACHED"] = "1"
-                os.environ["LIBREOFFICE_DEBUG_ATTACHED"] = "1"
+                # os.environ["LIBREOFFICE_DEBUG_ATTACHED"] = "1"
                 self._log.debug("Debugger attached.")
             else:
                 self._log.debug("Debugging is disabled")
             # loader = Lo.load_office()
-            self._log.debug(f"Args Length: {len(Arguments)}")
+            self._log.debug("Args Length: %i", len(Arguments))
 
         except Exception:
             self._log.exception("Error getting current document")
