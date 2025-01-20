@@ -30,10 +30,10 @@ class RuleBase:
         """
         return ""
 
-    def action(self) -> Any:
+    def action(self) -> Any:  # noqa: ANN401
         return self.data
 
-    def _update_properties(self, **kwargs: Any) -> None:
+    def _update_properties(self, **kwargs: Any) -> None:  # noqa: ANN401
         dd = DotDict(**kwargs)
         self.cell.set_custom_properties(dd)
 

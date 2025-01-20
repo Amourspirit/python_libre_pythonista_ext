@@ -18,7 +18,7 @@ from .array_base import ArrayBase
 class ArrayTbl(ArrayBase):
     """Manages Formula and Array for Pandas Series."""
 
-    def __init__(self, cell: CalcCell):
+    def __init__(self, cell: CalcCell) -> None:
         """
         Constructor
 

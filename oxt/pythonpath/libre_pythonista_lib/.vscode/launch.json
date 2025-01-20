@@ -4,14 +4,13 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-        
         {
-            "name": "Attach to LibreOffice Extension",
+            "name": "Attach to LibrePythonista Extension",
             "type": "debugpy",
             "request": "attach",
             "connect": {
                 "host": "localhost",
-                "port": ___libreoffice_debug_port___
+                "port": ___lp_debug_port___
             },
             "pathMappings": [
                 {
@@ -22,12 +21,12 @@
             "justMyCode": false
         },
         {
-            "name": "Attach to LibrePythonista Extension",
+            "name": "Attach to LibreOffice Extension",
             "type": "debugpy",
             "request": "attach",
             "connect": {
                 "host": "localhost",
-                "port": ___lp_debug_port___
+                "port": ___libreoffice_debug_port___
             },
             "pathMappings": [
                 {

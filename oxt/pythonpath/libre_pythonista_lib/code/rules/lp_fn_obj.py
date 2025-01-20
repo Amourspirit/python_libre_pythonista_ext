@@ -32,11 +32,11 @@ class LpFnObj:
         if not self.code:
             return False
         log = LogInst()
-        log.debug(f"LpFnObj - get_is_match() Entered.")
+        log.debug("LpFnObj - get_is_match() Entered.")
 
         last_lp = self.code.rfind("lp(")
         if last_lp < 0:
-            log.debug(f"LpFnObj - get_is_match() No lp() found: {last_lp}")
+            log.debug("LpFnObj - get_is_match() No lp() found: %s", last_lp)
             return False
 
         # get the substring from the last_lp index.
@@ -48,7 +48,7 @@ class LpFnObj:
             return False
 
         if next_bracket_index == len(s) - 1:
-            log.debug(f"LpFnObj - get_is_match() Last bracket is not the end of the string: {next_bracket_index}")
+            log.debug("LpFnObj - get_is_match() Last bracket is not the end of the string: %s", next_bracket_index)
             return False
 
         result = None
@@ -57,7 +57,7 @@ class LpFnObj:
             if "lp_mod" in self.mod.__dict__:
                 log.debug("LpFnObj - get_is_match() lp_mod is in module")
                 flat_line = str_util.flatten_str(s)
-                log.debug(f"LpFnObj - get_is_match() flat_line: {flat_line}")
+                log.debug("LpFnObj - get_is_match() flat_line: %s", flat_line)
                 first_index = flat_line.find(")")
                 if first_index < 0:
                     log.debug("LpFnObj - get_is_match() flat_line index of ) Not Found")
@@ -73,14 +73,14 @@ class LpFnObj:
                 headers = bool(dd.get("headers", False))
                 dd.headers = headers
                 dd.data = result
-                log.debug(f"LpFnObj - get_is_match() has headers: {dd.headers}")
+                log.debug("LpFnObj - get_is_match() has headers: %s", dd.headers)
 
             else:
                 dd = None
                 log.debug("LpFnObj - get_is_match() lp_mod is NOT in module")
             self._result = dd
         except Exception as e:
-            log.error(f"LpFnObj - get_is_match() Exception: {e}", exc_info=True)
+            log.error("LpFnObj - get_is_match() Exception: %s", e, exc_info=True)
         return self._result is not None
 
     def get_value(self) -> DotDict:

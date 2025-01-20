@@ -7,8 +7,8 @@ from .....utils import str_util
 if TYPE_CHECKING:
     from .....code.py_source_mgr import PySource
 
-class RuleEmpty(RuleBase):
 
+class RuleEmpty(RuleBase):
     def _get_data_type_name(self) -> str:
         return self.key_maker.rule_names.cell_data_type_empty
 
@@ -19,7 +19,7 @@ class RuleEmpty(RuleBase):
         code = str_util.clean_string(result.source_code)
         return code == ""
 
-    def action(self) -> Any:
+    def action(self) -> Any:  # noqa: ANN401
         self._update_properties(
             **{
                 self.key_maker.cell_array_ability_key: False,
@@ -28,4 +28,3 @@ class RuleEmpty(RuleBase):
             }
         )
         return ((None,),)
-

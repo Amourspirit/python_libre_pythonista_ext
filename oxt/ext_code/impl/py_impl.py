@@ -71,7 +71,8 @@ else:
 
         # Initialize the breakpoint manager
         break_mgr = BreakMgr()
-        # break_mgr.add_breakpoint("matched_rule")
+        # break_mgr.add_breakpoint("librepythonista.PyImpl.matched_rule")
+        # break_mgr.add_breakpoint("librepythonista.PyImpl.pyc")
     from ___lo_pip___.config import Config
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
 
@@ -81,14 +82,14 @@ class PyImpl(unohelper.Base, XPy):
     SERVICE_NAMES = ("com.sun.star.sheet.AddIn",)
 
     @classmethod
-    def get_imple(cls):
+    def get_imple(cls) -> tuple:
         return (cls, cls.IMPLE_NAME, cls.SERVICE_NAMES)
 
-    def __init__(self, ctx: Any):
+    def __init__(self, ctx: Any) -> None:  # noqa: ANN401
         # this is only init one time per session. When a new document is loaded, it is not called.
         self.ctx = ctx
-        self._logger = OxtLogger(log_name=self.__class__.__name__)
-        self._logger.debug("Py: PyImpl init")
+        self._log = OxtLogger(log_name=self.__class__.__name__)
+        self._log.debug("Py: PyImpl init")
         try:
             mgr = self.ctx.getServiceManager()
             self.desktop = cast(
@@ -96,15 +97,18 @@ class PyImpl(unohelper.Base, XPy):
                 mgr.createInstanceWithContext("com.sun.star.frame.Desktop", self.ctx),
             )
         except Exception as e:
-            self._logger.error(f"Error: {e}", exc_info=True)
+            self._log.error(f"Error: {e}", exc_info=True)
 
         # it seems init is only call when the functions is first called.
 
-    def pyc(self, sheet_num: int, cell_address: str, *args) -> Any:
+    def pyc(self, sheet_num: int, cell_address: str, *args) -> Any:  # noqa: ANN002, ANN401
         if not _CONDITIONS_MET:
-            self._logger.error("pyc - Conditions not met")
+            self._log.error("pyc - Conditions not met")
             return None  # type: ignore
-        self._logger.debug("pyc entered")
+        self._log.debug("pyc entered")
+
+        break_mgr.check_breakpoint("librepythonista.PyImpl.pyc")
+
         try:
             # CalcDoc.from_current_doc() should not be used here.
             # It will return the previous active document if this document is not yet ready.
@@ -119,24 +123,24 @@ class PyImpl(unohelper.Base, XPy):
             # self._logger.debug(f"pyc - Doc UID: {model.RuntimeUID}")
             doc = CalcDoc.get_doc_from_component(model)
         except Exception:
-            self._logger.warning(
+            self._log.warning(
                 "pyc - Could not get current document. This usually happens when the document is not fully loaded."
             )
             return None
 
         result = None
         try:
-            self._logger.debug(f"pyc - Doc UID: {doc.runtime_uid}")
+            self._log.debug("pyc - Doc UID: %s", doc.runtime_uid)
             calc_state_mgr = CalcStateMgr(doc)
             if not calc_state_mgr.is_job_loading_finished:
-                self._logger.debug("pyc - Loading Job not finished. Returning.")
+                self._log.debug("pyc - Loading Job not finished. Returning.")
                 return None
 
             key = f"LIBRE_PYTHONISTA_DOC_{doc.runtime_uid}"
             if key not in os.environ:
                 # if len(sheet.draw_page) == 0:
                 # if there are no draw pages for the sheet then they are not yet loaded. Return None, and expect a recalculation to take place when the document is fully loaded.
-                self._logger.debug("pyc - Not yet loaded. Returning.")
+                self._log.debug("pyc - Not yet loaded. Returning.")
                 CellMgr.reset_instance(doc)
                 return None  # type: ignore
             cm = CellMgr(doc)
@@ -145,16 +149,19 @@ class PyImpl(unohelper.Base, XPy):
             # cm.set_global_var("PY_ARGS", args)
             # cc = CellCache(doc)
             sheet_idx = sheet_num - 1
-            self._logger.debug(f"pyc - sheet_num: arg {sheet_num}")
-            self._logger.debug(f"pyc - cell_address: arg {cell_address}")
+            self._log.debug("pyc - sheet_num: arg %i", sheet_num)
+            self._log.debug("pyc - cell_address: arg %s", cell_address)
             if args:
-                self._logger.debug(f"pyc - args count: {len(args)}")
+                self._log.debug("pyc - args count: %i", len(args))
 
             sheet = doc.sheets[sheet_idx]
             x_cell = sheet.component.getCellRangeByName(cell_address)
             cell = sheet.get_cell(x_cell)
-            self._logger.debug(
-                f"pyc - Cell {cell.cell_obj} for sheet index {cell.cell_obj.sheet_idx} has custom properties: {cell.has_custom_properties()}"
+            self._log.debug(
+                "pyc - Cell %s for sheet index %i has custom properties: %s",
+                cell.cell_obj,
+                cell.cell_obj.sheet_idx,
+                cell.has_custom_properties(),
             )
             dd = DotDict(sheet=sheet, cell=cell, event_name=PYC_FORMULA_ENTER)
             eargs = EventArgs(self)
@@ -162,10 +169,10 @@ class PyImpl(unohelper.Base, XPy):
             shared_event.trigger_event(PYC_FORMULA_ENTER, eargs)
 
             if cm.has_cell(cell_obj=cell.cell_obj):
-                self._logger.debug("pyc - py cell has code")
+                self._log.debug("pyc - py cell has code")
             else:
                 # if not py_cell.has_code():
-                self._logger.debug(f"pyc - py {cell.cell_obj} cell has no code")
+                self._log.debug("pyc - py %s cell has no code", cell.cell_obj)
 
                 # this could be a result of rows or columns being inserted.
                 # if the cell is A5 and a row is inserted above then the cell is now A6.
@@ -176,8 +183,8 @@ class PyImpl(unohelper.Base, XPy):
                     from libre_pythonista_lib.cell.lpl_cell import LplCell
                 lp_cell = LplCell(cell)
                 if lp_cell.has_code_name_prop:
-                    self._logger.debug(
-                        f"pyc - py {cell.cell_obj} cell already has code. May be a row or column as been inserted."
+                    self._log.debug(
+                        "pyc - py %s cell already has code. May be a row or column as been inserted.", cell.cell_obj
                     )
                     # If the cell is move this is not the place to update the cell properties.
                     # If done here only the current cell would be updated.
@@ -194,7 +201,7 @@ class PyImpl(unohelper.Base, XPy):
                     CellMgr.reset_instance(doc)
                     cm = CellMgr(doc)
                     if lp_cell.has_cell_moved:
-                        self._logger.debug(f"pyc - py {cell.cell_obj} cell has Moved.")
+                        self._log.debug("pyc - py %s cell has Moved.", cell.cell_obj)
                         cm.update_sheet_cell_addr_prop(sheet_idx)
 
                 if not code_handled:
@@ -211,47 +218,38 @@ class PyImpl(unohelper.Base, XPy):
             pyc_rules = PycRules()
             matched_rule = pyc_rules.get_matched_rule(cell=cell, data=py_src.dd_data)
             if matched_rule:
-                if self._logger.is_debug:
-                    self._logger.debug(f"pyc - Matched Rule: {matched_rule}")
+                if self._log.is_debug:
+                    self._log.debug("pyc - Matched Rule: %s", matched_rule)
                 # calling the action method of the matched rule will return the data for the cell and
                 # set the custom property for the cell that is used by CodeCellListener to raise an event that is then
                 # handled by the CellMgr which uses CtlMgr to assign the control to the cell.
-                break_mgr.check_breakpoint("matched_rule")
+                break_mgr.check_breakpoint("librepythonista.PyImpl.matched_rule")
                 rule_result = matched_rule.action()
                 cm.add_cell_control_from_pyc_rule(rule=matched_rule)
 
                 cell_cache = CellCache(doc)
-                dd = DotDict(
-                    matched_rule=matched_rule, rule_result=rule_result, calc_cell=cell
-                )
-                dd.is_first_cell = cell_cache.is_first_cell(
-                    cell=cell.cell_obj, sheet_idx=sheet_idx
-                )
-                dd.is_last_cell = cell_cache.is_last_cell(
-                    cell=cell.cell_obj, sheet_idx=sheet_idx
-                )
+                dd = DotDict(matched_rule=matched_rule, rule_result=rule_result, calc_cell=cell)
+                dd.is_first_cell = cell_cache.is_first_cell(cell=cell.cell_obj, sheet_idx=sheet_idx)
+                dd.is_last_cell = cell_cache.is_last_cell(cell=cell.cell_obj, sheet_idx=sheet_idx)
                 eargs = EventArgs(self)
                 eargs.event_data = dd
                 shared_event.trigger_event(PYC_RULE_MATCH_DONE, eargs)
 
-                self._logger.debug("pyc - Done")
+                self._log.debug("pyc - Done")
                 return rule_result
 
             else:
-                self._logger.debug("pyc - No matched rule")
+                self._log.debug("pyc - No matched rule")
 
-            if isinstance(py_src.value, tuple):
-                result = py_src.value
-            else:
-                result = ((py_src.value,),)
+            result = py_src.value if isinstance(py_src.value, tuple) else ((py_src.value,),)
 
         except Exception as e:
-            self._logger.error(f"Error: {e}", exc_info=True)
+            self._log.error("Error: %s", e, exc_info=True)
             raise
-        self._logger.debug("pyc exiting")
+        self._log.debug("pyc exiting")
         # return ((sheet_idx, cell_address),)
         # return (("a", "b"), (1.0, 2.0))
-        self._logger.debug(f"pyc - result:\n{result}")
+        self._log.debug("pyc - result:\n%s", result)
         if isinstance(result, tuple):
             # try setting an array.
             width = len(result[0])
@@ -263,14 +261,14 @@ class PyImpl(unohelper.Base, XPy):
             cfg = Config()
             key = f"{cfg.cell_cp_prefix}modify_trigger_event"
             cell.set_custom_property(key, "cell_table_data")
-            self._logger.debug(f"pyc - Table Range: {rng_obj}")
+            self._log.debug(f"pyc - Table Range: {rng_obj}")
             # rng = sheet.get_range(range_obj=rng_obj)
             # rng.component.setArrayFormula(cell.component.getFormula())
 
             # return result
-        self._logger.debug("pyc - Done")
+        self._log.debug("pyc - Done")
         return result
 
 
-g_ImplementationHelper = unohelper.ImplementationHelper()
+g_ImplementationHelper = unohelper.ImplementationHelper()  # noqa: N816
 g_ImplementationHelper.addImplementation(*PyImpl.get_imple())

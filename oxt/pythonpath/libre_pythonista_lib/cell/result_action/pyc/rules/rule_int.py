@@ -5,7 +5,6 @@ from .rule_base import RuleBase
 
 
 class RuleInt(RuleBase):
-
     def _get_data_type_name(self) -> str:
         return self.key_maker.rule_names.cell_data_type_int
 
@@ -15,7 +14,7 @@ class RuleInt(RuleBase):
             return False
         return isinstance(result, int)
 
-    def action(self) -> Any:
+    def action(self) -> Any:  # noqa: ANN401
         self._update_properties(
             **{
                 self.key_maker.cell_array_ability_key: False,

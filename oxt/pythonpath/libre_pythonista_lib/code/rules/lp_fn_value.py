@@ -42,11 +42,11 @@ class LpFnValue:
                 result = cast(DotDict, self.mod.lp_mod.LAST_LP_RESULT)  # type: ignore
                 if self.data.data is result.data:
                     self._result = result
-                    self._log.debug(f"LpFnValue - get_is_match() self.data.data is result.data. Returning True.")
+                    self._log.debug("LpFnValue - get_is_match() self.data.data is result.data. Returning True.")
                     return True
             except Exception as e:
-                self._log.debug(f"LpFnValue - get_is_match() Exception: {e}")
-            self._log.debug(f"LpFnValue - get_is_match() Not a match. Returning False.")
+                self._log.debug("LpFnValue - get_is_match() Exception: %s", e)
+            self._log.debug("LpFnValue - get_is_match() Not a match. Returning False.")
             return False
 
     def get_value(self) -> DotDict:

@@ -13,7 +13,7 @@ else:
 
 
 class ArrayMgr:
-    def __init__(self, doc: CalcDoc):
+    def __init__(self, doc: CalcDoc) -> None:
         self._log = OxtLogger(log_name=self.__class__.__name__)
         with self._log.indent(True):
             self._log.debug("init")
@@ -32,27 +32,29 @@ class ArrayMgr:
 
         for idx, value in self._cell_cache.code_cells.items():
             sheet = self._doc.sheets[idx]
-            for cell_obj in value.keys():
+            for cell_obj in value:
                 cell = sheet[cell_obj]
                 if self._has_array_ability(cell):
                     results.append(cell)
         if self._log.is_debug:
             with self._log.indent(True):
-                self._log.debug(f"get_array_cells() - {len(results)}")
+                self._log.debug("get_array_cells() - %i", len(results))
         return results
 
     def _has_array_ability(self, cell: CalcCell) -> bool:
         try:
             key = self._key_maker.cell_array_ability_key
             if self._log.is_debug:
-                self._log.debug(f"_has_array_ability() Key: {key}")
-                self._log.debug(f"_has_array_ability() Cell: {cell.cell_obj}, Sheet {cell.calc_sheet.name}")
-            return cell.get_custom_property(key, False)
+                self._log.debug("_has_array_ability() Key: %s", key)
+                self._log.debug("_has_array_ability() Cell: %s, Sheet %s", cell.cell_obj, cell.calc_sheet.name)
+            cp = cell.get_custom_property(key, False)
+            if cp:
+                return True
         except Exception:
-            self._log.exception(f"_has_array_ability()")
+            self._log.exception("_has_array_ability()")
         return False
 
-    def update_array_cells(self):
+    def update_array_cells(self) -> None:
         """
         Updates all sheet array formulas for this extension if the array size has changed.
         """
@@ -63,5 +65,5 @@ class ArrayMgr:
                     continue
                 helper.update()
         except Exception:
-            self._log.exception(f"update_array_cells()")
+            self._log.exception("update_array_cells()")
             raise

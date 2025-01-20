@@ -5,7 +5,6 @@ from .rule_base import RuleBase
 
 
 class RuleMatPlotFigure(RuleBase):
-
     def _get_data_type_name(self) -> str:
         return self.key_maker.rule_names.cell_data_type_mp_figure
 
@@ -17,11 +16,11 @@ class RuleMatPlotFigure(RuleBase):
         if data_type != "file":
             return False
         details = self.data.get("details", "")
-        if details != "figure":
+        if details != "figure":  # noqa: SIM103
             return False
         return True
 
-    def action(self) -> Any:
+    def action(self) -> Any:  # noqa: ANN401
         self._update_properties(
             **{
                 self.key_maker.cell_array_ability_key: False,

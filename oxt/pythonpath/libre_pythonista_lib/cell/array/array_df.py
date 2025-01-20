@@ -23,7 +23,7 @@ if TYPE_CHECKING:
 class ArrayDF(ArrayBase):
     """Manages Formula and Array for DataFrame."""
 
-    def __init__(self, cell: CalcCell):
+    def __init__(self, cell: CalcCell) -> None:
         """
         Constructor
 
@@ -50,11 +50,11 @@ class ArrayDF(ArrayBase):
                 has_headers = PandasUtil.has_headers(df)
             has_index_names = PandasUtil.has_index_names(df)
             if self.log.is_debug:
-                self.log.debug(f"get_rows_cols() - Has Headers: {has_headers}")
-                self.log.debug(f"get_rows_cols() - Has Index Names: {has_index_names}")
+                self.log.debug("get_rows_cols() - Has Headers: %s", has_headers)
+                self.log.debug("get_rows_cols() - Has Index Names: %s", has_index_names)
 
             if self.log.is_debug:
-                self.log.debug(f"DataFrame Shape: {df.shape}")
+                self.log.debug("DataFrame Shape: %s", df.shape)
             shape = df.shape
             shape_len = len(shape)
             lst = [0, 0]

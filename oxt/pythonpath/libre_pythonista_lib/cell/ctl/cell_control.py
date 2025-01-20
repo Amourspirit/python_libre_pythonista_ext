@@ -15,7 +15,7 @@ from ooo.dyn.drawing.text_vertical_adjust import TextVerticalAdjust
 from ooodev.calc.controls.sheet_control_base import SheetControlBase
 from ooodev.calc.partial.calc_sheet_prop_partial import CalcSheetPropPartial
 from ooodev.events.args.cancel_event_args import CancelEventArgs
-from ooodev.exceptions import ex as mEx
+from ooodev.exceptions import ex as mEx  # noqa: N812
 from ooodev.loader import Lo
 from ooodev.utils.helper.dot_dict import DotDict
 from .ctl_namer import CtlNamer
@@ -40,13 +40,13 @@ class CellControl(SheetControlBase):
         self._cfg = Config()
         self.__log = LogInst()
         with self.__log.indent(True):
-            self.__log.debug(f"CellControl: __init__(): Entered")
+            self.__log.debug("CellControl: __init__(): Entered")
 
             self._form_name = f"Form_{self._cfg.general_code_name}"
             if not self.calc_obj.has_custom_property(self._cfg.cell_cp_codename):
                 raise CustomPropertyMissingError(f"Custom Property not found: {self._cfg.cell_cp_codename}")
             self.namer = CtlNamer(self.calc_obj)
-            self.__log.debug(f"CellControl: __init__(): Exit")
+            self.__log.debug("CellControl: __init__(): Exit")
 
     def _init_calc_sheet_prop(self) -> None:
         CalcSheetPropPartial.__init__(self, self.calc_obj.calc_sheet)
@@ -70,7 +70,7 @@ class CellControl(SheetControlBase):
     @override
     def _find_current_control(self) -> Any:
         with self.__log.indent(True):
-            self.__log.debug(f"CellControl: _find_current_control(): Entered")
+            self.__log.debug("CellControl: _find_current_control(): Entered")
             # pylint: disable=import-outside-toplevel
             cargs = CancelEventArgs(source=self)
             cargs.event_data = DotDict(
@@ -90,14 +90,14 @@ class CellControl(SheetControlBase):
 
             if shape is None:
                 self.__log.debug(
-                    f"CellControl - _find_current_control(): Shape not found: {self.namer.ctl_shape_name}"
+                    "CellControl - _find_current_control(): Shape not found: %s", self.namer.ctl_shape_name
                 )
                 return None
 
             x_shape = Lo.qi(XControlShape, shape.component)
             if x_shape is None:
                 self.__log.debug(
-                    f"CellControl - _find_current_control(): XControlShape not found: {self.namer.ctl_shape_name}"
+                    "CellControl - _find_current_control(): XControlShape not found: %s", self.namer.ctl_shape_name
                 )
                 return None
 
@@ -110,12 +110,13 @@ class CellControl(SheetControlBase):
             try:
                 factory_ctl = factory.get_control_from_model(ctl)
                 self.__log.debug(
-                    f"CellControl - _find_current_control(): Found Control from factory: {self.namer.ctl_name}"
+                    "CellControl - _find_current_control(): Found Control from factory: %s", self.namer.ctl_name
                 )
                 return factory_ctl
             except NoSuchElementException:
                 self.__log.warning(
-                    f"CellControl - _find_current_control() NoSuchElementException error from FormControlFactory Control not found: {self.namer.ctl_name}"
+                    "CellControl - _find_current_control() NoSuchElementException error from FormControlFactory Control not found: %s",
+                    self.namer.ctl_name,
                 )
                 return None
 

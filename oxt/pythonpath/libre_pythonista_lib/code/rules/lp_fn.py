@@ -33,11 +33,11 @@ class LpFn:
             return False
         log = LogInst()
         with log.indent(True):
-            log.debug(f"LpFn - get_is_match() Entered.")
+            log.debug("LpFn - get_is_match() Entered.")
 
             last_lp = self.code.rfind("lp(")
             if last_lp < 0:
-                log.debug(f"LpFn - get_is_match() No lp() found: {last_lp}")
+                log.debug("LpFn - get_is_match() No lp() found: %s", last_lp)
                 return False
 
             # get the substring from the last_lp index.
@@ -48,7 +48,7 @@ class LpFn:
                 return False
 
             if next_bracket_index != len(s) - 1:
-                log.debug(f"LpFn - get_is_match() Last bracket is not the end of the string: {next_bracket_index}")
+                log.debug("LpFn - get_is_match() Last bracket is not the end of the string: %s", next_bracket_index)
                 return False
 
             result = None
@@ -57,13 +57,13 @@ class LpFn:
                 if "lp_mod" in self.mod.__dict__:
                     log.debug("LpFn - get_is_match() lp_mod is in module")
                     result = cast(DotDict, self.mod.lp_mod.LAST_LP_RESULT)  # type: ignore
-                    log.debug(f"LpFn - get_is_match() lp_mod.LAST_LP_RESULT {result}")
-                    log.debug(f"LpFnObj - get_is_match() has headers: {result.headers}")
+                    log.debug("LpFn - get_is_match() lp_mod.LAST_LP_RESULT %s", result)
+                    log.debug("LpFnObj - get_is_match() has headers: %s", result.headers)
                 else:
                     log.debug("LpFn - get_is_match() lp_mod is NOT in module")
                 self._result = result
             except Exception as e:
-                log.error(f"LpFn - get_is_match() Exception: {e}", exc_info=True)
+                log.error("LpFn - get_is_match() Exception: %s", e, exc_info=True)
             return self._result is not None
 
     def get_value(self) -> DotDict:

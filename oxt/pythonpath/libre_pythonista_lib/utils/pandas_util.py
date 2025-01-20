@@ -121,10 +121,7 @@ class PandasUtil:
             if has_headers:
                 headers[0].insert(0, "")
 
-        if has_headers:
-            result = headers + list_values
-        else:
-            result = list_values
+        result = headers + list_values if has_headers else list_values
         return result
 
     @staticmethod
@@ -264,7 +261,7 @@ class PandasUtil:
         return round(libreoffice_number)
 
     @staticmethod
-    def pandas_series_to_lo_calc(series: pd.Series):
+    def pandas_series_to_lo_calc(series: pd.Series) -> pd.Series:
         """
         Converts a Pandas Series of Timestamps to LibreOffice Calc date values.
 
@@ -307,18 +304,14 @@ class PandasUtil:
         # if there are headers then the columns are accessed via df[str]
         for col in columns:
             if isinstance(col, int):
-                if has_headers:
-                    col_name = str(df.columns[col])
-                else:
-                    col_name = col
-                    # df.iloc[:, col] = df.iloc[:, col].apply(cls.lo_date_to_pandas)
+                col_name = str(df.columns[col]) if has_headers else col
+            # df.iloc[:, col] = df.iloc[:, col].apply(cls.lo_date_to_pandas)
             else:
                 if not has_headers:
                     raise ValueError("Column name must be a string if DataFrame has no headers.")
                 col_name = col
-            if col_name in df.columns:
-                if not cls.pandas_is_date_col(df, col_name):
-                    df[col_name] = df[col_name].apply(cls.lo_date_to_pandas)
+            if col_name in df.columns and not cls.pandas_is_date_col(df, col_name):
+                df[col_name] = df[col_name].apply(cls.lo_date_to_pandas)
         return df
 
     @classmethod
@@ -336,11 +329,8 @@ class PandasUtil:
         # if there are headers then the columns are accessed via df[str]
         for col in columns:
             if isinstance(col, int):
-                if has_headers:
-                    col_name = str(df.columns[col])
-                else:
-                    col_name = col
-                    # df.iloc[:, col] = df.iloc[:, col].apply(cls.pandas_to_lo_date)
+                col_name = str(df.columns[col]) if has_headers else col
+            # df.iloc[:, col] = df.iloc[:, col].apply(cls.pandas_to_lo_date)
             else:
                 if not has_headers:
                     raise ValueError("Column name must be a string if DataFrame has no headers.")
