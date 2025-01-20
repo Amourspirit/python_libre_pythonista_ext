@@ -1,6 +1,6 @@
+# region imports
 from __future__ import annotations
-from typing import Any, cast, Tuple, TYPE_CHECKING
-import re
+from typing import Any, cast, TYPE_CHECKING
 import uno
 
 from ooodev.loader import Lo
@@ -8,7 +8,15 @@ from ooodev.calc import CalcDoc, CalcSheet
 from ooodev.utils.helper.dot_dict import DotDict
 from ooodev.utils.data_type.cell_obj import CellObj
 from ooodev.utils.data_type.range_obj import RangeObj
-from ooodev.exceptions import ex as mEx
+from ooodev.exceptions import ex as mEx  # noqa: N812
+
+# region BreakManager
+# from ___lo_pip___.debug.break_mgr import BreakMgr
+
+# break_mgr = BreakMgr()
+# break_mgr.add_breakpoint("pythonpath.libre_pythonista_lib.code.mod_helper.lp_mod.lp")
+# endregion BreakManager
+
 from ...cell.cell_mgr import CellMgr
 from ...data.pandas_data_obj import PandasDataObj
 from .lp_rules.lp_rules_engine import LpRulesEngine
@@ -27,6 +35,8 @@ else:
     from libre_pythonista_lib.log.log_inst import LogInst
 
     SheetCell = Any
+
+# endregion imports
 
 _RULES_ENGINE = LpRulesEngine()
 
@@ -242,6 +252,7 @@ def _handle_sheet_named_range_only(addr: str, log: LogInst, **kwargs) -> Any:  #
 
 def lp(addr: str, **kwargs: Any) -> Any:  # noqa: ANN401
     global CURRENT_CELL_OBJ, _RULES_ENGINE
+    # break_mgr.check_breakpoint("pythonpath.libre_pythonista_lib.code.mod_helper.lp_mod.lp")
     log = LogInst()
     log.debug("lp - Current Cell Obj Global: %s", CURRENT_CELL_OBJ)
     log.debug("lp - Input Address: %s", addr)
