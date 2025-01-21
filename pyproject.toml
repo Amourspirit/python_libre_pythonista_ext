@@ -1,13 +1,13 @@
 [project]
 name = "LibrePythonista"
-version = "0.7.4"
+version = "0.7.5"
 description = "Python For LibreOffice Calc"
 readme = "README.md"
 requires-python = ">=3.8"
 license = {text="OSI Approved :: Apache Software License"}
 keywords = ["pip", "libreoffice","uno", "pyuno"]
 dependencies = [
-    "ooo-dev-tools>=0.51.0",
+    "ooo-dev-tools>=0.51.1",
     "oooenv>=0.2.4",
     "pandas>=2",
     "sortedcontainers>=2.4.0",
@@ -112,7 +112,7 @@ lp_experimental_editor=false
 # https://tinyurl.com/ymeh4c9j#tooloxtrequirements
 # https://python-poetry.org/docs/dependency-specification/
 odfpy = ">=1.4"
-ooo-dev-tools = ">=0.51.0"
+ooo-dev-tools = ">=0.51.1"
 seaborn = ">=0.13"
 sortedcontainers = ">=2.4.0"
 debugpy = ">=1.8"
