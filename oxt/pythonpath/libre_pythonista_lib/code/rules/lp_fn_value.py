@@ -30,7 +30,7 @@ class LpFnValue:
         self.code = code
 
     def get_is_match(self) -> bool:
-        """Check if rules is a match. For this rule the return result is always True."""
+        """Check if rules is a match."""
         with self._log.indent(True):
             self._result = None
             if self.data is None:
