@@ -411,7 +411,7 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
         self._ctl_btn_ok = CtlButton.create(
             self._dialog,
             x=sz.X - sz.Width - self._margin,
-            y=sz.Y,
+            y=btn_y,
             width=self._btn_width,
             height=self._btn_height,
             Label=self._rr.resolve_string("dlg01"),
