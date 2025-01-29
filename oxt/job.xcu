@@ -74,6 +74,16 @@
         <value>___lo_identifier___.DebugLpJob</value>
       </prop>
     </node>
+    <node oor:name="VizTracerJob" oor:op="fuse">
+      <prop oor:name="Service">
+        <value>___lo_identifier___.VizTracerJob</value>
+      </prop>
+    </node>
+    <node oor:name="VizTracerUnloadJob" oor:op="fuse">
+      <prop oor:name="Service">
+        <value>___lo_identifier___.VizTracerUnloadJob</value>
+      </prop>
+    </node>
   </node>
   <node oor:name="Events">
     <node oor:name="___startup_event___" oor:op="fuse">
@@ -89,6 +99,7 @@
     <node oor:name="OnUnload" oor:op="fuse">
       <node oor:name="JobList">
         <node oor:name="UnLoadingJob" oor:op="fuse" />
+        <node oor:name="VizTracerUnloadJob" oor:op="fuse" />
       </node>
     </node>
     <node oor:name="OnPrepareUnload" oor:op="fuse">
@@ -99,6 +110,7 @@
     <node oor:name="OnViewCreated" oor:op="fuse">
       <node oor:name="JobList">
         <node oor:name="DebugJob" oor:op="fuse" />
+        <node oor:name="VizTracerJob" oor:op="fuse" />
         <node oor:name="DebugLpJob" oor:op="fuse" />
         <node oor:name="ViewJob" oor:op="fuse" />
       </node>

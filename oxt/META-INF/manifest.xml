@@ -73,6 +73,12 @@
         manifest:full-path="ext_code/jobs/debug_lp_job.py" />
     <manifest:file-entry
         manifest:media-type="application/vnd.sun.star.uno-component;type=Python"
+        manifest:full-path="ext_code/jobs/viz_tracer_job.py" />
+    <manifest:file-entry
+        manifest:media-type="application/vnd.sun.star.uno-component;type=Python"
+        manifest:full-path="ext_code/jobs/viz_tracer_unload_job.py" />
+    <manifest:file-entry
+        manifest:media-type="application/vnd.sun.star.uno-component;type=Python"
         manifest:full-path="ext_code/jobs/async_jobs/html_py_editor.py" />
     <manifest:file-entry manifest:media-type="application/vnd.sun.star.framework-script"
         manifest:full-path="python/scripts" />
