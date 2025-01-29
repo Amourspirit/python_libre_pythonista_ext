@@ -51,8 +51,8 @@ else:
 
         # Initialize the breakpoint manager
         break_mgr = BreakMgr()
-        # break_mgr.add_breakpoint("load_finished_job_init")
-        # break_mgr.add_breakpoint("load_finished_job_init_state")
+        break_mgr.add_breakpoint("load_finished_job_init")
+        break_mgr.add_breakpoint("load_finished_job_init_state")
 # endregion imports
 
 
@@ -112,9 +112,7 @@ class LoadFinishedJob(unohelper.Base, XJob):
                         doc_args = self.document.getArgs()
                         args_dic = Props.props_to_dot_dict(doc_args)
                         if hasattr(args_dic, "MacroExecutionMode"):
-                            self._log.debug(
-                                "MacroExecutionMode: %s", args_dic.MacroExecutionMode
-                            )
+                            self._log.debug("MacroExecutionMode: %s", args_dic.MacroExecutionMode)
                             macros_enabled = args_dic.MacroExecutionMode == 4
                         else:
                             macros_enabled = False
@@ -127,16 +125,12 @@ class LoadFinishedJob(unohelper.Base, XJob):
                         doc = CalcDoc.get_doc_from_component(self.document)
                         # if os.getenv("LIBREOFFICE_DEBUG_ATTACHED"):
                         #     breakpoint()
-                        t = threading.Thread(
-                            target=_init_with_state, args=(doc, self._log), daemon=True
-                        )
+                        t = threading.Thread(target=_init_with_state, args=(doc, self._log), daemon=True)
                         t.start()
                         # t.join() # DO NOT join. Can cause LibreOffice to hang.
 
                     except Exception:
-                        self._log.error(
-                            "Error setting components on view.", exc_info=True
-                        )
+                        self._log.error("Error setting components on view.", exc_info=True)
                 else:
                     self._log.debug("Conditions not met to register dispatch manager")
             else:
@@ -187,6 +181,7 @@ def _init_with_state(doc: CalcDoc, log: OxtLogger):
         doc_mgr.calc_state_mgr.is_oxt_init = True
         doc_mgr.is_job_loading_finished = True
         doc_mgr.ensure_events()  # must be called after is_oxt_init is set to True
+        # doc.component.calculateAll()
 
     except Exception:
         log.error("Error _init_with_state()", exc_info=True)

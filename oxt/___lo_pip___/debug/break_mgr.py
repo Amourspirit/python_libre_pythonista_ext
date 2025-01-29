@@ -71,16 +71,16 @@ else:
 
 
 class BreakMgr:
-    """Breakpoint Manager"""
+    """Breakpoint Manager. Singleton Class."""
 
     _instance = None
 
-    def __new__(cls, *args, **kwargs):
+    def __new__(cls, *args, **kwargs):  # noqa: ANN002, ANN003, ANN204
         if not cls._instance:
             cls._instance = super(BreakMgr, cls).__new__(cls, *args, **kwargs)
         return cls._instance
 
-    def __init__(self):
+    def __init__(self) -> None:
         if hasattr(self, "_is_init"):
             if debugpy is not None:
                 self._debug_attached = os.getenv("LIBREOFFICE_DEBUG_ATTACHED") == "1"
@@ -93,7 +93,7 @@ class BreakMgr:
             self._debug_attached = os.getenv("LIBREOFFICE_DEBUG_ATTACHED") == "1"
         self._is_init = True
 
-    def add_breakpoint(self, label: str):
+    def add_breakpoint(self, label: str) -> None:
         """
         Adds a breakpoint with the given label to the set of breakpoints.
 
@@ -102,7 +102,7 @@ class BreakMgr:
         """
         self.breakpoints.add(label)
 
-    def remove_breakpoint(self, label: str):
+    def remove_breakpoint(self, label: str) -> None:
         """
         Removes a breakpoint with the given label.
 
@@ -123,14 +123,14 @@ class BreakMgr:
         """
         return label in self.breakpoints
 
-    def clear_breakpoints(self):
+    def clear_breakpoints(self) -> None:
         """
         Clears all breakpoints.
         This method removes all breakpoints from the internal breakpoint list.
         """
         self.breakpoints.clear()
 
-    def check_breakpoint(self, label: str):
+    def check_breakpoint(self, label: str) -> None:
         """
         Checks if a breakpoint is set at the given label and triggers the debugger if it is.
 
@@ -141,12 +141,12 @@ class BreakMgr:
             None
         """
         if self._debug_attached and label in self.breakpoints:
-            print(f"Breakpoint at label: {label}")
+            # print(f"Breakpoint at label: {label}")
             # breakpoint()
             debugpy.breakpoint()  # type: ignore # noqa: F821
 
     @property
-    def debugger_attached(self):
+    def debugger_attached(self) -> bool:
         """
         Check if the debugger is attached.
         Returns:
@@ -156,7 +156,7 @@ class BreakMgr:
         return self._debug_attached
 
 
-def check_breakpoint(label: str):
+def check_breakpoint(label: str):  # noqa: ANN201
     """
     A decorator to check for breakpoints before executing the decorated function.
 
@@ -172,13 +172,13 @@ def check_breakpoint(label: str):
     If no debugger is attached, it simply executes the original function.
     """
 
-    def decorator(func):
+    def decorator(func):  # noqa: ANN001, ANN202
         @wraps(func)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args, **kwargs):  # noqa: ANN002, ANN003, ANN202
             break_mgr = BreakMgr()
             if not break_mgr.debugger_attached:
                 return func(*args, **kwargs)
-            print(f"Checking breakpoint at label: {label}")
+            # print(f"Checking breakpoint at label: {label}")
             break_mgr.check_breakpoint(label)
             return func(*args, **kwargs)
 

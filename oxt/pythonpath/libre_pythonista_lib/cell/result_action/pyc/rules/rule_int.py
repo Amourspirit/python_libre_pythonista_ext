@@ -12,7 +12,24 @@ class RuleInt(RuleBase):
         result = self.data.get("data", None)
         if result is None:
             return False
-        return isinstance(result, int)
+        if isinstance(result, int):
+            return True
+        if not isinstance(result, str):
+            return False
+        if self._get_is_value_int(result):
+            self.data["data"] = int(result)
+            return True
+        return False
+
+    def _get_is_value_int(self, value: str) -> bool:
+        try:
+            if "." in value:
+                # don't allow floats
+                return False
+            int(value)
+            return True
+        except ValueError:
+            return False
 
     def action(self) -> Any:  # noqa: ANN401
         self._update_properties(

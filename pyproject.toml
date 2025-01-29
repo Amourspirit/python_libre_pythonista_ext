@@ -1,6 +1,6 @@
 [project]
 name = "LibrePythonista"
-version = "0.7.5"
+version = "0.8.0"
 description = "Python For LibreOffice Calc"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -232,6 +232,7 @@ dev = [
     "oooenv>=0.2.4",
     "matplotlib>=3.7.5",
     "pytest-mock>=3.14.0",
+    "viztracer>=0.16.3",
 ]
 
 [tool.hatch.build]

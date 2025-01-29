@@ -48,7 +48,7 @@ LibrePythonista is a powerful tool for data analysis and visualization in LibreO
 <a href="https://youtu.be/AQLuSNHhUY4?si=VMTHh-0UNGFCLnQd" target="_blank">
  <img src="https://i.ytimg.com/vi/AQLuSNHhUY4/hq720.jpg" alt="Watch the Introduction Video" width="600" />
 </a>
-
+ 
 ## Start using Python
 
 To begin using LibrePythonista, select a cell and on the **LibrePy** menu, **Insert Python**. This tells Calc that you want to write a Python formula in the selected cell.
@@ -108,6 +108,18 @@ LibrePythonista allows Python code to be run at the sheet level. This means that
 Usually, when a sheet is opened, LibreOffice will ask the user if they want to enable macros. If the user does not enable macros, then Python code will not run. If the user enables macros, then Python code will run.
 
 The recommended security setting for LibrePythonista is `Medium`. This setting will allow Python code to run when macros are enabled. To set the security level, go to `Tools -> Options -> LibreOffice -> Security -> Macro Security` and set the security level to `Medium`.
+
+## Installation Troubleshoot
+
+If you find an installation issue, please refer here: (For Linux - tested on linux mint 22)
+
+- If you get following error message in dialog box when installing the extension:
+
+  "Failed to register package <some_package>"
+
+  Try to install _libreoffice-script-provider-python_ package from package manager.
+
+- If you have a fresh copy of linux or _python3-pip_ package is not install or simply "pip3" command is not working on terminal. Please install _python3-pip_ otherwise extension will not start.
 
 ## Uninstall
 

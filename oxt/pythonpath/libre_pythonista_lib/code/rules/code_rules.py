@@ -127,6 +127,13 @@ class CodeRules:
     def _register_known_rules(self) -> None:
         # re.compile(r"^(\w+)\s*=")
         self._reg_rule(rule=CodeEmpty())
+        # matching numbers should come before matching string to avoid false positives.
+        self._reg_rule(
+            rule=RegexLastLine(
+                regex=re.compile(r"^(-?\d+(\.\d+)?)$"),
+                use_match_value=True,
+            )
+        )  # int or float
         self._reg_rule(rule=RegexLastLine())
         self._reg_rule(rule=RegexLastLine(re.compile(r"^(\w+)$")))
         self._reg_rule(rule=LpFnPlot())

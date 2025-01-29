@@ -59,6 +59,8 @@ def get_module_init_code() -> str:
         "from ooodev.utils.data_type.cell_obj import CellObj",
         "from ooodev.utils.data_type.range_obj import RangeObj",
         "from ___lo_pip___.oxt_logger import OxtLogger",
+        "from ___lo_pip___.debug.break_mgr import BreakMgr",
+        "from ___lo_pip___.debug.break_mgr import check_breakpoint",
         "from libre_pythonista_lib.log.log_inst import LogInst",
         "from libre_pythonista_lib.code.mod_helper import lp_mod",
         "from libre_pythonista_lib.code.mod_helper.lp_mod import lp",
@@ -74,7 +76,7 @@ def get_module_init_code() -> str:
 
 
 class PyModule:
-    def __init__(self):
+    def __init__(self) -> None:
         self._log = OxtLogger(log_name=self.__class__.__name__)
 
         self.mod = types.ModuleType("PyMod")
@@ -105,7 +107,7 @@ class PyModule:
         # setattr(self.mod, "XSCRIPTCONTEXT", Lo.XSCRIPTCONTEXT)
         # setattr(self.mod, "CalcDoc", CalcDoc)
 
-    def reset_module(self):
+    def reset_module(self) -> None:
         with self._log.indent(True):
             self._log.debug("reset_module()")
         self.mod.__dict__.clear()
@@ -177,7 +179,7 @@ class PyModule:
                     raise
         return result
 
-    def set_global_var(self, var_name: str, value: Any) -> None:
+    def set_global_var(self, var_name: str, value: Any) -> None:  # noqa: ANN401
         """
         Set a global variable in the module.
 
@@ -192,7 +194,7 @@ class PyModule:
             self.mod.__dict__["lp_mod"].CURRENT_CELL_OBJ = value
         self.mod.__dict__[var_name] = value
 
-    def reset_to_dict(self, mod_dict: dict, code: str = "") -> Any:
+    def reset_to_dict(self, mod_dict: dict, code: str = "") -> Any:  # noqa: ANN401
         """
         Reset the module to the given dictionary and returns the last variable in the module if code is present.
 

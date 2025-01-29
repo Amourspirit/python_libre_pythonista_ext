@@ -288,9 +288,7 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
         # self._frame = frame
 
         # -- or --
-        frame = Lo.create_instance_mcf(
-            XFrame, "com.sun.star.frame.Frame", raise_err=True
-        )
+        frame = Lo.create_instance_mcf(XFrame, "com.sun.star.frame.Frame", raise_err=True)
         frame.setName("DialogMb_Frame")
         frame.initialize(self._dialog)
         self._frame = frame
@@ -375,9 +373,7 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
             try:
                 menu_provider = DialogMbMenu(self)
 
-                mb = Lo.create_instance_mcf(
-                    XMenuBar, "com.sun.star.awt.MenuBar", raise_err=True
-                )
+                mb = Lo.create_instance_mcf(XMenuBar, "com.sun.star.awt.MenuBar", raise_err=True)
                 mb.insertItem(1, self._rr.resolve_string("mnuCode"), 0, 0)
                 mb.insertItem(2, self._rr.resolve_string("mnuInsert"), 0, 1)
                 # mb.insertItem(2, "~Code", MenuItemStyle.AUTOCHECK, 1)
@@ -415,7 +411,7 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
         self._ctl_btn_ok = CtlButton.create(
             self._dialog,
             x=sz.X - sz.Width - self._margin,
-            y=sz.Y,
+            y=btn_y,
             width=self._btn_width,
             height=self._btn_height,
             Label=self._rr.resolve_string("dlg01"),
@@ -428,9 +424,7 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
     def _init_code(self) -> None:
         txt_y = DialogMb.HEADER + self._margin
 
-        txt_height = (
-            DialogMb.HEIGHT - DialogMb.FOOTER - (self._margin * 2) - txt_y
-        )  # - DialogMb.HEADER
+        txt_height = DialogMb.HEIGHT - DialogMb.FOOTER - (self._margin * 2) - txt_y  # - DialogMb.HEADER
         self._code = CtlTextEdit.create(
             self._dialog,
             x=self._margin,
@@ -487,29 +481,25 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
             btn_x, btn_y, DialogMb.BUTTON_WIDTH, DialogMb.BUTTON_HEIGHT, PosSize.POSSIZE
         )
 
+        btn_cancel_sz = self._ctl_btn_cancel.view.getPosSize()
+
         x = btn_x - DialogMb.BUTTON_WIDTH - self._margin
         self._ctl_btn_ok.view.setPosSize(
-            x, btn_y, DialogMb.BUTTON_WIDTH, DialogMb.BUTTON_HEIGHT, PosSize.POSSIZE
+            x, btn_cancel_sz.Y, DialogMb.BUTTON_WIDTH, DialogMb.BUTTON_HEIGHT, PosSize.POSSIZE
         )
         # ok button is sometime buggy on resize.
-        self._ctl_btn_ok.view.setVisible(True)
+        # self._ctl_btn_ok.view.setVisible(True)
 
     def resize_code(self, sz: Rectangle) -> None:
         txt_sz = self._code.view.getPosSize()
         width = sz.Width - (self._margin * 2)
-        txt_height = (
-            sz.Height - DialogMb.FOOTER - (self._margin * 2) - txt_sz.Y
-        )  # - DialogMb.HEADER
-        self._code.view.setPosSize(
-            txt_sz.X, txt_sz.Y, width, txt_height, PosSize.POSSIZE
-        )
+        txt_height = sz.Height - DialogMb.FOOTER - (self._margin * 2) - txt_sz.Y  # - DialogMb.HEADER
+        self._code.view.setPosSize(txt_sz.X, txt_sz.Y, width, txt_height, PosSize.POSSIZE)
 
     def resize_info_lbl(self, sz: Rectangle) -> None:
         btn_sz = self._ctl_btn_cancel.view.getPosSize()
         lbl_width = btn_sz.X - (self._margin * 2)
-        self._info_lbl_item.view.setPosSize(
-            self._margin, btn_sz.Y, lbl_width, DialogMb.BUTTON_HEIGHT, PosSize.POSSIZE
-        )
+        self._info_lbl_item.view.setPosSize(self._margin, btn_sz.Y, lbl_width, DialogMb.BUTTON_HEIGHT, PosSize.POSSIZE)
 
     def resize(self) -> None:
         sz = self._dialog.getPosSize()
@@ -524,16 +514,12 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
     # endregion resize
 
     # region button handlers
-    def on_btn_ok_click(
-        self, source: Any, event: EventArgs, control_src: CtlButton
-    ) -> None:
+    def on_btn_ok_click(self, source: Any, event: EventArgs, control_src: CtlButton) -> None:  # noqa: ANN401
         self._update_config()
         self._dialog_result = MessageBoxResultsEnum.OK
         self._is_shown = False
 
-    def on_btn_cancel_click(
-        self, source: Any, event: EventArgs, control_src: CtlButton
-    ) -> None:
+    def on_btn_cancel_click(self, source: Any, event: EventArgs, control_src: CtlButton) -> None:  # noqa: ANN401
         self._update_config()
         self._dialog_result = MessageBoxResultsEnum.CANCEL
         self._is_shown = False
@@ -542,9 +528,7 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
 
     # region text_changed
 
-    def on_text_changed(
-        self, source: Any, event: EventArgs, control_src: CtlTextEdit
-    ) -> None:
+    def on_text_changed(self, source: Any, event: EventArgs, control_src: CtlTextEdit) -> None:  # noqa: ANN401
         """Handle text changed event"""
         self.end = len(control_src.text)
         return
@@ -556,9 +540,7 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
 
     # region key handlers
 
-    def on_code_key_pressed(
-        self, source: Any, event: EventArgs, control_src: CtlTextEdit
-    ) -> None:
+    def on_code_key_pressed(self, source: Any, event: EventArgs, control_src: CtlTextEdit) -> None:  # noqa: ANN401
         pass
         # key_event = cast("KeyEvent", event.event_data)
         # if not key_event.Modifiers:
@@ -567,17 +549,13 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
     # endregion key handlers
 
     # region focus handlers
-    def on_code_focus_gained(
-        self, source: Any, event: EventArgs, control_src: CtlTextEdit
-    ) -> None:
+    def on_code_focus_gained(self, source: Any, event: EventArgs, control_src: CtlTextEdit) -> None:
         self.code_focused = True
         self.tk.addKeyHandler(self.keyhandler)
         with self._log.indent(True):
             self._log.debug("Focus Gained")
 
-    def on_code_focus_lost(
-        self, source: Any, event: EventArgs, control_src: CtlTextEdit
-    ) -> None:
+    def on_code_focus_lost(self, source: Any, event: EventArgs, control_src: CtlTextEdit) -> None:
         self.code_focused = False
         self.tk.removeKeyHandler(self.keyhandler)
         with self._log.indent(True):
@@ -618,14 +596,12 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
                 return
         return
 
-    def _on_menu_range_select_result(self, src: Any, event: EventArgs) -> None:
+    def _on_menu_range_select_result(self, src: Any, event: EventArgs) -> None:  # noqa: ANN401
         with self._log.indent(True):
             log = self._log
             try:
                 glbs = GblEvents()
-                glbs.unsubscribe_event(
-                    "GlobalCalcRangeSelector", self._fn_on_menu_range_select_result
-                )
+                glbs.unsubscribe_event("GlobalCalcRangeSelector", self._fn_on_menu_range_select_result)
             except Exception:
                 log.error(
                     "_on_menu_range_select_result() unsubscribing from GlobalCalcRangeSelector",
@@ -644,9 +620,7 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
                 try:
                     range_obj = cast(RangeObj, event.event_data.rng_obj.copy())
 
-                    self._log.debug(
-                        f"_on_menu_range_select_result() Range Selection: {range_obj.to_string(True)}"
-                    )
+                    self._log.debug(f"_on_menu_range_select_result() Range Selection: {range_obj.to_string(True)}")
                     calc_doc = cast(CalcDoc, self._doc)
 
                     if range_obj.sheet_idx == self._calc_cell.cell_obj.sheet_idx:
@@ -661,9 +635,7 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
                                 (sel.Min, sel.Max),
                             )
                         else:
-                            self._write(
-                                f"{range_obj.to_string(True)}", (sel.Min, sel.Max)
-                            )
+                            self._write(f"{range_obj.to_string(True)}", (sel.Min, sel.Max))
                 except Exception:
                     log.exception(f"Error writing range selection using default.")
                     self._write(str(event.event_data.rng_obj), (sel.Min, sel.Max))
@@ -679,22 +651,18 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
                     self._doc.sheets.set_active_sheet(self._calc_cell.calc_sheet)
                     self._dialog.setFocus()
                 except Exception:
-                    log.exception(
-                        "_on_menu_range_select_result() Error setting active sheet and focus. Not critical."
-                    )
+                    log.exception("_on_menu_range_select_result() Error setting active sheet and focus. Not critical.")
             except Exception:
                 log.error("_on_menu_range_select_result", exc_info=True)
 
-    def _on_menu_insert_lp_fn(self, src: Any, event: EventArgs) -> None:
+    def _on_menu_insert_lp_fn(self, src: Any, event: EventArgs) -> None:  # noqa: ANN401
         from ...data.auto_fn import AutoFn
 
         with self._log.indent(True):
             log = self._log
             try:
                 glbs = GblEvents()
-                glbs.unsubscribe_event(
-                    "GlobalCalcRangeSelector", self._fn_on_menu_insert_lp_fn
-                )
+                glbs.unsubscribe_event("GlobalCalcRangeSelector", self._fn_on_menu_insert_lp_fn)
             except Exception:
                 log.error(
                     "_on_menu_insert_lp_fn() unsubscribing from GlobalCalcRangeSelector",
@@ -725,9 +693,7 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
                 self._write(fn_str, (sel.Min, sel.Max))
                 try:
                     if self._log.is_debug:
-                        self._log.debug(
-                            f"_on_menu_insert_lp_fn() Range Selection: {ro.to_string(True)}"
-                        )
+                        self._log.debug(f"_on_menu_insert_lp_fn() Range Selection: {ro.to_string(True)}")
                         self._log.debug(
                             f"_on_menu_insert_lp_fn() Setting Sheet Active: {self._calc_cell.calc_sheet.sheet_name}"
                         )
@@ -735,9 +701,7 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
                     self._doc.sheets.set_active_sheet(self._calc_cell.calc_sheet)
                     self._dialog.setFocus()
                 except Exception:
-                    log.exception(
-                        "_on_menu_insert_lp_fn() Error setting active sheet and focus. Not critical."
-                    )
+                    log.exception("_on_menu_insert_lp_fn() Error setting active sheet and focus. Not critical.")
             except Exception:
                 log.error("_on_menu_insert_lp_fn", exc_info=True)
 
@@ -780,9 +744,7 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
             try:
                 _ = TopListenerRng(doc)
                 glbs = GblEvents()
-                glbs.subscribe_event(
-                    "GlobalCalcRangeSelector", self._fn_on_menu_range_select_result
-                )
+                glbs.subscribe_event("GlobalCalcRangeSelector", self._fn_on_menu_range_select_result)
                 self._log.debug("_write_range_sel_popup() Hide Dialog")
                 self._dialog.toBack()
                 doc.activate()
@@ -804,16 +766,12 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
             try:
                 _ = TopListenerRng(doc)
                 glbs = GblEvents()
-                glbs.subscribe_event(
-                    "GlobalCalcRangeSelector", self._fn_on_menu_insert_lp_fn
-                )
+                glbs.subscribe_event("GlobalCalcRangeSelector", self._fn_on_menu_insert_lp_fn)
                 self._log.debug("_write_auto_fn_sel() Hide Dialog")
                 self._dialog.toBack()
                 doc.activate()
             except Exception:
-                self._log.error(
-                    "_write_auto_fn_sel() Error getting range selection", exc_info=True
-                )
+                self._log.error("_write_auto_fn_sel() Error getting range selection", exc_info=True)
             finally:
                 # For some reason this need to be here.
                 # If not self._dialog.setFocus() the the top window listener will not fire right away.
@@ -822,7 +780,7 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
     def _write_line(self, text: str) -> None:
         self._code.write_line(text)
 
-    def _write(self, data: str, sel: Tuple[int, int] | None = None):
+    def _write(self, data: str, sel: Tuple[int, int] | None = None) -> None:
         """Append data to edit control text"""
         with self._log.indent(True):
             if not sel:
@@ -835,7 +793,7 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
     # endregion Code Edit
 
     # region Window Methods
-    def set_focus(self):
+    def set_focus(self) -> None:
         self._dialog.setFocus()
 
     def _update_config(self) -> None:
@@ -907,7 +865,7 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
         wait_thread.join()
         return self._dialog_result == MessageBoxResultsEnum.OK
 
-    def _wait_for_hide(self):
+    def _wait_for_hide(self) -> None:
         # Loop until the dialog is no longer visible
         while self._is_shown == True:
             time.sleep(0.1)  # Sleep to prevent high CPU usage
@@ -915,13 +873,13 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
         # Perform any actions needed after the dialog is closed
         self._on_dialog_hidden()
 
-    def _on_dialog_hidden(self):
+    def _on_dialog_hidden(self) -> None:
         # Placeholder for any cleanup or actions needed after dialog closure
         self._dialog.setVisible(False)
         with self._log.indent(True):
             self._log.debug("Dialog Hidden")
 
-    def dispose(self):
+    def dispose(self) -> None:
         with self._log.indent(True):
             self._log.debug("Dispose Called")
             try:
@@ -935,14 +893,12 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
 
     # region Range Selection
 
-    def _on_range_select_result(self, src: Any, event: EventArgs) -> None:
+    def _on_range_select_result(self, src: Any, event: EventArgs) -> None:  # noqa: ANN401
         with self._log.indent(True):
             log = self._log
             try:
                 glbs = GblEvents()
-                glbs.unsubscribe_event(
-                    "GlobalCalcRangeSelector", self._fn_on_menu_range_select_result
-                )
+                glbs.unsubscribe_event("GlobalCalcRangeSelector", self._fn_on_menu_range_select_result)
             except Exception:
                 log.error(
                     "_on_menu_range_select_result() unsubscribing from GlobalCalcRangeSelector",
@@ -967,7 +923,7 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
 
     # region Static Methods
     @classmethod
-    def reset_inst(cls, inst_id: str = ""):
+    def reset_inst(cls, inst_id: str = "") -> None:
         """Reset instance"""
         if not inst_id:
             cls._instances = {}
@@ -1016,7 +972,7 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
         return self._doc
 
 
-def create_window_name(win_name: str):
+def create_window_name(win_name: str) -> str:
     frames = Lo.desktop.get_frames()
     # frames = desktop.getFrames()
 
@@ -1056,7 +1012,5 @@ def on_menu_select(src: Any, event: EventArgs, menu: PopupMenu) -> None:
     print("Menu Selected")
     me = cast("MenuEvent", event.event_data)
     command = menu.get_command(me.MenuId)
-    if command:
-        # check if command is a dispatch command
-        if menu.is_dispatch_cmd(command):
-            menu.execute_cmd(command)
+    if command and menu.is_dispatch_cmd(command):
+        menu.execute_cmd(command)

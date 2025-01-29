@@ -237,15 +237,12 @@ class JsonConfig(metaclass=Singleton):
             self._lp_py_cell_edit_sock_timeout = 10
         # endregion tool.libre_pythonista.config
 
-        try:
-            self._extension_license = cast(str, self._cfg["project"]["license"])
-        except Exception:
-            self._extension_license = ""
+        self._extension_license = self._get_extension_license()
 
         try:
             self._extension_version = cast(str, self._cfg["project"]["version"])
         except Exception:
-            self._extension_license = ""
+            self._extension_version = ""
 
         try:
             self._author_names = self._get_author_names(self._cfg)
@@ -292,14 +289,21 @@ class JsonConfig(metaclass=Singleton):
         self._warnings()
 
     def _get_author_names(self, cfg: Dict[str, Any]) -> List[str]:
-        """Get the author names."""
-        authors = cast(List[str], cfg["tool"]["poetry"]["authors"])
-        # Author elements are in the format of: ":Barry-Thomas-Paul: Moss <4193389+Amourspirit@users.noreply.github.com>"
-        # get the names
-        author_names = []
+        """Returns the authors."""
+        authors = cast(List[Dict[str, str]], cfg["project"]["authors"])
+        results = []
         for author in authors:
-            author_names.append(author.split("<")[0].strip())
-        return author_names
+            if "name" in author:
+                results.append(author["name"])
+        return results
+
+    def _get_extension_license(self) -> str:
+        """Get the extension license."""
+        result = self._cfg["project"]["license"]
+        if isinstance(result, str):
+            return result.replace("License", "").strip()
+        text = cast(str, result["text"])
+        return text.split(":")[-1].replace("License", "").strip()
 
     def update_json_config(self, json_config_path: Path) -> None:
         """Read and updates the config.json file."""
