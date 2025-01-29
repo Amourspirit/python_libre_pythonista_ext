@@ -87,9 +87,7 @@ def on_menu_intercept(
                 if not cell.has_custom_property("libre_pythonista_codename"):
                     if log is not None:
                         with log.indent(True):
-                            log.debug(
-                                f"Cell {cell_obj} does not have libre_pythonista_codename custom property."
-                            )
+                            log.debug(f"Cell {cell_obj} does not have libre_pythonista_codename custom property.")
                     return
 
                 # insert a new menu item.
@@ -102,36 +100,24 @@ def on_menu_intercept(
                     rr = ResResolver()
                     edit_mnu = rr.resolve_string("mnuEditCode")
                     del_mnu = rr.resolve_string("mnuDeletePyCell")
-                    menu_main_sub = ResResolver().resolve_string(
-                        "mnuMainSub"
-                    )  # Pythoninsta
+                    menu_main_sub = ResResolver().resolve_string("mnuMainSub")  # Pythoninsta
                     cps = CellDispatchState(cell=cell)
                     item = None
                     if cps.is_dispatch_enabled(UNO_DISPATCH_CODE_EDIT_MB):
-                        log_debug(
-                            "CellDispatchState.is_dispatch_enabled(UNO_DISPATCH_CODE_EDIT_MB) is True"
-                        )
+                        log_debug("CellDispatchState.is_dispatch_enabled(UNO_DISPATCH_CODE_EDIT_MB) is True")
                         this_cmd = f"{UNO_DISPATCH_CODE_EDIT_MB}?sheet={sheet.name}&cell={cell_obj}&in_thread=0"
-                        log_debug(
-                            f"Adding ActionTriggerItem: Label = {edit_mnu}; Command = {this_cmd}"
-                        )
+                        log_debug(f"Adding ActionTriggerItem: Label = {edit_mnu}; Command = {this_cmd}")
                         items.append(ActionTriggerItem(this_cmd, edit_mnu))  # type: ignore
 
                         this_cmd = f"{UNO_DISPATCH_CODE_DEL}?sheet={sheet.name}&cell={cell_obj}"
-                        log_debug(
-                            f"Adding ActionTriggerItem: Label = {del_mnu}; Command = {this_cmd}"
-                        )
+                        log_debug(f"Adding ActionTriggerItem: Label = {del_mnu}; Command = {this_cmd}")
                         items.append(ActionTriggerItem(this_cmd, del_mnu))  # type: ignore
 
                         # container.insert_by_index(4, ActionTriggerItem(f".uno:libre_pythonista.calc.menu.reset.orig?sheet={sheet.name}&cell={cell_obj}", "Rest to Original"))  # type: ignore
                         items.append(ActionTriggerSep())  # type: ignore
-                        item = ActionTriggerItem(
-                            menu_main_sub, menu_main_sub, sub_menu=items
-                        )
+                        item = ActionTriggerItem(menu_main_sub, menu_main_sub, sub_menu=items)
                     else:
-                        log_debug(
-                            "CellDispatchState.is_dispatch_enabled(UNO_DISPATCH_CODE_EDIT_MB) is False"
-                        )
+                        log_debug("CellDispatchState.is_dispatch_enabled(UNO_DISPATCH_CODE_EDIT_MB) is False")
                     recalc_name = rr.resolve_string("mnuRecalcCell")  # Select Cell
                     items.append(
                         ActionTriggerItem(
@@ -143,9 +129,7 @@ def on_menu_intercept(
                     # is this a DataFrame or similar?
                     dp_cmd = cps.get_rule_dispatch_cmd()
                     log_debug(f"Rule Dispatch Command: {dp_cmd}")
-                    if dp_cmd and cell.get_custom_property(
-                        key_maker.cell_array_ability_key, False
-                    ):
+                    if dp_cmd and cell.get_custom_property(key_maker.cell_array_ability_key, False):
                         log_debug("Cell has array ability.")
                         items.append(ActionTriggerSep())  # type: ignore
                         state = CtlState(cell).get_state()
@@ -181,11 +165,11 @@ def on_menu_intercept(
                 return
 
 
-def _mi_plot_figure(container: Any, fl: Tuple[str, str], event: Any) -> bool:
+def _mi_plot_figure(container: Any, fl: Tuple[str, str], event: Any) -> bool:  # noqa: ANN401
     """
     Menu Item for Plot Figure.
     """
-    if not fl == (".uno:Cut", ".uno:EditQrCode"):
+    if fl != (".uno:Cut", ".uno:EditQrCode"):
         return False
     # get the current selection
     selection = event.event_data.event.selection.get_selection()
@@ -213,9 +197,7 @@ def _mi_plot_figure(container: Any, fl: Tuple[str, str], event: Any) -> bool:
             if not cell.has_custom_property("libre_pythonista_codename"):
                 if log is not None:
                     with log.indent(True):
-                        log.debug(
-                            f"Cell {cell_obj} does not have libre_pythonista_codename custom property."
-                        )
+                        log.debug(f"Cell {cell_obj} does not have libre_pythonista_codename custom property.")
                 return False
 
             items = ActionTriggerContainer()
@@ -268,7 +250,7 @@ def _mi_plot_figure(container: Any, fl: Tuple[str, str], event: Any) -> bool:
     return False
 
 
-def register_interceptor(doc_comp: Any):
+def register_interceptor(doc_comp: Any) -> None:  # noqa: ANN401
     """
     Registers the dispatch provider interceptor.
 
@@ -280,12 +262,7 @@ def register_interceptor(doc_comp: Any):
     if doc_comp is None:
         raise ValueError("doc_comp is None")
     dt = getattr(doc_comp, "DOC_TYPE", None)
-    if dt is None:
-        # logger.debug(CalcDoc.DOC_TYPE.get_service())
-        # logger.debug(f"Is Doc Type {Info.is_doc_type(doc_comp, CalcDoc.DOC_TYPE.get_service())}")
-        doc = cast(CalcDoc, CalcDoc.get_doc_from_component(doc_comp))  # type: ignore
-    else:
-        doc = cast(CalcDoc, doc_comp)
+    doc = cast(CalcDoc, CalcDoc.get_doc_from_component(doc_comp)) if dt is None else cast(CalcDoc, doc_comp)
     if doc.DOC_TYPE != DocType.CALC:
         raise ValueError("Not a CalcDoc")
 
@@ -310,7 +287,7 @@ def register_interceptor(doc_comp: Any):
             log.debug("Dispatch Provider Interceptor registered.")
 
 
-def unregister_interceptor(doc_comp: Any):
+def unregister_interceptor(doc_comp: Any) -> None:  # noqa: ANN401
     """
     Un-registers the dispatch provider interceptor.
 

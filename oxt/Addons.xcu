@@ -249,7 +249,8 @@
                </node>
                <node oor:name="m016" oor:op="replace">
                   <prop oor:name="URL" oor:type="xs:string">
-                     <value>service:___lo_identifier___.impl?about</value>
+                     <!-- <value>service:___lo_identifier___.impl?about</value> -->
+                     <value>___lo_identifier___.ProtocolHandler.ista:about</value>
                   </prop>
                   <prop oor:name="Title" oor:type="xs:string">
                      <value>About ___display_name___</value>

@@ -1,93 +1,41 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE manifest:manifest PUBLIC "-//OpenOffice.org//DTD Manifest 1.0//EN" "Manifest.dtd">
 <manifest:manifest xmlns:manifest="http://openoffice.org/2001/manifest">
-    <manifest:file-entry manifest:media-type="application/vnd.sun.star.configuration-data"
-        manifest:full-path="job.xcu" />
-    <manifest:file-entry manifest:media-type="application/vnd.sun.star.uno-component;type=Python"
-        manifest:full-path="py_runner.py" />
-    <manifest:file-entry
-        manifest:media-type="application/vnd.sun.star.configuration-data"
-        manifest:full-path="CalcAddIns.xcu" />
-    <manifest:file-entry
-        manifest:media-type="application/vnd.sun.star.configuration-data"
-        manifest:full-path="Addons.xcu" />
-    <manifest:file-entry
-        manifest:media-type="application/vnd.sun.star.configuration-data"
-        manifest:full-path="CalcToolBar.xcu" />
-    <manifest:file-entry
-        manifest:media-type="application/vnd.sun.star.package-bundle-description"
-        manifest:full-path="pkg-desc/descr-en.txt" />
-    <manifest:file-entry
-        manifest:media-type="application/vnd.sun.star.configuration-schema"
-        manifest:full-path="config/config.xcs" />
-    <manifest:file-entry
-        manifest:media-type="application/vnd.sun.star.configuration-data"
-        manifest:full-path="config/config.xcu" />
-    <manifest:file-entry
-        manifest:media-type="application/vnd.sun.star.configuration-data"
-        manifest:full-path="config/options.xcu" />
-    <manifest:file-entry manifest:media-type="application/vnd.sun.star.uno-component;type=Python"
-        manifest:full-path="___lo_pip___/dialog/handler/logger_options.py" />
-    <manifest:file-entry manifest:media-type="application/vnd.sun.star.uno-component;type=Python"
-        manifest:full-path="___lo_pip___/dialog/handler/lp_settings.py" />
-    <manifest:file-entry manifest:media-type="application/vnd.sun.star.uno-component;type=Python"
-        manifest:full-path="ext_code/impl/py_impl.py" />
-    <manifest:file-entry manifest:media-type="application/vnd.sun.star.uno-component;type=Python"
-        manifest:full-path="ext_code/impl/python_editor.py" />
-    <manifest:file-entry
-        manifest:media-type="application/vnd.sun.star.uno-component;type=Python"
-        manifest:full-path="ext_code/impl/python_impl.py" />
-    <manifest:file-entry
-        manifest:media-type="application/vnd.sun.star.uno-component;type=Python"
-        manifest:full-path="ext_code/impl/doc_window_factory_impl.py" />
-    <manifest:file-entry manifest:media-type="application/vnd.sun.star.uno-component;type=Python"
-        manifest:full-path="ext_code/jobs/view_job.py" />
-    <manifest:file-entry manifest:media-type="application/vnd.sun.star.uno-component;type=Python"
-        manifest:full-path="ext_code/jobs/load_finished_job.py" />
-    <manifest:file-entry manifest:media-type="application/vnd.sun.star.uno-component;type=Python"
-        manifest:full-path="ext_code/jobs/loading_job.py" />
-    <manifest:file-entry manifest:media-type="application/vnd.sun.star.uno-component;type=Python"
-        manifest:full-path="ext_code/jobs/create_job.py" />
-    <manifest:file-entry manifest:media-type="application/vnd.sun.star.uno-component;type=Python"
-        manifest:full-path="ext_code/jobs/saving_job.py" />
-    <manifest:file-entry
-        manifest:media-type="application/vnd.sun.star.uno-component;type=Python"
-        manifest:full-path="ext_code/jobs/prepare_unload_job.py" />
-    <manifest:file-entry
-        manifest:media-type="application/vnd.sun.star.uno-component;type=Python"
-        manifest:full-path="ext_code/jobs/unloading_job.py" />
-    <manifest:file-entry
-        manifest:media-type="application/vnd.sun.star.uno-component;type=Python"
-        manifest:full-path="ext_code/jobs/focus_job.py" />
-    <manifest:file-entry
-        manifest:media-type="application/vnd.sun.star.uno-component;type=Python"
-        manifest:full-path="ext_code/jobs/log_window_job.py" />
-    <manifest:file-entry
-        manifest:media-type="application/vnd.sun.star.uno-component;type=Python"
-        manifest:full-path="ext_code/jobs/py_edit_cell_job.py" />
-    <manifest:file-entry
-        manifest:media-type="application/vnd.sun.star.uno-component;type=Python"
-        manifest:full-path="ext_code/jobs/debug_job.py" />
-    <manifest:file-entry
-        manifest:media-type="application/vnd.sun.star.uno-component;type=Python"
-        manifest:full-path="ext_code/jobs/debug_lp_job.py" />
-    <manifest:file-entry
-        manifest:media-type="application/vnd.sun.star.uno-component;type=Python"
-        manifest:full-path="ext_code/jobs/viz_tracer_job.py" />
-    <manifest:file-entry
-        manifest:media-type="application/vnd.sun.star.uno-component;type=Python"
-        manifest:full-path="ext_code/jobs/viz_tracer_unload_job.py" />
-    <manifest:file-entry
-        manifest:media-type="application/vnd.sun.star.uno-component;type=Python"
-        manifest:full-path="ext_code/jobs/async_jobs/html_py_editor.py" />
-    <manifest:file-entry manifest:media-type="application/vnd.sun.star.framework-script"
-        manifest:full-path="python/scripts" />
-    <manifest:file-entry manifest:full-path="WindowContentFactories.xcu"
-        manifest:media-type="application/vnd.sun.star.configuration-data" />
-    <manifest:file-entry manifest:full-path="CalcWindowState.xcu"
-        manifest:media-type="application/vnd.sun.star.configuration-data" />
-    <manifest:file-entry manifest:full-path="View.xcu"
-        manifest:media-type="application/vnd.sun.star.configuration-data" />
-    <manifest:file-entry manifest:full-path="Accelerators.xcu"
-        manifest:media-type="application/vnd.sun.star.configuration-data" />
+    <manifest:file-entry manifest:media-type="application/vnd.sun.star.configuration-data" manifest:full-path="job.xcu" />
+    <manifest:file-entry manifest:media-type="application/vnd.sun.star.configuration-data" manifest:full-path="CalcAddIns.xcu" />
+    <manifest:file-entry manifest:media-type="application/vnd.sun.star.configuration-data" manifest:full-path="Addons.xcu" />
+    <manifest:file-entry manifest:media-type="application/vnd.sun.star.configuration-data" manifest:full-path="ProtocolHandler.xcu" />
+    <manifest:file-entry manifest:media-type="application/vnd.sun.star.configuration-data" manifest:full-path="CalcToolBar.xcu" />
+    <manifest:file-entry manifest:media-type="application/vnd.sun.star.configuration-data" manifest:full-path="config/config.xcu" />
+    <manifest:file-entry manifest:media-type="application/vnd.sun.star.configuration-data" manifest:full-path="config/options.xcu" />
+    <manifest:file-entry manifest:media-type="application/vnd.sun.star.package-bundle-description" manifest:full-path="pkg-desc/descr-en.txt" />
+    <manifest:file-entry manifest:media-type="application/vnd.sun.star.configuration-schema" manifest:full-path="config/config.xcs" />
+    <manifest:file-entry manifest:media-type="application/vnd.sun.star.uno-component;type=Python" manifest:full-path="py_runner.py" />
+    <manifest:file-entry manifest:media-type="application/vnd.sun.star.uno-component;type=Python" manifest:full-path="___lo_pip___/dialog/handler/logger_options.py" />
+    <manifest:file-entry manifest:media-type="application/vnd.sun.star.uno-component;type=Python" manifest:full-path="___lo_pip___/dialog/handler/lp_settings.py" />
+    <manifest:file-entry manifest:media-type="application/vnd.sun.star.uno-component;type=Python" manifest:full-path="ext_code/impl/py_impl.py" />
+    <manifest:file-entry manifest:media-type="application/vnd.sun.star.uno-component;type=Python" manifest:full-path="ext_code/impl/python_editor.py" />
+    <manifest:file-entry manifest:media-type="application/vnd.sun.star.uno-component;type=Python" manifest:full-path="ext_code/impl/python_impl.py" />
+    <manifest:file-entry manifest:media-type="application/vnd.sun.star.uno-component;type=Python" manifest:full-path="ext_code/impl/doc_window_factory_impl.py" />
+    <manifest:file-entry manifest:media-type="application/vnd.sun.star.uno-component;type=Python" manifest:full-path="ext_code/impl/dispatch/main_handler.py" />
+    <manifest:file-entry manifest:media-type="application/vnd.sun.star.uno-component;type=Python" manifest:full-path="ext_code/jobs/view_job.py" />
+    <manifest:file-entry manifest:media-type="application/vnd.sun.star.uno-component;type=Python" manifest:full-path="ext_code/jobs/load_finished_job.py" />
+    <manifest:file-entry manifest:media-type="application/vnd.sun.star.uno-component;type=Python" manifest:full-path="ext_code/jobs/loading_job.py" />
+    <manifest:file-entry manifest:media-type="application/vnd.sun.star.uno-component;type=Python" manifest:full-path="ext_code/jobs/create_job.py" />
+    <manifest:file-entry manifest:media-type="application/vnd.sun.star.uno-component;type=Python" manifest:full-path="ext_code/jobs/saving_job.py" />
+    <manifest:file-entry manifest:media-type="application/vnd.sun.star.uno-component;type=Python" manifest:full-path="ext_code/jobs/prepare_unload_job.py" />
+    <manifest:file-entry manifest:media-type="application/vnd.sun.star.uno-component;type=Python" manifest:full-path="ext_code/jobs/unloading_job.py" />
+    <manifest:file-entry manifest:media-type="application/vnd.sun.star.uno-component;type=Python" manifest:full-path="ext_code/jobs/focus_job.py" />
+    <manifest:file-entry manifest:media-type="application/vnd.sun.star.uno-component;type=Python" manifest:full-path="ext_code/jobs/log_window_job.py" />
+    <manifest:file-entry manifest:media-type="application/vnd.sun.star.uno-component;type=Python" manifest:full-path="ext_code/jobs/py_edit_cell_job.py" />
+    <manifest:file-entry manifest:media-type="application/vnd.sun.star.uno-component;type=Python" manifest:full-path="ext_code/jobs/debug_job.py" />
+    <manifest:file-entry manifest:media-type="application/vnd.sun.star.uno-component;type=Python" manifest:full-path="ext_code/jobs/debug_lp_job.py" />
+    <manifest:file-entry manifest:media-type="application/vnd.sun.star.uno-component;type=Python" manifest:full-path="ext_code/jobs/viz_tracer_job.py" />
+    <manifest:file-entry manifest:media-type="application/vnd.sun.star.uno-component;type=Python" manifest:full-path="ext_code/jobs/viz_tracer_unload_job.py" />
+    <manifest:file-entry manifest:media-type="application/vnd.sun.star.uno-component;type=Python" manifest:full-path="ext_code/jobs/async_jobs/html_py_editor.py" />
+    <manifest:file-entry manifest:media-type="application/vnd.sun.star.framework-script" manifest:full-path="python/scripts" />
+    <manifest:file-entry manifest:full-path="WindowContentFactories.xcu" manifest:media-type="application/vnd.sun.star.configuration-data" />
+    <manifest:file-entry manifest:full-path="CalcWindowState.xcu" manifest:media-type="application/vnd.sun.star.configuration-data" />
+    <manifest:file-entry manifest:full-path="View.xcu" manifest:media-type="application/vnd.sun.star.configuration-data" />
+    <manifest:file-entry manifest:full-path="Accelerators.xcu" manifest:media-type="application/vnd.sun.star.configuration-data" />
 </manifest:manifest>
