@@ -22,9 +22,9 @@ from ooodev.utils.helper.dot_dict import DotDict
 
 # from ooodev.calc import CalcDoc
 from ..const import (
-    UNO_CS_PROTOCOL,
+    CS_PROTOCOL,
     UNO_DISPATCH_CODE_EDIT_MB,
-    UNO_DISPATCH_CODE_DEL,
+    PATH_CODE_DEL,
     PATH_CELL_SELECT,
     PATH_CELL_SELECT_RECALC,
     UNO_DISPATCH_DF_STATE,
@@ -163,7 +163,8 @@ class CalcSheetCellDispatchProvider(unohelper.Base, XDispatchProviderInterceptor
                 in_thread = args.pop("in_thread", "0") == "1"
                 cargs = CancelEventArgs(self)
                 cargs.event_data = DotDict(
-                    cmd=UNO_DISPATCH_CODE_EDIT_MB,
+                    url=cs_url,
+                    cmd=cs_url.Complete,
                     doc=self._doc,
                     in_thread=in_thread,
                     experiential_edit=is_experiential,
@@ -189,7 +190,7 @@ class CalcSheetCellDispatchProvider(unohelper.Base, XDispatchProviderInterceptor
                 log.exception("Dispatch Error: %s", URL.Main)
                 return None
 
-        elif cs_url.Main == UNO_DISPATCH_CODE_DEL:
+        elif cs_url.Path == PATH_CODE_DEL:
             try:
                 from .dispatch_del_py_cell import DispatchDelPyCell
             except ImportError:
@@ -199,7 +200,7 @@ class CalcSheetCellDispatchProvider(unohelper.Base, XDispatchProviderInterceptor
                 args = self._convert_query_to_dict(cs_url.Arguments)
 
                 cargs = CancelEventArgs(self)
-                cargs.event_data = DotDict(cmd=UNO_DISPATCH_CODE_DEL, doc=self._doc, **args)
+                cargs.event_data = DotDict(url=cs_url, cmd=cs_url.Complete, doc=self._doc, **args)
                 se.trigger_event(LP_DISPATCHING_CMD, cargs)
                 if cargs.cancel is True and cargs.handled is False:
                     return None
@@ -253,7 +254,7 @@ class CalcSheetCellDispatchProvider(unohelper.Base, XDispatchProviderInterceptor
                 args = self._convert_query_to_dict(cs_url.Arguments)
 
                 cargs = CancelEventArgs(self)
-                cargs.event_data = DotDict(cmd=cs_url.Complete, doc=self._doc, **args)
+                cargs.event_data = DotDict(url=cs_url, cmd=cs_url.Complete, doc=self._doc, **args)
                 se.trigger_event(LP_DISPATCHING_CMD, cargs)
                 if cargs.cancel is True and cargs.handled is False:
                     return None
@@ -280,7 +281,7 @@ class CalcSheetCellDispatchProvider(unohelper.Base, XDispatchProviderInterceptor
                 args = self._convert_query_to_dict(cs_url.Arguments)
 
                 cargs = CancelEventArgs(self)
-                cargs.event_data = DotDict(cmd=cs_url.Main, doc=self._doc, **args)
+                cargs.event_data = DotDict(url=cs_url, cmd=cs_url.Complete, doc=self._doc, **args)
                 se.trigger_event(LP_DISPATCHING_CMD, cargs)
                 if cargs.cancel is True and cargs.handled is False:
                     return None
@@ -307,7 +308,7 @@ class CalcSheetCellDispatchProvider(unohelper.Base, XDispatchProviderInterceptor
             try:
                 args = self._convert_query_to_dict(cs_url.Arguments)
                 cargs = CancelEventArgs(self)
-                cargs.event_data = DotDict(cmd=cs_url.Main, doc=self._doc, **args)
+                cargs.event_data = DotDict(url=cs_url, cmd=cs_url.Complete, doc=self._doc, **args)
                 se.trigger_event(LP_DISPATCHING_CMD, cargs)
                 if cargs.cancel is True and cargs.handled is False:
                     return None
@@ -334,7 +335,7 @@ class CalcSheetCellDispatchProvider(unohelper.Base, XDispatchProviderInterceptor
                 args = self._convert_query_to_dict(cs_url.Arguments)
 
                 cargs = CancelEventArgs(self)
-                cargs.event_data = DotDict(cmd=cs_url.Main, doc=self._doc, **args)
+                cargs.event_data = DotDict(url=cs_url, cmd=cs_url.Complete, doc=self._doc, **args)
                 se.trigger_event(LP_DISPATCHING_CMD, cargs)
                 if cargs.cancel is True and cargs.handled is False:
                     return None
@@ -361,7 +362,7 @@ class CalcSheetCellDispatchProvider(unohelper.Base, XDispatchProviderInterceptor
                 args = self._convert_query_to_dict(cs_url.Arguments)
 
                 cargs = CancelEventArgs(self)
-                cargs.event_data = DotDict(cmd=cs_url.Main, doc=self._doc, **args)
+                cargs.event_data = DotDict(url=cs_url, cmd=cs_url.Complete, doc=self._doc, **args)
                 se.trigger_event(LP_DISPATCHING_CMD, cargs)
                 if cargs.cancel is True and cargs.handled is False:
                     return None
@@ -396,7 +397,7 @@ class CalcSheetCellDispatchProvider(unohelper.Base, XDispatchProviderInterceptor
         log = LogInst()
         log.debug("CalcSheetCellDispatchProvider.queryDispatch: %s", URL.Complete)
 
-        if URL.Protocol == UNO_CS_PROTOCOL:
+        if URL.Protocol == CS_PROTOCOL:
             return self._query_process_cs_protocol(URL, TargetFrameName, SearchFlags, log)
 
         return self._slave.queryDispatch(URL, TargetFrameName, SearchFlags)

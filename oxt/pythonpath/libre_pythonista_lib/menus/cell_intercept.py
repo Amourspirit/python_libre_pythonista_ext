@@ -18,7 +18,7 @@ from ..log.log_inst import LogInst
 from ..res.res_resolver import ResResolver
 from ..const import (
     UNO_DISPATCH_CODE_EDIT_MB,
-    UNO_DISPATCH_CODE_DEL,
+    DISPATCH_CODE_DEL,
     DISPATCH_CELL_SELECT,
     DISPATCH_CELL_SELECT_RECALC,
 )
@@ -107,7 +107,7 @@ def on_menu_intercept(
                         log_debug("Adding ActionTriggerItem: Label = %s; Command = %s", edit_mnu, this_cmd)
                         items.append(ActionTriggerItem(this_cmd, edit_mnu))  # type: ignore
 
-                        this_cmd = f"{UNO_DISPATCH_CODE_DEL}?sheet={sheet.name}&cell={cell_obj}"
+                        this_cmd = f"{DISPATCH_CODE_DEL}?sheet={sheet.name}&cell={cell_obj}"
                         log_debug("Adding ActionTriggerItem: Label = %s; Command = %s", del_mnu, this_cmd)
                         items.append(ActionTriggerItem(this_cmd, del_mnu))  # type: ignore
 
@@ -214,7 +214,7 @@ def _mi_plot_figure(container: Any, fl: Tuple[str, str], event: Any) -> bool:  #
                 )  # type: ignore
                 items.append(
                     ActionTriggerItem(
-                        f"{UNO_DISPATCH_CODE_DEL}?sheet={sheet.name}&cell={cell_obj}",
+                        f"{DISPATCH_CODE_DEL}?sheet={sheet.name}&cell={cell_obj}",
                         del_mnu,
                     )
                 )  # type: ignore

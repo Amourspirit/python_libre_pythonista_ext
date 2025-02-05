@@ -15,13 +15,13 @@ from ..const import (
     UNO_DISPATCH_DF_STATE,
     UNO_DISPATCH_DS_STATE,
     UNO_DISPATCH_DATA_TBL_STATE,
-    UNO_DISPATCH_CODE_DEL,
+    PATH_CODE_DEL,
     UNO_DISPATCH_PY_OBJ_STATE,
     PATH_CELL_SELECT,
     PATH_CELL_SELECT_RECALC,
     PATH_DF_CARD,
     PATH_DATA_TBL_CARD,
-    UNO_DISPATCH_SEL_RNG,
+    PATH_SEL_RNG,
     PATH_CELL_CTl_UPDATE,
 )
 
@@ -160,7 +160,7 @@ class CalcSheetDispatchMgr:
                 log.exception("Dispatch Error: %s", URL.Main)
                 return None
 
-        elif URL.Main == UNO_DISPATCH_CODE_DEL:
+        elif URL.Path == PATH_CODE_DEL:
             try:
                 from .dispatch_del_py_cell import DispatchDelPyCell
             except ImportError:
@@ -330,7 +330,7 @@ class CalcSheetDispatchMgr:
                 log.exception("Dispatch Error: %s", URL.Main)
                 return None
 
-        elif URL.Main == UNO_DISPATCH_SEL_RNG:
+        elif URL.Path == PATH_SEL_RNG:
             try:
                 from .dispatch_rng_select_popup import DispatchRngSelectPopup
             except ImportError:

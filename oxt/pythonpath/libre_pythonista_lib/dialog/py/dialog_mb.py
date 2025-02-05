@@ -45,9 +45,9 @@ from ooodev.utils.sys_info import SysInfo
 
 from ...const import (
     UNO_CS_CMD_START,
-    UNO_DISPATCH_PY_CODE_VALIDATE,
-    UNO_DISPATCH_SEL_RNG,
-    UNO_DISPATCH_SEL_LP_FN,
+    DISPATCH_PY_CODE_VALIDATE,
+    DISPATCH_SEL_RNG,
+    DISPATCH_SEL_LP_FN,
 )
 from .dialog_mb_window_listener import DialogMbWindowListener
 from .key_handler import KeyHandler
@@ -575,7 +575,7 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
         if command.startswith(UNO_CS_CMD_START):
             command = command.replace(".uno:", "", 1)
 
-        if command == UNO_DISPATCH_PY_CODE_VALIDATE:
+        if command == DISPATCH_PY_CODE_VALIDATE:
             try:
                 self._doc.python_script.test_compile_python(self._code.text)
                 title = self._rr.resolve_string("mbtitle001")
@@ -589,12 +589,12 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
             self._doc.msgbox(msg, title, box_type)
             return
         if self._doc.DOC_TYPE == DocType.CALC:
-            if command == UNO_DISPATCH_SEL_RNG:
+            if command == DISPATCH_SEL_RNG:
                 self._dialog.setFocus()
                 self._write_range_sel()
                 # self._write_range_sel_popup(menu)
                 return
-            if command == UNO_DISPATCH_SEL_LP_FN:
+            if command == DISPATCH_SEL_LP_FN:
                 self._dialog.setFocus()
                 self._write_auto_fn_sel()
                 # self._write_range_sel_popup(menu)

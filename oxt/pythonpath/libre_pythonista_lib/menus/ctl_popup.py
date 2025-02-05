@@ -17,7 +17,7 @@ from ..cell.props.key_maker import KeyMaker
 from ..const import (
     UNO_DISPATCH_CODE_EDIT,
     UNO_DISPATCH_CODE_EDIT_MB,
-    UNO_DISPATCH_CODE_DEL,
+    DISPATCH_CODE_DEL,
     DISPATCH_CELL_SELECT,
     DISPATCH_CELL_SELECT_RECALC,
     DISPATCH_DF_CARD,
@@ -197,7 +197,7 @@ class CtlPopup:
         cmd_enabled = self._cps.is_dispatch_enabled(UNO_DISPATCH_CODE_EDIT)
         self._log.debug(f"_get_popup_menu() Edit Command Enabled: {cmd_enabled}")
         edit_url = f"{UNO_DISPATCH_CODE_EDIT_MB}?sheet={self._sheet_name}&cell={self._cell.cell_obj}&in_thread=1"
-        del_url = f"{UNO_DISPATCH_CODE_DEL}?sheet={self._sheet_name}&cell={self._cell.cell_obj}"
+        del_url = f"{DISPATCH_CODE_DEL}?sheet={self._sheet_name}&cell={self._cell.cell_obj}"
         sel_url = f"{DISPATCH_CELL_SELECT}?sheet={self._sheet_name}&cell={self._cell.cell_obj}"
         sel_recalc_url = f"{DISPATCH_CELL_SELECT_RECALC}?sheet={self._sheet_name}&cell={self._cell.cell_obj}"
         new_menu = [

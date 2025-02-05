@@ -19,7 +19,7 @@ from ooodev.utils.data_type.range_obj import RangeObj
 
 from ....cell.code_edit.cell_code_edit import CellCodeEdit
 from ....code.py_source_mgr import PyInstance
-from ....const import UNO_DISPATCH_SEL_RNG
+from ....const import DISPATCH_SEL_RNG
 from ....multi_process.process_mgr import ProcessMgr
 from ....multi_process.socket_manager import SocketManager
 from ....res.res_resolver import ResResolver
@@ -513,11 +513,11 @@ class PyCellEditProcessMgr(ProcessMgr):
             glbs = GblEvents()
             glbs.subscribe_event("GlobalCalcRangeSelector", self._fn_on_menu_insert_lp_fn)
             mu.dispatch_cs_cmd(
-                UNO_DISPATCH_SEL_RNG, in_thread=False, url=mu.get_url_from_command(UNO_DISPATCH_SEL_RNG), log=self.log
+                DISPATCH_SEL_RNG, in_thread=False, url=mu.get_url_from_command(DISPATCH_SEL_RNG), log=self.log
             )
 
-            # self.doc.dispatch_cmd(UNO_DISPATCH_SEL_RNG)
-            self.log.debug(f"Command Dispatched: {UNO_DISPATCH_SEL_RNG}")
+            # self.doc.dispatch_cmd(DISPATCH_SEL_RNG)
+            self.log.debug(f"Command Dispatched: {DISPATCH_SEL_RNG}")
 
         except Exception:
             self.log.exception("_write_auto_fn_sel() Error getting range selection")
@@ -585,10 +585,10 @@ class PyCellEditProcessMgr(ProcessMgr):
             glbs = GblEvents()
             glbs.subscribe_event("GlobalCalcRangeSelector", self._fn_on_menu_range_select_result)
             mu.dispatch_cs_cmd(
-                UNO_DISPATCH_SEL_RNG, in_thread=False, url=mu.get_url_from_command(UNO_DISPATCH_SEL_RNG), log=self.log
+                DISPATCH_SEL_RNG, in_thread=False, url=mu.get_url_from_command(DISPATCH_SEL_RNG), log=self.log
             )
-            # self.doc.dispatch_cmd(UNO_DISPATCH_SEL_RNG)
-            self.log.debug(f"Command Dispatched: {UNO_DISPATCH_SEL_RNG}")
+            # self.doc.dispatch_cmd(DISPATCH_SEL_RNG)
+            self.log.debug(f"Command Dispatched: {DISPATCH_SEL_RNG}")
             # sheet.set_active()
         except Exception:
             self.log.exception("_write_range_sel_popup() Error getting range selection")

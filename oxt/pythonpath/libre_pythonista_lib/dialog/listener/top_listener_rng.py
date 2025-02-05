@@ -13,7 +13,7 @@ import unohelper
 from ooodev.calc import CalcDoc
 
 from com.sun.star.awt import XTopWindowListener
-from ...const import UNO_DISPATCH_SEL_RNG
+from ...const import DISPATCH_SEL_RNG
 from ...menus import menu_util as mu
 
 if TYPE_CHECKING:
@@ -66,13 +66,13 @@ class TopListenerRng(XTopWindowListener, unohelper.Base):
             try:
                 # self._doc.dispatch_cmd(".uno:About")
                 mu.dispatch_cs_cmd(
-                    UNO_DISPATCH_SEL_RNG,
+                    DISPATCH_SEL_RNG,
                     in_thread=False,
-                    url=mu.get_url_from_command(UNO_DISPATCH_SEL_RNG),
+                    url=mu.get_url_from_command(DISPATCH_SEL_RNG),
                     log=self._log,
                 )
-                # self._doc.dispatch_cmd(UNO_DISPATCH_SEL_RNG)
-                # Lo.dispatch_cmd(UNO_DISPATCH_SEL_RNG, in_thread=True)
+                # self._doc.dispatch_cmd(DISPATCH_SEL_RNG)
+                # Lo.dispatch_cmd(DISPATCH_SEL_RNG, in_thread=True)
                 # self._doc.invoke_range_selection()
                 self._log.debug("invoke_range_selection()")
             except Exception:

@@ -30,7 +30,7 @@ from ooodev.events.args.event_args import EventArgs
 from ooodev.loader.inst.doc_type import DocType
 from ooodev.utils.partial.the_dictionary_partial import TheDictionaryPartial
 
-from ...const import UNO_DISPATCH_PY_CODE_VALIDATE, UNO_DISPATCH_SEL_RNG, UNO_CS_CMD_START
+from ...const import DISPATCH_PY_CODE_VALIDATE, DISPATCH_SEL_RNG, UNO_CS_CMD_START
 from .window_listener import WindowListener
 from .key_handler import KeyHandler
 
@@ -590,7 +590,7 @@ class DialogPython(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
             if command.startswith(UNO_CS_CMD_START):
                 command = command.replace(".uno:", "", 1)
 
-            if command == UNO_DISPATCH_PY_CODE_VALIDATE:
+            if command == DISPATCH_PY_CODE_VALIDATE:
                 try:
                     self._doc.python_script.test_compile_python(self._code.text)
                     title = self._rr.resolve_string("mbtitle001")
@@ -603,7 +603,7 @@ class DialogPython(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
 
                 self._doc.msgbox(msg, title, box_type)
                 return
-            if self._doc.DOC_TYPE == DocType.CALC and command == UNO_DISPATCH_SEL_RNG:
+            if self._doc.DOC_TYPE == DocType.CALC and command == DISPATCH_SEL_RNG:
                 self._dialog.setFocus()
                 self._write_range_sel()
                 # self._write_range_sel_popup(menu)

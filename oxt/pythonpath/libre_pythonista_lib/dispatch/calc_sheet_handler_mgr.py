@@ -13,7 +13,7 @@ from ooodev.utils.helper.dot_dict import DotDict
 from ..const import (
     UNO_DISPATCH_CODE_EDIT,
     UNO_DISPATCH_CODE_EDIT_MB,
-    UNO_DISPATCH_CODE_DEL,
+    PATH_CODE_DEL,
     PATH_CELL_SELECT,
 )
 
@@ -154,7 +154,7 @@ class CalcSheetHandlerMgr:
                 log.exception("Dispatch Error: %s", URL.Main)
                 return None
 
-        elif URL.Main == UNO_DISPATCH_CODE_DEL:
+        elif URL.Path == PATH_CODE_DEL:
             try:
                 from .dispatch_del_py_cell import DispatchDelPyCell
             except ImportError:
@@ -164,7 +164,7 @@ class CalcSheetHandlerMgr:
                 args = self._convert_query_to_dict(URL.Arguments)
 
                 cargs = CancelEventArgs(self)
-                cargs.event_data = DotDict(cmd=UNO_DISPATCH_CODE_DEL, doc=doc, **args)
+                cargs.event_data = DotDict(url=URL, cmd=URL.Complete, doc=doc, **args)
                 se.trigger_event(LP_DISPATCHING_CMD, cargs)
                 if cargs.cancel is True and cargs.handled is False:
                     return None

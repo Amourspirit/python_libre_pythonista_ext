@@ -8,7 +8,7 @@ from ..const import (
     UNO_DISPATCH_DF_STATE,
     UNO_DISPATCH_DS_STATE,
     UNO_DISPATCH_DATA_TBL_STATE,
-    UNO_DISPATCH_CODE_DEL,
+    DISPATCH_CODE_DEL,
 )
 from ..cell.props.key_maker import KeyMaker
 from ..cell.state.ctl_state import CtlState
@@ -29,7 +29,7 @@ class CellDispatchState:
             UNO_DISPATCH_DF_STATE,
             UNO_DISPATCH_DS_STATE,
             UNO_DISPATCH_DATA_TBL_STATE,
-            UNO_DISPATCH_CODE_DEL,
+            DISPATCH_CODE_DEL,
         }
 
     def is_dispatch_enabled(self, cmd: str) -> bool:
