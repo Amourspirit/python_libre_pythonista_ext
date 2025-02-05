@@ -22,7 +22,7 @@ from ..const import (
     UNO_DISPATCH_DF_CARD,
     UNO_DISPATCH_DATA_TBL_CARD,
     UNO_DISPATCH_SEL_RNG,
-    UNO_DISPATCH_CELL_CTl_UPDATE,
+    PATH_CELL_CTl_UPDATE,
 )
 
 from ..const.event_const import LP_DISPATCHED_CMD, LP_DISPATCHING_CMD
@@ -63,7 +63,7 @@ class CalcSheetDispatchMgr:
                 args = self._convert_query_to_dict(URL.Arguments)
 
                 cargs = CancelEventArgs(self)
-                cargs.event_data = DotDict(cmd=URL.Main, doc=doc, **args)
+                cargs.event_data = DotDict(url=URL, cmd=URL.Complete, doc=doc, **args)
                 se.trigger_event(LP_DISPATCHING_CMD, cargs)
                 if cargs.cancel is True and cargs.handled is False:
                     return None
@@ -170,7 +170,7 @@ class CalcSheetDispatchMgr:
                 args = self._convert_query_to_dict(URL.Arguments)
 
                 cargs = CancelEventArgs(self)
-                cargs.event_data = DotDict(cmd=URL.Main, doc=doc, **args)
+                cargs.event_data = DotDict(url=URL, cmd=URL.Complete, doc=doc, **args)
                 se.trigger_event(LP_DISPATCHING_CMD, cargs)
                 if cargs.cancel is True and cargs.handled is False:
                     return None
@@ -226,7 +226,7 @@ class CalcSheetDispatchMgr:
                 args = self._convert_query_to_dict(URL.Arguments)
 
                 cargs = CancelEventArgs(self)
-                cargs.event_data = DotDict(cmd=URL.Main, doc=doc, **args)
+                cargs.event_data = DotDict(url=URL, cmd=URL.Complete, doc=doc, **args)
                 se.trigger_event(LP_DISPATCHING_CMD, cargs)
                 if cargs.cancel is True and cargs.handled is False:
                     return None
@@ -255,7 +255,7 @@ class CalcSheetDispatchMgr:
                 args = self._convert_query_to_dict(URL.Arguments)
 
                 cargs = CancelEventArgs(self)
-                cargs.event_data = DotDict(cmd=URL.Main, doc=doc, **args)
+                cargs.event_data = DotDict(url=URL, cmd=URL.Complete, doc=doc, **args)
                 se.trigger_event(LP_DISPATCHING_CMD, cargs)
                 if cargs.cancel is True and cargs.handled is False:
                     return None
@@ -283,7 +283,7 @@ class CalcSheetDispatchMgr:
                 args = self._convert_query_to_dict(URL.Arguments)
 
                 cargs = CancelEventArgs(self)
-                cargs.event_data = DotDict(cmd=URL.Main, doc=doc, **args)
+                cargs.event_data = DotDict(url=URL, cmd=URL.Complete, doc=doc, **args)
                 se.trigger_event(LP_DISPATCHING_CMD, cargs)
                 if cargs.cancel is True and cargs.handled is False:
                     return None
@@ -301,7 +301,7 @@ class CalcSheetDispatchMgr:
                 log.exception("Dispatch Error: %s", URL.Main)
                 return None
 
-        elif URL.Main == UNO_DISPATCH_CELL_CTl_UPDATE:
+        elif URL.Path == PATH_CELL_CTl_UPDATE:
             try:
                 from .dispatch_ctl_update import DispatchCtlUpdate
             except ImportError:
@@ -312,7 +312,7 @@ class CalcSheetDispatchMgr:
                 args = self._convert_query_to_dict(URL.Arguments)
 
                 cargs = CancelEventArgs(self)
-                cargs.event_data = DotDict(cmd=URL.Main, doc=doc, **args)
+                cargs.event_data = DotDict(url=URL, cmd=URL.Complete, doc=doc, **args)
                 se.trigger_event(LP_DISPATCHING_CMD, cargs)
                 if cargs.cancel is True and cargs.handled is False:
                     return None
@@ -340,7 +340,7 @@ class CalcSheetDispatchMgr:
                 args = self._convert_query_to_dict(URL.Arguments) if URL.Arguments else {}
 
                 cargs = CancelEventArgs(self)
-                cargs.event_data = DotDict(cmd=URL.Main, doc=doc, **args)
+                cargs.event_data = DotDict(url=URL, cmd=URL.Complete, doc=doc, **args)
                 se.trigger_event(LP_DISPATCHING_CMD, cargs)
                 if cargs.cancel is True and cargs.handled is False:
                     return None
@@ -367,7 +367,7 @@ class CalcSheetDispatchMgr:
             try:
                 args = self._convert_query_to_dict(URL.Arguments)
                 cargs = CancelEventArgs(self)
-                cargs.event_data = DotDict(cmd=URL.Main, doc=doc, **args)
+                cargs.event_data = DotDict(url=URL, cmd=URL.Complete, doc=doc, **args)
                 se.trigger_event(LP_DISPATCHING_CMD, cargs)
                 if cargs.cancel is True and cargs.handled is False:
                     return None
@@ -395,7 +395,7 @@ class CalcSheetDispatchMgr:
                 args = self._convert_query_to_dict(URL.Arguments)
 
                 cargs = CancelEventArgs(self)
-                cargs.event_data = DotDict(cmd=URL.Main, doc=doc, **args)
+                cargs.event_data = DotDict(url=URL, cmd=URL.Complete, doc=doc, **args)
                 se.trigger_event(LP_DISPATCHING_CMD, cargs)
                 if cargs.cancel is True and cargs.handled is False:
                     return None
@@ -423,7 +423,7 @@ class CalcSheetDispatchMgr:
                 args = self._convert_query_to_dict(URL.Arguments)
 
                 cargs = CancelEventArgs(self)
-                cargs.event_data = DotDict(cmd=URL.Main, doc=doc, **args)
+                cargs.event_data = DotDict(url=URL, cmd=URL.Complete, doc=doc, **args)
                 se.trigger_event(LP_DISPATCHING_CMD, cargs)
                 if cargs.cancel is True and cargs.handled is False:
                     return None

@@ -22,7 +22,7 @@ from ..const import (
     DISPATCH_CELL_SELECT_RECALC,
     UNO_DISPATCH_DF_CARD,
     UNO_DISPATCH_DATA_TBL_CARD,
-    UNO_DISPATCH_CELL_CTl_UPDATE,
+    DISPATCH_CELL_CTl_UPDATE,
     UNO_CS_CMD_START,
 )
 from ..cell.state.state_kind import StateKind
@@ -167,7 +167,7 @@ class CtlPopup:
 
     def _get_refresh_menu(self) -> list:
         refresh_ctl = self._res.resolve_string("mnuRefreshCtl")
-        refresh_url = f"{UNO_DISPATCH_CELL_CTl_UPDATE}?sheet={self._sheet_name}&cell={self._cell.cell_obj}"
+        refresh_url = f"{DISPATCH_CELL_CTl_UPDATE}?sheet={self._sheet_name}&cell={self._cell.cell_obj}"
         return [
             {"text": refresh_ctl, "command": refresh_url, "enabled": True},
         ]
