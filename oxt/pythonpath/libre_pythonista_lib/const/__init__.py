@@ -13,8 +13,9 @@ UNO_DISPATCH_DATA_TBL_STATE = f"{UNO_CS_PROTOCOL}libre_pythonista.calc.code.data
 UNO_DISPATCH_PY_OBJ_STATE = f"{UNO_CS_PROTOCOL}libre_pythonista.calc.py_obj.state"
 
 PATH_CELL_SELECT = "libre_pythonista.calc.cell.select"
-UNO_DISPATCH_CELL_SELECT = f"{UNO_CS_PROTOCOL}{PATH_CELL_SELECT}"
-UNO_DISPATCH_CELL_SELECT_RECALC = f"{UNO_CS_PROTOCOL}libre_pythonista.calc.cell.select_recalc"
+DISPATCH_CELL_SELECT = f"{UNO_CS_PROTOCOL}{PATH_CELL_SELECT}"
+PATH_CELL_SELECT_RECALC = "libre_pythonista.calc.cell.select_recalc"
+DISPATCH_CELL_SELECT_RECALC = f"{UNO_CS_PROTOCOL}{PATH_CELL_SELECT_RECALC}"
 UNO_DISPATCH_CELL_CTl_UPDATE = f"{UNO_CS_PROTOCOL}libre_pythonista.calc.cell.select_ctl_update"
 UNO_DISPATCH_DF_CARD = f"{UNO_CS_PROTOCOL}libre_pythonista.calc.cell.df_card"
 UNO_DISPATCH_DATA_TBL_CARD = f"{UNO_CS_PROTOCOL}libre_pythonista.calc.cell.data_tbl_card"

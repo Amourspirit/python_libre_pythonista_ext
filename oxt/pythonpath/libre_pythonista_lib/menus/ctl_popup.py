@@ -18,8 +18,8 @@ from ..const import (
     UNO_DISPATCH_CODE_EDIT,
     UNO_DISPATCH_CODE_EDIT_MB,
     UNO_DISPATCH_CODE_DEL,
-    UNO_DISPATCH_CELL_SELECT,
-    UNO_DISPATCH_CELL_SELECT_RECALC,
+    DISPATCH_CELL_SELECT,
+    DISPATCH_CELL_SELECT_RECALC,
     UNO_DISPATCH_DF_CARD,
     UNO_DISPATCH_DATA_TBL_CARD,
     UNO_DISPATCH_CELL_CTl_UPDATE,
@@ -198,8 +198,8 @@ class CtlPopup:
         self._log.debug(f"_get_popup_menu() Edit Command Enabled: {cmd_enabled}")
         edit_url = f"{UNO_DISPATCH_CODE_EDIT_MB}?sheet={self._sheet_name}&cell={self._cell.cell_obj}&in_thread=1"
         del_url = f"{UNO_DISPATCH_CODE_DEL}?sheet={self._sheet_name}&cell={self._cell.cell_obj}"
-        sel_url = f"{UNO_DISPATCH_CELL_SELECT}?sheet={self._sheet_name}&cell={self._cell.cell_obj}"
-        sel_recalc_url = f"{UNO_DISPATCH_CELL_SELECT_RECALC}?sheet={self._sheet_name}&cell={self._cell.cell_obj}"
+        sel_url = f"{DISPATCH_CELL_SELECT}?sheet={self._sheet_name}&cell={self._cell.cell_obj}"
+        sel_recalc_url = f"{DISPATCH_CELL_SELECT_RECALC}?sheet={self._sheet_name}&cell={self._cell.cell_obj}"
         new_menu = [
             {"text": edit_name, "command": edit_url, "enabled": cmd_enabled},
             {"text": del_name, "command": del_url, "enabled": cmd_enabled},

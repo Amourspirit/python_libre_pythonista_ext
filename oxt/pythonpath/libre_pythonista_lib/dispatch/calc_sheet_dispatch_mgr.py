@@ -18,7 +18,7 @@ from ..const import (
     UNO_DISPATCH_CODE_DEL,
     UNO_DISPATCH_PY_OBJ_STATE,
     PATH_CELL_SELECT,
-    UNO_DISPATCH_CELL_SELECT_RECALC,
+    PATH_CELL_SELECT_RECALC,
     UNO_DISPATCH_DF_CARD,
     UNO_DISPATCH_DATA_TBL_CARD,
     UNO_DISPATCH_SEL_RNG,
@@ -188,7 +188,7 @@ class CalcSheetDispatchMgr:
                 log.exception("Dispatch Error: %s", URL.Main)
                 return None
 
-        elif URL.Main == UNO_DISPATCH_CELL_SELECT_RECALC:
+        elif URL.Path == PATH_CELL_SELECT_RECALC:
             try:
                 from .dispatch_cell_select_recalc import DispatchCellSelectRecalc
             except ImportError:
@@ -198,7 +198,7 @@ class CalcSheetDispatchMgr:
                 args = self._convert_query_to_dict(URL.Arguments)
 
                 cargs = CancelEventArgs(self)
-                cargs.event_data = DotDict(cmd=URL.Main, doc=doc, **args)
+                cargs.event_data = DotDict(url=URL, cmd=URL.Complete, doc=doc, **args)
                 se.trigger_event(LP_DISPATCHING_CMD, cargs)
                 if cargs.cancel is True and cargs.handled is False:
                     return None

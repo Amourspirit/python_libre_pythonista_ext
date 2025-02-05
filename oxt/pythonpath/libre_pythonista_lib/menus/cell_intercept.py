@@ -19,8 +19,8 @@ from ..res.res_resolver import ResResolver
 from ..const import (
     UNO_DISPATCH_CODE_EDIT_MB,
     UNO_DISPATCH_CODE_DEL,
-    UNO_DISPATCH_CELL_SELECT,
-    UNO_DISPATCH_CELL_SELECT_RECALC,
+    DISPATCH_CELL_SELECT,
+    DISPATCH_CELL_SELECT_RECALC,
 )
 from ..cell.props.key_maker import KeyMaker
 from ..cell.state.ctl_state import CtlState
@@ -119,7 +119,7 @@ def on_menu_intercept(
                     recalc_name = rr.resolve_string("mnuRecalcCell")  # Select Cell
                     items.append(
                         ActionTriggerItem(
-                            f"{UNO_DISPATCH_CELL_SELECT_RECALC}?sheet={sheet.name}&cell={cell_obj}",
+                            f"{DISPATCH_CELL_SELECT_RECALC}?sheet={sheet.name}&cell={cell_obj}",
                             recalc_name,
                         )
                     )  # type: ignore
@@ -225,14 +225,14 @@ def _mi_plot_figure(container: Any, fl: Tuple[str, str], event: Any) -> bool:  #
             sel_name = rr.resolve_string("mnuSelCell")  # Select Cell
             items.append(
                 ActionTriggerItem(
-                    f"{UNO_DISPATCH_CELL_SELECT}?sheet={sheet.name}&cell={cell_obj}",
+                    f"{DISPATCH_CELL_SELECT}?sheet={sheet.name}&cell={cell_obj}",
                     sel_name,
                 )
             )  # type: ignore
             recalc_name = rr.resolve_string("mnuRecalcCell")  # Select Cell
             items.append(
                 ActionTriggerItem(
-                    f"{UNO_DISPATCH_CELL_SELECT_RECALC}?sheet={sheet.name}&cell={cell_obj}",
+                    f"{DISPATCH_CELL_SELECT_RECALC}?sheet={sheet.name}&cell={cell_obj}",
                     recalc_name,
                 )
             )  # type: ignore

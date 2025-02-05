@@ -26,7 +26,7 @@ from ..const import (
     UNO_DISPATCH_CODE_EDIT_MB,
     UNO_DISPATCH_CODE_DEL,
     PATH_CELL_SELECT,
-    UNO_DISPATCH_CELL_SELECT_RECALC,
+    PATH_CELL_SELECT_RECALC,
     UNO_DISPATCH_DF_STATE,
     UNO_DISPATCH_DS_STATE,
     UNO_DISPATCH_DATA_TBL_STATE,
@@ -216,7 +216,7 @@ class CalcSheetCellDispatchProvider(unohelper.Base, XDispatchProviderInterceptor
                 log.exception("Dispatch Error: %s", cs_url.Main)
                 return None
 
-        elif cs_url.Main == UNO_DISPATCH_CELL_SELECT_RECALC:
+        elif cs_url.Path == PATH_CELL_SELECT_RECALC:
             try:
                 from .dispatch_cell_select_recalc import DispatchCellSelectRecalc
             except ImportError:
@@ -226,7 +226,7 @@ class CalcSheetCellDispatchProvider(unohelper.Base, XDispatchProviderInterceptor
                 args = self._convert_query_to_dict(cs_url.Arguments)
 
                 cargs = CancelEventArgs(self)
-                cargs.event_data = DotDict(cmd=UNO_DISPATCH_CELL_SELECT_RECALC, doc=self._doc, **args)
+                cargs.event_data = DotDict(url=cs_url, cmd=cs_url.Complete, doc=self._doc, **args)
                 se.trigger_event(LP_DISPATCHING_CMD, cargs)
                 if cargs.cancel is True and cargs.handled is False:
                     return None
