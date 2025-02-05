@@ -23,7 +23,7 @@ from ..const import (
     DISPATCH_DF_CARD,
     DISPATCH_DATA_TBL_CARD,
     DISPATCH_CELL_CTl_UPDATE,
-    UNO_CS_CMD_START,
+    CS_CMD_START,
 )
 from ..cell.state.state_kind import StateKind
 from ..cell.state.ctl_state import CtlState
@@ -43,7 +43,7 @@ else:
 
 def on_menu_select(src: Any, event: EventArgs, menu: PopupMenu) -> None:  # noqa: ANN401
     # print("Menu Selected")
-    global UNO_CS_CMD_START
+    global CS_CMD_START
     log = LogInst()
     log.debug("on_menu_select() Menu Selected")
     log.debug("on_menu_select() Is Main Thread: %s", is_main_thread())
@@ -59,7 +59,7 @@ def on_menu_select(src: Any, event: EventArgs, menu: PopupMenu) -> None:  # noqa
         }
         in_thread = cmd_url.Main in in_thread_check
         if command:
-            if command.startswith(UNO_CS_CMD_START):
+            if command.startswith(CS_CMD_START):
                 command = command.replace(".uno:", "", 1).lstrip(".")
                 mu.dispatch_cs_cmd(cmd=command, in_thread=in_thread, url=cmd_url, log=log)
                 return

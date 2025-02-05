@@ -5,7 +5,7 @@ from ooodev.calc import CalcCell
 from ..const import (
     DISPATCH_CODE_EDIT,
     DISPATCH_CODE_EDIT_MB,
-    UNO_DISPATCH_DF_STATE,
+    DISPATCH_DF_STATE,
     UNO_DISPATCH_DS_STATE,
     UNO_DISPATCH_DATA_TBL_STATE,
     DISPATCH_CODE_DEL,
@@ -26,7 +26,7 @@ class CellDispatchState:
         self._dispatch_allowed = {
             DISPATCH_CODE_EDIT,
             DISPATCH_CODE_EDIT_MB,
-            UNO_DISPATCH_DF_STATE,
+            DISPATCH_DF_STATE,
             UNO_DISPATCH_DS_STATE,
             UNO_DISPATCH_DATA_TBL_STATE,
             DISPATCH_CODE_DEL,
@@ -65,7 +65,7 @@ class CellDispatchState:
         if not rule:
             return ""
         if rule == rules.cell_data_type_pd_df:
-            return UNO_DISPATCH_DF_STATE
+            return DISPATCH_DF_STATE
         if rule == rules.cell_data_type_pd_series:
             return UNO_DISPATCH_DS_STATE
         if rule == rules.cell_data_type_tbl_data:

@@ -1,6 +1,6 @@
 CS_PROTOCOL = "___lo_identifier___.ProtocolHandler.cs:"
 MAIN_PROTOCOL = "___lo_identifier___.ProtocolHandler.ista:"
-UNO_CS_CMD_START = f".uno:{CS_PROTOCOL}"
+CS_CMD_START = f".uno:{CS_PROTOCOL}"
 
 DISPATCH_PY_CODE_VALIDATE = f"{CS_PROTOCOL}libre_pythonista.calc.code.py.validate"
 PATH_SEL_RNG = "libre_pythonista.calc.sel.rng"
@@ -13,8 +13,10 @@ DISPATCH_CODE_EDIT = f"{CS_PROTOCOL}{PATH_CODE_EDIT}"
 PATH_CODE_EDIT_MB = "libre_pythonista.calc.code.edit.mb"
 DISPATCH_CODE_EDIT_MB = f"{CS_PROTOCOL}{PATH_CODE_EDIT_MB}"
 
+PATH_DF_STATE = "libre_pythonista.calc.code.df.state"
+DISPATCH_DF_STATE = f"{CS_PROTOCOL}{PATH_DF_STATE}"
 
-UNO_DISPATCH_DF_STATE = f"{CS_PROTOCOL}libre_pythonista.calc.code.df.state"
+
 UNO_DISPATCH_DS_STATE = f"{CS_PROTOCOL}libre_pythonista.calc.code.ds.state"
 UNO_DISPATCH_DATA_TBL_STATE = f"{CS_PROTOCOL}libre_pythonista.calc.code.data_tbl.state"
 UNO_DISPATCH_PY_OBJ_STATE = f"{CS_PROTOCOL}libre_pythonista.calc.py_obj.state"

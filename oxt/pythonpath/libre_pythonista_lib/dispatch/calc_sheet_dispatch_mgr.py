@@ -12,7 +12,7 @@ from ooodev.utils.helper.dot_dict import DotDict
 from ..const import (
     PATH_CODE_EDIT,
     PATH_CODE_EDIT_MB,
-    UNO_DISPATCH_DF_STATE,
+    PATH_DF_STATE,
     UNO_DISPATCH_DS_STATE,
     UNO_DISPATCH_DATA_TBL_STATE,
     PATH_CODE_DEL,
@@ -217,7 +217,7 @@ class CalcSheetDispatchMgr:
                 log.exception(f"Dispatch Error: {URL.Main}")
                 return None
 
-        elif URL.Main == UNO_DISPATCH_DF_STATE:
+        elif URL.Path == PATH_DF_STATE:
             try:
                 from .dispatch_toggle_df_state import DispatchToggleDfState
             except ImportError:

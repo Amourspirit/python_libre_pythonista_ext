@@ -27,7 +27,7 @@ from ..const import (
     PATH_CODE_DEL,
     PATH_CELL_SELECT,
     PATH_CELL_SELECT_RECALC,
-    UNO_DISPATCH_DF_STATE,
+    PATH_DF_STATE,
     UNO_DISPATCH_DS_STATE,
     UNO_DISPATCH_DATA_TBL_STATE,
     UNO_DISPATCH_PY_OBJ_STATE,
@@ -271,7 +271,7 @@ class CalcSheetCellDispatchProvider(unohelper.Base, XDispatchProviderInterceptor
                 log.exception("Dispatch Error: %s", cs_url.Main)
                 return None
 
-        if cs_url.Main == UNO_DISPATCH_DF_STATE:
+        if cs_url.Path == PATH_DF_STATE:
             try:
                 from .dispatch_toggle_df_state import DispatchToggleDfState
             except ImportError:

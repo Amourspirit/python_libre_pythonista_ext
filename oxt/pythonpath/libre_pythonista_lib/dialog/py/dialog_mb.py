@@ -44,7 +44,7 @@ from ooodev.utils.partial.the_dictionary_partial import TheDictionaryPartial
 from ooodev.utils.sys_info import SysInfo
 
 from ...const import (
-    UNO_CS_CMD_START,
+    CS_CMD_START,
     DISPATCH_PY_CODE_VALIDATE,
     DISPATCH_SEL_RNG,
     DISPATCH_SEL_LP_FN,
@@ -572,7 +572,7 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
 
         self._log.debug("Menu Selected: %s, Menu ID: %s", command, me.MenuId)
 
-        if command.startswith(UNO_CS_CMD_START):
+        if command.startswith(CS_CMD_START):
             command = command.replace(".uno:", "", 1)
 
         if command == DISPATCH_PY_CODE_VALIDATE:

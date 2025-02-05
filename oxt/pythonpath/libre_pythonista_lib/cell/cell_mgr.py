@@ -27,7 +27,7 @@ from ..style.default_style import DefaultStyle
 from ..utils.singleton_base import SingletonBase
 from ..sheet.sheet_mgr import SheetMgr
 from ..dispatch.cell_dispatch_state import CellDispatchState
-from ..const import UNO_DISPATCH_DF_STATE, UNO_DISPATCH_PY_OBJ_STATE
+from ..const import DISPATCH_DF_STATE, UNO_DISPATCH_PY_OBJ_STATE
 from ..const.event_const import (
     SHEET_MODIFIED,
     CALC_FORMULAS_CALCULATED,
@@ -74,9 +74,7 @@ class CellMgr(SingletonBase):
         with self._log.indent(True):
             self._log.debug(f"init for doc: {doc.runtime_uid}")
         self._is_db = self._log.is_debug
-        self._listeners = (
-            CodeCellListeners()
-        )  # will automatically add listeners to all cells
+        self._listeners = CodeCellListeners()  # will automatically add listeners to all cells
         self._cell_cache = CellCache(doc)  # singleton
         self._py_inst = None  # PyInstance(doc)  # singleton
         self._ctl_mgr = CtlMgr()
@@ -87,16 +85,10 @@ class CellMgr(SingletonBase):
         self._se = SharedEvent(doc)
         self._se.trigger_event("CellMgrCreated", EventArgs(self))
         self._subscribe_to_shared_events()
-        self._cell_cache.subscribe_cell_addr_prop_update(
-            self._fn_on_cell_cache_update_sheet_cell_addr_prop
-        )
+        self._cell_cache.subscribe_cell_addr_prop_update(self._fn_on_cell_cache_update_sheet_cell_addr_prop)
         self._se.subscribe_event(SHEET_MODIFIED, self._fn_on_sheet_modified)
-        self._se.subscribe_event(
-            CALC_FORMULAS_CALCULATED, self._fn_on_calc_formulas_calculated
-        )
-        self._se.subscribe_event(
-            PYC_FORMULA_INSERTED, self._fn_on_calc_pyc_formula_inserted
-        )
+        self._se.subscribe_event(CALC_FORMULAS_CALCULATED, self._fn_on_calc_formulas_calculated)
+        self._se.subscribe_event(PYC_FORMULA_INSERTED, self._fn_on_calc_pyc_formula_inserted)
         self._se.subscribe_event(PYC_RULE_MATCH_DONE, self._fn_on_pyc_rule_matched)
         self.add_all_listeners()
 
@@ -110,9 +102,7 @@ class CellMgr(SingletonBase):
             self._se.trigger_event("CellMgrDisposed", EventArgs(self))
 
     # region Events Cell Cache
-    def _on_cell_cache_update_sheet_cell_addr_prop(
-        self, src: Any, event: EventArgs
-    ) -> None:
+    def _on_cell_cache_update_sheet_cell_addr_prop(self, src: Any, event: EventArgs) -> None:
         """
         When the CellCache updates the cell's sheet address property this event is fired.
 
@@ -121,9 +111,7 @@ class CellMgr(SingletonBase):
         with self._log.noindent():
             is_db = self._log.is_debug
             if is_db:
-                self._log.debug(
-                    "_on_cell_cache_update_sheet_cell_addr_prop() Entering."
-                )
+                self._log.debug("_on_cell_cache_update_sheet_cell_addr_prop() Entering.")
             icp = event.event_data.icp
             code_name = cast(str, icp.code_name)
             if code_name in self._listeners:
@@ -131,14 +119,10 @@ class CellMgr(SingletonBase):
                     self._log.debug(f"Listener exists for code name: {code_name}")
                 calc_cell = cast(CalcCell, event.event_data.calc_cell)
                 listener = self._listeners[code_name]
-                listener.update_absolute_name(
-                    name=calc_cell.component.AbsoluteName, cell_obj=calc_cell.cell_obj
-                )
+                listener.update_absolute_name(name=calc_cell.component.AbsoluteName, cell_obj=calc_cell.cell_obj)
             else:
                 if is_db:
-                    self._log.debug(
-                        "Listener does not exist for code name: %s", code_name
-                    )
+                    self._log.debug("Listener does not exist for code name: %s", code_name)
             if is_db:
                 self._log.debug("_on_cell_cache_update_sheet_cell_addr_prop() Done.")
 
@@ -185,9 +169,7 @@ class CellMgr(SingletonBase):
                 # Most likely the crash is because a re-calculation of the sheet is taking place,
                 # and the update that can change the sheet cell formulas is being called at the same time.
                 # By calling in a thread the crash is avoided and the sheet is updated without any issues.
-                t = threading.Thread(
-                    target=update_array_cells, args=(self._doc,), daemon=True
-                )
+                t = threading.Thread(target=update_array_cells, args=(self._doc,), daemon=True)
                 t.start()
 
         except Exception:
@@ -208,9 +190,7 @@ class CellMgr(SingletonBase):
             cell (CalcCell): cell object.
         """
         with self._log.indent(True):
-            self._log.debug(
-                f"_update_py_event_control() Updating control for cell: {cell.cell_obj}"
-            )
+            self._log.debug(f"_update_py_event_control() Updating control for cell: {cell.cell_obj}")
             lpl = LplCell(cell)
             current_state = lpl.ctl_state
             if current_state != StateKind.PY_OBJ:
@@ -230,9 +210,7 @@ class CellMgr(SingletonBase):
             cell (CalcCell): cell object.
         """
         with self._log.indent(True):
-            self._log.debug(
-                f"_update_controls_forward() Updating controls for cells on and after: {cell.cell_obj}"
-            )
+            self._log.debug(f"_update_controls_forward() Updating controls for cells on and after: {cell.cell_obj}")
             if self._cell_cache is None:
                 # this should never happen.
                 self._log.error("Cell cache is None")
@@ -250,9 +228,7 @@ class CellMgr(SingletonBase):
                 if cells and self._log.is_debug:
                     self._log.debug(f"Updating controls for {len(cells)} cells")
                     for current_cell in cells:
-                        self._log.debug(
-                            f"Going to update control for cell: {current_cell.cell_obj}"
-                        )
+                        self._log.debug(f"Going to update control for cell: {current_cell.cell_obj}")
                 for current_cell in cells:
                     self._update_lp_cell_control(current_cell)
             except Exception:
@@ -309,30 +285,18 @@ class CellMgr(SingletonBase):
         self._fn_on_py_code_updated = self.on_py_code_updated
         # endregion py instance events
         # region shared events
-        self._fn_on_shared_dispatch_data_frame_state_before = (
-            self.on_shared_dispatch_data_frame_state_before
-        )
-        self._fn_on_shared_dispatch_data_frame_state_after = (
-            self.on_shared_dispatch_data_frame_state_after
-        )
+        self._fn_on_shared_dispatch_data_frame_state_before = self.on_shared_dispatch_data_frame_state_before
+        self._fn_on_shared_dispatch_data_frame_state_after = self.on_shared_dispatch_data_frame_state_after
 
-        self._fn_on_shared_dispatch_added_cell_formula = (
-            self.on_shared_dispatch_added_cell_formula
-        )
-        self._fn_on_shared_dispatch_removed_cell_formula = (
-            self.on_shared_dispatch_removed_cell_formula
-        )
-        self._fn_on_shared_dispatch_dispatch_add_array_formula = (
-            self.on_shared_dispatch_dispatch_add_array_formula
-        )
+        self._fn_on_shared_dispatch_added_cell_formula = self.on_shared_dispatch_added_cell_formula
+        self._fn_on_shared_dispatch_removed_cell_formula = self.on_shared_dispatch_removed_cell_formula
+        self._fn_on_shared_dispatch_dispatch_add_array_formula = self.on_shared_dispatch_dispatch_add_array_formula
         self._fn_on_shared_dispatch_dispatch_remove_array_formula = (
             self.on_shared_dispatch_dispatch_remove_array_formula
         )
         # endregion shared events
         # region Cell Cache Events
-        self._fn_on_cell_cache_update_sheet_cell_addr_prop = (
-            self._on_cell_cache_update_sheet_cell_addr_prop
-        )
+        self._fn_on_cell_cache_update_sheet_cell_addr_prop = self._on_cell_cache_update_sheet_cell_addr_prop
         # endregion Cell Cache Events
         # region Sheet Events
         self._fn_on_sheet_modified = self._on_sheet_modified
@@ -391,9 +355,7 @@ class CellMgr(SingletonBase):
             calc_cell.set_custom_property(self._key_maker.cell_addr_key, addr)
             if self._log.is_debug:
                 self._log.debug(f"Cell moved: {dd.absolute_name}")
-                self._log.debug(
-                    f"Update Custom Prop: {self._key_maker.cell_addr_key} to {addr}"
-                )
+                self._log.debug(f"Update Custom Prop: {self._key_maker.cell_addr_key} to {addr}")
 
     def on_cell_pyc_formula_removed(self, src: Any, event: EventArgs) -> None:
         """
@@ -415,9 +377,7 @@ class CellMgr(SingletonBase):
                 self._log.debug("on_cell_pyc_formula_removed() Entering.")
                 dd = cast(DotDict, event.event_data)
                 self._remove_cell(calc_cell=dd.calc_cell)
-                self._log.debug(
-                    f"on_cell_pyc_formula_removed() Leaving: {dd.absolute_name}"
-                )
+                self._log.debug(f"on_cell_pyc_formula_removed() Leaving: {dd.absolute_name}")
             except Exception:
                 self._log.error(
                     f"Error removing pyc formula from cell: {dd.absolute_name}",
@@ -457,9 +417,7 @@ class CellMgr(SingletonBase):
                 self._log.debug(f"Is First Cell: {is_first_cell}")
                 self._log.debug(f"Is Last Cell: {is_last_cell}")
             except Exception:
-                self._log.error(
-                    f"Error modifying cell: {dd.absolute_name}", exc_info=True
-                )
+                self._log.error(f"Error modifying cell: {dd.absolute_name}", exc_info=True)
 
         self._log.debug(f"Cell modified: {dd.absolute_name}")
 
@@ -491,11 +449,11 @@ class CellMgr(SingletonBase):
     # region Shared Events
     def _subscribe_to_shared_events(self) -> None:
         self._se.subscribe_event(
-            f"{UNO_DISPATCH_DF_STATE}_before_dispatch",
+            f"{DISPATCH_DF_STATE}_before_dispatch",
             self._fn_on_shared_dispatch_data_frame_state_before,
         )
         self._se.subscribe_event(
-            f"{UNO_DISPATCH_DF_STATE}_after_dispatch",
+            f"{DISPATCH_DF_STATE}_after_dispatch",
             self._fn_on_shared_dispatch_data_frame_state_after,
         )
 
@@ -516,49 +474,33 @@ class CellMgr(SingletonBase):
             self._fn_on_shared_dispatch_dispatch_remove_array_formula,
         )
 
-    def on_shared_dispatch_data_frame_state_before(
-        self, src: Any, event: EventArgs
-    ) -> None:
+    def on_shared_dispatch_data_frame_state_before(self, src: Any, event: EventArgs) -> None:
         self._log.debug("on_shared_dispatch_data_frame_state_before() Entering.")
 
-    def on_shared_dispatch_data_frame_state_after(
-        self, src: Any, event: EventArgs
-    ) -> None:
+    def on_shared_dispatch_data_frame_state_after(self, src: Any, event: EventArgs) -> None:
         self._log.debug("on_shared_dispatch_data_frame_state_after() Entering.")
 
     def on_shared_dispatch_added_cell_formula(self, src: Any, event: EventArgs) -> None:
         self._log.debug("on_shared_dispatch_added_cell_formula() Entering.")
 
-    def on_shared_dispatch_removed_cell_formula(
-        self, src: Any, event: EventArgs
-    ) -> None:
+    def on_shared_dispatch_removed_cell_formula(self, src: Any, event: EventArgs) -> None:
         self._log.debug("on_shared_dispatch_removed_cell_formula() Entering.")
 
-    def on_shared_dispatch_dispatch_add_array_formula(
-        self, src: Any, event: EventArgs
-    ) -> None:
+    def on_shared_dispatch_dispatch_add_array_formula(self, src: Any, event: EventArgs) -> None:
         with self._log.indent(True):
             try:
-                self._log.debug(
-                    "on_shared_dispatch_dispatch_add_array_formula() Entering."
-                )
+                self._log.debug("on_shared_dispatch_dispatch_add_array_formula() Entering.")
                 sheet = cast(CalcSheet, event.event_data.sheet)
                 cr = sheet.get_range(range_obj=event.event_data.range_obj)
                 self._style.add_style_range(cr)
             except Exception:
                 self._log.error("Error adding array formula style", exc_info=True)
 
-    def on_shared_dispatch_dispatch_remove_array_formula(
-        self, src: Any, event: EventArgs
-    ) -> None:
+    def on_shared_dispatch_dispatch_remove_array_formula(self, src: Any, event: EventArgs) -> None:
         with self._log.indent(True):
             try:
-                self._log.debug(
-                    "on_shared_dispatch_dispatch_remove_array_formula() Entering."
-                )
-                self._log.debug(
-                    "on_shared_dispatch_dispatch_add_array_formula() Entering."
-                )
+                self._log.debug("on_shared_dispatch_dispatch_remove_array_formula() Entering.")
+                self._log.debug("on_shared_dispatch_dispatch_add_array_formula() Entering.")
                 sheet = cast(CalcSheet, event.event_data.sheet)
                 cr = sheet.get_range(range_obj=event.event_data.range_obj)
                 self._style.remove_style_range(cr)
@@ -589,13 +531,9 @@ class CellMgr(SingletonBase):
         """
         # this method is also called by dispatch.dispatch_toggle_df_state.DispatchToggleDFState
         with self._log.indent(True):
-            self._log.debug(
-                "update_control() Updating control for cell: %s", cell.cell_obj
-            )
+            self._log.debug("update_control() Updating control for cell: %s", cell.cell_obj)
             self._ctl_mgr.update_ctl(cell)
-            self._log.debug(
-                "update_control() Updated control for cell: %s", cell.cell_obj
-            )
+            self._log.debug("update_control() Updated control for cell: %s", cell.cell_obj)
 
     def _remove_cell(self, calc_cell: CalcCell) -> None:
         """
@@ -638,17 +576,13 @@ class CellMgr(SingletonBase):
                     # this should never happen.
                     self._log.error("Cell cache is None")
                     raise ValueError("Cell cache is None")
-                icp = self._cell_cache.get_index_cell_props(
-                    cell=cell_obj, sheet_idx=cell_obj.sheet_idx
-                )
+                icp = self._cell_cache.get_index_cell_props(cell=cell_obj, sheet_idx=cell_obj.sheet_idx)
                 code_name = icp.code_name
             try:
                 self._log.debug(f"Removing listener from cell: {cell_obj}")
                 self._remove_listener_from_cell(calc_cell, code_name)
             except Exception:
-                self._log.error(
-                    "Error removing listener from cell: %s", cell_obj, exc_info=True
-                )
+                self._log.error("Error removing listener from cell: %s", cell_obj, exc_info=True)
 
             # don't check using self.is_cell_deleted(calc_cell.component) because it may
             # not be accurate if the cell is deleted.
@@ -666,20 +600,14 @@ class CellMgr(SingletonBase):
                 self._ctl_mgr.remove_ctl(calc_cell)
                 self._log.debug("Removed cell control for cell: %s", cell_obj)
             except Exception:
-                self._log.error(
-                    f"Error removing cell control: {cell_obj}", exc_info=True
-                )
+                self._log.error(f"Error removing cell control: {cell_obj}", exc_info=True)
 
             try:
                 if absolute_name:
                     py_src_index = self.py_inst.get_index(cell_obj)
                     if py_src_index < 0:
-                        self._log.error(
-                            "Cell does not exist in PyInstance: %s", cell_obj
-                        )
-                        raise KeyError(
-                            "Cell does not exist in PyInstance: %s", cell_obj
-                        )
+                        self._log.error("Cell does not exist in PyInstance: %s", cell_obj)
+                        raise KeyError("Cell does not exist in PyInstance: %s", cell_obj)
 
                     self.py_inst.remove_source(cell_obj)
                 else:
@@ -770,9 +698,7 @@ class CellMgr(SingletonBase):
                 # this should never happen.
                 self._log.error("Cell cache is None")
                 raise ValueError("Cell cache is None")
-            idp = self._cell_cache.get_index_cell_props(
-                cell=cell_obj, sheet_idx=cell_obj.sheet_idx
-            )
+            idp = self._cell_cache.get_index_cell_props(cell=cell_obj, sheet_idx=cell_obj.sheet_idx)
             self.reset_py_inst()
             sheet = self._doc.sheets[cell_obj.sheet_idx]
             cell = sheet[cell_obj]
@@ -800,9 +726,7 @@ class CellMgr(SingletonBase):
                             name,
                         )
                 else:
-                    self._log.error(
-                        f"Listener already exists for cell: {cell.cell_obj} with codename {name}."
-                    )
+                    self._log.error(f"Listener already exists for cell: {cell.cell_obj} with codename {name}.")
             except Exception:
                 self._log.error(
                     "Error adding listener to cell:%s} with codename %s.",
@@ -819,9 +743,7 @@ class CellMgr(SingletonBase):
                     self._listener_unsubscribe(listener)
                     self._listeners.remove_listener(cell, name)
                 else:
-                    self._log.error(
-                        "Listener does not exists for cell with codename %s", name
-                    )
+                    self._log.error("Listener does not exists for cell with codename %s", name)
             except Exception:
                 self._log.error(
                     "Error removing listener from cell with codename %s.",
@@ -834,20 +756,14 @@ class CellMgr(SingletonBase):
         listener.subscribe_cell_modified(self._fn_on_cell_modified)
         listener.subscribe_cell_moved(self._fn_on_cell_moved)
         listener.subscribe_cell_custom_prop_modify(self._fn_on_cell_custom_prop_modify)
-        listener.subscribe_cell_pyc_formula_removed(
-            self._fn_on_cell_pyc_formula_removed
-        )
+        listener.subscribe_cell_pyc_formula_removed(self._fn_on_cell_pyc_formula_removed)
 
     def _listener_unsubscribe(self, listener: CodeCellListener) -> None:
         listener.unsubscribe_cell_deleted(self._fn_on_cell_deleted)
         listener.unsubscribe_cell_modified(self._fn_on_cell_modified)
         listener.unsubscribe_cell_moved(self._fn_on_cell_moved)
-        listener.unsubscribe_cell_custom_prop_modify(
-            self._fn_on_cell_custom_prop_modify
-        )
-        listener.unsubscribe_cell_pyc_formula_removed(
-            self._fn_on_cell_pyc_formula_removed
-        )
+        listener.unsubscribe_cell_custom_prop_modify(self._fn_on_cell_custom_prop_modify)
+        listener.unsubscribe_cell_pyc_formula_removed(self._fn_on_cell_pyc_formula_removed)
 
     def is_cell_deleted(self, cell: SheetCell) -> bool:
         """Gets if a sheet cell has been deleted."""
@@ -922,9 +838,7 @@ class CellMgr(SingletonBase):
                 # this should never happen.
                 self._log.error("Cell cache is None")
                 raise ValueError("Cell cache is None")
-            return self._cell_cache.is_first_cell(
-                cell=cell_obj, sheet_idx=cell_obj.sheet_idx
-            )
+            return self._cell_cache.is_first_cell(cell=cell_obj, sheet_idx=cell_obj.sheet_idx)
 
     def is_last_cell(self, cell_obj: CellObj) -> bool:
         """
@@ -935,9 +849,7 @@ class CellMgr(SingletonBase):
                 # this should never happen.
                 self._log.error("Cell cache is None")
                 raise ValueError("Cell cache is None")
-            return self._cell_cache.is_last_cell(
-                cell=cell_obj, sheet_idx=cell_obj.sheet_idx
-            )
+            return self._cell_cache.is_last_cell(cell=cell_obj, sheet_idx=cell_obj.sheet_idx)
 
     def reset_py_inst(self, update_display: bool = False) -> None:
         """
@@ -955,17 +867,11 @@ class CellMgr(SingletonBase):
             self._py_inst = None
             PyInstance.reset_instance(self._doc)
             if update_display:
-                self.py_inst.unsubscribe_after_update_source(
-                    self._fn_py_inst_after_source_update
-                )
-                self.py_inst.subscribe_after_source_update(
-                    self._fn_py_inst_after_source_update
-                )
+                self.py_inst.unsubscribe_after_update_source(self._fn_py_inst_after_source_update)
+                self.py_inst.subscribe_after_source_update(self._fn_py_inst_after_source_update)
             self.py_inst.update_all()
             if update_display:
-                self.py_inst.unsubscribe_after_update_source(
-                    self._fn_py_inst_after_source_update
-                )
+                self.py_inst.unsubscribe_after_update_source(self._fn_py_inst_after_source_update)
             self._log.debug("reset_py_inst() Done")
 
     def _py_inst_after_source_update(self, src: Any, event: EventArgs) -> None:
@@ -1037,18 +943,14 @@ class CellMgr(SingletonBase):
             cell_obj (CellObj): cell object.
         """
         with self._log.indent(True):
-            self._log.debug(
-                f"update_from_cell_obj() - Updating PyInstance from cell object: {cell_obj}"
-            )
+            self._log.debug(f"update_from_cell_obj() - Updating PyInstance from cell object: {cell_obj}")
             index = self.py_inst.get_index(cell_obj)
             if index < 0:
                 self._log.error("Cell does not exist in PyInstance: %s", cell_obj)
                 raise KeyError(f"Cell does not exist in PyInstance: {cell_obj}")
             self._log.debug(f"update_from_cell_obj() - Index: {index}")
             self.py_inst.update_from_index(index)
-            self._log.debug(
-                f"update_from_cell_obj() - Updated PyInstance from cell object: {cell_obj}"
-            )
+            self._log.debug(f"update_from_cell_obj() - Updated PyInstance from cell object: {cell_obj}")
 
     def set_global_var(self, name: str, value: Any) -> None:
         """
@@ -1100,48 +1002,30 @@ class CellMgr(SingletonBase):
                 self._log.error("Cell cache is None")
                 raise ValueError("Cell cache is None")
             address = cell.getCellAddress()
-            cell_obj = CellObj.from_idx(
-                col_idx=address.Column, row_idx=address.Row, sheet_idx=address.Sheet
-            )
+            cell_obj = CellObj.from_idx(col_idx=address.Column, row_idx=address.Row, sheet_idx=address.Sheet)
 
-            icp = self._cell_cache.get_index_cell_props(
-                cell=cell_obj, sheet_idx=cell_obj.sheet_idx
-            )
+            icp = self._cell_cache.get_index_cell_props(cell=cell_obj, sheet_idx=cell_obj.sheet_idx)
             code_name = icp.code_name
             if code_name in self._listeners:
-                self._log.debug(
-                    "Un-subscribing listeners for cell: %s", cell.AbsoluteName
-                )
+                self._log.debug("Un-subscribing listeners for cell: %s", cell.AbsoluteName)
                 listener = self._listeners[code_name]
                 listener.unsubscribe_cell_deleted(self._fn_on_cell_deleted)
                 listener.unsubscribe_cell_modified(self._fn_on_cell_modified)
                 listener.unsubscribe_cell_moved(self._fn_on_cell_moved)
-                listener.unsubscribe_cell_custom_prop_modify(
-                    self._fn_on_cell_custom_prop_modify
-                )
-                listener.unsubscribe_cell_pyc_formula_removed(
-                    self._fn_on_cell_pyc_formula_removed
-                )
+                listener.unsubscribe_cell_custom_prop_modify(self._fn_on_cell_custom_prop_modify)
+                listener.unsubscribe_cell_pyc_formula_removed(self._fn_on_cell_pyc_formula_removed)
                 # cell.removeModifyListener(listener)
             else:
-                self._log.debug(
-                    "Listener does not exist for cell: %s", cell.AbsoluteName
-                )
+                self._log.debug("Listener does not exist for cell: %s", cell.AbsoluteName)
             yield
         finally:
             if listener is not None:
-                self._log.debug(
-                    "Subscribing to listeners for cell: %s", cell.AbsoluteName
-                )
+                self._log.debug("Subscribing to listeners for cell: %s", cell.AbsoluteName)
                 listener.subscribe_cell_deleted(self._fn_on_cell_deleted)
                 listener.subscribe_cell_modified(self._fn_on_cell_modified)
                 listener.subscribe_cell_moved(self._fn_on_cell_moved)
-                listener.subscribe_cell_custom_prop_modify(
-                    self._fn_on_cell_custom_prop_modify
-                )
-                listener.subscribe_cell_pyc_formula_removed(
-                    self._fn_on_cell_pyc_formula_removed
-                )
+                listener.subscribe_cell_custom_prop_modify(self._fn_on_cell_custom_prop_modify)
+                listener.subscribe_cell_pyc_formula_removed(self._fn_on_cell_pyc_formula_removed)
                 self._listeners[code_name] = listener
                 # cell.addModifyListener(listener)
             self._log.outdent()

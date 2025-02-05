@@ -10,7 +10,7 @@ from .ctl.ctl_mgr import CtlMgr
 from .props.key_maker import KeyMaker
 from .state.ctl_state import CtlState
 from .state.state_kind import StateKind
-from ..const import UNO_DISPATCH_PY_OBJ_STATE, UNO_DISPATCH_DF_STATE
+from ..const import UNO_DISPATCH_PY_OBJ_STATE, DISPATCH_DF_STATE
 from ..cell.result_action.pyc.rules.pyc_rules import PycRules
 from ..code.py_source_mgr import PySource, PyInstance
 from ..utils.pandas_util import PandasUtil
@@ -252,7 +252,7 @@ class LplCell:
                 cs = CtlState(cell=self.cell)
                 cs.set_state(StateKind.PY_OBJ)
                 url_main = self.cell_dispatch_state.get_rule_dispatch_cmd()
-                # url_main = UNO_DISPATCH_DF_STATE
+                # url_main = DISPATCH_DF_STATE
                 if not url_main:
                     self._log.error("ctl_state No dispatch command found. Returning")
                     return

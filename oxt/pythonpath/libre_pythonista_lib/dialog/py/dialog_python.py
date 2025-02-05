@@ -30,7 +30,7 @@ from ooodev.events.args.event_args import EventArgs
 from ooodev.loader.inst.doc_type import DocType
 from ooodev.utils.partial.the_dictionary_partial import TheDictionaryPartial
 
-from ...const import DISPATCH_PY_CODE_VALIDATE, DISPATCH_SEL_RNG, UNO_CS_CMD_START
+from ...const import DISPATCH_PY_CODE_VALIDATE, DISPATCH_SEL_RNG, CS_CMD_START
 from .window_listener import WindowListener
 from .key_handler import KeyHandler
 
@@ -587,7 +587,7 @@ class DialogPython(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
             command = menu.get_command(me.MenuId)
             # self._write_line(f"Menu Selected: {command}, Menu ID: {me.MenuId}")
 
-            if command.startswith(UNO_CS_CMD_START):
+            if command.startswith(CS_CMD_START):
                 command = command.replace(".uno:", "", 1)
 
             if command == DISPATCH_PY_CODE_VALIDATE:
