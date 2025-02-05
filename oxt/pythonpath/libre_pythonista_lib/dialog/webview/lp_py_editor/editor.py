@@ -27,6 +27,7 @@ from ....code import py_module
 from ....const.event_const import GBL_DOC_CLOSING
 from ....config.dialog.wv_code_cfg import WvCodeCfg
 from ....py_pip.pkg_info import PkgInfo
+from ....menus import menu_util as mu
 # from ...listener.top_listener_rng import TopListenerRng
 
 if TYPE_CHECKING:
@@ -41,7 +42,7 @@ if TYPE_CHECKING:
     from ......___lo_pip___.config import Config
 else:
 
-    def override(func):
+    def override(func):  # noqa: ANN001, ANN201
         return func
 
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger  # noqa: F401
@@ -58,7 +59,7 @@ _MANAGERS: Dict[str, PyCellEditProcessMgr] = {}
 
 
 class PyCellCodeEdit(CellCodeEdit):
-    def __init__(self, inst_id: str, cell: CalcCell, url_str: str = "", src_code: str = ""):
+    def __init__(self, inst_id: str, cell: CalcCell, url_str: str = "", src_code: str = "") -> None:
         CellCodeEdit.__init__(self, inst_id, cell, url_str, src_code)
 
     @override
@@ -81,7 +82,7 @@ class PyCellEditProcessMgr(ProcessMgr):
     """
 
     @override
-    def __init__(self, *, socket_manager: SocketManager, sheet: str, cell: str):
+    def __init__(self, *, socket_manager: SocketManager, sheet: str, cell: str) -> None:
         """
         Initializes the Editor instance.
 
@@ -368,7 +369,7 @@ class PyCellEditProcessMgr(ProcessMgr):
             self._current_client_msg = None
             self._write_auto_fn_sel()
 
-            def monitor_client_msg(result_queue: queue.Queue):
+            def monitor_client_msg(result_queue: queue.Queue) -> None:
                 timeout = 30
                 start_time = time.time()
                 while time.time() - start_time < timeout:
@@ -410,7 +411,7 @@ class PyCellEditProcessMgr(ProcessMgr):
             self._current_client_msg = None
             self._write_range_sel()
 
-            def monitor_client_msg(result_queue: queue.Queue):
+            def monitor_client_msg(result_queue: queue.Queue) -> None:
                 timeout = 30
                 start_time = time.time()
                 while time.time() - start_time < timeout:
@@ -440,7 +441,7 @@ class PyCellEditProcessMgr(ProcessMgr):
 
             # Retrieve the result from the queue
             result = result_queue.get()
-            self.log.debug(f"Monitor client message result: {result}")
+            self.log.debug("Monitor client message result: %s", result)
 
             return result
 
@@ -460,7 +461,7 @@ class PyCellEditProcessMgr(ProcessMgr):
     # endregion Source Code
 
     # region Auto Function Selection
-    def _on_menu_insert_lp_fn(self, src: Any, event: EventArgs) -> None:
+    def _on_menu_insert_lp_fn(self, src: Any, event: EventArgs) -> None:  # noqa: ANN401
         # do not call self.socket_manager.send_message here. It will cause the client to break the socket because this method is called on a different thread.
         from ....data.auto_fn import AutoFn
 
@@ -511,7 +512,11 @@ class PyCellEditProcessMgr(ProcessMgr):
             # _ = TopListenerRng(self.doc)
             glbs = GblEvents()
             glbs.subscribe_event("GlobalCalcRangeSelector", self._fn_on_menu_insert_lp_fn)
-            self.doc.dispatch_cmd(UNO_DISPATCH_SEL_RNG)
+            mu.dispatch_cs_cmd(
+                UNO_DISPATCH_SEL_RNG, in_thread=False, url=mu.get_url_from_command(UNO_DISPATCH_SEL_RNG), log=self.log
+            )
+
+            # self.doc.dispatch_cmd(UNO_DISPATCH_SEL_RNG)
             self.log.debug(f"Command Dispatched: {UNO_DISPATCH_SEL_RNG}")
 
         except Exception:
@@ -520,7 +525,7 @@ class PyCellEditProcessMgr(ProcessMgr):
     # endregion Auto Function Selection
 
     # region Range Selection
-    def _on_menu_range_select_result(self, src: Any, event: EventArgs) -> None:
+    def _on_menu_range_select_result(self, src: Any, event: EventArgs) -> None:  # noqa: ANN401
         with self.log.indent(True):
             log = self.log
             try:
@@ -579,7 +584,10 @@ class PyCellEditProcessMgr(ProcessMgr):
         try:
             glbs = GblEvents()
             glbs.subscribe_event("GlobalCalcRangeSelector", self._fn_on_menu_range_select_result)
-            self.doc.dispatch_cmd(UNO_DISPATCH_SEL_RNG)
+            mu.dispatch_cs_cmd(
+                UNO_DISPATCH_SEL_RNG, in_thread=False, url=mu.get_url_from_command(UNO_DISPATCH_SEL_RNG), log=self.log
+            )
+            # self.doc.dispatch_cmd(UNO_DISPATCH_SEL_RNG)
             self.log.debug(f"Command Dispatched: {UNO_DISPATCH_SEL_RNG}")
             # sheet.set_active()
         except Exception:
@@ -588,7 +596,7 @@ class PyCellEditProcessMgr(ProcessMgr):
     # endregion Range Selection
 
     @classmethod
-    def terminate_instance(cls, key: Any) -> None:
+    def terminate_instance(cls, key: Any) -> None:  # noqa: ANN401
         global _MANAGERS
         if key in _MANAGERS:
             inst = _MANAGERS[key]
@@ -629,7 +637,7 @@ def main(sheet: str, cell: str) -> None:
         log.error("Failed to start subprocess")
 
 
-def _on_doc_closing(src: Any, event: EventArgs) -> None:
+def _on_doc_closing(src: Any, event: EventArgs) -> None:  # noqa: ANN401
     # clean up singleton
     global _MANAGERS
     uid = str(event.event_data.uid)

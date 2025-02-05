@@ -1,11 +1,5 @@
 from __future__ import annotations
-from typing import Dict, Tuple, TYPE_CHECKING
-
-try:
-    # python 3.12+
-    from typing import override  # type: ignore
-except ImportError:
-    from typing_extensions import override
+from typing import Any, Dict, Tuple, TYPE_CHECKING
 
 import uno
 import unohelper
@@ -19,22 +13,33 @@ from ooodev.loader import Lo
 from ..py_pip.pkg_info import PkgInfo
 
 if TYPE_CHECKING:
+    try:
+        # python 3.12+
+        from typing import override  # type: ignore
+    except ImportError:
+        from typing_extensions import override
     from com.sun.star.frame import XStatusListener
     from ....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
 else:
+
+    def override(func):  # noqa: ANN001, ANN201
+        return func
+
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
 
 
-class DispatchPyPkgInstalled(unohelper.Base, XDispatch):
+class DispatchPyPkgInstalled(XDispatch, unohelper.Base):
     """Displays Dialog to check if a pip package is installed."""
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, ctx: Any) -> None:  # noqa: ANN401
+        XDispatch.__init__(self)
+        unohelper.Base.__init__(self)
         self._log = OxtLogger(log_name=self.__class__.__name__)
         self._status_listeners: Dict[str, XStatusListener] = {}
+        self.ctx = ctx
 
     @override
-    def addStatusListener(self, Control: XStatusListener, URL: URL) -> None:
+    def addStatusListener(self, Control: XStatusListener, URL: URL) -> None:  # noqa: N802, N803
         """
         registers a listener of a control for a specific URL at this object to receive status events.
 
@@ -56,7 +61,7 @@ class DispatchPyPkgInstalled(unohelper.Base, XDispatch):
                 self._status_listeners[URL.Complete] = Control
 
     @override
-    def dispatch(self, URL: URL, Arguments: Tuple[PropertyValue, ...]) -> None:
+    def dispatch(self, URL: URL, Arguments: Tuple[PropertyValue, ...]) -> None:  # noqa: N803
         """
         Dispatches (executes) a URL
 
@@ -80,7 +85,7 @@ class DispatchPyPkgInstalled(unohelper.Base, XDispatch):
             return
 
     @override
-    def removeStatusListener(self, Control: XStatusListener, URL: URL) -> None:
+    def removeStatusListener(self, Control: XStatusListener, URL: URL) -> None:  # noqa: N802, N803
         """
         Un-registers a listener from a control.
         """

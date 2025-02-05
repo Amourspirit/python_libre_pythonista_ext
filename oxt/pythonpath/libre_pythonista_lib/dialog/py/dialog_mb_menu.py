@@ -20,7 +20,7 @@ else:
 class DialogMbMenu:
     """Dialog Menu Builder"""
 
-    def __init__(self, dlg: Any):
+    def __init__(self, dlg: Any) -> None:  # noqa: ANN401
         self._log = OxtLogger(log_name=self.__class__.__name__)
         self._log.debug("init")
         self._dlg = dlg

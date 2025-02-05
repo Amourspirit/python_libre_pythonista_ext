@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 # https://github.com/marklh9/ExtendingLibreOffice/blob/71a15e72bd9975c282b2d4e858ad933f44d0c3ee/src/ComplexToolbar/pythonpath/status_listener.py
 
 
-def create_named_value(name: str, value: str) -> NamedValue:
+def create_named_value(name: str, value: Any) -> NamedValue:  # noqa: ANN401
     v = NamedValue()
     v.Name = name
     v.Value = value
@@ -34,7 +34,7 @@ class FeatureEventWrapper:
         event.Requery = requery
         self.event = event
 
-    def set_command(self, command: str, name: str, value: str) -> FeatureStateEvent:
+    def set_command(self, command: str, name: str, value: Any) -> FeatureStateEvent:  # noqa: ANN401
         args = (create_named_value(name, value),)
         self.event.State = create_control_command(command, args)
         return self.event
@@ -56,7 +56,7 @@ class StatusListenerWrapper:
         self.listener = listener
         self.url = url
 
-    def send_command(self, command: str, name: str, value: str) -> StatusListenerWrapper:
+    def send_command(self, command: str, name: str, value: Any) -> StatusListenerWrapper:  # noqa: ANN401
         event = FeatureEventWrapper(self.url, True, False)
         self.listener.statusChanged(event.set_command(command, name, value))
         return self

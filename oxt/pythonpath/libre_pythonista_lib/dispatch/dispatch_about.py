@@ -1,11 +1,5 @@
 from __future__ import annotations
-from typing import Dict, Tuple, TYPE_CHECKING
-
-try:
-    # python 3.12+
-    from typing import override  # type: ignore
-except ImportError:
-    from typing_extensions import override
+from typing import Any, Dict, Tuple, TYPE_CHECKING
 
 import uno
 import unohelper
@@ -19,27 +13,37 @@ from ooodev.dialog.msgbox import MsgBox, MessageBoxType
 from ooodev.loader import Lo
 
 if TYPE_CHECKING:
+    try:
+        # python 3.12+
+        from typing import override  # type: ignore
+    except ImportError:
+        from typing_extensions import override
     from com.sun.star.frame import XStatusListener
     from ....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
     from ....___lo_pip___.config import Config
     from ....___lo_pip___.lo_util.resource_resolver import ResourceResolver
 else:
+
+    def override(func):  # noqa: ANN001, ANN201
+        return func
+
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
     from ___lo_pip___.config import Config
     from ___lo_pip___.lo_util.resource_resolver import ResourceResolver
 
 
-class DispatchAbout(unohelper.Base, XDispatch):
+class DispatchAbout(XDispatch, unohelper.Base):
     """Displays the About dialog for the extension."""
 
-    def __init__(self):
+    def __init__(self, ctx: Any) -> None:  # noqa: ANN401
         XDispatch.__init__(self)
         unohelper.Base.__init__(self)
+        self.ctx = ctx
         self._log = OxtLogger(log_name=self.__class__.__name__)
         self._status_listeners: Dict[str, XStatusListener] = {}
 
     @override
-    def addStatusListener(self, Control: XStatusListener, URL: URL) -> None:
+    def addStatusListener(self, Control: XStatusListener, URL: URL) -> None:  # noqa: N802, N803
         """
         registers a listener of a control for a specific URL at this object to receive status events.
 
@@ -51,7 +55,7 @@ class DispatchAbout(unohelper.Base, XDispatch):
         # https://wiki.openoffice.org/wiki/Documentation/DevGuide/WritingUNO/Implementation
         with self._log.indent(True):
             if URL.Complete in self._status_listeners:
-                self._log.debug(f"addStatusListener(): url={URL.Main} already exists.")
+                self._log.debug("addStatusListener(): url=%s already exists.", URL.Main)
             else:
                 # setting IsEnable=False here does not disable the dispatch command
                 # setting State will affect how the control is displayed in menus.
@@ -61,7 +65,7 @@ class DispatchAbout(unohelper.Base, XDispatch):
                 self._status_listeners[URL.Complete] = Control
 
     @override
-    def dispatch(self, URL: URL, Arguments: Tuple[PropertyValue, ...]) -> None:
+    def dispatch(self, URL: URL, Arguments: Tuple[PropertyValue, ...]) -> None:  # noqa: N803
         """
         Dispatches (executes) a URL
 
@@ -74,7 +78,7 @@ class DispatchAbout(unohelper.Base, XDispatch):
         """
         with self._log.indent(True):
             try:
-                self._log.debug(f"dispatch(): url={URL.Main}")
+                self._log.debug("dispatch(): url=%s", URL.Main)
                 _ = Lo.current_doc
                 rr = ResourceResolver(Lo.get_context())
                 cfg = Config()
@@ -102,7 +106,7 @@ class DispatchAbout(unohelper.Base, XDispatch):
                 return
 
     @override
-    def removeStatusListener(self, Control: XStatusListener, URL: URL) -> None:
+    def removeStatusListener(self, Control: XStatusListener, URL: URL) -> None:  # noqa: N802, N803
         """
         Un-registers a listener from a control.
         """

@@ -1,5 +1,7 @@
 from __future__ import annotations
+
 from ooodev.calc import CalcCell
+
 from ..const import (
     UNO_DISPATCH_CODE_EDIT,
     UNO_DISPATCH_CODE_EDIT_MB,
@@ -16,21 +18,22 @@ from ..cell.state.state_kind import StateKind
 class CellDispatchState:
     """Class to get the dispatch state of a cell."""
 
-    def __init__(self, cell: CalcCell):
+    def __init__(self, cell: CalcCell) -> None:
         self._cell = cell
         self._ctl_state = CtlState(cell)
         self._cache = {}
         self._key_maker = KeyMaker()
-
-    def is_dispatch_enabled(self, cmd: str) -> bool:
-        if cmd in (
+        self._dispatch_allowed = {
             UNO_DISPATCH_CODE_EDIT,
             UNO_DISPATCH_CODE_EDIT_MB,
             UNO_DISPATCH_DF_STATE,
             UNO_DISPATCH_DS_STATE,
             UNO_DISPATCH_DATA_TBL_STATE,
             UNO_DISPATCH_CODE_DEL,
-        ):
+        }
+
+    def is_dispatch_enabled(self, cmd: str) -> bool:
+        if cmd in self._dispatch_allowed:
             if not self.sheet_locked:
                 return True
             return not self.cell_locked

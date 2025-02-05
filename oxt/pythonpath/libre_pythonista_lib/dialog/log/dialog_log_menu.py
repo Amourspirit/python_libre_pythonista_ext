@@ -1,18 +1,12 @@
 from __future__ import annotations
-from typing import Any, List, TYPE_CHECKING
+from typing import Any, List
 from ooodev.gui.menu.popup_menu import PopupMenu
 from ooodev.gui.menu.popup.popup_creator import PopupCreator
 from ooodev.loader.inst.doc_type import DocType
 
-from ...const import UNO_DISPATCH_PY_CODE_VALIDATE, UNO_DISPATCH_SEL_RNG, UNO_DISPATCH_SEL_LP_FN
-
-
-# if TYPE_CHECKING:
-#     from .dialog_python import DialogPython
-
 
 class DialogLogMenu:
-    def __init__(self, dlg: Any):
+    def __init__(self, dlg: Any) -> None:  # noqa: ANN401
         self._dlg = dlg
         self._doc = dlg.doc
         self._is_calc_doc = self._doc.DOC_TYPE == DocType.CALC

@@ -19,11 +19,11 @@ else:
     def override(func):  # noqa: ANN001, ANN201
         return func
 
-# https://github.com/marklh9/ExtendingLibreOffice/blob/71a15e72bd9975c282b2d4e858ad933f44d0c3ee/src/ProtocolHandler/handler.py
+# https://github.com/Amourspirit/ExtendingLibreOffice/blob/master/src/ProtocolHandler/handler.py
 
 
-class MainHandler(XDispatchProvider, XInitialization, unohelper.Base):
-    IMPLE_NAME = "___lo_identifier___.ProtocolHandler.MainHandler"
+class CalcSheetHandler(XDispatchProvider, XInitialization, unohelper.Base):
+    IMPLE_NAME = "___lo_identifier___.ProtocolHandler.CalcSheetHandler"
     SERVICE_NAMES = ("com.sun.star.frame.ProtocolHandler",)
 
     @classmethod
@@ -45,18 +45,18 @@ class MainHandler(XDispatchProvider, XInitialization, unohelper.Base):
 
     @override
     def queryDispatch(self, URL: URL, TargetFrameName: str, SearchFlags: int) -> XDispatch | None:  # type: ignore # noqa: N802, N803
-        # print(f"MainHandler URL: {URL.Complete}")
-        if URL.Protocol == "___lo_identifier___.ProtocolHandler.ista:":
+        # print(f"URL: {URL}")
+        if URL.Protocol == "___lo_identifier___.ProtocolHandler.cs:":
             # service_mgr = self.ctx.getServiceManager()
             # dispatch = service_mgr.createInstanceWithArgumentsAndContext(
             #     "___lo_identifier___.ProtocolHandler.MainHandler", (self.frame,), self.ctx
             # )
             # return dispatch
             if TYPE_CHECKING:
-                from ....pythonpath.libre_pythonista_lib.dispatch.main_handler_mgr import MainHandlerMgr
+                from ....pythonpath.libre_pythonista_lib.dispatch.calc_sheet_handler_mgr import CalcSheetHandlerMgr
             else:
-                from libre_pythonista_lib.dispatch.main_handler_mgr import MainHandlerMgr
-            handler = MainHandlerMgr(self.ctx)
+                from libre_pythonista_lib.dispatch.calc_sheet_handler_mgr import CalcSheetHandlerMgr
+            handler = CalcSheetHandlerMgr(self.ctx)
             return handler.query_dispatch(URL, TargetFrameName, SearchFlags)
         return None
 
@@ -71,6 +71,6 @@ class MainHandler(XDispatchProvider, XInitialization, unohelper.Base):
 # region Implementation
 
 g_ImplementationHelper = unohelper.ImplementationHelper()  # noqa: N816
-g_ImplementationHelper.addImplementation(*MainHandler.get_imple())
+g_ImplementationHelper.addImplementation(*CalcSheetHandler.get_imple())
 
 # endregion Implementation

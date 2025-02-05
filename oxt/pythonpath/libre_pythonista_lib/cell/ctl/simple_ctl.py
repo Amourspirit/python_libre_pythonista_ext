@@ -8,7 +8,7 @@ from ooo.dyn.awt.point import Point
 
 from ooodev.calc import CalcCell
 from ooodev.units import UnitMM100
-from ooodev.exceptions import ex as mEx
+from ooodev.exceptions import ex as mEx  # noqa: N812
 from ooodev.utils.kind.language_kind import LanguageKind
 from ooodev.utils.color import StandardColor
 from ooodev.events.args.event_args import EventArgs
@@ -68,16 +68,14 @@ class SimpleCtl:
 
     def _get_features(self) -> Set[str]:
         if self._supported_features is None:
-            self._supported_features = set(
-                [
-                    "add_ctl",
-                    "remove_ctl",
-                    "update_ctl",
-                    "update_ctl_action",
-                    "get_rule_name",
-                    "get_cell_pos_size",
-                ]
-            )
+            self._supported_features = {
+                "add_ctl",
+                "remove_ctl",
+                "update_ctl",
+                "update_ctl_action",
+                "get_rule_name",
+                "get_cell_pos_size",
+            }
 
         return self._supported_features
 
@@ -131,29 +129,21 @@ class SimpleCtl:
 
                 cell_ctl = CellControl(self.calc_cell, self.calc_cell.lo_inst)
                 ctl = cast("FormCtlBase", cell_ctl.current_control)
-                dd = DotDict(
-                    cell=self.calc_cell, cell_control=cell_ctl, ctl=ctl, control=self
-                )
+                dd = DotDict(cell=self.calc_cell, cell_control=cell_ctl, ctl=ctl, control=self)
                 cargs.event_data = dd
                 self.shared_event.trigger_event(CONTROL_UPDATING, cargs)
                 if cargs.cancel:
-                    self.log.debug(
-                        f"{self.__class__.__name__}: update_ctl_action(): Cancelled"
-                    )
+                    self.log.debug(f"{self.__class__.__name__}: update_ctl_action(): Cancelled")
                     return
                 if ctl is None:
                     self.log.debug("SimpleCtl: update_ctl_action(): Control not found")
                     return
                 # self._remove_ctl_script(ctl)
                 self._set_ctl_script(ctl)
-                self.shared_event.trigger_event(
-                    CONTROL_UPDATED, EventArgs.from_args(cargs)
-                )
+                self.shared_event.trigger_event(CONTROL_UPDATED, EventArgs.from_args(cargs))
                 self.log.debug("SimpleCtl: update_ctl_action(): Script set")
             except Exception:
-                self.log.exception(
-                    "SimpleCtl: update_ctl_action(): Error getting current control"
-                )
+                self.log.exception("SimpleCtl: update_ctl_action(): Error getting current control")
 
     def _set_ctl_script(self, ctl: FormCtlBase) -> None:
         """
@@ -168,9 +158,7 @@ class SimpleCtl:
             location = "user:uno_packages"
         if self.log.is_debug:
             self.log.debug(f"SimpleCtl: set_ctl_script(): Script location: {location}")
-            self.log.debug(
-                f"SimpleCtl: set_ctl_script(): Script Name: {self._script_loc}"
-            )
+            self.log.debug(f"SimpleCtl: set_ctl_script(): Script Name: {self._script_loc}")
         ctl.assign_script(
             interface_name=XActionListener,  # type: ignore
             method_name="actionPerformed",
@@ -222,9 +210,7 @@ class SimpleCtl:
                     return
 
                 if self.is_deleted_cell:
-                    raise CellDeletedError(
-                        f"Cell is deleted: {self.calc_cell.cell_obj}"
-                    )
+                    raise CellDeletedError(f"Cell is deleted: {self.calc_cell.cell_obj}")
 
                 # check for the shape on the draw page.
                 # If for some reason the control in not found it is possible a shape was there.
@@ -239,9 +225,7 @@ class SimpleCtl:
                         self.__class__.__name__,
                         shape_name,
                     )
-                    self.shared_event.trigger_event(
-                        CONTROL_ADDED, EventArgs.from_args(cargs)
-                    )
+                    self.shared_event.trigger_event(CONTROL_ADDED, EventArgs.from_args(cargs))
                     return shape.component
 
                 name = self.namer.ctl_name
@@ -254,9 +238,7 @@ class SimpleCtl:
                 # self.log.debug(f"SimpleCtl: add_ctl(): Current Control Not Found: {name}")
 
                 btn = cell_ctl.insert_control_button(label=self._get_label(), name=name)
-                self.log.debug(
-                    "%s: add_ctl(): Inserted Button: %s", self.__class__.__name__, name
-                )
+                self.log.debug("%s: add_ctl(): Inserted Button: %s", self.__class__.__name__, name)
                 shape = btn.control_shape
 
                 self._set_size(shape)
@@ -270,20 +252,12 @@ class SimpleCtl:
                 # Optionally the sheet can store the extension location on save. Then can be use to update controls on load if needed.
                 self._set_ctl_script(btn)
                 self.log.debug("%s: add_ctl(): Leaving", self.__class__.__name__)
-                self.calc_cell.set_custom_property(
-                    self.key_maker.ctl_shape_key, self.namer.ctl_shape_name
-                )
-                self.calc_cell.set_custom_property(
-                    self.key_maker.ctl_orig_ctl_key, self.get_rule_name()
-                )
-                self.shared_event.trigger_event(
-                    CONTROL_ADDED, EventArgs.from_args(cargs)
-                )
+                self.calc_cell.set_custom_property(self.key_maker.ctl_shape_key, self.namer.ctl_shape_name)
+                self.calc_cell.set_custom_property(self.key_maker.ctl_orig_ctl_key, self.get_rule_name())
+                self.shared_event.trigger_event(CONTROL_ADDED, EventArgs.from_args(cargs))
                 return shape
             except Exception as e:
-                self.log.error(
-                    f"{self.__class__.__name__}: add_ctl error: {e}", exc_info=True
-                )
+                self.log.error(f"{self.__class__.__name__}: add_ctl error: {e}", exc_info=True)
                 return None
 
     def update_ctl(self) -> None:
@@ -324,15 +298,11 @@ class SimpleCtl:
                 cargs.event_data = dd
                 self.shared_event.trigger_event(CONTROL_UPDATING, cargs)
                 if cargs.cancel:
-                    self.log.debug(
-                        "%s: update_ctl(): Cancelled", self.__class__.__name__
-                    )
+                    self.log.debug("%s: update_ctl(): Cancelled", self.__class__.__name__)
                     return
                 try:
                     shape = dp.find_shape_by_name(shape_name)
-                    self.log.debug(
-                        f"{self.__class__.__name__}: update_ctl(): Found Shape: {shape_name}"
-                    )
+                    self.log.debug(f"{self.__class__.__name__}: update_ctl(): Found Shape: {shape_name}")
                     self._set_size(shape.component)  # type: ignore
                     self.log.debug("%s: update_ctl(): Leaving", self.__class__.__name__)
                 except mEx.ShapeMissingError:
@@ -342,9 +312,7 @@ class SimpleCtl:
                         shape_name,
                     )
                     self.log.debug("%s: update_ctl(): Leaving", self.__class__.__name__)
-                self.shared_event.trigger_event(
-                    CONTROL_UPDATED, EventArgs.from_args(cargs)
-                )
+                self.shared_event.trigger_event(CONTROL_UPDATED, EventArgs.from_args(cargs))
             except Exception as e:
                 self.log.error(
                     "%s: update_ctl error: %s",
@@ -421,9 +389,7 @@ class SimpleCtl:
                 cargs.event_data = dd
                 self.shared_event.trigger_event(CONTROL_REMOVING, cargs)
                 if cargs.cancel:
-                    self.log.debug(
-                        "%s: update_ctl(): Cancelled", self.__class__.__name__
-                    )
+                    self.log.debug("%s: update_ctl(): Cancelled", self.__class__.__name__)
                     return
                 try:
                     shape = dp.find_shape_by_name(shape_name)
@@ -461,14 +427,8 @@ class SimpleCtl:
                         self.__class__.__name__,
                         self.key_maker.ctl_orig_ctl_key,
                     )
-                    self.calc_cell.remove_custom_property(
-                        self.key_maker.ctl_orig_ctl_key
-                    )
-                self.shared_event.trigger_event(
-                    CONTROL_REMOVED, EventArgs.from_args(cargs)
-                )
+                    self.calc_cell.remove_custom_property(self.key_maker.ctl_orig_ctl_key)
+                self.shared_event.trigger_event(CONTROL_REMOVED, EventArgs.from_args(cargs))
             except Exception as e:
-                self.log.error(
-                    f"{self.__class__.__name__}: remove_ctl error: {e}", exc_info=True
-                )
+                self.log.error(f"{self.__class__.__name__}: remove_ctl error: {e}", exc_info=True)
                 return None

@@ -3,7 +3,7 @@ from typing import Any, Tuple, Set
 from ooodev.calc import CalcCell
 from pathlib import Path
 
-from ooodev.exceptions import ex as mEx
+from ooodev.exceptions import ex as mEx  # noqa: N812
 from ooodev.events.args.event_args import EventArgs
 from ooodev.events.args.cancel_event_args import CancelEventArgs
 from ooodev.utils.helper.dot_dict import DotDict
@@ -116,23 +116,17 @@ class MatPlotFigureCtl:
             dot_dict = src.dd_data
             try:
                 if self.is_deleted_cell:
-                    raise CellDeletedError(
-                        "Cell is deleted: %s", self.calc_cell.cell_obj
-                    )
+                    raise CellDeletedError("Cell is deleted: %s", self.calc_cell.cell_obj)
                 # if self.log.is_debug:
                 #     for k, v in dd.items():
                 #         self.log.debug(f"src DotDict: {k}: {v}")
                 if self._prev_img == dot_dict.data:
-                    self.log.debug(
-                        "MatPlotFigureCtl: add_ctl(): No change in image. Not adding again."
-                    )
+                    self.log.debug("MatPlotFigureCtl: add_ctl(): No change in image. Not adding again.")
                     return
                 self.remove_ctl()
                 svg_path = Path(dot_dict.data)
                 if not svg_path.exists():
-                    self.log.error(
-                        "MatPlotFigureCtl: add_ctl(): File not found: %s", svg_path
-                    )
+                    self.log.error("MatPlotFigureCtl: add_ctl(): File not found: %s", svg_path)
                     return
                 ci = CellImg(self.calc_cell, self.calc_cell.lo_inst)
                 shp = ci.insert_cell_image_linked(svg_path)
@@ -141,13 +135,9 @@ class MatPlotFigureCtl:
                 # self._set_ctl_script(ctl)
                 self.log.debug("MatPlotFigureCtl: set_ctl_script(): Script set")
 
-                self.shared_event.trigger_event(
-                    CONTROL_ADDED, EventArgs.from_args(cargs)
-                )
+                self.shared_event.trigger_event(CONTROL_ADDED, EventArgs.from_args(cargs))
             except Exception:
-                self.log.exception(
-                    "MatPlotFigureCtl: set_ctl_script(): Error getting current control"
-                )
+                self.log.exception("MatPlotFigureCtl: set_ctl_script(): Error getting current control")
 
     def remove_ctl(self):
         """
@@ -187,9 +177,7 @@ class MatPlotFigureCtl:
                 cargs.event_data = dd
                 self.shared_event.trigger_event(CONTROL_REMOVING, cargs)
                 if cargs.cancel:
-                    self.log.debug(
-                        "%s: update_ctl(): Cancelled", self.__class__.__name__
-                    )
+                    self.log.debug("%s: update_ctl(): Cancelled", self.__class__.__name__)
                     return
                 try:
                     shape = dp.find_shape_by_name(shape_name)
@@ -228,13 +216,9 @@ class MatPlotFigureCtl:
                         self.__class__.__name__,
                         self.key_maker.ctl_orig_ctl_key,
                     )
-                    self.calc_cell.remove_custom_property(
-                        self.key_maker.ctl_orig_ctl_key
-                    )
+                    self.calc_cell.remove_custom_property(self.key_maker.ctl_orig_ctl_key)
 
-                self.shared_event.trigger_event(
-                    CONTROL_REMOVED, EventArgs.from_args(cargs)
-                )
+                self.shared_event.trigger_event(CONTROL_REMOVED, EventArgs.from_args(cargs))
             except Exception as e:
                 self.log.error(
                     "%s: remove_ctl error: %s",

@@ -5,5 +5,10 @@
                 <value>___lo_identifier___.ProtocolHandler.ista:*</value>
             </prop>
         </node>
+        <node oor:name="___lo_identifier___.ProtocolHandler.CalcSheetHandler" oor:op="replace">
+            <prop oor:name="Protocols" oor:type="oor:string-list">
+                <value>___lo_identifier___.ProtocolHandler.cs:*</value>
+            </prop>
+        </node>
     </node>
 </oor:component-data>

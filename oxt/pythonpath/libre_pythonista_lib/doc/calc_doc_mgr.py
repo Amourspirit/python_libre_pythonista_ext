@@ -11,7 +11,7 @@ import time
 from ooodev.calc import CalcDoc, CalcSheet
 from ooodev.events.args.event_args import EventArgs
 from ooodev.utils.helper.dot_dict import DotDict
-from ooodev.exceptions import ex as mEx
+from ooodev.exceptions import ex as mEx  # noqa: N812
 
 from ..const.event_const import (
     SHEET_ACTIVATION,
@@ -26,7 +26,7 @@ from ..const import UNO_DISPATCH_PYC_FORMULA, UNO_DISPATCH_PYC_FORMULA_DEP
 from ..utils.singleton_base import SingletonBase
 from ..event.shared_event import SharedEvent
 from ..state.calc_state_mgr import CalcStateMgr
-from ..dispatch import dispatch_mgr  # type: ignore
+from ..menus import cell_reg_interceptor
 
 
 if TYPE_CHECKING:
@@ -52,7 +52,7 @@ class CalcDocMgr(SingletonBase):
     Activate sheet is automatically set when the sheet is activated.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         if getattr(self, "_is_init", False):
             return
         self.runtime_uid: str
@@ -104,7 +104,7 @@ class CalcDocMgr(SingletonBase):
 
     # region Event Handlers
 
-    def _on_calc_pyc_formula_enter(self, src: Any, event: EventArgs) -> None:
+    def _on_calc_pyc_formula_enter(self, src: Any, event: EventArgs) -> None:  # noqa: ANN401
         self._log.debug("_on_calc_pyc_formula_enter()")
         try:
             self._state_mgr.is_pythonista_doc = True
@@ -120,7 +120,7 @@ class CalcDocMgr(SingletonBase):
             with self._log.noindent():
                 self._log.exception("_on_calc_pyc_formula_enter() Error")
 
-    def _on_calc_sheet_activated(self, src: Any, event: EventArgs) -> None:
+    def _on_calc_sheet_activated(self, src: Any, event: EventArgs) -> None:  # noqa: ANN401
         self._log.debug("_on_calc_sheet_activated()")
         try:
             self._calc_event_ensured = False
@@ -135,7 +135,7 @@ class CalcDocMgr(SingletonBase):
             with self._log.noindent():
                 self._log.exception("Error activating sheet")
 
-    def _on_calc_sheet_modified(self, src: Any, event: EventArgs) -> None:
+    def _on_calc_sheet_modified(self, src: Any, event: EventArgs) -> None:  # noqa: ANN401
         self._log.debug("_on_calc_sheet_modified()")
         try:
             self._calc_event_ensured = False
@@ -159,7 +159,7 @@ class CalcDocMgr(SingletonBase):
             with self._log.noindent():
                 self._log.exception("_on_calc_sheet_modified() Error")
 
-    def _on_dispatching_cmd(self, src: Any, event: EventArgs) -> None:
+    def _on_dispatching_cmd(self, src: Any, event: EventArgs) -> None:  # noqa: ANN401
         self._log.debug("_on_dispatched_cmd()")
         try:
             self._state_mgr.is_pythonista_doc = True
@@ -181,7 +181,7 @@ class CalcDocMgr(SingletonBase):
             with self._log.noindent():
                 self._log.exception("Error activating sheet")
 
-    def _on_dispatched_cmd(self, src: Any, event: EventArgs) -> None:
+    def _on_dispatched_cmd(self, src: Any, event: EventArgs) -> None:  # noqa: ANN401
         self._log.debug("_on_dispatched_cmd()")
         pass
 
@@ -274,9 +274,7 @@ class CalcDocMgr(SingletonBase):
                     listener = CodeSheetModifyListener(unique_id)  # singleton
                     sheet.component.addModifyListener(listener)
                 else:
-                    listener = CodeSheetModifyListener.get_listener(
-                        unique_id
-                    )  # singleton
+                    listener = CodeSheetModifyListener.get_listener(unique_id)  # singleton
                     sheet.component.removeModifyListener(listener)
                     sheet.component.addModifyListener(listener)
         except Exception:
@@ -345,8 +343,8 @@ class CalcDocMgr(SingletonBase):
     def _register_dispatch_mgr(self) -> None:
         # Can still register the dispatch manager even if the imports are not ready.
         self._log.debug(f"Pre Dispatch manager loaded, UID: {self._doc.runtime_uid}")
-        dispatch_mgr.unregister_interceptor(self._doc)
-        dispatch_mgr.register_interceptor(self._doc)
+        cell_reg_interceptor.unregister_interceptor(self._doc)
+        cell_reg_interceptor.register_interceptor(self._doc)
 
     @check_breakpoint("CalcDocMgr.ensure_events_for_new")
     def ensure_events_for_new(self) -> None:
@@ -357,15 +355,11 @@ class CalcDocMgr(SingletonBase):
         """
         self._log.debug("ensure_events_for_new()")
         if self._events_ensured:
-            self._log.debug(
-                "ensure_events_for_new() Events already ensuring. Returning."
-            )
+            self._log.debug("ensure_events_for_new() Events already ensuring. Returning.")
             return
 
         if not self.calc_state_mgr.is_oxt_init:
-            self._log.debug(
-                "ensure_events_for_new() Oxt not initialized. Setting init to True."
-            )
+            self._log.debug("ensure_events_for_new() Oxt not initialized. Setting init to True.")
             self.calc_state_mgr.is_pythonista_doc = True
 
             self._log.debug("Setting calc_state_mgr.is_job_loading_finished to True")
@@ -383,9 +377,7 @@ class CalcDocMgr(SingletonBase):
             if self._init_doc_view_listeners:
                 self._log.debug("Document view listeners already initialized.")
             else:
-                self._log.debug(
-                    "Document view listeners not initialized. Initializing."
-                )
+                self._log.debug("Document view listeners not initialized. Initializing.")
                 self._init_doc_view_listeners = self._initialize_document_listeners()
 
             if not self._init_doc_view_listeners:
@@ -419,7 +411,7 @@ class CalcDocMgr(SingletonBase):
 
         self._events_ensuring = True
 
-        def ensure_sheet_mgr():
+        def ensure_sheet_mgr() -> None:
             try:
                 from ..sheet.sheet_mgr import SheetMgr  # noqa # type: ignore
             except ImportError:
@@ -445,14 +437,10 @@ class CalcDocMgr(SingletonBase):
             if self._init_doc_view_listeners:
                 self._log.debug("Document view listeners already initialized.")
             else:
-                self._log.debug(
-                    "Document view listeners not initialized. Initializing."
-                )
+                self._log.debug("Document view listeners not initialized. Initializing.")
                 self._init_doc_view_listeners = self._initialize_document_listeners()
                 if not self._init_doc_view_listeners:
-                    self._log.debug(
-                        "Document view listeners not initialized. Returning."
-                    )
+                    self._log.debug("Document view listeners not initialized. Returning.")
                     return
 
             if not self._init_doc_view_listeners:

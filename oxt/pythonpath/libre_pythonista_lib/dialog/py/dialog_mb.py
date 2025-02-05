@@ -44,6 +44,7 @@ from ooodev.utils.partial.the_dictionary_partial import TheDictionaryPartial
 from ooodev.utils.sys_info import SysInfo
 
 from ...const import (
+    UNO_CS_CMD_START,
     UNO_DISPATCH_PY_CODE_VALIDATE,
     UNO_DISPATCH_SEL_RNG,
     UNO_DISPATCH_SEL_LP_FN,
@@ -549,13 +550,13 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
     # endregion key handlers
 
     # region focus handlers
-    def on_code_focus_gained(self, source: Any, event: EventArgs, control_src: CtlTextEdit) -> None:
+    def on_code_focus_gained(self, source: Any, event: EventArgs, control_src: CtlTextEdit) -> None:  # noqa: ANN401
         self.code_focused = True
         self.tk.addKeyHandler(self.keyhandler)
         with self._log.indent(True):
             self._log.debug("Focus Gained")
 
-    def on_code_focus_lost(self, source: Any, event: EventArgs, control_src: CtlTextEdit) -> None:
+    def on_code_focus_lost(self, source: Any, event: EventArgs, control_src: CtlTextEdit) -> None:  # noqa: ANN401
         self.code_focused = False
         self.tk.removeKeyHandler(self.keyhandler)
         with self._log.indent(True):
@@ -564,11 +565,15 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
     # endregion focus handlers
 
     # region menu
-    def _on_menu_select(self, src: Any, event: EventArgs, menu: PopupMenu) -> None:
-        self._log.debug("Menu Selected")
+    def _on_menu_select(self, src: Any, event: EventArgs, menu: PopupMenu) -> None:  # noqa: ANN401
+        # self._log.debug("Menu Selected")
         me = cast("MenuEvent", event.event_data)
         command = menu.get_command(me.MenuId)
-        # self._write_line(f"Menu Selected: {command}, Menu ID: {me.MenuId}")
+
+        self._log.debug("Menu Selected: %s, Menu ID: %s", command, me.MenuId)
+
+        if command.startswith(UNO_CS_CMD_START):
+            command = command.replace(".uno:", "", 1)
 
         if command == UNO_DISPATCH_PY_CODE_VALIDATE:
             try:
@@ -731,7 +736,7 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
     # endregion Key Handlers
 
     # region Code Edit
-    def clear(self):
+    def clear(self) -> None:
         """Clear edit area"""
         self._code.text = ""
 
@@ -1008,7 +1013,7 @@ def get_bg_color(comp: XAccessibleComponent, default: int = 0xEEEEEE) -> int:
     return default
 
 
-def on_menu_select(src: Any, event: EventArgs, menu: PopupMenu) -> None:
+def on_menu_select(src: Any, event: EventArgs, menu: PopupMenu) -> None:  # noqa: ANN401
     print("Menu Selected")
     me = cast("MenuEvent", event.event_data)
     command = menu.get_command(me.MenuId)

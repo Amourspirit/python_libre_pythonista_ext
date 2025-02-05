@@ -9,11 +9,14 @@ except ImportError:
 
 import uno
 from com.sun.star.awt import XKeyHandler
-from ..listener.listener_base import ListenerBase
+
 
 if TYPE_CHECKING:
     from com.sun.star.awt import KeyEvent
     from .dialog_log import DialogLog
+    from ..listener.listener_base import ListenerBase
+else:
+    from libre_pythonista_lib.dialog.listener.listener_base import ListenerBase
 
 
 class KeyHandler(ListenerBase["DialogLog"], XKeyHandler):

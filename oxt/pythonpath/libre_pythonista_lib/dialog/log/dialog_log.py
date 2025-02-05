@@ -40,14 +40,6 @@ from ooodev.utils.color import StandardColor
 from ooodev.utils.partial.the_dictionary_partial import TheDictionaryPartial
 from ooodev.utils.sys_info import SysInfo
 
-from ...dialog.options.log_opt import LogOpt
-from ...config.dialog.log_cfg import LogCfg
-from ...const.event_const import GBL_DOC_CLOSING, LOG_PY_LOGGER_RESET
-from ...event.shared_event import SharedEvent
-from ...log.py_logger import PyLogger
-from .dialog_log_menu import DialogLogMenu
-from .dialog_log_window_listener import DialogLogWindowListener
-from .key_handler import KeyHandler
 
 if TYPE_CHECKING:
     from com.sun.star.awt import MenuBar  # service
@@ -59,10 +51,27 @@ if TYPE_CHECKING:
     from .....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
     from .....___lo_pip___.lo_util.resource_resolver import ResourceResolver
 
+    from ...dialog.options.log_opt import LogOpt
+    from ...config.dialog.log_cfg import LogCfg
+    from ...const.event_const import GBL_DOC_CLOSING, LOG_PY_LOGGER_RESET
+    from ...event.shared_event import SharedEvent
+    from ...log.py_logger import PyLogger
+    from .dialog_log_menu import DialogLogMenu
+    from .dialog_log_window_listener import DialogLogWindowListener
+    from .key_handler import KeyHandler
+
     # from com.sun.star.frame import TaskCreator  # service
 else:
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
     from ___lo_pip___.lo_util.resource_resolver import ResourceResolver
+    from libre_pythonista_lib.dialog.options.log_opt import LogOpt
+    from libre_pythonista_lib.config.dialog.log_cfg import LogCfg
+    from libre_pythonista_lib.const.event_const import GBL_DOC_CLOSING, LOG_PY_LOGGER_RESET
+    from libre_pythonista_lib.event.shared_event import SharedEvent
+    from libre_pythonista_lib.log.py_logger import PyLogger
+    from libre_pythonista_lib.dialog.log.dialog_log_menu import DialogLogMenu
+    from libre_pythonista_lib.dialog.log.dialog_log_window_listener import DialogLogWindowListener
+    from libre_pythonista_lib.dialog.log.key_handler import KeyHandler
 
 # see Also: https://ask.libreoffice.org/t/top-window-crashes-when-a-menubar-is-added/107282 This is not a issue here.
 
@@ -357,7 +366,6 @@ class DialogLog(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
         # self._write_line(f"Menu Selected: {command}, Menu ID: {me.MenuId}")
 
         try:
-
             if command == ".uno:lp.rest_data":
                 result = MsgBox.msgbox(
                     title=self._rr.resolve_string("mbtitle006"),
@@ -418,7 +426,6 @@ class DialogLog(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
         if self._config_updated == True:
             return
         try:
-
             sz_pos = self._dialog.getPosSize()
             sz = self._dialog.getOutputSize()
 
@@ -591,7 +598,6 @@ class DialogLog(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
 
     @override
     def disposing(self, Source: EventObject) -> None:
-
         self._log.debug("Disposing")
         if not self._disposed:
             try:

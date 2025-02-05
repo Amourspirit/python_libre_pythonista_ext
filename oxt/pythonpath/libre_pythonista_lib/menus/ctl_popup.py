@@ -1,7 +1,6 @@
 from __future__ import annotations
-from typing import Any, cast, Dict, TYPE_CHECKING
+from typing import Any, cast, TYPE_CHECKING
 import threading
-from urllib.parse import parse_qs, urlparse
 
 from com.sun.star.uno import XInterface
 from ooo.dyn.beans.named_value import NamedValue
@@ -11,10 +10,11 @@ from ooodev.calc import CalcCell
 from ooodev.gui.menu.popup_menu import PopupMenu
 from ooodev.gui.menu.popup.popup_creator import PopupCreator
 
-from ...res.res_resolver import ResResolver
-from ...dispatch.cell_dispatch_state import CellDispatchState
-from ..props.key_maker import KeyMaker
-from ...const import (
+from . import menu_util as mu
+from ..res.res_resolver import ResResolver
+from ..dispatch.cell_dispatch_state import CellDispatchState
+from ..cell.props.key_maker import KeyMaker
+from ..const import (
     UNO_DISPATCH_CODE_EDIT,
     UNO_DISPATCH_CODE_EDIT_MB,
     UNO_DISPATCH_CODE_DEL,
@@ -23,56 +23,60 @@ from ...const import (
     UNO_DISPATCH_DF_CARD,
     UNO_DISPATCH_DATA_TBL_CARD,
     UNO_DISPATCH_CELL_CTl_UPDATE,
+    UNO_CS_CMD_START,
 )
-from ..state.state_kind import StateKind
-from ..state.ctl_state import CtlState
-from ..lpl_cell import LplCell
-from ...log.log_inst import LogInst
-from ...dialog.webview.lp_py_editor.job_listener import JobListener
+from ..cell.state.state_kind import StateKind
+from ..cell.state.ctl_state import CtlState
+from ..cell.lpl_cell import LplCell
+from ..log.log_inst import LogInst
+from ..dialog.webview.lp_py_editor.job_listener import JobListener
 
 if TYPE_CHECKING:
     from com.sun.star.awt import MenuEvent
     from ooodev.events.args.event_args import EventArgs
-    from .....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
-    from .....___lo_pip___.config import Config
+    from ....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from ....___lo_pip___.config import Config
 else:
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
     from ___lo_pip___.config import Config
 
 
-def on_menu_select(src: Any, event: EventArgs, menu: PopupMenu) -> None:
+def on_menu_select(src: Any, event: EventArgs, menu: PopupMenu) -> None:  # noqa: ANN401
     # print("Menu Selected")
+    global UNO_CS_CMD_START
     log = LogInst()
     log.debug("on_menu_select() Menu Selected")
-    log.debug(f"on_menu_select() Is Main Thread: {is_main_thread()}")
+    log.debug("on_menu_select() Is Main Thread: %s", is_main_thread())
     try:
         me = cast("MenuEvent", event.event_data)
         command = menu.get_command(me.MenuId)
+        cmd_url = mu.get_url_from_command(command)
+        in_thread_check = {
+            UNO_DISPATCH_DF_CARD,
+            UNO_DISPATCH_CODE_EDIT,
+            UNO_DISPATCH_CODE_EDIT_MB,
+            UNO_DISPATCH_DATA_TBL_CARD,
+        }
+        in_thread = cmd_url.Main in in_thread_check
         if command:
+            if command.startswith(UNO_CS_CMD_START):
+                command = command.replace(".uno:", "", 1).lstrip(".")
+                mu.dispatch_cs_cmd(cmd=command, in_thread=in_thread, url=cmd_url, log=log)
+                return
             if command.startswith(".uno:service:"):
                 command = command.replace(".uno:", "", 1)
             # if command == "service:___lo_identifier___.AsyncJobHtmlPyEditor":
             #     editor_service_async(command)
             #     return
 
-            log.debug(f"on_menu_select() Command: {command}")
+            # command = command.replace(".uno:", "", 1)
+            log.debug("on_menu_select() Command: %s", command)
             # check if command is a dispatch command
             # is is very important that UNO_DISPATCH_CODE_EDIT_MB be executed in a thread or it wil block GUI
 
             if menu.is_dispatch_cmd(command):
                 log.debug("on_menu_select() Dispatch Command")
-                if "?" in command:
-                    command_main = command.split("?")[0]
-                    if command_main in (
-                        UNO_DISPATCH_DF_CARD,
-                        UNO_DISPATCH_CODE_EDIT,
-                        UNO_DISPATCH_CODE_EDIT_MB,
-                        UNO_DISPATCH_DATA_TBL_CARD,
-                    ):
-                        menu.execute_cmd(command, in_thread=True)
-                        return
-
-                menu.execute_cmd(command, in_thread=False)
+                menu.execute_cmd(command, in_thread=in_thread)
             else:
                 log.debug("on_menu_select() Not a Dispatch Command")
         else:
@@ -81,7 +85,7 @@ def on_menu_select(src: Any, event: EventArgs, menu: PopupMenu) -> None:
         log.exception("on_menu_select() Error")
 
 
-def is_main_thread():
+def is_main_thread() -> bool:
     return threading.current_thread() == threading.main_thread()
 
 
@@ -93,38 +97,24 @@ def editor_service_async(service: str) -> None:
     listener = JobListener(ctx=Lo.get_context())
     nv_env = NamedValue("Environment", (NamedValue("EnvType", "DISPATCH"),))
 
-    serv = cast(Any, Lo.create_instance_mcf(XInterface, service))
-    serv.executeAsync((nv_env,), listener)
+    current_service = cast(Any, Lo.create_instance_mcf(XInterface, service))
+    current_service.executeAsync((nv_env,), listener)
 
 
 def editor_service(service: str) -> None:
     # service = service.removeprefix("service:") # python 3.9
     service = service.replace("service:", "", 1)
     service_name = service.split("?")[0]
-    params = get_query_params(service)
+    params = mu.get_query_params(service)
     name_values = []
     if params:
         for name, value in params.items():
             name_values.append(NamedValue(name, value))
-    serv = cast(Any, Lo.create_instance_mcf(XInterface, service_name))
+    current_service = cast(Any, Lo.create_instance_mcf(XInterface, service_name))
     if name_values:
-        serv.execute(tuple(name_values))
+        current_service.execute(tuple(name_values))
     else:
-        serv.execute(())  # are a tuple of NamedValue
-
-
-def convert_query_to_dict(query: str) -> Dict[str, str]:
-    if not query:
-        return {}
-    query_dict = parse_qs(query)
-    return {k: v[0] for k, v in query_dict.items()}
-
-
-def get_query_params(url_str: str) -> Dict[str, str]:
-    # Parse the URL and extract the query part
-    query = urlparse(url_str).query
-    # Parse the query string into a dictionary
-    return convert_query_to_dict(query)
+        current_service.execute(())  # are a tuple of NamedValue
 
 
 class CtlPopup:
@@ -150,9 +140,7 @@ class CtlPopup:
             state = self._ctl_state.get_state()
             cmd = self._cps.get_rule_dispatch_cmd()
             if not cmd:
-                self._log.error(
-                    "CtlPopup - _get_state_menu() No dispatch command found."
-                )
+                self._log.error("CtlPopup - _get_state_menu() No dispatch command found.")
                 return []
             cmd_uno = f"{cmd}?sheet={self._sheet_name}&cell={self._cell.cell_obj}"
             py_obj = self._res.resolve_string("mnuViewPyObj")  # Python Object
