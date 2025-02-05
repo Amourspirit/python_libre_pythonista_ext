@@ -20,8 +20,8 @@ from ..const import (
     UNO_DISPATCH_CODE_DEL,
     DISPATCH_CELL_SELECT,
     DISPATCH_CELL_SELECT_RECALC,
-    UNO_DISPATCH_DF_CARD,
-    UNO_DISPATCH_DATA_TBL_CARD,
+    DISPATCH_DF_CARD,
+    DISPATCH_DATA_TBL_CARD,
     DISPATCH_CELL_CTl_UPDATE,
     UNO_CS_CMD_START,
 )
@@ -52,10 +52,10 @@ def on_menu_select(src: Any, event: EventArgs, menu: PopupMenu) -> None:  # noqa
         command = menu.get_command(me.MenuId)
         cmd_url = mu.get_url_from_command(command)
         in_thread_check = {
-            UNO_DISPATCH_DF_CARD,
+            DISPATCH_DF_CARD,
             UNO_DISPATCH_CODE_EDIT,
             UNO_DISPATCH_CODE_EDIT_MB,
-            UNO_DISPATCH_DATA_TBL_CARD,
+            DISPATCH_DATA_TBL_CARD,
         }
         in_thread = cmd_url.Main in in_thread_check
         if command:
@@ -174,7 +174,7 @@ class CtlPopup:
 
     def _get_card_df_menu(self) -> list:
         card_name = self._res.resolve_string("mnuViewCard")
-        card_url = f"{UNO_DISPATCH_DF_CARD}?sheet={self._sheet_name}&cell={self._cell.cell_obj}"
+        card_url = f"{DISPATCH_DF_CARD}?sheet={self._sheet_name}&cell={self._cell.cell_obj}"
         return [
             {"text": "-"},
             {"text": card_name, "command": card_url, "enabled": True},
@@ -182,7 +182,7 @@ class CtlPopup:
 
     def _get_card_tbl_data_menu(self) -> list:
         card_name = self._res.resolve_string("mnuViewCard")
-        card_url = f"{UNO_DISPATCH_DATA_TBL_CARD}?sheet={self._sheet_name}&cell={self._cell.cell_obj}"
+        card_url = f"{DISPATCH_DATA_TBL_CARD}?sheet={self._sheet_name}&cell={self._cell.cell_obj}"
         return [
             {"text": "-"},
             {"text": card_name, "command": card_url, "enabled": True},

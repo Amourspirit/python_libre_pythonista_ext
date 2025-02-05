@@ -19,8 +19,8 @@ from ..const import (
     UNO_DISPATCH_PY_OBJ_STATE,
     PATH_CELL_SELECT,
     PATH_CELL_SELECT_RECALC,
-    UNO_DISPATCH_DF_CARD,
-    UNO_DISPATCH_DATA_TBL_CARD,
+    PATH_DF_CARD,
+    PATH_DATA_TBL_CARD,
     UNO_DISPATCH_SEL_RNG,
     PATH_CELL_CTl_UPDATE,
 )
@@ -245,7 +245,7 @@ class CalcSheetDispatchMgr:
                 log.exception("Dispatch Error: %s", URL.Main)
                 return None
 
-        elif URL.Main == UNO_DISPATCH_DF_CARD:
+        elif URL.Path == PATH_DF_CARD:
             try:
                 from .dispatch_card_df import DispatchCardDf
             except ImportError:
@@ -273,7 +273,7 @@ class CalcSheetDispatchMgr:
                 log.exception("Dispatch Error: %s", URL.Main)
                 return None
 
-        elif URL.Main == UNO_DISPATCH_DATA_TBL_CARD:
+        elif URL.Path == PATH_DATA_TBL_CARD:
             try:
                 from .dispatch_card_tbl_data import DispatchCardTblData
             except ImportError:
