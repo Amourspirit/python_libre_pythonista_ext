@@ -30,15 +30,16 @@ def get_url_from_command(cmd: str) -> URL:
         else:
             url.Arguments = cmd.split("?")[1]
     if ":" in cmd:
-        name = cmd.split(":")[1].split("?")[0]
-        url.Protocol = name
-        if "/" in name:
-            url.Name = name.split("/")[-1]
+        path = cmd.split(":")[1].split("?")[0]
+        url.Path = path
+        if "/" in path:
+            url.Name = path.split("/")[-1]
         else:
-            url.Name = name
+            url.Name = path
     else:
-        url.Name = cmd.split("?")[0]
-        url.Protocol = url.Name
+        url.Path = cmd.split("?")[0]
+
+    url.Protocol = cmd.split(":")[0]
 
     return url
 

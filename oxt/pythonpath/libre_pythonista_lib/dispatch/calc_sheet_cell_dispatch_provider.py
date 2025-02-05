@@ -25,7 +25,7 @@ from ..const import (
     UNO_CS_PROTOCOL,
     UNO_DISPATCH_CODE_EDIT_MB,
     UNO_DISPATCH_CODE_DEL,
-    UNO_DISPATCH_CELL_SELECT,
+    PATH_CELL_SELECT,
     UNO_DISPATCH_CELL_SELECT_RECALC,
     UNO_DISPATCH_DF_STATE,
     UNO_DISPATCH_DS_STATE,
@@ -135,6 +135,7 @@ class CalcSheetCellDispatchProvider(unohelper.Base, XDispatchProviderInterceptor
             raise
         cs_url = mu.get_url_from_command(URL.Complete)
         if log.is_debug:
+            log.debug("_query_process_cs_protocol()")
             log.debug(str(cs_url))
         se = SharedEvent()
 
@@ -242,7 +243,7 @@ class CalcSheetCellDispatchProvider(unohelper.Base, XDispatchProviderInterceptor
                 log.exception(f"Dispatch Error: {cs_url.Main}")
                 return None
 
-        elif cs_url.Main == UNO_DISPATCH_CELL_SELECT:
+        elif cs_url.Path == PATH_CELL_SELECT:
             try:
                 from .dispatch_cell_select import DispatchCellSelect
             except ImportError:
@@ -252,7 +253,7 @@ class CalcSheetCellDispatchProvider(unohelper.Base, XDispatchProviderInterceptor
                 args = self._convert_query_to_dict(cs_url.Arguments)
 
                 cargs = CancelEventArgs(self)
-                cargs.event_data = DotDict(cmd=UNO_DISPATCH_CELL_SELECT, doc=self._doc, **args)
+                cargs.event_data = DotDict(cmd=cs_url.Complete, doc=self._doc, **args)
                 se.trigger_event(LP_DISPATCHING_CMD, cargs)
                 if cargs.cancel is True and cargs.handled is False:
                     return None

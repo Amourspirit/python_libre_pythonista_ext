@@ -14,7 +14,7 @@ from ..const import (
     UNO_DISPATCH_CODE_EDIT,
     UNO_DISPATCH_CODE_EDIT_MB,
     UNO_DISPATCH_CODE_DEL,
-    UNO_DISPATCH_CELL_SELECT,
+    PATH_CELL_SELECT,
 )
 
 from ..const.event_const import LP_DISPATCHED_CMD, LP_DISPATCHING_CMD
@@ -127,7 +127,7 @@ class CalcSheetHandlerMgr:
                 log.exception("Dispatch Error: %s", URL.Main)
                 return None
 
-        elif URL.Main == UNO_DISPATCH_CELL_SELECT:
+        elif URL.Path == PATH_CELL_SELECT:
             try:
                 from .dispatch_cell_select import DispatchCellSelect
             except ImportError:
@@ -137,7 +137,7 @@ class CalcSheetHandlerMgr:
                 args = self._convert_query_to_dict(URL.Arguments)
 
                 cargs = CancelEventArgs(self)
-                cargs.event_data = DotDict(cmd=UNO_DISPATCH_CELL_SELECT, doc=doc, **args)
+                cargs.event_data = DotDict(url=URL, cmd=URL.Complete, doc=doc, **args)
                 se.trigger_event(LP_DISPATCHING_CMD, cargs)
                 if cargs.cancel is True and cargs.handled is False:
                     return None
