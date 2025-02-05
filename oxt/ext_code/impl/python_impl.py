@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import Any, Tuple, TYPE_CHECKING
 import contextlib
 from pathlib import Path
 import sys
@@ -47,21 +47,10 @@ if TYPE_CHECKING:
     from ooo.dyn.awt.message_box_type import MessageBoxType
     from ooodev.dialog.msgbox import MsgBox
     from ...___lo_pip___.oxt_logger.oxt_logger import OxtLogger
-    from ...pythonpath.libre_pythonista_lib.const import (
-        UNO_DISPATCH_ABOUT,
-        UNO_DISPATCH_LOG_WIN,
-        FORMULA_PYC,
-        UNO_DISPATCH_PIP_PKG_INSTALL,
-        UNO_DISPATCH_PIP_PKG_UNINSTALL,
-        UNO_DISPATCH_PIP_PKG_INSTALLED,
-        UNO_DISPATCH_PIP_PKG_LINK,
-        UNO_DISPATCH_PIP_PKG_UNLINK,
-        UNO_DISPATCH_PYC_FORMULA,
-        UNO_DISPATCH_PYC_FORMULA_DEP,
-    )
+
 else:
 
-    def override(func):
+    def override(func):  # noqa: ANN001, ANN201
         return func
 
     _CONDITIONS_MET = _conditions_met()
@@ -75,18 +64,6 @@ else:
         from ooodev.dialog.msgbox import MsgBox
         from libre_pythonista_lib.code.py_source_mgr import PyInstance
         from libre_pythonista_lib.log.py_logger import PyLogger
-        from libre_pythonista_lib.const import (
-            UNO_DISPATCH_ABOUT,
-            UNO_DISPATCH_LOG_WIN,
-            FORMULA_PYC,  # noqa: F401
-            UNO_DISPATCH_PIP_PKG_INSTALL,
-            UNO_DISPATCH_PIP_PKG_UNINSTALL,
-            UNO_DISPATCH_PIP_PKG_INSTALLED,
-            UNO_DISPATCH_PIP_PKG_LINK,
-            UNO_DISPATCH_PIP_PKG_UNLINK,
-            UNO_DISPATCH_PYC_FORMULA,
-            UNO_DISPATCH_PYC_FORMULA_DEP,
-        )
 
     from ___lo_pip___.lo_util.resource_resolver import ResourceResolver
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
@@ -97,112 +74,25 @@ class PythonImpl(unohelper.Base, XJobExecutor):
     SERVICE_NAMES = ("com.sun.star.task.JobExecutor",)
 
     @classmethod
-    def get_imple(cls):
+    def get_imple(cls) -> Tuple[Any, str, Tuple[str, ...]]:
         return (cls, cls.IMPLE_NAME, cls.SERVICE_NAMES)
 
-    def __init__(self, ctx):
+    def __init__(self, ctx: Any) -> None:  # noqa: ANN401
         self.ctx = ctx
         self._log = OxtLogger(log_name=self.__class__.__name__)
         self._res = ResourceResolver(self.ctx)
 
     @override
-    def trigger(self, Event: str):
-        self._log.debug(f"trigger() event: {Event}")
+    def trigger(self, Event: str) -> None:  # noqa: N803
+        self._log.debug("trigger() event: %s", Event)
         if not _CONDITIONS_MET:
             return
         if Event == "testing":
             self._do_testing()
-        elif Event == "pyc_formula_with_dependent":
-            try:
-                self._log.debug(
-                    "PYC Formula with dependent, Dispatching %s",
-                    UNO_DISPATCH_PYC_FORMULA_DEP,
-                )
-                _ = Lo.current_doc
-                Lo.dispatch_cmd(cmd=UNO_DISPATCH_PYC_FORMULA_DEP)
-                self._log.debug(
-                    "PYC Formula with dependent, Dispatched %s",
-                    UNO_DISPATCH_PYC_FORMULA_DEP,
-                )
-            except Exception:
-                self._log.exception("Error dispatching")
 
         elif Event == "debug_dump_module_to_log":
             self._debug_dump_module_to_log()
-        elif Event == "about":
-            try:
-                self._log.debug("About, Dispatching %s", UNO_DISPATCH_ABOUT)
-                _ = Lo.current_doc
-                Lo.dispatch_cmd(cmd=UNO_DISPATCH_ABOUT)
-                self._log.debug("About, Dispatched %s", UNO_DISPATCH_ABOUT)
-            except Exception:
-                self._log.exception("Error dispatching")
-        elif Event == "install_pip_pkg":
-            try:
-                self._log.debug(
-                    "Install Pkg, Dispatching %s", UNO_DISPATCH_PIP_PKG_INSTALL
-                )
-                _ = Lo.current_doc
-                Lo.dispatch_cmd(cmd=UNO_DISPATCH_PIP_PKG_INSTALL)
-                self._log.debug(
-                    "Install Pkg, Dispatched %s", UNO_DISPATCH_PIP_PKG_INSTALL
-                )
-            except Exception:
-                self._log.exception("Error dispatching")
-        elif Event == "uninstall_pip_pkg":
-            try:
-                self._log.debug(
-                    "Installed Pkg, Dispatching %s", UNO_DISPATCH_PIP_PKG_UNINSTALL
-                )
-                _ = Lo.current_doc
-                Lo.dispatch_cmd(cmd=UNO_DISPATCH_PIP_PKG_UNINSTALL)
-                self._log.debug(
-                    "Installed Pkg, Dispatched %s", UNO_DISPATCH_PIP_PKG_UNINSTALL
-                )
-            except Exception:
-                self._log.exception("Error dispatching")
-        elif Event == "installed_pip_pkg":
-            try:
-                self._log.debug(
-                    "Installed Pkg, Dispatching %s", UNO_DISPATCH_PIP_PKG_INSTALLED
-                )
-                _ = Lo.current_doc
-                Lo.dispatch_cmd(cmd=UNO_DISPATCH_PIP_PKG_INSTALLED)
-                self._log.debug(
-                    "Installed Pkg, Dispatched %s", UNO_DISPATCH_PIP_PKG_INSTALLED
-                )
-            except Exception:
-                self._log.exception("Error dispatching")
 
-        elif Event == "log_window":
-            try:
-                self._log.debug("Log Window, Dispatching %s", UNO_DISPATCH_LOG_WIN)
-                _ = Lo.current_doc
-                # in_thread=1 to wait for thread to join else thread is not joined.
-                Lo.dispatch_cmd(
-                    cmd=UNO_DISPATCH_LOG_WIN + "?in_thread=0", in_thread=True
-                )
-                self._log.debug("Log Window, Dispatched %s", UNO_DISPATCH_LOG_WIN)
-            except Exception:
-                self._log.exception("Error dispatching")
-        elif Event == "link_python":
-            try:
-                self._log.debug("Dispatching %s", UNO_DISPATCH_PIP_PKG_LINK)
-                _ = Lo.current_doc
-                # in_thread=1 to wait for thread to join else thread is not joined.
-                Lo.dispatch_cmd(cmd=UNO_DISPATCH_PIP_PKG_LINK)
-                self._log.debug("Dispatched %s", UNO_DISPATCH_PIP_PKG_LINK)
-            except Exception:
-                self._log.exception("Error dispatching")
-        elif Event == "unlink_python":
-            try:
-                self._log.debug("Dispatching %s", UNO_DISPATCH_PIP_PKG_UNLINK)
-                _ = Lo.current_doc
-                # in_thread=1 to wait for thread to join else thread is not joined.
-                Lo.dispatch_cmd(cmd=UNO_DISPATCH_PIP_PKG_UNLINK)
-                self._log.debug("Dispatched %s", UNO_DISPATCH_PIP_PKG_UNLINK)
-            except Exception:
-                self._log.exception("Error dispatching")
         elif Event == "debuggy":
             try:
                 job = Lo.create_instance_mcf(XJob, "___lo_identifier___.DebugJob")
@@ -211,13 +101,8 @@ class PythonImpl(unohelper.Base, XJobExecutor):
             except Exception:
                 self._log.exception("Error Starting Job")
         else:
-            try:
-                self._log.debug("PYC Formula, Dispatching %s", UNO_DISPATCH_PYC_FORMULA)
-                _ = Lo.current_doc
-                Lo.dispatch_cmd(cmd=UNO_DISPATCH_PYC_FORMULA)
-                self._log.debug("PYC Formula, Dispatched %s", UNO_DISPATCH_PYC_FORMULA)
-            except Exception:
-                self._log.exception("Error dispatching")
+            self._log.debug("trigger() event: %s is not known", Event)
+            return
 
     def _debug_dump_module_to_log(self) -> None:
         doc = CalcDoc.from_current_doc()
@@ -225,7 +110,7 @@ class PythonImpl(unohelper.Base, XJobExecutor):
         if src:
             PyLogger(doc).info(f" Source Code \n# Start Dump\n{src}\n# End Dump\n")
 
-    def _do_testing(self):
+    def _do_testing(self) -> None:
         try:
             msg = self._res.resolve_string("title10")
             self._log.debug(msg)
@@ -246,13 +131,15 @@ class PythonImpl(unohelper.Base, XJobExecutor):
                 )
                 if msg_result != MessageBoxResultsEnum.YES:
                     return
-            cell.component.setFormula(
-                '=___lo_identifier___.TESTINGIMPL.TESTING(1;"$A1$1")'.upper()
-            )
+            cell.component.setFormula('=___lo_identifier___.TESTINGIMPL.TESTING(1;"$A1$1")'.upper())
             _ = cell.value
         except Exception as e:
             self._log.error(f"{self.__class__.__name__} - Error: {e}")
 
 
-g_ImplementationHelper = unohelper.ImplementationHelper()
+# region Implementation
+
+g_ImplementationHelper = unohelper.ImplementationHelper()  # noqa: N816
 g_ImplementationHelper.addImplementation(*PythonImpl.get_imple())
+
+# endregion Implementation

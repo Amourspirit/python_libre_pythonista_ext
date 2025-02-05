@@ -9,11 +9,13 @@ except ImportError:
 
 import uno
 from com.sun.star.awt import XWindowListener
-from ..listener.listener_base import ListenerBase
 
 if TYPE_CHECKING:
     from com.sun.star.awt import WindowEvent
     from .dialog_log import DialogLog
+    from ..listener.listener_base import ListenerBase
+else:
+    from libre_pythonista_lib.dialog.listener.listener_base import ListenerBase
 
 # Component events are provided only for notification purposes.
 # Moves and resizes will be handled internally by the window component, so that GUI layout works properly regardless

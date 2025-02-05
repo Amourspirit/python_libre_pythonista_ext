@@ -4,7 +4,7 @@
       <node oor:name="Images">
          <node oor:name="___lo_identifier___.___lo_implementation_name___.img_code" oor:op="replace">
             <prop oor:name="URL" oor:type="xs:string">
-               <value>service:___lo_identifier___.impl?pyc_formula_with_dependent</value>
+               <value>___lo_identifier___.ProtocolHandler.ista:libre_pythonista.insert_pyc_formula_dep</value>
             </prop>
             <node oor:name="UserDefinedImages">
                <prop oor:name="ImageSmallURL">
@@ -17,7 +17,7 @@
          </node>
          <node oor:name="___lo_identifier___.___lo_implementation_name___.img_log" oor:op="replace">
             <prop oor:name="URL" oor:type="xs:string">
-               <value>service:___lo_identifier___.impl?log_window</value>
+               <value>___lo_identifier___.ProtocolHandler.ista:libre_pythonista.calc.log_window</value>
             </prop>
             <node oor:name="UserDefinedImages">
                <prop oor:name="ImageSmallURL">
@@ -47,7 +47,7 @@
             <node oor:name="Submenu">
                <node oor:name="m001" oor:op="replace">
                   <prop oor:name="URL" oor:type="xs:string">
-                     <value>service:___lo_identifier___.impl?pyc_formula_with_dependent</value>
+                     <value>___lo_identifier___.ProtocolHandler.ista:libre_pythonista.insert_pyc_formula_dep</value>
                   </prop>
                   <prop oor:name="Title" oor:type="xs:string">
                      <value>Insert Python</value>
@@ -70,7 +70,8 @@
                </node>
                <node oor:name="m003" oor:op="replace">
                   <prop oor:name="URL" oor:type="xs:string">
-                     <value>service:___lo_identifier___.impl?log_window</value>
+                     <!-- <value>service:___lo_identifier___.impl?log_window</value> -->
+                     <value>___lo_identifier___.ProtocolHandler.ista:libre_pythonista.calc.log_window</value>
                   </prop>
                   <prop oor:name="Title" oor:type="xs:string">
                      <value>Log Window</value>
@@ -129,7 +130,7 @@
                   <node oor:name="Submenu">
                      <node oor:name="m008" oor:op="replace">
                         <prop oor:name="URL" oor:type="xs:string">
-                           <value>service:___lo_identifier___.impl?installed_pip_pkg</value>
+                           <value>___lo_identifier___.ProtocolHandler.ista:libre_pythonista.ext.pkg_pkg_installed</value>
                         </prop>
                         <prop oor:name="Title" oor:type="xs:string">
                            <value>Package Info</value>
@@ -147,7 +148,7 @@
                      </node>
                      <node oor:name="m009" oor:op="replace">
                         <prop oor:name="URL" oor:type="xs:string">
-                           <value>service:___lo_identifier___.impl?install_pip_pkg</value>
+                           <value>___lo_identifier___.ProtocolHandler.ista:libre_pythonista.ext.pip_pkg_install</value>
                         </prop>
                         <prop oor:name="Title" oor:type="xs:string">
                            <value>Install Pip Package</value>
@@ -165,7 +166,7 @@
                      </node>
                      <node oor:name="m010" oor:op="replace">
                         <prop oor:name="URL" oor:type="xs:string">
-                           <value>service:___lo_identifier___.impl?uninstall_pip_pkg</value>
+                           <value>___lo_identifier___.ProtocolHandler.ista:libre_pythonista.ext.pip_pkg_uninstall</value>
                         </prop>
                         <prop oor:name="Title" oor:type="xs:string">
                            <value>Uninstall Pip Package</value>
@@ -203,7 +204,7 @@
                         <node oor:name="Submenu">
                            <node oor:name="m013" oor:op="replace">
                               <prop oor:name="URL" oor:type="xs:string">
-                                 <value>service:___lo_identifier___.impl?link_python</value>
+                                 <value>___lo_identifier___.ProtocolHandler.ista:libre_pythonista.ext.pkg_pkg_link</value>
                               </prop>
                               <prop oor:name="Title" oor:type="xs:string">
                                  <value>Link Binary Files</value>
@@ -221,7 +222,7 @@
                            </node>
                            <node oor:name="m014" oor:op="replace">
                               <prop oor:name="URL" oor:type="xs:string">
-                                 <value>service:___lo_identifier___.impl?unlink_python</value>
+                                 <value>___lo_identifier___.ProtocolHandler.ista:libre_pythonista.ext.pkg_pkg_unlink</value>
                               </prop>
                               <prop oor:name="Title" oor:type="xs:string">
                                  <value>Unlink Binary Files</value>
@@ -249,7 +250,8 @@
                </node>
                <node oor:name="m016" oor:op="replace">
                   <prop oor:name="URL" oor:type="xs:string">
-                     <value>service:___lo_identifier___.impl?about</value>
+                     <!-- <value>service:___lo_identifier___.impl?about</value> -->
+                     <value>___lo_identifier___.ProtocolHandler.ista:libre_pythonista.ext.about</value>
                   </prop>
                   <prop oor:name="Title" oor:type="xs:string">
                      <value>About ___display_name___</value>

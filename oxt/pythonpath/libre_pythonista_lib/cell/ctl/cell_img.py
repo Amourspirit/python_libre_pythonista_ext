@@ -13,7 +13,7 @@ from com.sun.star.drawing import XShape
 from ooodev.calc.controls.sheet_control_base import SheetControlBase
 from ooodev.calc.partial.calc_sheet_prop_partial import CalcSheetPropPartial
 from ooodev.events.args.cancel_event_args import CancelEventArgs
-from ooodev.exceptions import ex as mEx
+from ooodev.exceptions import ex as mEx  # noqa: N812
 from ooodev.loader import Lo
 from ooodev.utils.helper.dot_dict import DotDict
 from ooodev.utils.kind.drawing_shape_kind import DrawingShapeKind

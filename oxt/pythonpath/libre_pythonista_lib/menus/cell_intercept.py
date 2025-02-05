@@ -13,16 +13,14 @@ from ooodev.events.args.event_args_generic import EventArgsGeneric
 from ooodev.gui.menu.context.action_trigger_item import ActionTriggerItem
 from ooodev.gui.menu.context.action_trigger_sep import ActionTriggerSep
 from ooodev.gui.menu.context.action_trigger_container import ActionTriggerContainer
-from ooodev.loader.inst.doc_type import DocType
-from .dispatch_provider_interceptor import DispatchProviderInterceptor
-from .cell_dispatch_state import CellDispatchState
+from ..dispatch.cell_dispatch_state import CellDispatchState
 from ..log.log_inst import LogInst
 from ..res.res_resolver import ResResolver
 from ..const import (
-    UNO_DISPATCH_CODE_EDIT_MB,
-    UNO_DISPATCH_CODE_DEL,
-    UNO_DISPATCH_CELL_SELECT,
-    UNO_DISPATCH_CELL_SELECT_RECALC,
+    DISPATCH_CODE_EDIT_MB,
+    DISPATCH_CODE_DEL,
+    DISPATCH_CELL_SELECT,
+    DISPATCH_CELL_SELECT_RECALC,
 )
 from ..cell.props.key_maker import KeyMaker
 from ..cell.state.ctl_state import CtlState
@@ -38,16 +36,16 @@ def on_menu_intercept(
     view: CalcSheetView,
 ) -> None:
     """Event Listener for the context menu intercept."""
-    global UNO_DISPATCH_CODE_EDIT_MB
+    global DISPATCH_CODE_EDIT_MB
 
     log = None
 
-    def log_debug(msg: str):
+    def log_debug(msg: str, *args: Any) -> None:  # noqa: ANN401
         nonlocal log
         if log is None:
             return
         with log.indent(True):
-            log.debug(msg)
+            log.debug(msg, *args)
 
     with contextlib.suppress(Exception):
         # don't block other menus if there is an issue.
@@ -67,8 +65,8 @@ def on_menu_intercept(
 
         with contextlib.suppress(Exception):
             log = LogInst()
-            log.debug(f"First Command: {first_cmd}")
-            log.debug(f"Last Command: {last_cmd}")
+            log.debug("First Command: %s", first_cmd)
+            log.debug("Last Command: %s", last_cmd)
 
         # check the first and last items in the container
         if fl == (".uno:Cut", ".uno:FormatCellDialog"):
@@ -87,9 +85,7 @@ def on_menu_intercept(
                 if not cell.has_custom_property("libre_pythonista_codename"):
                     if log is not None:
                         with log.indent(True):
-                            log.debug(
-                                f"Cell {cell_obj} does not have libre_pythonista_codename custom property."
-                            )
+                            log.debug("Cell %s does not have libre_pythonista_codename custom property.", cell_obj)
                     return
 
                 # insert a new menu item.
@@ -102,50 +98,36 @@ def on_menu_intercept(
                     rr = ResResolver()
                     edit_mnu = rr.resolve_string("mnuEditCode")
                     del_mnu = rr.resolve_string("mnuDeletePyCell")
-                    menu_main_sub = ResResolver().resolve_string(
-                        "mnuMainSub"
-                    )  # Pythoninsta
+                    menu_main_sub = ResResolver().resolve_string("mnuMainSub")  # Pythoninsta
                     cps = CellDispatchState(cell=cell)
                     item = None
-                    if cps.is_dispatch_enabled(UNO_DISPATCH_CODE_EDIT_MB):
-                        log_debug(
-                            "CellDispatchState.is_dispatch_enabled(UNO_DISPATCH_CODE_EDIT_MB) is True"
-                        )
-                        this_cmd = f"{UNO_DISPATCH_CODE_EDIT_MB}?sheet={sheet.name}&cell={cell_obj}&in_thread=0"
-                        log_debug(
-                            f"Adding ActionTriggerItem: Label = {edit_mnu}; Command = {this_cmd}"
-                        )
+                    if cps.is_dispatch_enabled(DISPATCH_CODE_EDIT_MB):
+                        log_debug("CellDispatchState.is_dispatch_enabled(DISPATCH_CODE_EDIT_MB) is True")
+                        this_cmd = f"{DISPATCH_CODE_EDIT_MB}?sheet={sheet.name}&cell={cell_obj}&in_thread=0"
+                        log_debug("Adding ActionTriggerItem: Label = %s; Command = %s", edit_mnu, this_cmd)
                         items.append(ActionTriggerItem(this_cmd, edit_mnu))  # type: ignore
 
-                        this_cmd = f"{UNO_DISPATCH_CODE_DEL}?sheet={sheet.name}&cell={cell_obj}"
-                        log_debug(
-                            f"Adding ActionTriggerItem: Label = {del_mnu}; Command = {this_cmd}"
-                        )
+                        this_cmd = f"{DISPATCH_CODE_DEL}?sheet={sheet.name}&cell={cell_obj}"
+                        log_debug("Adding ActionTriggerItem: Label = %s; Command = %s", del_mnu, this_cmd)
                         items.append(ActionTriggerItem(this_cmd, del_mnu))  # type: ignore
 
                         # container.insert_by_index(4, ActionTriggerItem(f".uno:libre_pythonista.calc.menu.reset.orig?sheet={sheet.name}&cell={cell_obj}", "Rest to Original"))  # type: ignore
                         items.append(ActionTriggerSep())  # type: ignore
-                        item = ActionTriggerItem(
-                            menu_main_sub, menu_main_sub, sub_menu=items
-                        )
+                        item = ActionTriggerItem(menu_main_sub, menu_main_sub, sub_menu=items)
                     else:
-                        log_debug(
-                            "CellDispatchState.is_dispatch_enabled(UNO_DISPATCH_CODE_EDIT_MB) is False"
-                        )
+                        log_debug("CellDispatchState.is_dispatch_enabled(DISPATCH_CODE_EDIT_MB) is False")
                     recalc_name = rr.resolve_string("mnuRecalcCell")  # Select Cell
                     items.append(
                         ActionTriggerItem(
-                            f"{UNO_DISPATCH_CELL_SELECT_RECALC}?sheet={sheet.name}&cell={cell_obj}",
+                            f"{DISPATCH_CELL_SELECT_RECALC}?sheet={sheet.name}&cell={cell_obj}",
                             recalc_name,
                         )
                     )  # type: ignore
 
                     # is this a DataFrame or similar?
                     dp_cmd = cps.get_rule_dispatch_cmd()
-                    log_debug(f"Rule Dispatch Command: {dp_cmd}")
-                    if dp_cmd and cell.get_custom_property(
-                        key_maker.cell_array_ability_key, False
-                    ):
+                    log_debug("Rule Dispatch Command: %s", dp_cmd)
+                    if dp_cmd and cell.get_custom_property(key_maker.cell_array_ability_key, False):
                         log_debug("Cell has array ability.")
                         items.append(ActionTriggerSep())  # type: ignore
                         state = CtlState(cell).get_state()
@@ -181,11 +163,11 @@ def on_menu_intercept(
                 return
 
 
-def _mi_plot_figure(container: Any, fl: Tuple[str, str], event: Any) -> bool:
+def _mi_plot_figure(container: Any, fl: Tuple[str, str], event: Any) -> bool:  # noqa: ANN401
     """
     Menu Item for Plot Figure.
     """
-    if not fl == (".uno:Cut", ".uno:EditQrCode"):
+    if fl != (".uno:Cut", ".uno:EditQrCode"):
         return False
     # get the current selection
     selection = event.event_data.event.selection.get_selection()
@@ -213,9 +195,7 @@ def _mi_plot_figure(container: Any, fl: Tuple[str, str], event: Any) -> bool:
             if not cell.has_custom_property("libre_pythonista_codename"):
                 if log is not None:
                     with log.indent(True):
-                        log.debug(
-                            f"Cell {cell_obj} does not have libre_pythonista_codename custom property."
-                        )
+                        log.debug(f"Cell {cell_obj} does not have libre_pythonista_codename custom property.")
                 return False
 
             items = ActionTriggerContainer()
@@ -225,16 +205,16 @@ def _mi_plot_figure(container: Any, fl: Tuple[str, str], event: Any) -> bool:
             menu_main_sub = ResResolver().resolve_string("mnuMainSub")  # Pythoninsta
             cps = CellDispatchState(cell=cell)
             item = None
-            if cps.is_dispatch_enabled(UNO_DISPATCH_CODE_EDIT_MB):
+            if cps.is_dispatch_enabled(DISPATCH_CODE_EDIT_MB):
                 items.append(
                     ActionTriggerItem(
-                        f"{UNO_DISPATCH_CODE_EDIT_MB}?sheet={sheet.name}&cell={cell_obj}&in_thread=0",
+                        f"{DISPATCH_CODE_EDIT_MB}?sheet={sheet.name}&cell={cell_obj}&in_thread=0",
                         edit_mnu,
                     )
                 )  # type: ignore
                 items.append(
                     ActionTriggerItem(
-                        f"{UNO_DISPATCH_CODE_DEL}?sheet={sheet.name}&cell={cell_obj}",
+                        f"{DISPATCH_CODE_DEL}?sheet={sheet.name}&cell={cell_obj}",
                         del_mnu,
                     )
                 )  # type: ignore
@@ -245,14 +225,14 @@ def _mi_plot_figure(container: Any, fl: Tuple[str, str], event: Any) -> bool:
             sel_name = rr.resolve_string("mnuSelCell")  # Select Cell
             items.append(
                 ActionTriggerItem(
-                    f"{UNO_DISPATCH_CELL_SELECT}?sheet={sheet.name}&cell={cell_obj}",
+                    f"{DISPATCH_CELL_SELECT}?sheet={sheet.name}&cell={cell_obj}",
                     sel_name,
                 )
             )  # type: ignore
             recalc_name = rr.resolve_string("mnuRecalcCell")  # Select Cell
             items.append(
                 ActionTriggerItem(
-                    f"{UNO_DISPATCH_CELL_SELECT_RECALC}?sheet={sheet.name}&cell={cell_obj}",
+                    f"{DISPATCH_CELL_SELECT_RECALC}?sheet={sheet.name}&cell={cell_obj}",
                     recalc_name,
                 )
             )  # type: ignore
@@ -266,84 +246,3 @@ def _mi_plot_figure(container: Any, fl: Tuple[str, str], event: Any) -> bool:
                 log.exception("Plot Figure Error.")
 
     return False
-
-
-def register_interceptor(doc_comp: Any):
-    """
-    Registers the dispatch provider interceptor.
-
-    This interceptor will be used to handle the custom .uno: command.
-
-    Args:
-        doc (doc_comp): CalcDoc or Uno Calc Component Document.
-    """
-    if doc_comp is None:
-        raise ValueError("doc_comp is None")
-    dt = getattr(doc_comp, "DOC_TYPE", None)
-    if dt is None:
-        # logger.debug(CalcDoc.DOC_TYPE.get_service())
-        # logger.debug(f"Is Doc Type {Info.is_doc_type(doc_comp, CalcDoc.DOC_TYPE.get_service())}")
-        doc = cast(CalcDoc, CalcDoc.get_doc_from_component(doc_comp))  # type: ignore
-    else:
-        doc = cast(CalcDoc, doc_comp)
-    if doc.DOC_TYPE != DocType.CALC:
-        raise ValueError("Not a CalcDoc")
-
-    log = None
-    with contextlib.suppress(Exception):
-        log = LogInst()
-        with log.indent(True):
-            log.debug("Registering Dispatch Provider Interceptor")
-
-    if DispatchProviderInterceptor.has_instance(doc):
-        if log:
-            with log.indent(True):
-                log.debug("Dispatch Provider Interceptor already registered.")
-        return
-    inst = DispatchProviderInterceptor(doc)  # singleton
-    frame = doc.get_frame()
-    frame.registerDispatchProviderInterceptor(inst)  # type: ignore
-    view = doc.get_view()
-    view.add_event_notify_context_menu_execute(on_menu_intercept)  # type: ignore
-    if log:
-        with log.indent(True):
-            log.debug("Dispatch Provider Interceptor registered.")
-
-
-def unregister_interceptor(doc_comp: Any):
-    """
-    Un-registers the dispatch provider interceptor.
-
-    Args:
-        doc (doc_comp): CalcDoc or Uno Calc Component Document.
-    """
-    if doc_comp is None:
-        raise ValueError("doc_comp is None")
-    dt = getattr(doc_comp, "DOC_TYPE", None)
-    if dt is None:
-        CalcDoc.DOC_TYPE.get_service()
-        doc = cast(CalcDoc, CalcDoc.get_doc_from_component(doc_comp))  # type: ignore
-    else:
-        doc = cast(CalcDoc, doc_comp)
-    if doc.DOC_TYPE != DocType.CALC:
-        raise ValueError("Not a CalcDoc")
-    log = None
-    with contextlib.suppress(Exception):
-        log = LogInst()
-        with log.indent(True):
-            log.debug("UnRegistering Dispatch Provider Interceptor")
-
-    if not DispatchProviderInterceptor.has_instance(doc):
-        if log:
-            with log.indent(True):
-                log.debug("Dispatch Provider Interceptor was not registered.")
-        return
-    inst = DispatchProviderInterceptor(doc)  # singleton
-    frame = doc.get_frame()
-    frame.releaseDispatchProviderInterceptor(inst)  # type: ignore
-    view = doc.get_view()
-    view.remove_event_notify_context_menu_execute(on_menu_intercept)  # type: ignore
-    inst.dispose()
-    if log:
-        with log.indent(True):
-            log.debug("Dispatch Provider Interceptor unregistered.")

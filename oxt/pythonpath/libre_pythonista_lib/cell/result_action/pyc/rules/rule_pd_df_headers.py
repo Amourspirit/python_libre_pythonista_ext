@@ -6,7 +6,7 @@ import pandas as pd
 from .rule_base import RuleBase
 from .....cell.state.ctl_state import CtlState
 from .....cell.state.state_kind import StateKind
-from .....const import UNO_DISPATCH_DF_STATE
+from .....const import DISPATCH_DF_STATE
 from .....utils.pandas_util import PandasUtil
 
 
@@ -20,9 +20,9 @@ class RulePdDfHeaders(RuleBase):
 
     def get_dispatch_state(self) -> str:
         """
-        Gets the dispatch command from the const ``UNO_DISPATCH_DF_STATE``.
+        Gets the dispatch command from the const ``DISPATCH_DF_STATE``.
         """
-        return UNO_DISPATCH_DF_STATE
+        return DISPATCH_DF_STATE
 
     def get_is_match(self) -> bool:
         result = self.data.get("data", None)

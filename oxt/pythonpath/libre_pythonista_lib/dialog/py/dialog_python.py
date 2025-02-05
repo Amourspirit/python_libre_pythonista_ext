@@ -30,7 +30,7 @@ from ooodev.events.args.event_args import EventArgs
 from ooodev.loader.inst.doc_type import DocType
 from ooodev.utils.partial.the_dictionary_partial import TheDictionaryPartial
 
-from ...const import UNO_DISPATCH_PY_CODE_VALIDATE, UNO_DISPATCH_SEL_RNG
+from ...const import DISPATCH_PY_CODE_VALIDATE, DISPATCH_SEL_RNG, CS_CMD_START
 from .window_listener import WindowListener
 from .key_handler import KeyHandler
 
@@ -71,7 +71,7 @@ class DialogPython(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
 
     # pylint: disable=unused-argument
     # region Init
-    def __init__(self, ctx: Any) -> None:
+    def __init__(self, ctx: Any) -> None:  # noqa: ANN401
         TheDictionaryPartial.__init__(self)
         XTopWindowListener.__init__(self)
         unohelper.Base.__init__(self)
@@ -245,7 +245,7 @@ class DialogPython(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
             self._log.debug("Window Closed")
 
     @override
-    def disposing(self, Source: EventObject) -> None:
+    def disposing(self, Source: EventObject) -> None:  # noqa: N803
         with self._log.indent(True):
             self._log.debug("Disposing")
 
@@ -300,9 +300,7 @@ class DialogPython(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
     def _init_code(self) -> None:
         txt_y = DialogPython.HEADER + self._margin
 
-        txt_height = (
-            DialogPython.HEIGHT - DialogPython.FOOTER - (self._margin * 2) - txt_y
-        )
+        txt_height = DialogPython.HEIGHT - DialogPython.FOOTER - (self._margin * 2) - txt_y
         self._code = CtlTextEdit.create(
             self._dialog,
             x=self._margin,
@@ -354,9 +352,7 @@ class DialogPython(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
         txt_sz = self._code.view.getPosSize()
         width = sz.Width - (self._margin * 2)
         txt_height = sz.Height - DialogPython.FOOTER - (self._margin * 2) - txt_sz.Y
-        self._code.view.setPosSize(
-            txt_sz.X, txt_sz.Y, width, txt_height, PosSize.POSSIZE
-        )
+        self._code.view.setPosSize(txt_sz.X, txt_sz.Y, width, txt_height, PosSize.POSSIZE)
 
     def resize(self) -> None:
         sz = self._dialog.getPosSize()
@@ -370,7 +366,7 @@ class DialogPython(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
     # endregion resize
     # region Code Edit
 
-    def clear(self):
+    def clear(self) -> None:
         """Clear edit area"""
         self._code.text = ""
 
@@ -379,13 +375,13 @@ class DialogPython(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
     def _write_line(self, text: str) -> None:
         self._code.write_line(text)
 
-    def _write(self, data: str, sel: Tuple[int, int] | None = None):
+    def _write(self, data: str, sel: Tuple[int, int] | None = None) -> None:
         """Append data to edit control text"""
         with self._log.indent(True):
             if not sel:
                 sel = (self.end, self.end)
             # sel = (0, 0)
-            self._log.debug("Write", f'Data:"{data}"', "Selection", sel)
+            self._log.debug('Write Data:"%s" Selection %s', data, sel)
             self._code.view.insertText(Selection(*sel), data)
 
     # endregion Read/Write
@@ -409,7 +405,7 @@ class DialogPython(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
                 self._write_range_sel()
                 return True
             else:
-                self._log.debug(f"o pressed with modifiers {modifiers}")
+                self._log.debug("o pressed with modifiers %s", modifiers)
             return False
 
     # endregion Key Handlers
@@ -420,9 +416,7 @@ class DialogPython(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
             self._log.debug("_write_range_sel_popup() Write Range Selection Popup")
             try:
                 glbs = GblEvents()
-                glbs.subscribe_event(
-                    "GlobalCalcRangeSelector", self._fn_on_menu_range_select_result
-                )
+                glbs.subscribe_event("GlobalCalcRangeSelector", self._fn_on_menu_range_select_result)
                 self._log.debug("_write_range_sel_popup() Hide Dialog")
                 doc.activate()
                 _ = TopListenerRng(doc)
@@ -453,7 +447,10 @@ class DialogPython(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
     # region text_changed
 
     def on_text_changed(
-        self, source: Any, event: EventArgs, control_src: CtlTextEdit
+        self,
+        source: Any,  # noqa: ANN401
+        event: EventArgs,
+        control_src: CtlTextEdit,
     ) -> None:
         """Handle text changed event"""
         self.end = len(control_src.text)
@@ -467,7 +464,10 @@ class DialogPython(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
     # region key handlers
 
     def on_code_key_pressed(
-        self, source: Any, event: EventArgs, control_src: CtlTextEdit
+        self,
+        source: Any,  # noqa: ANN401
+        event: EventArgs,
+        control_src: CtlTextEdit,
     ) -> None:
         pass
         # key_event = cast("KeyEvent", event.event_data)
@@ -478,7 +478,10 @@ class DialogPython(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
 
     # region focus handlers
     def on_code_focus_gained(
-        self, source: Any, event: EventArgs, control_src: CtlTextEdit
+        self,
+        source: Any,  # noqa: ANN401
+        event: EventArgs,
+        control_src: CtlTextEdit,
     ) -> None:
         self.code_focused = True
         self.tk.addKeyHandler(self.keyhandler)
@@ -486,7 +489,10 @@ class DialogPython(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
             self._log.debug("Focus Gained")
 
     def on_code_focus_lost(
-        self, source: Any, event: EventArgs, control_src: CtlTextEdit
+        self,
+        source: Any,  # noqa: ANN401
+        event: EventArgs,
+        control_src: CtlTextEdit,
     ) -> None:
         self.code_focused = False
         self.tk.removeKeyHandler(self.keyhandler)
@@ -499,18 +505,24 @@ class DialogPython(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
 
     # endregion button handlers
     def on_btn_ok_click(
-        self, source: Any, event: EventArgs, control_src: CtlButton
+        self,
+        source: Any,  # noqa: ANN401
+        event: EventArgs,
+        control_src: CtlButton,
     ) -> None:
         self.end_dialog(1)
 
     def on_btn_cancel_click(
-        self, source: Any, event: EventArgs, control_src: CtlButton
+        self,
+        source: Any,  # noqa: ANN401
+        event: EventArgs,
+        control_src: CtlButton,
     ) -> None:
         self.end_dialog(0)
 
     # endregion Event Handlers
 
-    def get_parent(self):
+    def get_parent(self) -> Any:  # noqa: ANN401
         """Returns parent frame"""
         return Lo.desktop.get_active_frame().getContainerWindow()
 
@@ -530,7 +542,7 @@ class DialogPython(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
             try:
                 self._update_config()
             except Exception as e:
-                self._log.error(f"Error saving configuration: {e}", exc_info=True)
+                self._log.error("Error saving configuration: %s", e, exc_info=True)
             self._dialog.endDialog(result)
 
     def show(self) -> int:
@@ -566,16 +578,19 @@ class DialogPython(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
                 view = control_src.view
                 pm.execute(self._dialog, view.getPosSize(), 0)  # type: ignore
             except Exception as e:
-                self._log.error(f"Error displaying popup: {e}", exc_info=True)
+                self._log.error("Error displaying popup: %s", e, exc_info=True)
 
-    def _on_menu_select(self, src: Any, event: EventArgs, menu: PopupMenu) -> None:
+    def _on_menu_select(self, src: Any, event: EventArgs, menu: PopupMenu) -> None:  # noqa: ANN401
         with self._log.indent(True):
             self._log.debug("Menu Selected")
             me = cast("MenuEvent", event.event_data)
             command = menu.get_command(me.MenuId)
             # self._write_line(f"Menu Selected: {command}, Menu ID: {me.MenuId}")
 
-            if command == UNO_DISPATCH_PY_CODE_VALIDATE:
+            if command.startswith(CS_CMD_START):
+                command = command.replace(".uno:", "", 1)
+
+            if command == DISPATCH_PY_CODE_VALIDATE:
                 try:
                     self._doc.python_script.test_compile_python(self._code.text)
                     title = self._rr.resolve_string("mbtitle001")
@@ -588,32 +603,29 @@ class DialogPython(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
 
                 self._doc.msgbox(msg, title, box_type)
                 return
-            if self._doc.DOC_TYPE == DocType.CALC:
-                if command == UNO_DISPATCH_SEL_RNG:
-                    self._dialog.setFocus()
-                    self._write_range_sel()
-                    # self._write_range_sel_popup(menu)
-                    return
+            if self._doc.DOC_TYPE == DocType.CALC and command == DISPATCH_SEL_RNG:
+                self._dialog.setFocus()
+                self._write_range_sel()
+                # self._write_range_sel_popup(menu)
+                return
         return
 
     def _on_menu_lbl_mouse_entered(
         self,
-        src: Any,
+        src: Any,  # noqa: ANN401
         event: EventArgs,
         control_src: CtlFixedText,
-        *args,
-        **kwargs,
+        *args,  # noqa: ANN002
+        **kwargs,  # noqa: ANN003
     ) -> None:
         self._display_popup(control_src)
 
-    def _on_menu_range_select_result(self, src: Any, event: EventArgs) -> None:
+    def _on_menu_range_select_result(self, src: Any, event: EventArgs) -> None:  # noqa: ANN401
         with self._log.indent(True):
             log = self._log
             try:
                 glbs = GblEvents()
-                glbs.unsubscribe_event(
-                    "GlobalCalcRangeSelector", self._fn_on_menu_range_select_result
-                )
+                glbs.unsubscribe_event("GlobalCalcRangeSelector", self._fn_on_menu_range_select_result)
             except:
                 log.error(
                     "_on_menu_range_select_result() unsubscribing from GlobalCalcRangeSelector",
