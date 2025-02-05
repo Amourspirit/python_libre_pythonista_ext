@@ -28,9 +28,9 @@ from ..const import (
     PATH_CELL_SELECT,
     PATH_CELL_SELECT_RECALC,
     PATH_DF_STATE,
-    UNO_DISPATCH_DS_STATE,
-    UNO_DISPATCH_DATA_TBL_STATE,
-    UNO_DISPATCH_PY_OBJ_STATE,
+    PATH_DS_STATE,
+    PATH_DATA_TBL_STATE,
+    PATH_PY_OBJ_STATE,
 )
 
 from ..const.event_const import GBL_DOC_CLOSING, LP_DISPATCHED_CMD, LP_DISPATCHING_CMD
@@ -299,7 +299,7 @@ class CalcSheetCellDispatchProvider(unohelper.Base, XDispatchProviderInterceptor
                 log.exception("Dispatch Error: %s", cs_url.Main)
                 return None
 
-        if cs_url.Main == UNO_DISPATCH_DS_STATE:
+        if cs_url.Path == PATH_DS_STATE:
             try:
                 from .dispatch_toggle_series_state import DispatchToggleSeriesState
             except ImportError:
@@ -325,7 +325,7 @@ class CalcSheetCellDispatchProvider(unohelper.Base, XDispatchProviderInterceptor
                 log.exception("Dispatch Error: %s", cs_url.Main)
                 return None
 
-        elif cs_url.Main == UNO_DISPATCH_DATA_TBL_STATE:
+        elif cs_url.Path == PATH_DATA_TBL_STATE:
             try:
                 from .dispatch_toggle_data_tbl_state import DispatchToggleDataTblState
             except ImportError:
@@ -352,7 +352,7 @@ class CalcSheetCellDispatchProvider(unohelper.Base, XDispatchProviderInterceptor
                 log.exception("Dispatch Error: %s", cs_url.Main)
                 return None
 
-        elif cs_url.Main == UNO_DISPATCH_PY_OBJ_STATE:
+        elif cs_url.Path == PATH_PY_OBJ_STATE:
             try:
                 from .dispatch_py_obj_state import DispatchPyObjState
             except ImportError:

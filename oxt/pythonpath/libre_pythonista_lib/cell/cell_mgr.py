@@ -27,7 +27,7 @@ from ..style.default_style import DefaultStyle
 from ..utils.singleton_base import SingletonBase
 from ..sheet.sheet_mgr import SheetMgr
 from ..dispatch.cell_dispatch_state import CellDispatchState
-from ..const import DISPATCH_DF_STATE, UNO_DISPATCH_PY_OBJ_STATE
+from ..const import DISPATCH_DF_STATE, DISPATCH_PY_OBJ_STATE
 from ..const.event_const import (
     SHEET_MODIFIED,
     CALC_FORMULAS_CALCULATED,
@@ -903,7 +903,7 @@ class CellMgr(SingletonBase):
             # lp.ctl_state = StateKind.PY_OBJ
             # lp.ctl_state = StateKind.ARRAY
             # dpc = f".uno:libre_pythonista.calc.py_obj.state?sheet={cc.calc_sheet.name}&cell={co}"
-            dpc = f"{UNO_DISPATCH_PY_OBJ_STATE}?sheet={cc.calc_sheet.name}&cell={co}"
+            dpc = f"{DISPATCH_PY_OBJ_STATE}?sheet={cc.calc_sheet.name}&cell={co}"
             doc.dispatch_cmd(dpc)
             rule_dpc = cds.get_rule_dispatch_cmd()
             if rule_dpc:

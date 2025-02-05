@@ -13,10 +13,10 @@ from ..const import (
     PATH_CODE_EDIT,
     PATH_CODE_EDIT_MB,
     PATH_DF_STATE,
-    UNO_DISPATCH_DS_STATE,
-    UNO_DISPATCH_DATA_TBL_STATE,
+    PATH_DS_STATE,
+    PATH_DATA_TBL_STATE,
     PATH_CODE_DEL,
-    UNO_DISPATCH_PY_OBJ_STATE,
+    PATH_PY_OBJ_STATE,
     PATH_CELL_SELECT,
     PATH_CELL_SELECT_RECALC,
     PATH_DF_CARD,
@@ -359,7 +359,7 @@ class CalcSheetDispatchMgr:
                 log.exception("Dispatch Error: %s", URL.Main)
                 return None
 
-        elif URL.Main == UNO_DISPATCH_DS_STATE:
+        elif URL.Path == PATH_DS_STATE:
             try:
                 from .dispatch_toggle_series_state import DispatchToggleSeriesState
             except ImportError:
@@ -386,7 +386,7 @@ class CalcSheetDispatchMgr:
                 log.exception("Dispatch Error: %s", URL.Main)
                 return None
 
-        elif URL.Main == UNO_DISPATCH_DATA_TBL_STATE:
+        elif URL.Path == PATH_DATA_TBL_STATE:
             try:
                 from .dispatch_toggle_data_tbl_state import DispatchToggleDataTblState
             except ImportError:
@@ -414,7 +414,7 @@ class CalcSheetDispatchMgr:
                 log.exception("Dispatch Error: %s", URL.Main)
                 return None
 
-        elif URL.Main == UNO_DISPATCH_PY_OBJ_STATE:
+        elif URL.Path == PATH_PY_OBJ_STATE:
             try:
                 from .dispatch_py_obj_state import DispatchPyObjState
             except ImportError:

@@ -6,8 +6,8 @@ from ..const import (
     DISPATCH_CODE_EDIT,
     DISPATCH_CODE_EDIT_MB,
     DISPATCH_DF_STATE,
-    UNO_DISPATCH_DS_STATE,
-    UNO_DISPATCH_DATA_TBL_STATE,
+    DISPATCH_DS_STATE,
+    DISPATCH_DATA_TBL_STATE,
     DISPATCH_CODE_DEL,
 )
 from ..cell.props.key_maker import KeyMaker
@@ -27,8 +27,8 @@ class CellDispatchState:
             DISPATCH_CODE_EDIT,
             DISPATCH_CODE_EDIT_MB,
             DISPATCH_DF_STATE,
-            UNO_DISPATCH_DS_STATE,
-            UNO_DISPATCH_DATA_TBL_STATE,
+            DISPATCH_DS_STATE,
+            DISPATCH_DATA_TBL_STATE,
             DISPATCH_CODE_DEL,
         }
 
@@ -67,9 +67,9 @@ class CellDispatchState:
         if rule == rules.cell_data_type_pd_df:
             return DISPATCH_DF_STATE
         if rule == rules.cell_data_type_pd_series:
-            return UNO_DISPATCH_DS_STATE
+            return DISPATCH_DS_STATE
         if rule == rules.cell_data_type_tbl_data:
-            return UNO_DISPATCH_DATA_TBL_STATE
+            return DISPATCH_DATA_TBL_STATE
         return ""
 
     def get_state(self) -> StateKind:
