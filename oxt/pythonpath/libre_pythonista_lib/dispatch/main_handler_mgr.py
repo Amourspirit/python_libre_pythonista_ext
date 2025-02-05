@@ -11,15 +11,15 @@ from ooodev.events.args.cancel_event_args import CancelEventArgs
 from ooodev.utils.helper.dot_dict import DotDict
 
 from ..const import (
-    UNO_DISPATCH_ABOUT,
-    UNO_DISPATCH_LOG_WIN,
-    UNO_DISPATCH_PIP_PKG_INSTALL,
-    UNO_DISPATCH_PIP_PKG_UNINSTALL,
-    UNO_DISPATCH_PIP_PKG_INSTALLED,
-    UNO_DISPATCH_PIP_PKG_LINK,
-    UNO_DISPATCH_PIP_PKG_UNLINK,
-    UNO_DISPATCH_PYC_FORMULA,
-    UNO_DISPATCH_PYC_FORMULA_DEP,
+    PATH_ABOUT,
+    PATH_LOG_WIN,
+    PATH_PIP_PKG_INSTALL,
+    PATH_PIP_PKG_UNINSTALL,
+    PATH_PIP_PKG_INSTALLED,
+    PATH_PIP_PKG_LINK,
+    PATH_PIP_PKG_UNLINK,
+    PATH_PYC_FORMULA,
+    PATH_PYC_FORMULA_DEP,
 )
 
 from ..const.event_const import LP_DISPATCHED_CMD, LP_DISPATCHING_CMD
@@ -49,9 +49,11 @@ class MainHandlerMgr:
         se = SharedEvent()
         doc = Lo.current_doc
 
-        # print(f"URL: {URL.Main}")
+        # print(f"URL Main: {URL.Main}")
+        # print(f"URL Path: {URL.Path}")
+        # print(f"URL Protocol: {URL.Protocol}")
 
-        if URL.Path == UNO_DISPATCH_ABOUT:
+        if URL.Path == PATH_ABOUT:
             # URL.Complete = "com.github.amourspirit.extensions.librepythonista.ProtocolHandler.ista:libre_pythonista.ext.about"
             # URL.Main = "com.github.amourspirit.extensions.librepythonista.ProtocolHandler.ista:libre_pythonista.ext.about"
             # URL.Protocol = "com.github.amourspirit.extensions.librepythonista.ProtocolHandler.ista:"
@@ -65,7 +67,7 @@ class MainHandlerMgr:
 
             try:
                 cargs = CancelEventArgs(self)
-                cargs.event_data = DotDict(cmd=UNO_DISPATCH_ABOUT, doc=doc)
+                cargs.event_data = DotDict(cmd=PATH_ABOUT, doc=doc)
                 se.trigger_event(LP_DISPATCHING_CMD, cargs)
                 if cargs.cancel is True and cargs.handled is False:
                     return None
@@ -82,7 +84,7 @@ class MainHandlerMgr:
                 log.exception("Dispatch Error: %s", URL.Main)
                 return None
 
-        elif URL.Path == UNO_DISPATCH_LOG_WIN:
+        elif URL.Path == PATH_LOG_WIN:
             # URL.Complete = "com.github.amourspirit.extensions.librepythonista.ProtocolHandler.ista:libre_pythonista.calc.log_window?in_thread=1"
             # URL.Main = "com.github.amourspirit.extensions.librepythonista.ProtocolHandler.ista:libre_pythonista.calc.log_window?in_thread=1"
             # URL.Protocol = "com.github.amourspirit.extensions.librepythonista.ProtocolHandler.ista:"
@@ -98,7 +100,7 @@ class MainHandlerMgr:
                 in_thread = False  # args.pop("in_thread", "0") == "1"
 
                 cargs = CancelEventArgs(self)
-                cargs.event_data = DotDict(cmd=UNO_DISPATCH_LOG_WIN, doc=doc, in_thread=in_thread, **args)
+                cargs.event_data = DotDict(cmd=PATH_LOG_WIN, doc=doc, in_thread=in_thread, **args)
                 se.trigger_event(LP_DISPATCHING_CMD, cargs)
                 if cargs.cancel is True and cargs.handled is False:
                     return None
@@ -115,7 +117,7 @@ class MainHandlerMgr:
                 log.exception("Dispatch Error: %s", URL.Main)
                 return None
 
-        elif URL.Path == UNO_DISPATCH_PYC_FORMULA_DEP:
+        elif URL.Path == PATH_PYC_FORMULA_DEP:
             try:
                 from .dispatch_pyc_formula_dep import DispatchPycFormulaDep
             except ImportError:
@@ -123,7 +125,7 @@ class MainHandlerMgr:
                 raise
             try:
                 cargs = CancelEventArgs(self)
-                cargs.event_data = DotDict(cmd=UNO_DISPATCH_PYC_FORMULA_DEP, doc=doc)
+                cargs.event_data = DotDict(cmd=PATH_PYC_FORMULA_DEP, doc=doc)
                 se.trigger_event(LP_DISPATCHING_CMD, cargs)
                 if cargs.cancel is True and cargs.handled is False:
                     return None
@@ -140,7 +142,7 @@ class MainHandlerMgr:
                 log.exception("Dispatch Error: %s", URL.Main)
                 return None
 
-        elif URL.Path == UNO_DISPATCH_PYC_FORMULA:
+        elif URL.Path == PATH_PYC_FORMULA:
             try:
                 from .dispatch_pyc_formula import DispatchPycFormula
             except ImportError:
@@ -148,7 +150,7 @@ class MainHandlerMgr:
                 raise
             try:
                 cargs = CancelEventArgs(self)
-                cargs.event_data = DotDict(cmd=UNO_DISPATCH_PYC_FORMULA, doc=doc)
+                cargs.event_data = DotDict(cmd=PATH_PYC_FORMULA, doc=doc)
                 se.trigger_event(LP_DISPATCHING_CMD, cargs)
                 if cargs.cancel is True and cargs.handled is False:
                     return None
@@ -165,7 +167,7 @@ class MainHandlerMgr:
                 log.exception("Dispatch Error: %s", URL.Main)
                 return None
 
-        elif URL.Path == UNO_DISPATCH_PIP_PKG_INSTALLED:
+        elif URL.Path == PATH_PIP_PKG_INSTALLED:
             try:
                 from .dispatch_py_pkg_installed import DispatchPyPkgInstalled
             except ImportError:
@@ -173,7 +175,7 @@ class MainHandlerMgr:
                 raise
             try:
                 cargs = CancelEventArgs(self)
-                cargs.event_data = DotDict(cmd=UNO_DISPATCH_PIP_PKG_INSTALLED, doc=doc)
+                cargs.event_data = DotDict(cmd=PATH_PIP_PKG_INSTALLED, doc=doc)
                 se.trigger_event(LP_DISPATCHING_CMD, cargs)
                 if cargs.cancel is True and cargs.handled is False:
                     return None
@@ -190,7 +192,7 @@ class MainHandlerMgr:
                 log.exception("Dispatch Error: %s", URL.Main)
                 return None
 
-        elif URL.Path == UNO_DISPATCH_PIP_PKG_INSTALL:
+        elif URL.Path == PATH_PIP_PKG_INSTALL:
             try:
                 from .dispatch_py_pkg_install import DispatchPyPkgInstall
             except ImportError:
@@ -198,7 +200,7 @@ class MainHandlerMgr:
                 raise
             try:
                 cargs = CancelEventArgs(self)
-                cargs.event_data = DotDict(cmd=UNO_DISPATCH_PIP_PKG_INSTALL, doc=doc)
+                cargs.event_data = DotDict(cmd=PATH_PIP_PKG_INSTALL, doc=doc)
                 se.trigger_event(LP_DISPATCHING_CMD, cargs)
                 if cargs.cancel is True and cargs.handled is False:
                     return None
@@ -215,7 +217,7 @@ class MainHandlerMgr:
                 log.exception("Dispatch Error: %s", URL.Main)
                 return None
 
-        elif URL.Path == UNO_DISPATCH_PIP_PKG_UNINSTALL:
+        elif URL.Path == PATH_PIP_PKG_UNINSTALL:
             try:
                 from .dispatch_py_pkg_uninstall import DispatchPyPkgUninstall
             except ImportError:
@@ -223,7 +225,7 @@ class MainHandlerMgr:
                 raise
             try:
                 cargs = CancelEventArgs(self)
-                cargs.event_data = DotDict(cmd=UNO_DISPATCH_PIP_PKG_UNINSTALL, doc=doc)
+                cargs.event_data = DotDict(cmd=PATH_PIP_PKG_UNINSTALL, doc=doc)
                 se.trigger_event(LP_DISPATCHING_CMD, cargs)
                 if cargs.cancel is True and cargs.handled is False:
                     return None
@@ -240,7 +242,7 @@ class MainHandlerMgr:
                 log.exception("Dispatch Error: %s", URL.Main)
                 return None
 
-        elif URL.Path == UNO_DISPATCH_PIP_PKG_LINK:
+        elif URL.Path == PATH_PIP_PKG_LINK:
             try:
                 from .dispatch_py_link import DispatchPyLink
             except ImportError:
@@ -248,7 +250,7 @@ class MainHandlerMgr:
                 raise
             try:
                 cargs = CancelEventArgs(self)
-                cargs.event_data = DotDict(cmd=UNO_DISPATCH_PIP_PKG_LINK, doc=doc)
+                cargs.event_data = DotDict(cmd=PATH_PIP_PKG_LINK, doc=doc)
                 se.trigger_event(LP_DISPATCHING_CMD, cargs)
                 if cargs.cancel is True and cargs.handled is False:
                     return None
@@ -265,7 +267,7 @@ class MainHandlerMgr:
                 log.exception("Dispatch Error: %s", URL.Main)
                 return None
 
-        elif URL.Path == UNO_DISPATCH_PIP_PKG_UNLINK:
+        elif URL.Path == PATH_PIP_PKG_UNLINK:
             try:
                 from .dispatch_py_unlink import DispatchPyUnlink
             except ImportError:
@@ -273,7 +275,7 @@ class MainHandlerMgr:
                 raise
             try:
                 cargs = CancelEventArgs(self)
-                cargs.event_data = DotDict(cmd=UNO_DISPATCH_PIP_PKG_UNLINK, doc=doc)
+                cargs.event_data = DotDict(cmd=PATH_PIP_PKG_UNLINK, doc=doc)
                 se.trigger_event(LP_DISPATCHING_CMD, cargs)
                 if cargs.cancel is True and cargs.handled is False:
                     return None

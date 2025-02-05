@@ -22,7 +22,7 @@ from ..const.event_const import (
     OXT_INIT,
     LP_DOC_EVENTS_ENSURED,
 )
-from ..const import UNO_DISPATCH_PYC_FORMULA, UNO_DISPATCH_PYC_FORMULA_DEP
+from ..const import PATH_PYC_FORMULA, PATH_PYC_FORMULA_DEP
 from ..utils.singleton_base import SingletonBase
 from ..event.shared_event import SharedEvent
 from ..state.calc_state_mgr import CalcStateMgr
@@ -167,7 +167,7 @@ class CalcDocMgr(SingletonBase):
             self._calc_event_chk_code = False
             ed = cast(DotDict, event.event_data)
             cmd = cast(str, ed.cmd)
-            if cmd in (UNO_DISPATCH_PYC_FORMULA, UNO_DISPATCH_PYC_FORMULA_DEP):
+            if cmd in (PATH_PYC_FORMULA, PATH_PYC_FORMULA_DEP):
                 self._calc_event_ensured = False
                 with self._log.noindent():
                     if self._log.is_debug:
