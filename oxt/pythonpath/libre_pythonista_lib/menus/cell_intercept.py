@@ -17,7 +17,7 @@ from ..dispatch.cell_dispatch_state import CellDispatchState
 from ..log.log_inst import LogInst
 from ..res.res_resolver import ResResolver
 from ..const import (
-    UNO_DISPATCH_CODE_EDIT_MB,
+    DISPATCH_CODE_EDIT_MB,
     DISPATCH_CODE_DEL,
     DISPATCH_CELL_SELECT,
     DISPATCH_CELL_SELECT_RECALC,
@@ -36,7 +36,7 @@ def on_menu_intercept(
     view: CalcSheetView,
 ) -> None:
     """Event Listener for the context menu intercept."""
-    global UNO_DISPATCH_CODE_EDIT_MB
+    global DISPATCH_CODE_EDIT_MB
 
     log = None
 
@@ -101,9 +101,9 @@ def on_menu_intercept(
                     menu_main_sub = ResResolver().resolve_string("mnuMainSub")  # Pythoninsta
                     cps = CellDispatchState(cell=cell)
                     item = None
-                    if cps.is_dispatch_enabled(UNO_DISPATCH_CODE_EDIT_MB):
-                        log_debug("CellDispatchState.is_dispatch_enabled(UNO_DISPATCH_CODE_EDIT_MB) is True")
-                        this_cmd = f"{UNO_DISPATCH_CODE_EDIT_MB}?sheet={sheet.name}&cell={cell_obj}&in_thread=0"
+                    if cps.is_dispatch_enabled(DISPATCH_CODE_EDIT_MB):
+                        log_debug("CellDispatchState.is_dispatch_enabled(DISPATCH_CODE_EDIT_MB) is True")
+                        this_cmd = f"{DISPATCH_CODE_EDIT_MB}?sheet={sheet.name}&cell={cell_obj}&in_thread=0"
                         log_debug("Adding ActionTriggerItem: Label = %s; Command = %s", edit_mnu, this_cmd)
                         items.append(ActionTriggerItem(this_cmd, edit_mnu))  # type: ignore
 
@@ -115,7 +115,7 @@ def on_menu_intercept(
                         items.append(ActionTriggerSep())  # type: ignore
                         item = ActionTriggerItem(menu_main_sub, menu_main_sub, sub_menu=items)
                     else:
-                        log_debug("CellDispatchState.is_dispatch_enabled(UNO_DISPATCH_CODE_EDIT_MB) is False")
+                        log_debug("CellDispatchState.is_dispatch_enabled(DISPATCH_CODE_EDIT_MB) is False")
                     recalc_name = rr.resolve_string("mnuRecalcCell")  # Select Cell
                     items.append(
                         ActionTriggerItem(
@@ -205,10 +205,10 @@ def _mi_plot_figure(container: Any, fl: Tuple[str, str], event: Any) -> bool:  #
             menu_main_sub = ResResolver().resolve_string("mnuMainSub")  # Pythoninsta
             cps = CellDispatchState(cell=cell)
             item = None
-            if cps.is_dispatch_enabled(UNO_DISPATCH_CODE_EDIT_MB):
+            if cps.is_dispatch_enabled(DISPATCH_CODE_EDIT_MB):
                 items.append(
                     ActionTriggerItem(
-                        f"{UNO_DISPATCH_CODE_EDIT_MB}?sheet={sheet.name}&cell={cell_obj}&in_thread=0",
+                        f"{DISPATCH_CODE_EDIT_MB}?sheet={sheet.name}&cell={cell_obj}&in_thread=0",
                         edit_mnu,
                     )
                 )  # type: ignore

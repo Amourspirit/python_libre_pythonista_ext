@@ -10,8 +10,8 @@ from ooodev.events.args.cancel_event_args import CancelEventArgs
 from ooodev.utils.helper.dot_dict import DotDict
 
 from ..const import (
-    UNO_DISPATCH_CODE_EDIT,
-    UNO_DISPATCH_CODE_EDIT_MB,
+    PATH_CODE_EDIT,
+    PATH_CODE_EDIT_MB,
     UNO_DISPATCH_DF_STATE,
     UNO_DISPATCH_DS_STATE,
     UNO_DISPATCH_DATA_TBL_STATE,
@@ -52,7 +52,7 @@ class CalcSheetDispatchMgr:
 
         # print("CalcSheetDispatchMgr: URL.Main", URL.Main)
 
-        if URL.Main == UNO_DISPATCH_CODE_EDIT:
+        if URL.Path == PATH_CODE_EDIT:
             try:
                 from .dispatch_edit_py_cell import DispatchEditPyCell
             except ImportError:
@@ -81,7 +81,7 @@ class CalcSheetDispatchMgr:
                 log.exception("Dispatch Error: %s", URL.Main)
                 return None
 
-        elif URL.Main == UNO_DISPATCH_CODE_EDIT_MB:
+        elif URL.Path == PATH_CODE_EDIT_MB:
             is_experiential = self._config.lp_settings.experimental_editor
             if is_experiential:
                 try:
@@ -105,7 +105,8 @@ class CalcSheetDispatchMgr:
                 in_thread = args.pop("in_thread", "0") == "1"
                 cargs = CancelEventArgs(self)
                 cargs.event_data = DotDict(
-                    cmd=URL.Main,
+                    url=URL,
+                    cmd=URL.Complete,
                     doc=doc,
                     in_thread=in_thread,
                     experiential_edit=is_experiential,

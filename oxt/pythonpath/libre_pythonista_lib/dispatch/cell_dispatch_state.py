@@ -3,8 +3,8 @@ from __future__ import annotations
 from ooodev.calc import CalcCell
 
 from ..const import (
-    UNO_DISPATCH_CODE_EDIT,
-    UNO_DISPATCH_CODE_EDIT_MB,
+    DISPATCH_CODE_EDIT,
+    DISPATCH_CODE_EDIT_MB,
     UNO_DISPATCH_DF_STATE,
     UNO_DISPATCH_DS_STATE,
     UNO_DISPATCH_DATA_TBL_STATE,
@@ -24,8 +24,8 @@ class CellDispatchState:
         self._cache = {}
         self._key_maker = KeyMaker()
         self._dispatch_allowed = {
-            UNO_DISPATCH_CODE_EDIT,
-            UNO_DISPATCH_CODE_EDIT_MB,
+            DISPATCH_CODE_EDIT,
+            DISPATCH_CODE_EDIT_MB,
             UNO_DISPATCH_DF_STATE,
             UNO_DISPATCH_DS_STATE,
             UNO_DISPATCH_DATA_TBL_STATE,

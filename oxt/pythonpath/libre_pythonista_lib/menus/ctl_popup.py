@@ -15,8 +15,8 @@ from ..res.res_resolver import ResResolver
 from ..dispatch.cell_dispatch_state import CellDispatchState
 from ..cell.props.key_maker import KeyMaker
 from ..const import (
-    UNO_DISPATCH_CODE_EDIT,
-    UNO_DISPATCH_CODE_EDIT_MB,
+    DISPATCH_CODE_EDIT,
+    DISPATCH_CODE_EDIT_MB,
     DISPATCH_CODE_DEL,
     DISPATCH_CELL_SELECT,
     DISPATCH_CELL_SELECT_RECALC,
@@ -53,8 +53,8 @@ def on_menu_select(src: Any, event: EventArgs, menu: PopupMenu) -> None:  # noqa
         cmd_url = mu.get_url_from_command(command)
         in_thread_check = {
             DISPATCH_DF_CARD,
-            UNO_DISPATCH_CODE_EDIT,
-            UNO_DISPATCH_CODE_EDIT_MB,
+            DISPATCH_CODE_EDIT,
+            DISPATCH_CODE_EDIT_MB,
             DISPATCH_DATA_TBL_CARD,
         }
         in_thread = cmd_url.Main in in_thread_check
@@ -72,7 +72,7 @@ def on_menu_select(src: Any, event: EventArgs, menu: PopupMenu) -> None:  # noqa
             # command = command.replace(".uno:", "", 1)
             log.debug("on_menu_select() Command: %s", command)
             # check if command is a dispatch command
-            # is is very important that UNO_DISPATCH_CODE_EDIT_MB be executed in a thread or it wil block GUI
+            # is is very important that DISPATCH_CODE_EDIT_MB be executed in a thread or it wil block GUI
 
             if menu.is_dispatch_cmd(command):
                 log.debug("on_menu_select() Dispatch Command")
@@ -194,9 +194,9 @@ class CtlPopup:
         sel_name = self._res.resolve_string("mnuSelCell")  # Select Cell
         recalc_name = self._res.resolve_string("mnuRecalcCell")  # Recalculate
 
-        cmd_enabled = self._cps.is_dispatch_enabled(UNO_DISPATCH_CODE_EDIT)
+        cmd_enabled = self._cps.is_dispatch_enabled(DISPATCH_CODE_EDIT)
         self._log.debug(f"_get_popup_menu() Edit Command Enabled: {cmd_enabled}")
-        edit_url = f"{UNO_DISPATCH_CODE_EDIT_MB}?sheet={self._sheet_name}&cell={self._cell.cell_obj}&in_thread=1"
+        edit_url = f"{DISPATCH_CODE_EDIT_MB}?sheet={self._sheet_name}&cell={self._cell.cell_obj}&in_thread=1"
         del_url = f"{DISPATCH_CODE_DEL}?sheet={self._sheet_name}&cell={self._cell.cell_obj}"
         sel_url = f"{DISPATCH_CELL_SELECT}?sheet={self._sheet_name}&cell={self._cell.cell_obj}"
         sel_recalc_url = f"{DISPATCH_CELL_SELECT_RECALC}?sheet={self._sheet_name}&cell={self._cell.cell_obj}"

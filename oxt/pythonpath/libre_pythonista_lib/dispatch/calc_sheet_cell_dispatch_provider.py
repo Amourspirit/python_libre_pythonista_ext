@@ -23,7 +23,7 @@ from ooodev.utils.helper.dot_dict import DotDict
 # from ooodev.calc import CalcDoc
 from ..const import (
     CS_PROTOCOL,
-    UNO_DISPATCH_CODE_EDIT_MB,
+    PATH_CODE_EDIT_MB,
     PATH_CODE_DEL,
     PATH_CELL_SELECT,
     PATH_CELL_SELECT_RECALC,
@@ -139,7 +139,7 @@ class CalcSheetCellDispatchProvider(unohelper.Base, XDispatchProviderInterceptor
             log.debug(str(cs_url))
         se = SharedEvent()
 
-        if cs_url.Main == UNO_DISPATCH_CODE_EDIT_MB:
+        if cs_url.Path == PATH_CODE_EDIT_MB:
             is_experiential = self._config.lp_settings.experimental_editor
             if is_experiential:
                 try:
