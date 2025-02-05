@@ -15,6 +15,7 @@ from ..res.res_resolver import ResResolver
 from ..dispatch.cell_dispatch_state import CellDispatchState
 from ..cell.props.key_maker import KeyMaker
 from ..const import (
+    CS_CMD_START,
     DISPATCH_CODE_EDIT,
     DISPATCH_CODE_EDIT_MB,
     DISPATCH_CODE_DEL,
@@ -23,7 +24,11 @@ from ..const import (
     DISPATCH_DF_CARD,
     DISPATCH_DATA_TBL_CARD,
     DISPATCH_CELL_CTl_UPDATE,
-    CS_CMD_START,
+    PATH_DF_CARD,
+    PATH_CODE_EDIT,
+    PATH_CODE_EDIT_MB,
+    PATH_CODE_EDIT_MB,
+    PATH_DATA_TBL_CARD,
 )
 from ..cell.state.state_kind import StateKind
 from ..cell.state.ctl_state import CtlState
@@ -52,12 +57,13 @@ def on_menu_select(src: Any, event: EventArgs, menu: PopupMenu) -> None:  # noqa
         command = menu.get_command(me.MenuId)
         cmd_url = mu.get_url_from_command(command)
         in_thread_check = {
-            DISPATCH_DF_CARD,
-            DISPATCH_CODE_EDIT,
-            DISPATCH_CODE_EDIT_MB,
-            DISPATCH_DATA_TBL_CARD,
+            PATH_DF_CARD,
+            PATH_CODE_EDIT,
+            PATH_CODE_EDIT_MB,
+            PATH_CODE_EDIT_MB,
+            PATH_DATA_TBL_CARD,
         }
-        in_thread = cmd_url.Main in in_thread_check
+        in_thread = cmd_url.Path in in_thread_check
         if command:
             if command.startswith(CS_CMD_START):
                 command = command.replace(".uno:", "", 1).lstrip(".")
