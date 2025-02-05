@@ -1,6 +1,6 @@
 # region imports
 from __future__ import unicode_literals, annotations
-from typing import Any, TYPE_CHECKING
+from typing import Any, Tuple, TYPE_CHECKING
 import threading
 import contextlib
 import os
@@ -39,7 +39,7 @@ if TYPE_CHECKING:
     # )
 else:
 
-    def override(func):
+    def override(func):  # noqa: ANN001, ANN201
         return func
 
     _CONDITIONS_MET = _conditions_met()
@@ -57,14 +57,14 @@ else:
 
 
 # region XJob
-class CreateJob(unohelper.Base, XJob):
+class CreateJob(XJob, unohelper.Base):
     """Python UNO Component that implements the com.sun.star.task.Job interface."""
 
     IMPLE_NAME = "___lo_identifier___.CreateJob"
     SERVICE_NAMES = ("com.sun.star.task.Job",)
 
     @classmethod
-    def get_imple(cls):
+    def get_imple(cls) -> Tuple[Any, str, Tuple[str, ...]]:
         return (cls, cls.IMPLE_NAME, cls.SERVICE_NAMES)
 
     # region Init
@@ -108,9 +108,7 @@ class CreateJob(unohelper.Base, XJob):
                         doc_args = self.document.getArgs()
                         args_dic = Props.props_to_dot_dict(doc_args)
                         if hasattr(args_dic, "MacroExecutionMode"):
-                            self._log.debug(
-                                "MacroExecutionMode: %s", args_dic.MacroExecutionMode
-                            )
+                            self._log.debug("MacroExecutionMode: %s", args_dic.MacroExecutionMode)
                             macros_enabled = args_dic.MacroExecutionMode == 4
                         else:
                             macros_enabled = False
@@ -122,16 +120,12 @@ class CreateJob(unohelper.Base, XJob):
                         _ = Lo.load_office()
                         doc = CalcDoc.get_doc_from_component(self.document)
 
-                        t = threading.Thread(
-                            target=_init_with_state, args=(doc, self._log), daemon=True
-                        )
+                        t = threading.Thread(target=_init_with_state, args=(doc, self._log), daemon=True)
                         t.start()
                         # t.join() # DO NOT join. Can cause LibreOffice to hang.
 
                     except Exception:
-                        self._log.error(
-                            "Error setting components on view.", exc_info=True
-                        )
+                        self._log.error("Error setting components on view.", exc_info=True)
                 else:
                     self._log.debug("Conditions not met to register dispatch manager")
             else:
@@ -191,8 +185,7 @@ def _init_with_state(doc: CalcDoc, log: OxtLogger):
 
 # region Implementation
 
-g_TypeTable = {}
-g_ImplementationHelper = unohelper.ImplementationHelper()
+g_ImplementationHelper = unohelper.ImplementationHelper()  # noqa: N816
 g_ImplementationHelper.addImplementation(*CreateJob.get_imple())
 
 # endregion Implementation

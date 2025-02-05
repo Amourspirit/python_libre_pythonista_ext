@@ -1,12 +1,6 @@
 from __future__ import annotations
-from typing import Dict, Tuple, TYPE_CHECKING
-from threading import Thread
+from typing import Any, Dict, Tuple, TYPE_CHECKING
 
-try:
-    # python 3.12+
-    from typing import override  # type: ignore
-except ImportError:
-    from typing_extensions import override
 
 import uno
 import unohelper
@@ -15,79 +9,37 @@ from com.sun.star.beans import PropertyValue
 from com.sun.star.util import URL
 from ooo.dyn.frame.feature_state_event import FeatureStateEvent
 
-from ooodev.loader import Lo
-from ooodev.events.partial.events_partial import EventsPartial
-
-from ..dialog.log.dialog_log import DialogLog
-from ..event.shared_event import SharedEvent
-from ..log.log_inst import LogInst
 
 if TYPE_CHECKING:
-    from com.sun.star.frame import XStatusListener
-    from ....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
-else:
-    from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
-
-_THREADS_DICT = {}
-_ACTIVE_WINDOWS = {}
-
-
-def thread_wrapper(uid: str, url: URL, original_func):
-    """
-    Wrapper function to execute the original thread function and remove the thread from the dictionary upon completion.
-    """
-    global _THREADS_DICT, _ACTIVE_WINDOWS
-    log = LogInst()
-    with log.indent(True):
-        log.debug(f"thread_wrapper uid: {uid}")
     try:
-        original_func(uid, url)
-    finally:
-        with log.indent(True):
-            log.debug(f"thread_wrapper finally uid: {uid}")
-        # Remove the thread from the dictionary
-        del _THREADS_DICT[uid]
-        if uid in _ACTIVE_WINDOWS:
-            del _ACTIVE_WINDOWS[uid]
+        # python 3.12+
+        from typing import override  # type: ignore
+    except ImportError:
+        from typing_extensions import override
+    from com.sun.star.frame import XStatusListener
+else:
+
+    def override(func):  # noqa: ANN001, ANN201
+        return func
 
 
-def dispatch_in_thread(uid: str, url: URL):
-    """
-    Handle the button action event.
-    """
-    global _ACTIVE_WINDOWS
-    log = LogInst()
-    with log.indent(True):
-        log.debug(f"dispatch_in_thread uid: {uid}")
-    if uid in _ACTIVE_WINDOWS:
-        with log.indent(True):
-            log.debug(f"dispatch_in_thread uid: {uid} is in active windows. Deleting it.")
-        del _ACTIVE_WINDOWS[uid]
-    with log.indent(True):
-        log.debug("dispatch_in_thread creating DispatchWorker")
-    worker = DispatchWorker(uid, url)
-    with log.indent(True):
-        log.debug("dispatch_in_thread dispatching DispatchWorker")
-    worker.dispatch()
-    with log.indent(True):
-        log.debug("dispatch_in_thread done")
+class DispatchLogWindow(XDispatch, unohelper.Base):
+    IMPLE_NAME = "___lo_identifier___.dispatch.DispatchLogWindow"
+    SERVICE_NAMES = ("com.sun.star.frame.XDispatch",)
 
+    @classmethod
+    def get_imple(cls) -> Tuple[Any, str, Tuple[str, ...]]:
+        return (cls, cls.IMPLE_NAME, cls.SERVICE_NAMES)
 
-class DispatchLogWindow(XDispatch, EventsPartial, unohelper.Base):
-    def __init__(self, in_thread: bool):
+    def __init__(self, ctx: Any, in_thread: bool) -> None:  # noqa: ANN401
         XDispatch.__init__(self)
-        EventsPartial.__init__(self)
         unohelper.Base.__init__(self)
-        self._log = OxtLogger(log_name=self.__class__.__name__)
-        self._log.debug("Init")
-        self._log.debug(f"in_thread: {in_thread}")
+        self.ctx = ctx
         self._in_thread = in_thread
-        self.add_event_observers(SharedEvent().event_observer)
-        self._log.debug(f"init")
         self._status_listeners: Dict[str, XStatusListener] = {}
 
     @override
-    def addStatusListener(self, Control: XStatusListener, URL: URL) -> None:
+    def addStatusListener(self, Control: XStatusListener, URL: URL) -> None:  # noqa: N802, N803
         """
         registers a listener of a control for a specific URL at this object to receive status events.
 
@@ -95,19 +47,17 @@ class DispatchLogWindow(XDispatch, EventsPartial, unohelper.Base):
 
         Note: Notifications can't be guaranteed! This will be a part of interface XNotifyingDispatch.
         """
-        with self._log.indent(True):
-            self._log.debug(f"addStatusListener(): url={URL.Main}")
-            if URL.Complete in self._status_listeners:
-                self._log.debug(f"addStatusListener(): url={URL.Main} already exists.")
-            else:
-                # setting IsEnable=False here does not disable the dispatch command
-                # State=True may cause the menu items to be displayed as checked.
-                fe = FeatureStateEvent(FeatureURL=URL, IsEnabled=True, State=None)
-                Control.statusChanged(fe)
-                self._status_listeners[URL.Complete] = Control
+        if URL.Complete in self._status_listeners:
+            pass
+        else:
+            # setting IsEnable=False here does not disable the dispatch command
+            # State=True may cause the menu items to be displayed as checked.
+            fe = FeatureStateEvent(FeatureURL=URL, IsEnabled=True, State=None)
+            Control.statusChanged(fe)
+            self._status_listeners[URL.Complete] = Control
 
     @override
-    def dispatch(self, URL: URL, Arguments: Tuple[PropertyValue, ...]) -> None:
+    def dispatch(self, URL: URL, Arguments: Tuple[PropertyValue, ...]) -> None:  # noqa: N803
         """
         Dispatches (executes) a URL
         """
@@ -126,91 +76,26 @@ class DispatchLogWindow(XDispatch, EventsPartial, unohelper.Base):
         # My testing outside dispatch did not show any issues. However, the dispatch is a different beast.
         # When this command was dispatched three times in a row on a Popup menu for the same cell control, the GUI locked up most every time.
         # Running t.join() seems to get rid of all the issues in this area.
-        global _THREADS_DICT, _ACTIVE_WINDOWS
-        try:
-            doc = Lo.current_doc
-            self._uid = doc.runtime_uid
-            if DialogLog.has_instance(self._uid):
-                with self._log.indent(True):
-                    self._log.debug(f"DialogLog has instance with uid '{self._uid}'. Setting Visible")
-                inst = DialogLog.get_instance(self._uid)
-                inst.show()
-                return
+        if TYPE_CHECKING:
+            from .action.action_log_window import ActionLogWindow
+        else:
+            from libre_pythonista_lib.dispatch.action.action_log_window import ActionLogWindow
 
-            if self._uid in _ACTIVE_WINDOWS:
-                with self._log.indent(True):
-                    self._log.debug(f"Thread with uid '{self._uid}' is already running. Setting Focus")
-                _ACTIVE_WINDOWS[self._uid].set_focus()
-                return
-            if self._uid not in _THREADS_DICT:
-                # Wrap the original function
-                target_func = lambda: thread_wrapper(self._uid, URL, dispatch_in_thread)
-                t = Thread(target=target_func, daemon=True)
-
-                # Add the thread to the dictionary
-                _THREADS_DICT[self._uid] = t
-
-                t.start()
-                if self._in_thread:
-                    with self._log.indent(True):
-                        self._log.debug(f"Thread with uid '{self._uid}' is running. Waiting for join.")
-                    t.join()
-                    with self._log.indent(True):
-                        self._log.debug(f"Thread with uid '{self._uid}' has joined.")
-                else:
-                    with self._log.indent(True):
-                        self._log.debug(f"Thread with uid '{self._uid}' is running. Did not wait for join.")
-            else:
-                with self._log.indent(True):
-                    self._log.debug(f"Thread with uid '{self._uid}' is already running.")
-
-        except Exception:
-            with self._log.indent(True):
-                self._log.error("Error getting cell information", exc_info=True)
-            return
+        action = ActionLogWindow(self._in_thread)
+        action.dispatch(URL, Arguments)
 
     @override
-    def removeStatusListener(self, Control: XStatusListener, URL: URL) -> None:
+    def removeStatusListener(self, Control: XStatusListener, URL: URL) -> None:  # noqa: N802, N803
         """
         Un-registers a listener from a control.
         """
-        with self._log.indent(True):
-            self._log.debug(f"removeStatusListener(): url={URL.Main}")
-            if URL.Complete in self._status_listeners:
-                del self._status_listeners[URL.Complete]
+        if URL.Complete in self._status_listeners:
+            del self._status_listeners[URL.Complete]
 
 
-class DispatchWorker:
-    def __init__(self, uid: str, url: URL):
-        self._log = OxtLogger(log_name=self.__class__.__name__)
-        self._log.debug(f"init: uid={uid}, url={url.Main}")
-        self._url = url
-        self._uid = uid
+# region Implementation
 
-    def dispatch(self) -> None:
-        with self._log.indent(True):
-            try:
-                self._log.debug("dispatch")
-                self._show_dialog()
-            except Exception as e:
-                # log the error and do not re-raise it.
-                # re-raising the error may crash the entire LibreOffice app.
-                self._log.error(f"Error: {e}", exc_info=True)
-                return
+g_ImplementationHelper = unohelper.ImplementationHelper()  # noqa: N816
+g_ImplementationHelper.addImplementation(*DispatchLogWindow.get_imple())
 
-    def _show_dialog(self) -> None:
-        global _ACTIVE_WINDOWS
-        ctx = Lo.get_context()
-        if DialogLog.has_instance(self._uid):
-            mb = DialogLog.get_instance(self._uid)
-        else:
-            mb = DialogLog(ctx)
-        _ACTIVE_WINDOWS[self._uid] = mb
-        with self._log.indent(True):
-            self._log.debug("Displaying dialog")
-        mb.show()
-        return
-        if mb.show():
-            with self._log.indent(True):
-                self._log.debug("Log Dialog is Closed.")
-        mb.dispose()
+# endregion Implementation

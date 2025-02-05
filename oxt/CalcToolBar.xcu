@@ -20,7 +20,7 @@
 				</prop>
 				<node oor:name="t01" oor:op="replace">
 					<prop oor:name="URL" oor:type="xs:string">
-						<value>service:___lo_identifier___.impl?pyc_formula_with_dependent</value>
+						<value>___lo_identifier___.ProtocolHandler.ista:libre_pythonista.insert_pyc_formula_dep</value>
 					</prop>
 					<prop oor:name="Title" oor:type="xs:string">
 						<value xml:lang="en-US">Insert Python</value>
@@ -42,7 +42,7 @@
 				</node>
 				<node oor:name="t02" oor:op="replace">
 					<prop oor:name="URL" oor:type="xs:string">
-						<value>service:___lo_identifier___.impl?log_window</value>
+						<value>___lo_identifier___.ProtocolHandler.ista:libre_pythonista.calc.log_window</value>
 					</prop>
 					<prop oor:name="Title" oor:type="xs:string">
 						<value xml:lang="en-US">Log Window</value>

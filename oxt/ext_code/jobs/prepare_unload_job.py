@@ -1,6 +1,6 @@
 # region imports
 from __future__ import unicode_literals, annotations
-from typing import Any, cast, TYPE_CHECKING
+from typing import Any, cast, Tuple, TYPE_CHECKING
 import os
 import contextlib
 
@@ -40,7 +40,7 @@ if TYPE_CHECKING:
     )
     from ...pythonpath.libre_pythonista_lib.code.mod_helper.lplog import LpLog
     from ...pythonpath.libre_pythonista_lib.cell.cell_mgr import CellMgr
-    from ...pythonpath.libre_pythonista_lib.dispatch import dispatch_mgr  # type: ignore
+    from ...pythonpath.libre_pythonista_lib.menus import cell_reg_interceptor
     from ...pythonpath.libre_pythonista_lib.const.event_const import GBL_DOC_CLOSING
 
     # from ...pythonpath.libre_pythonista_lib.state.calc_state_mgr import CalcStateMgr
@@ -69,7 +69,7 @@ else:
         )
         from libre_pythonista_lib.code.mod_helper.lplog import LpLog
         from libre_pythonista_lib.cell.cell_mgr import CellMgr
-        from libre_pythonista_lib.dispatch import dispatch_mgr  # type: ignore
+        from libre_pythonista_lib.menus import cell_reg_interceptor
         from libre_pythonista_lib.const.event_const import GBL_DOC_CLOSING
 
         # from libre_pythonista_lib.state.calc_state_mgr import CalcStateMgr
@@ -90,12 +90,12 @@ class PrepareUnloadJob(XJob, unohelper.Base):
     SERVICE_NAMES = ("com.sun.star.task.Job",)
 
     @classmethod
-    def get_imple(cls):
+    def get_imple(cls) -> Tuple[type, str, tuple[str, ...]]:
         return (cls, cls.IMPLE_NAME, cls.SERVICE_NAMES)
 
     # region Init
 
-    def __init__(self, ctx):
+    def __init__(self, ctx: Any) -> None:  # noqa: ANN401
         XJob.__init__(self)
         unohelper.Base.__init__(self)
         self.ctx = ctx
@@ -110,7 +110,7 @@ class PrepareUnloadJob(XJob, unohelper.Base):
 
     # region execute
     @override
-    def execute(self, Arguments: Any) -> None:
+    def execute(self, Arguments: Any) -> None:  # noqa: ANN401, N803
         self._log.debug("execute")
         try:
             # loader = Lo.load_office()
@@ -143,7 +143,7 @@ class PrepareUnloadJob(XJob, unohelper.Base):
 
                         self._doc = CalcDoc.get_doc_from_component(self.document)
 
-                        dispatch_mgr.unregister_interceptor(self._doc)
+                        cell_reg_interceptor.unregister_interceptor(self._doc)
 
                         doc_mgr = CalcDocMgr()
                         if not doc_mgr.events_ensured:
@@ -290,7 +290,7 @@ class PrepareUnloadJob(XJob, unohelper.Base):
 
     # region Event Handlers
 
-    def _on_singleton_get_key(self, src: Any, event: EventArgs) -> None:
+    def _on_singleton_get_key(self, src: Any, event: EventArgs) -> None:  # noqa: ANN401
         if self._doc is None:
             return
         event_data = cast(DotDict, event.event_data)
@@ -313,13 +313,13 @@ class PrepareUnloadJob(XJob, unohelper.Base):
             self._log.debug("CodeSheetModifyListener singleton requested")
             event_data.key = f"{self._doc.runtime_uid}_uid_{event_data.inst_name}"
 
-    def _on_singleton_get_doc(self, src: Any, event: EventArgs) -> None:
+    def _on_singleton_get_doc(self, src: Any, event: EventArgs) -> None:  # noqa: ANN401
         if self._doc is None:
             return
         event_data = cast(DotDict, event.event_data)
         event_data.doc = self._doc
 
-    def _on_doc_event_partial_check_uid(self, src: Any, event: EventArgs) -> None:
+    def _on_doc_event_partial_check_uid(self, src: Any, event: EventArgs) -> None:  # noqa: ANN401
         if self._doc is None:
             return
         event_data = cast(DotDict, event.event_data)
@@ -332,8 +332,7 @@ class PrepareUnloadJob(XJob, unohelper.Base):
 
 # region Implementation
 
-g_TypeTable = {}
-g_ImplementationHelper = unohelper.ImplementationHelper()
+g_ImplementationHelper = unohelper.ImplementationHelper()  # noqa: N816
 g_ImplementationHelper.addImplementation(*PrepareUnloadJob.get_imple())
 
 # endregion Implementation

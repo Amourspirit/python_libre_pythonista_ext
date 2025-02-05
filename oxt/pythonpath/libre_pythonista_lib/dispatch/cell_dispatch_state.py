@@ -1,12 +1,14 @@
 from __future__ import annotations
+
 from ooodev.calc import CalcCell
+
 from ..const import (
-    UNO_DISPATCH_CODE_EDIT,
-    UNO_DISPATCH_CODE_EDIT_MB,
-    UNO_DISPATCH_DF_STATE,
-    UNO_DISPATCH_DS_STATE,
-    UNO_DISPATCH_DATA_TBL_STATE,
-    UNO_DISPATCH_CODE_DEL,
+    DISPATCH_CODE_EDIT,
+    DISPATCH_CODE_EDIT_MB,
+    DISPATCH_DF_STATE,
+    DISPATCH_DS_STATE,
+    DISPATCH_DATA_TBL_STATE,
+    DISPATCH_CODE_DEL,
 )
 from ..cell.props.key_maker import KeyMaker
 from ..cell.state.ctl_state import CtlState
@@ -16,21 +18,22 @@ from ..cell.state.state_kind import StateKind
 class CellDispatchState:
     """Class to get the dispatch state of a cell."""
 
-    def __init__(self, cell: CalcCell):
+    def __init__(self, cell: CalcCell) -> None:
         self._cell = cell
         self._ctl_state = CtlState(cell)
         self._cache = {}
         self._key_maker = KeyMaker()
+        self._dispatch_allowed = {
+            DISPATCH_CODE_EDIT,
+            DISPATCH_CODE_EDIT_MB,
+            DISPATCH_DF_STATE,
+            DISPATCH_DS_STATE,
+            DISPATCH_DATA_TBL_STATE,
+            DISPATCH_CODE_DEL,
+        }
 
     def is_dispatch_enabled(self, cmd: str) -> bool:
-        if cmd in (
-            UNO_DISPATCH_CODE_EDIT,
-            UNO_DISPATCH_CODE_EDIT_MB,
-            UNO_DISPATCH_DF_STATE,
-            UNO_DISPATCH_DS_STATE,
-            UNO_DISPATCH_DATA_TBL_STATE,
-            UNO_DISPATCH_CODE_DEL,
-        ):
+        if cmd in self._dispatch_allowed:
             if not self.sheet_locked:
                 return True
             return not self.cell_locked
@@ -62,11 +65,11 @@ class CellDispatchState:
         if not rule:
             return ""
         if rule == rules.cell_data_type_pd_df:
-            return UNO_DISPATCH_DF_STATE
+            return DISPATCH_DF_STATE
         if rule == rules.cell_data_type_pd_series:
-            return UNO_DISPATCH_DS_STATE
+            return DISPATCH_DS_STATE
         if rule == rules.cell_data_type_tbl_data:
-            return UNO_DISPATCH_DATA_TBL_STATE
+            return DISPATCH_DATA_TBL_STATE
         return ""
 
     def get_state(self) -> StateKind:

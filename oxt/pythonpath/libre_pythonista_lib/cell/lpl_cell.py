@@ -10,7 +10,7 @@ from .ctl.ctl_mgr import CtlMgr
 from .props.key_maker import KeyMaker
 from .state.ctl_state import CtlState
 from .state.state_kind import StateKind
-from ..const import UNO_DISPATCH_PY_OBJ_STATE, UNO_DISPATCH_DF_STATE
+from ..const import DISPATCH_PY_OBJ_STATE, DISPATCH_DF_STATE
 from ..cell.result_action.pyc.rules.pyc_rules import PycRules
 from ..code.py_source_mgr import PySource, PyInstance
 from ..utils.pandas_util import PandasUtil
@@ -235,7 +235,7 @@ class LplCell:
                     if pyc_rule is None:
                         return
                     # url_main = pyc_rule.get_dispatch_state()
-                    url_main = UNO_DISPATCH_PY_OBJ_STATE
+                    url_main = DISPATCH_PY_OBJ_STATE
                     cmd = self.get_dispatch_command(url_main)
                     self.cell.calc_doc.dispatch_cmd(cmd)
                 self._ctl_mgr.remove_ctl(self.cell)
@@ -252,7 +252,7 @@ class LplCell:
                 cs = CtlState(cell=self.cell)
                 cs.set_state(StateKind.PY_OBJ)
                 url_main = self.cell_dispatch_state.get_rule_dispatch_cmd()
-                # url_main = UNO_DISPATCH_DF_STATE
+                # url_main = DISPATCH_DF_STATE
                 if not url_main:
                     self._log.error("ctl_state No dispatch command found. Returning")
                     return
@@ -267,7 +267,7 @@ class LplCell:
                 self._log.debug("ctl_state No rule found. Returning")
                 return
             # url_main = pyc_rule.get_dispatch_state()
-            url_main = UNO_DISPATCH_PY_OBJ_STATE
+            url_main = DISPATCH_PY_OBJ_STATE
             if not url_main:
                 self._log.debug("ctl_state No dispatch command found. Returning")
                 return

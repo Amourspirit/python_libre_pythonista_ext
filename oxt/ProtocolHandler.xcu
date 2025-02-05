@@ -1,0 +1,14 @@
+<oor:component-data oor:name="ProtocolHandler" oor:package="org.openoffice.Office" xmlns:oor="http://openoffice.org/2001/registry" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <node oor:name="HandlerSet">
+        <node oor:name="___lo_identifier___.ProtocolHandler.MainHandler" oor:op="replace">
+            <prop oor:name="Protocols" oor:type="oor:string-list">
+                <value>___lo_identifier___.ProtocolHandler.ista:*</value>
+            </prop>
+        </node>
+        <node oor:name="___lo_identifier___.ProtocolHandler.CalcSheetHandler" oor:op="replace">
+            <prop oor:name="Protocols" oor:type="oor:string-list">
+                <value>___lo_identifier___.ProtocolHandler.cs:*</value>
+            </prop>
+        </node>
+    </node>
+</oor:component-data>

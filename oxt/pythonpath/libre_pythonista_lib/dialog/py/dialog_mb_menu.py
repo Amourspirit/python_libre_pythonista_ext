@@ -5,9 +5,9 @@ from ooodev.gui.menu.popup.popup_creator import PopupCreator
 from ooodev.loader.inst.doc_type import DocType
 
 from ...const import (
-    UNO_DISPATCH_PY_CODE_VALIDATE,
-    UNO_DISPATCH_SEL_RNG,
-    UNO_DISPATCH_SEL_LP_FN,
+    DISPATCH_PY_CODE_VALIDATE,
+    DISPATCH_SEL_RNG,
+    DISPATCH_SEL_LP_FN,
 )
 
 
@@ -20,7 +20,7 @@ else:
 class DialogMbMenu:
     """Dialog Menu Builder"""
 
-    def __init__(self, dlg: Any):
+    def __init__(self, dlg: Any) -> None:  # noqa: ANN401
         self._log = OxtLogger(log_name=self.__class__.__name__)
         self._log.debug("init")
         self._dlg = dlg
@@ -58,11 +58,11 @@ class DialogMbMenu:
             new_menu = [
                 {
                     "text": rr("mnuAutoLpFn"),
-                    "command": UNO_DISPATCH_SEL_LP_FN,
+                    "command": DISPATCH_SEL_LP_FN,
                 },
                 {
                     "text": rr("mnuSelectRng"),
-                    "command": UNO_DISPATCH_SEL_RNG,
+                    "command": DISPATCH_SEL_RNG,
                 },
             ]
             return new_menu
@@ -80,14 +80,14 @@ class DialogMbMenu:
             #         "text": rr("mnuData"),
             #         "command": ".uno.py_data",
             #         "submenu": [
-            #             {"text": rr("mnuValidate"), "command": UNO_DISPATCH_PY_CODE_VALIDATE},
+            #             {"text": rr("mnuValidate"), "command": DISPATCH_PY_CODE_VALIDATE},
             #         ],
             #     }
             # ]
             new_menu = [
                 {
                     "text": rr("mnuValidate"),
-                    "command": UNO_DISPATCH_PY_CODE_VALIDATE,
+                    "command": DISPATCH_PY_CODE_VALIDATE,
                 }
             ]
             return new_menu

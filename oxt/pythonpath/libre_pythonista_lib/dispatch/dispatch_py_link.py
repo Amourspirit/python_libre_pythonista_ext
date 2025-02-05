@@ -1,11 +1,5 @@
 from __future__ import annotations
-from typing import Dict, Tuple, TYPE_CHECKING
-
-try:
-    # python 3.12+
-    from typing import override  # type: ignore
-except ImportError:
-    from typing_extensions import override
+from typing import Any, Dict, Tuple, TYPE_CHECKING
 
 import uno
 import unohelper
@@ -19,22 +13,33 @@ from ooodev.loader import Lo
 from ..py_pip.linking import Linking
 
 if TYPE_CHECKING:
+    try:
+        # python 3.12+
+        from typing import override  # type: ignore
+    except ImportError:
+        from typing_extensions import override
+
     from com.sun.star.frame import XStatusListener
     from ....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
 else:
+
+    def override(func):  # noqa: ANN001, ANN201
+        return func
+
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
 
 
-class DispatchPyLink(unohelper.Base, XDispatch):
+class DispatchPyLink(XDispatch, unohelper.Base):
     """Links cpython so files to the correct version."""
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, ctx: Any) -> None:  # noqa: ANN401
+        XDispatch.__init__(self)
+        unohelper.Base.__init__(self)
         self._log = OxtLogger(log_name=self.__class__.__name__)
         self._status_listeners: Dict[str, XStatusListener] = {}
 
     @override
-    def addStatusListener(self, Control: XStatusListener, URL: URL) -> None:
+    def addStatusListener(self, Control: XStatusListener, URL: URL) -> None:  # noqa: N802, N803
         """
         registers a listener of a control for a specific URL at this object to receive status events.
 
@@ -46,7 +51,7 @@ class DispatchPyLink(unohelper.Base, XDispatch):
         # https://wiki.openoffice.org/wiki/Documentation/DevGuide/WritingUNO/Implementation
         with self._log.indent(True):
             if URL.Complete in self._status_listeners:
-                self._log.debug(f"addStatusListener(): url={URL.Main} already exists.")
+                self._log.debug("addStatusListener(): url=%s already exists.", URL.Main)
             else:
                 # setting IsEnable=False here does not disable the dispatch command
                 # setting State will affect how the control is displayed in menus.
@@ -56,7 +61,7 @@ class DispatchPyLink(unohelper.Base, XDispatch):
                 self._status_listeners[URL.Complete] = Control
 
     @override
-    def dispatch(self, URL: URL, Arguments: Tuple[PropertyValue, ...]) -> None:
+    def dispatch(self, URL: URL, Arguments: Tuple[PropertyValue, ...]) -> None:  # noqa: N803
         """
         Dispatches (executes) a URL
 
@@ -68,7 +73,7 @@ class DispatchPyLink(unohelper.Base, XDispatch):
         But when set to ``True``, dispatch() processes the request synchronously.
         """
         try:
-            self._log.debug(f"dispatch(): url={URL.Main}")
+            self._log.debug("dispatch(): url=%s", URL.Main)
             _ = Lo.current_doc
             linker = Linking()
             linker.link()
@@ -76,11 +81,11 @@ class DispatchPyLink(unohelper.Base, XDispatch):
         except Exception as e:
             # log the error and do not re-raise it.
             # re-raising the error may crash the entire LibreOffice app.
-            self._log.error(f"Error: {e}", exc_info=True)
+            self._log.error("Error: %s", e, exc_info=True)
             return
 
     @override
-    def removeStatusListener(self, Control: XStatusListener, URL: URL) -> None:
+    def removeStatusListener(self, Control: XStatusListener, URL: URL) -> None:  # noqa: N802, N803
         """
         Un-registers a listener from a control.
         """

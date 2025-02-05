@@ -14,7 +14,7 @@ else:
 class CtlNamer:
     """Gets Control Names for Controls of a Given Cell"""
 
-    def __init__(self, calc_cell: CalcCell):
+    def __init__(self, calc_cell: CalcCell) -> None:
         """
         Constructor
 

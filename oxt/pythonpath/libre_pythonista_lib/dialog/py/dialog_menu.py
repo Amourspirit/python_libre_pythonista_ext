@@ -4,7 +4,7 @@ from ooodev.gui.menu.popup_menu import PopupMenu
 from ooodev.gui.menu.popup.popup_creator import PopupCreator
 from ooodev.loader.inst.doc_type import DocType
 
-from ...const import UNO_DISPATCH_PY_CODE_VALIDATE, UNO_DISPATCH_SEL_RNG
+from ...const import DISPATCH_PY_CODE_VALIDATE, DISPATCH_SEL_RNG
 
 
 if TYPE_CHECKING:
@@ -31,7 +31,7 @@ class DialogMenu:
                 "text": rr("mnuData"),
                 "command": ".uno.py_data",
                 "submenu": [
-                    {"text": rr("mnuValidate"), "command": UNO_DISPATCH_PY_CODE_VALIDATE},
+                    {"text": rr("mnuValidate"), "command": DISPATCH_PY_CODE_VALIDATE},
                 ],
             }
         ]
@@ -41,7 +41,7 @@ class DialogMenu:
                 0,
                 {
                     "text": "Select Range",
-                    "command": UNO_DISPATCH_SEL_RNG,
+                    "command": DISPATCH_SEL_RNG,
                 },
             )
         return new_menu

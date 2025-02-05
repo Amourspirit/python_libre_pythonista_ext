@@ -13,7 +13,8 @@ import unohelper
 from ooodev.calc import CalcDoc
 
 from com.sun.star.awt import XTopWindowListener
-from ...const import UNO_DISPATCH_SEL_RNG
+from ...const import DISPATCH_SEL_RNG
+from ...menus import menu_util as mu
 
 if TYPE_CHECKING:
     # only need types in design time and not at run time.
@@ -64,8 +65,14 @@ class TopListenerRng(XTopWindowListener, unohelper.Base):
             self._log.debug("Top Listener Removed")
             try:
                 # self._doc.dispatch_cmd(".uno:About")
-                self._doc.dispatch_cmd(UNO_DISPATCH_SEL_RNG)
-                # Lo.dispatch_cmd(UNO_DISPATCH_SEL_RNG, in_thread=True)
+                mu.dispatch_cs_cmd(
+                    DISPATCH_SEL_RNG,
+                    in_thread=False,
+                    url=mu.get_url_from_command(DISPATCH_SEL_RNG),
+                    log=self._log,
+                )
+                # self._doc.dispatch_cmd(DISPATCH_SEL_RNG)
+                # Lo.dispatch_cmd(DISPATCH_SEL_RNG, in_thread=True)
                 # self._doc.invoke_range_selection()
                 self._log.debug("invoke_range_selection()")
             except Exception:
@@ -106,7 +113,7 @@ class TopListenerRng(XTopWindowListener, unohelper.Base):
             self._log.debug("Window Closed")
 
     @override
-    def disposing(self, Source: EventObject) -> None:
+    def disposing(self, Source: EventObject) -> None:  # noqa: N803
         """
         gets called when the broadcaster is about to be disposed.
 

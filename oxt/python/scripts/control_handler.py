@@ -1,7 +1,7 @@
 """To rename this module, change the module name in the project.toml ``tool.libre_pythonista.config.py_script_sheet_ctl_click`` and the filename."""
 
 from __future__ import annotations
-from typing import cast, TYPE_CHECKING
+from typing import Any, cast, TYPE_CHECKING
 import uno
 from ooodev.calc import CalcDoc
 from ooodev.form.controls.from_control_factory import FormControlFactory
@@ -12,15 +12,15 @@ if TYPE_CHECKING:
     from com.sun.star.drawing import ControlShape  # service
 
     from ...pythonpath.libre_pythonista_lib.log.log_inst import LogInst
-    from ...pythonpath.libre_pythonista_lib.cell.menu.ctl_popup import CtlPopup
+    from ...pythonpath.libre_pythonista_lib.menus.ctl_popup import CtlPopup
 
     XSCRIPTCONTEXT: XScriptContext
 else:
     from libre_pythonista_lib.log.log_inst import LogInst
-    from libre_pythonista_lib.cell.menu.ctl_popup import CtlPopup
+    from libre_pythonista_lib.menus.ctl_popup import CtlPopup
 
 
-def on_btn_action_preformed(*args):
+def on_btn_action_preformed(*args: Any) -> None:  # noqa: ANN401
     """
     Handle the button action event.
     """
@@ -43,7 +43,7 @@ def on_btn_action_preformed(*args):
         if not doc.supportsService("com.sun.star.sheet.SpreadsheetDocument"):  # type: ignore
             log.error("button_handler: Document is not a spreadsheet document")
         calc_doc = CalcDoc.get_doc_from_component(doc)
-        log.debug(f"button_handler: calc_doc: {calc_doc.runtime_uid}")
+        log.debug("button_handler: calc_doc: %s", calc_doc.runtime_uid)
 
         sheet = calc_doc.sheets.get_active_sheet()
         factory = FormControlFactory(draw_page=sheet.draw_page.component, lo_inst=calc_doc.lo_inst)
@@ -54,7 +54,7 @@ def on_btn_action_preformed(*args):
         cell_obj = calc_doc.range_converter.get_cell_obj(x_cell)
         calc_cell = sheet[cell_obj]
         # get a CellOjb instance that is easier to work with
-        log.debug(f"button_handler: cell_obj: {cell_obj}")
+        log.debug("button_handler: cell_obj: %s", cell_obj)
 
         ctl_pop = CtlPopup(cell=calc_cell)
         pm = ctl_pop.get_menu()
@@ -65,4 +65,4 @@ def on_btn_action_preformed(*args):
         log.error("button_handler: Error", exc_info=True)
 
 
-g_exportedScripts = (on_btn_action_preformed,)
+g_exportedScripts = (on_btn_action_preformed,)  # noqa: N816

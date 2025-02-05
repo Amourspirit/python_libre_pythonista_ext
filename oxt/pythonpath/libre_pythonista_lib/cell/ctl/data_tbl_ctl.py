@@ -9,7 +9,7 @@ except ImportError:
 
 from ooo.dyn.awt.size import Size
 from ooo.dyn.awt.point import Point
-from ooodev.exceptions import ex as mEx
+from ooodev.exceptions import ex as mEx  # noqa: N812
 from ooodev.events.args.event_args import EventArgs
 from ooodev.events.args.cancel_event_args import CancelEventArgs
 from ooodev.utils.helper.dot_dict import DotDict
@@ -89,9 +89,7 @@ class DataTblCtl(SimpleCtl):
                 cargs.event_data = dd
                 self.shared_event.trigger_event(CONTROL_UPDATING, cargs)
                 if cargs.cancel:
-                    self.log.debug(
-                        "%s: update_ctl(): Cancelled", self.__class__.__name__
-                    )
+                    self.log.debug("%s: update_ctl(): Cancelled", self.__class__.__name__)
                     return
 
                 try:
@@ -126,9 +124,7 @@ class DataTblCtl(SimpleCtl):
                     )
                     self.log.debug("%s: update_ctl(): Leaving", self.__class__.__name__)
 
-                self.shared_event.trigger_event(
-                    CONTROL_UPDATED, EventArgs.from_args(cargs)
-                )
+                self.shared_event.trigger_event(CONTROL_UPDATED, EventArgs.from_args(cargs))
             except Exception as e:
                 self.log.error(
                     "%s: update_ctl error: %s",
