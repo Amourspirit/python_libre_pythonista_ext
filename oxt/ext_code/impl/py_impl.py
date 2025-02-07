@@ -72,7 +72,7 @@ else:
         # Initialize the breakpoint manager
         break_mgr = BreakMgr()
         # break_mgr.add_breakpoint("librepythonista.PyImpl.matched_rule")
-        break_mgr.add_breakpoint("librepythonista.PyImpl.pyc")
+        # break_mgr.add_breakpoint("librepythonista.PyImpl.pyc")
     from ___lo_pip___.config import Config
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
 

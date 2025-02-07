@@ -1,9 +1,22 @@
 from __future__ import annotations
-from typing import cast
-from ooodev.utils.helper.dot_dict import DotDict
+from typing import cast, TYPE_CHECKING
+import ast
 import types
+from ooodev.utils.helper.dot_dict import DotDict
 from ...utils import str_util
 from ...log.log_inst import LogInst
+
+if TYPE_CHECKING:
+    from .....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from .....___lo_pip___.debug.break_mgr import BreakMgr
+
+    break_mgr = BreakMgr()
+else:
+    from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from ___lo_pip___.debug.break_mgr import BreakMgr
+
+    break_mgr = BreakMgr()
+    # break_mgr.add_breakpoint("libre_pythonista_lib.code.rules.lp_fn_obj.get_is_match")
 
 
 class LpFnObj:
@@ -14,23 +27,43 @@ class LpFnObj:
     def __init__(self) -> None:
         self._result = None
 
-    def set_values(self, mod: types.ModuleType, code: str) -> None:
+    def set_values(self, mod: types.ModuleType, code: str, ast_mod: ast.Module | None) -> None:
         """
         Set the values for the class.
 
         Args:
             mod (types.ModuleType): Module
             code (str): Code string.
+            ast_mod (ast.Module, None): AST module.
         """
         self._result = None
         self.mod = mod
         self.code = code
+        self.ast_mod = ast_mod
 
     def get_is_match(self) -> bool:
-        """Check if rules is a match. For this rule the return result is always True."""
+        """Check if rules is a match."""
         self._result = None
         if not self.code:
             return False
+
+        if not self.ast_mod:
+            return False
+        if len(self.ast_mod.body) < 1:
+            return False
+
+        last = self.ast_mod.body[-1]
+        if not isinstance(last, ast.expr):
+            return False
+
+        try:
+            if last.value.func.id != "lp":  # type: ignore
+                return False
+        except Exception:
+            return False
+
+        break_mgr.check_breakpoint("libre_pythonista_lib.code.rules.lp_fn_obj.get_is_match")
+
         log = LogInst()
         log.debug("LpFnObj - get_is_match() Entered.")
 
@@ -94,6 +127,7 @@ class LpFnObj:
         self._result = None
         self.mod = None
         self.code = None
+        self.ast_mod = None
 
     def __repr__(self) -> str:
-        return f"<LpFnObj()>"
+        return "<LpFnObj()>"

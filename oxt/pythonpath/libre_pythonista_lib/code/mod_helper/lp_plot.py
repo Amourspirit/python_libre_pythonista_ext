@@ -24,7 +24,7 @@ def _lp_plt_show_prefix_function(function: Any, pre_function: Any):
         # in theory the real plot.show() can be called here.
         # However, this would run the real plot.show() which may popup an window and
         # event crash LibreOffice. So, we just return None here.
-        # I LibreOffice Flatpak, this seem to make no difference.
+        # In LibreOffice Flatpak, this seem to make no difference.
         # Because the image is saved to a file, it can be loaded in LibreOffice.
         #
         # return function(*args, **kwargs)
@@ -53,7 +53,7 @@ def _custom_plt_show(*args, **kwargs):
     except Exception as e:
         log.exception(f"Error in _custom_plt_show with plt.close: {e}")
     if log.is_debug:
-        log.debug(f"Plot saved to {pth}")
+        log.debug("Plot saved to %s", pth)
     dd = DotDict(data=str(pth), data_type="file", file_kind="image", file_ext="svg", details="figure")
     LAST_LP_RESULT = dd
 

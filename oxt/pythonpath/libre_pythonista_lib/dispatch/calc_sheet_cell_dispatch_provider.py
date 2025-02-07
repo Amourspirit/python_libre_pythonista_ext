@@ -394,10 +394,9 @@ class CalcSheetCellDispatchProvider(unohelper.Base, XDispatchProviderInterceptor
             # of crashes without this check.
             return None
 
-        log = LogInst()
-        log.debug("CalcSheetCellDispatchProvider.queryDispatch: %s", URL.Complete)
-
         if URL.Protocol == CS_PROTOCOL:
+            log = LogInst()
+            log.debug("CalcSheetCellDispatchProvider.queryDispatch: %s", URL.Complete)
             return self._query_process_cs_protocol(URL, TargetFrameName, SearchFlags, log)
 
         return self._slave.queryDispatch(URL, TargetFrameName, SearchFlags)

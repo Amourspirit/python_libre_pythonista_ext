@@ -1,7 +1,8 @@
 from __future__ import annotations
 from typing import cast
-from ooodev.utils.helper.dot_dict import DotDict
+import ast
 import types
+from ooodev.utils.helper.dot_dict import DotDict
 from ...utils import str_util
 from ...log.log_inst import LogInst
 
@@ -14,20 +15,22 @@ class LpFn:
     def __init__(self) -> None:
         self._result = None
 
-    def set_values(self, mod: types.ModuleType, code: str) -> None:
+    def set_values(self, mod: types.ModuleType, code: str, ast_mod: ast.Module | None) -> None:
         """
         Set the values for the class.
 
         Args:
             mod (types.ModuleType): Module
             code (str): Code string.
+            ast_mod (ast.Module, None): AST module.
         """
         self._result = None
         self.mod = mod
         self.code = code
+        self.ast_mod = ast_mod
 
     def get_is_match(self) -> bool:
-        """Check if rules is a match. For this rule the return result is always True."""
+        """Check if rules is a match."""
         self._result = None
         if not self.code:
             return False
@@ -77,6 +80,7 @@ class LpFn:
         self._result = None
         self.mod = None
         self.code = None
+        self.ast_mod = None
 
     def __repr__(self) -> str:
-        return f"<LpFn()>"
+        return "<LpFn()>"

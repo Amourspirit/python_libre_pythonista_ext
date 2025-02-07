@@ -1,4 +1,5 @@
 from __future__ import annotations
+import ast
 from typing import Protocol
 from ooodev.utils.helper.dot_dict import DotDict
 import types
@@ -9,13 +10,14 @@ class CodeRuleT(Protocol):
     A class to represent a code rule.
     """
 
-    def set_values(self, mod: types.ModuleType, code: str) -> None:
+    def set_values(self, mod: types.ModuleType, code: str, ast_mod: ast.Module | None) -> None:
         """
         Set the values for the class.
 
         Args:
             mod (types.ModuleType): Module
             code (str): Code string.
+            ast_mod (ast.Module, None): AST module
         """
         ...
 

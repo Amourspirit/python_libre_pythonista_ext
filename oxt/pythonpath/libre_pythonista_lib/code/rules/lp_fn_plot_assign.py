@@ -6,16 +6,13 @@ from ooodev.utils.helper.dot_dict import DotDict
 from ...log.log_inst import LogInst
 
 
-class LpFnValue:
+class LpFnPlotAssign:
     """
-    This is a special rule and is not added to the code_rules list.
-    It is used to get the value of the last lp() function call. If it matches.
+    A class to represent ``_ = plt.show()``.
     """
 
     def __init__(self) -> None:
         self._result = None
-        self.data = None
-        self._log = LogInst()
 
     def set_values(self, mod: types.ModuleType, code: str, ast_mod: ast.Module | None) -> None:
         """
@@ -32,7 +29,7 @@ class LpFnValue:
         self.ast_mod = ast_mod
 
     def get_is_match(self) -> bool:
-        """Check if rules is a match."""
+        """Check if rules is a match. For this rule the return result is always True."""
         self._result = None
         if not self.code:
             return False
@@ -40,24 +37,35 @@ class LpFnValue:
             return False
         if len(self.ast_mod.body) < 1:
             return False
-        if not isinstance(self.ast_mod.body[-1], ast.Expr):
+        last = self.ast_mod.body[-1]
+        if not isinstance(last, (ast.Assign, ast.AnnAssign)):
+            return False
+        try:
+            if last.value.func.value.id != "plt":  # type: ignore
+                return False
+        except Exception:
+            return False
+        try:
+            if last.value.func.attr != "show":  # type: ignore
+                return False
+        except Exception:
             return False
 
-        with self._log.indent(True):
-            if self.data is None:
-                self._log.debug("LpFnValue - get_is_match() self.data is None. Returning False.")
-                return False
-            # with contextlib.suppress(Exception):
-            try:
-                result = cast(DotDict, self.mod.lp_mod.LAST_LP_RESULT)  # type: ignore
-                if self.data.data is result.data:
-                    self._result = result
-                    self._log.debug("LpFnValue - get_is_match() self.data.data is result.data. Returning True.")
-                    return True
-            except Exception as e:
-                self._log.debug("LpFnValue - get_is_match() Exception: %s", e)
-            self._log.debug("LpFnValue - get_is_match() Not a match. Returning False.")
-            return False
+        log = LogInst()
+        log.debug("LpFnPlotAssign - get_is_match() Entered.")
+
+        try:
+            dd = DotDict(data=None)
+            if "lp_plot" in self.mod.__dict__:
+                log.debug("LpFnPlotAssign - get_is_match() lp_plot is in module")
+                if isinstance(self.mod.lp_plot.LAST_LP_RESULT, DotDict):  # type: ignore
+                    dd = cast(DotDict, self.mod.lp_plot.LAST_LP_RESULT.copy())  # type: ignore
+            else:
+                log.debug("LpFnPlotAssign - get_is_match() lp_plot is NOT in module")
+            self._result = dd
+        except Exception as e:
+            log.error("LpFnPlotAssign - get_is_match() Exception: %s", e, exc_info=True)
+        return self._result is not None
 
     def get_value(self) -> DotDict:
         """Get the list of versions. In this case it will be a single version, unless vstr is invalid in which case it will be an empty list."""
@@ -70,8 +78,7 @@ class LpFnValue:
         self._result = None
         self.mod = None
         self.code = None
-        self.data = None
         self.ast_mod = None
 
     def __repr__(self) -> str:
-        return "<LpFnValue()>"
+        return "<LpFnPlotAssign()>"

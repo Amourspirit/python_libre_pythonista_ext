@@ -791,7 +791,7 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
             if not sel:
                 sel = (self.end, self.end)
             # sel = (0, 0)
-            self._log.debug("Write", f'Data:"{data}"', "Selection", sel)
+            self._log.debug("Write Data: %s Selection: %s", data, sel)
             self._code.view.insertText(Selection(*sel), data)
 
     # endregion Read/Write

@@ -1,22 +1,32 @@
 from __future__ import annotations
 from typing import List, TYPE_CHECKING
+import ast
 import types
 import re
-from .last_dict import LastDict
-from .regex_last_line import RegexLastLine
-from .eval_code import EvalCode
-from .lp_fn import LpFn
-from .lp_fn_obj import LpFnObj
-from .any_fn import AnyFn
-from .lp_fn_value import LpFnValue
-from .lp_fn_plot import LpFnPlot
+from .underscore import Underscore
 
-# from .list_fn import ListFn
+# from .regex_last_line import RegexLastLine
+from .assign import Assign
+from .expr import Expr
+from .lp_fn_plot_expr import LpFnPlotExpr
+from .lp_fn_plot_assign import LpFnPlotAssign
 from .code_empty import CodeEmpty
-from ...log.log_inst import LogInst
+from .lp_fn_expr import LpFnExpr
+from .lp_fn_assign import LpFnAssign
+
 
 if TYPE_CHECKING:
     from .code_rule_t import CodeRuleT
+    from .....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from .....___lo_pip___.debug.break_mgr import BreakMgr
+
+    break_mgr = BreakMgr()
+else:
+    from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from ___lo_pip___.debug.break_mgr import BreakMgr
+
+    break_mgr = BreakMgr()
+    break_mgr.add_breakpoint("libre_pythonista_lib.code.rules.code_rules.get_matched_rule")
 
 
 class CodeRules:
@@ -29,7 +39,7 @@ class CodeRules:
         Args:
             auto_register (bool, optional): Determines if know rules are automatically registered. Defaults to True.
         """
-        self._log = LogInst()
+        self._log = OxtLogger(log_name=self.__class__.__name__)
         self._rules: List[CodeRuleT] = []
         if auto_register:
             self._register_known_rules()
@@ -63,9 +73,9 @@ class CodeRules:
         """
         with self._log.indent(True):
             if rule in self._rules:
-                self._log.debug(f"CodeRules - add_rule() Rule Already added: {rule}")
+                self._log.debug("CodeRules - add_rule() Rule Already added: %s", rule)
                 return
-            self._log.debug(f"CodeRules - add_rule() Adding Rule {rule}")
+            self._log.debug("CodeRules - add_rule() Adding Rule %s", rule)
             self._reg_rule(rule=rule)
 
     def add_rule_at(self, index: int, rule: CodeRuleT) -> None:
@@ -78,9 +88,9 @@ class CodeRules:
         """
         with self._log.indent(True):
             if rule in self._rules:
-                self._log.debug(f"CodeRules - add_rule_at() Rule Already added: {rule}")
+                self._log.debug("CodeRules - add_rule_at() Rule Already added: %s", rule)
                 return
-            self._log.debug(f"CodeRules - add_rule_at() Inserting : {rule} at index: {index}")
+            self._log.debug("CodeRules - add_rule_at() Inserting : %s at index: %i", rule, index)
             self._rules.insert(index, rule)
 
     def remove_rule(self, rule: CodeRuleT) -> None:
@@ -115,7 +125,7 @@ class CodeRules:
         with self._log.indent(True):
             try:
                 del self._rules[index]
-                self._log.debug(f"CodeRules - remove_rule() Removed rule at index: {index}")
+                self._log.debug("CodeRules - remove_rule() Removed rule at index: %i", index)
             except IndexError as e:
                 msg = f"{self.__class__.__name__}.unregister_rule() Unable to unregister rule."
                 self._log.error(msg)
@@ -127,24 +137,15 @@ class CodeRules:
     def _register_known_rules(self) -> None:
         # re.compile(r"^(\w+)\s*=")
         self._reg_rule(rule=CodeEmpty())
-        # matching numbers should come before matching string to avoid false positives.
-        self._reg_rule(
-            rule=RegexLastLine(
-                regex=re.compile(r"^(-?\d+(\.\d+)?)$"),
-                use_match_value=True,
-            )
-        )  # int or float
-        self._reg_rule(rule=RegexLastLine())
-        self._reg_rule(rule=RegexLastLine(re.compile(r"^(\w+)$")))
-        self._reg_rule(rule=LpFnPlot())
-        # self._reg_rule(rule=ListFn())
-        self._reg_rule(rule=AnyFn())
-        self._reg_rule(rule=EvalCode())
-        self._reg_rule(rule=LpFn())
-        self._reg_rule(rule=LpFnObj())
-        self._reg_rule(rule=LastDict())
+        self._reg_rule(rule=LpFnPlotExpr())
+        self._reg_rule(rule=LpFnPlotAssign())
+        self._reg_rule(rule=LpFnExpr())
+        self._reg_rule(rule=LpFnAssign())
+        self._reg_rule(rule=Expr())
+        self._reg_rule(rule=Assign())
+        self._reg_rule(rule=Underscore())
 
-    def get_matched_rule(self, mod: types.ModuleType, code: str) -> CodeRuleT:
+    def get_matched_rule(self, mod: types.ModuleType, code: str, ast_mod: ast.Module | None) -> CodeRuleT:
         """
         Get matched rules
 
@@ -155,38 +156,22 @@ class CodeRules:
         Returns:
             List[CodeRuleT]: List of matched rules
         """
+        break_mgr.check_breakpoint("libre_pythonista_lib.code.rules.code_rules.get_matched_rule")
         with self._log.indent(True):
             found_rule = None
             for rule in self._rules:
-                rule.set_values(mod, code)
+                rule.set_values(mod, code, ast_mod)
                 if rule.get_is_match():
-                    self._log.debug(f"CodeRules - get_matched_rule() found match rule: {rule}")
+                    self._log.debug("CodeRules - get_matched_rule() found match rule: %s", rule)
                     found_rule = rule
                     break
                 rule.reset()
             if found_rule:
-                # rules LpFn and LpFnObj already contain the correct DotDict
-                if not isinstance(found_rule, (LpFn, LpFnObj, LpFnPlot, CodeEmpty)):
-                    self._log.debug(
-                        "CodeRules - get_matched_rule() Rule: {%s is not LpFn or LpFnObj. Checking for LpFnValue match.",
-                        found_rule,
-                    )
-                    lp_fn_val = LpFnValue()
-                    lp_fn_val.data = found_rule.get_value()  # type: ignore
-                    lp_fn_val.set_values(mod, code)
-                    if lp_fn_val.get_is_match():
-                        self._log.debug(
-                            "CodeRules - get_matched_rule() Swapping rule: %s for %s", found_rule, lp_fn_val
-                        )
-                        found_rule = lp_fn_val
-                    else:
-                        lp_fn_val.reset()
-                    self._log.debug(f"CodeRules - get_matched_rule() Found rule: {found_rule}")
                 return found_rule
             # this should never happen LastDict is always a match
             raise ValueError(f"No rule matched for code: {code}")
 
     def __repr__(self) -> str:
-        return f"<CodeRules()>"
+        return "<CodeRules()>"
 
     # endregion Methods

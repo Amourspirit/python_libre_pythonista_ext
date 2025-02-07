@@ -1,5 +1,8 @@
 from __future__ import annotations
-from typing import Any, TYPE_CHECKING
+from typing import Any, cast, TYPE_CHECKING
+import ast
+import copy
+import os
 import importlib.util
 
 # import importlib
@@ -16,8 +19,20 @@ from ..cell.errors.general_error import GeneralError
 
 if TYPE_CHECKING:
     from ....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from ....___lo_pip___.debug.break_mgr import BreakMgr
+
+    break_mgr = BreakMgr()
 else:
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from ___lo_pip___.debug.break_mgr import BreakMgr
+
+    break_mgr = BreakMgr()
+    # break_mgr.add_breakpoint("libre_pythonista_lib.code.py_module.init")
+    break_mgr.add_breakpoint("libre_pythonista_lib.code.py_module.execute_code")
+
+
+def is_pytest_running() -> bool:
+    return "PYTEST_CURRENT_TEST" in os.environ
 
 
 def is_import_available(module_name: str, class_name: str = "", alias: str = "") -> bool:
@@ -77,41 +92,121 @@ def get_module_init_code() -> str:
 
 class PyModule:
     def __init__(self) -> None:
+        break_mgr.check_breakpoint("libre_pythonista_lib.code.py_module.init")
+        self._is_init = False
+        self._is_py_test_running = is_pytest_running()
         self._log = OxtLogger(log_name=self.__class__.__name__)
 
         self.mod = types.ModuleType("PyMod")
         self._cr = CodeRules()
+        # _private_enabled should default to True.
+        # If this is to be added as a setting it must be at the document level.
+        # This way when a document is shared the setting is also shared.
+        # If this were a setting, it would have to be on the document level.
+        self._private_enabled = False
+        self._current_ast_mod = None
+        self._current_match_rule = None  # used for testing
         self._init_mod()
+        self._is_init = True
 
     def _init_mod(self) -> None:
         self._log.debug("_init_mod()")
         code = get_module_init_code()
-        # from .mod_fn import lp
         try:
-            # t = threading.Thread(target=exec, args=(code, self.mod.__dict__), daemon=True)
-            # t.start()
-            # t.join()
-            exec(code, self.mod.__dict__)
-            # setattr(self.mod, "lp", lp.lp)
+            self.execute_code(code, self.mod.__dict__)
             self._init_dict = self.mod.__dict__.copy()
             if lp_plot is not None:
                 self._init_dict.update(**lp_plot.__dict__.copy())
             else:
                 self._log.warning("lp_plot module is not available.")
-            self._log.debug(f"_init_mod() done.")
+            self._log.debug("_init_mod() done.")
         except Exception:
             self._log.exception("Error initializing module")
             raise
-        # setattr(self.mod, "np", np)
-        # setattr(self.mod, "Lo", lo)
-        # setattr(self.mod, "XSCRIPTCONTEXT", Lo.XSCRIPTCONTEXT)
-        # setattr(self.mod, "CalcDoc", CalcDoc)
+
+    def execute_code(self, code_snippet: str, globals: dict | None = None) -> Any:  # noqa: ANN401
+        """
+        Compiles and executes the given code snippet.
+        - If the last statement is an expression, returns its value.
+        - Otherwise, returns the value of `result` if it exists in local variables.
+        """
+        if self._is_init:
+            break_mgr.check_breakpoint("libre_pythonista_lib.code.py_module.execute_code")
+
+        try:
+            if globals is None:
+                globals = {}
+            globals["_"] = None
+            locals = {}
+
+            # Parse the code as a full module
+            tree = ast.parse(code_snippet, mode="exec")
+            # needs a copy because may pop the last node below.
+            self._current_ast_mod = copy.deepcopy(tree)
+
+            # If the last node is an expression, remove it for separate handling
+            last_expr = None
+            assign_name = ""
+            # print(str(type(tree.body[-1])))
+            last_node = tree.body[-1]
+            if tree.body and isinstance(last_node, ast.Expr):
+                last_expr = cast(ast.Expr, tree.body.pop())
+            elif tree.body and isinstance(last_node, ast.Assign):
+                last_expr = cast(ast.Assign, tree.body.pop())
+                try:
+                    assign_name = last_expr.targets[0].id  # type: ignore
+                except Exception:
+                    assign_name = ""
+            elif tree.body and isinstance(last_node, ast.AnnAssign):
+                last_expr = cast(ast.Assign, tree.body.pop())
+                try:
+                    assign_name = last_expr.target.id  # type: ignore
+                except Exception:
+                    assign_name = ""
+            last_node = None
+
+            # Compile all but the last expression as 'exec'
+            module_body = ast.fix_missing_locations(ast.Module(body=tree.body, type_ignores=[]))
+            exec_code = compile(module_body, "<string>", "exec")
+
+            # Execute statements
+            # do not use locals here or the module values will be assigned to locals
+            # exec(exec_code, globals, locals)
+            exec(exec_code, globals)
+
+            # If there was a final expression node, evaluate it
+            if last_expr:
+                expr = ast.Expression(last_expr.value)
+                expr = ast.fix_missing_locations(expr)
+                eval_code = compile(expr, "<string>", "eval")
+                result = eval(eval_code, globals, locals)
+                if assign_name:
+                    if self._private_enabled:
+                        if not assign_name.startswith("_"):
+                            globals[assign_name] = result
+                    else:
+                        globals[assign_name] = result
+
+                globals["_"] = result
+
+            # If there's no final expression, fallback to returning locals["_"], if present
+            return globals.get("_")
+
+        except SyntaxError as e:
+            self._log.exception("Syntax error executing code: \n%s", code_snippet)
+            return None
+
+        except Exception as e:
+            self._log.exception("Error executing  error: '%s' code: \n%s", e, code_snippet)
+            # traceback.print_exc()
+            return None
 
     def reset_module(self) -> None:
         with self._log.indent(True):
             self._log.debug("reset_module()")
         self.mod.__dict__.clear()
         self.mod.__dict__.update(self._init_dict)
+        self._current_ast_mod = None
         with self._log.indent(True):
             self._log.debug("reset_module() done.")
 
@@ -135,24 +230,27 @@ class PyModule:
             code = str_util.clean_string(code)
             # self._log.debug(f"Cleaned code. \n{code}")
         except Exception:
-            self._log.exception(f"Error cleaning code: {code}")
+            self._log.exception("Error cleaning code: %s", code)
             raise
 
         result = None
+        self._current_match_rule = None  # used for testing
         try:
             if code:
                 self._log.debug("Executing code.")
-                # run exec in a new thread and wait for it to finish
-                # t = threading.Thread(target=exec, args=(code, self.mod.__dict__), daemon=True)
-                # t.start()
-                # t.join()
-                exec(code, self.mod.__dict__)
+                self.execute_code(code, self.mod.__dict__)
                 self._log.debug("Executed code.")
-            rule = self._cr.get_matched_rule(self.mod, code)
+            rule = self._cr.get_matched_rule(self.mod, code, self._current_ast_mod)
             self._log.debug("Got matched rule.")
             result = rule.get_value()
             self._log.debug("Got result.")
-            rule.reset()
+
+            if self._is_py_test_running:
+                self._current_match_rule = rule
+            else:
+                # only reset rule if not testing.
+                # The _current_match_rule will contain the last matched rule so do reset it.
+                rule.reset()
             self._log.debug("Reset rule.")
             return result
         # other exceptions can be caught and new error classes can be created.
@@ -165,17 +263,19 @@ class PyModule:
                         lp_log_inst = LibrePythonistaLog()
                         ps_log = lp_log_inst.log
                         if lp_log_inst.log_extra_info:
-                            ps_log.error(f"Error updating module.\n{code}\n", exc_info=True)
+                            ps_log.error("Error updating module.\n%s\n", code, exc_info=True)
                         else:
-                            ps_log.error(f"{e}")
+                            ps_log.error("%s", e)
                     except Exception as e:
-                        self._log.error(f"LibrePythonistaLog error", exc_info=True)
+                        self._log.error("LibrePythonistaLog error", exc_info=True)
                     if self._log.is_debug:
-                        self._log.warning(f"Error updating module. Result set to {result}.\n{code}\n", exc_info=True)
+                        self._log.warning(
+                            "Error updating module. Result set to %s.\n%s\n", result, code, exc_info=True
+                        )
                     else:
-                        self._log.warning(f"Error updating module. Result set to {result}.\n", exc_info=True)
+                        self._log.warning("Error updating module. Result set to %s.\n", result, exc_info=True)
                 except Exception:
-                    self._log.exception(f"update_with_result() Error updating module.\n{code}\n")
+                    self._log.exception("update_with_result() Error updating module.\n%s\n", code)
                     raise
         return result
 
@@ -189,10 +289,12 @@ class PyModule:
         """
         if self._log.is_debug:
             with self._log.indent(True):
-                self._log.debug(f"set_global_var({var_name}, {value})")
+                self._log.debug("set_global_var(%s, %s)", var_name, value)
         if var_name == "CURRENT_CELL_OBJ":
             self.mod.__dict__["lp_mod"].CURRENT_CELL_OBJ = value
+            return
         self.mod.__dict__[var_name] = value
+        self.mod.__dict__["_"] = value
 
     def reset_to_dict(self, mod_dict: dict, code: str = "") -> Any:  # noqa: ANN401
         """
@@ -205,19 +307,21 @@ class PyModule:
         Returns:
             Any: If there is code the last variable in the module if any; Otherwise, None.
         """
+
         with self._log.indent(True):
             self._log.debug("reset_to_dict()")
         self.mod.__dict__.clear()
         self.mod.__dict__.update(mod_dict)
+        self._current_ast_mod = None
         if not code:
             return None
         code = str_util.remove_comments(code)
         code = str_util.clean_string(code)
         if code:
-            exec(code, self.mod.__dict__)
+            self.execute_code(code, self.mod.__dict__)
         else:
             return None
-        rule = self._cr.get_matched_rule(self.mod, code)
+        rule = self._cr.get_matched_rule(self.mod, code, self._current_ast_mod)
         result = rule.get_value()
         rule.reset()
         with self._log.indent(True):

@@ -1,6 +1,8 @@
 from __future__ import annotations
 from typing import Any, Dict, Optional
 import os
+import sys
+import importlib.util
 import subprocess
 import sys
 from pathlib import Path
@@ -11,14 +13,23 @@ import logging
 import pytest
 
 
-from ooodev.utils import paths as mPaths
+from ooodev.utils import paths as mPaths  # noqa: N812
 from ooodev.loader import Lo
 from ooodev.conn import connectors
-from ooodev.conn import cache as mCache
+from ooodev.conn import cache as mCache  # noqa: N812
 from ooodev.loader.inst import Options as LoOptions
 
 
-def remove_readonly(func, path, excinfo):
+@pytest.fixture(scope="session")
+def import_available() -> Any:  # noqa: ANN401
+    def is_available(module_name: str) -> bool:
+        spec = importlib.util.find_spec(module_name)
+        return spec is not None
+
+    return is_available
+
+
+def remove_readonly(func, path, exc_info) -> None:  # noqa: ANN001
     try:
         os.chmod(path, stat.S_IWRITE)
         func(path)
@@ -27,20 +38,23 @@ def remove_readonly(func, path, excinfo):
 
 
 @pytest.fixture(scope="session")
-def tmp_path_session():
+def tmp_path_session():  # noqa: ANN201
     result = Path(tempfile.mkdtemp())  # type: ignore
     yield result
     if os.path.exists(result):
-        shutil.rmtree(result, onerror=remove_readonly)
+        if sys.version_info >= (3, 12):
+            shutil.rmtree(result, onexc=remove_readonly)
+        else:
+            shutil.rmtree(result, onerror=remove_readonly)
 
 
 @pytest.fixture(scope="session")
-def root_dir():
+def root_dir():  # noqa: ANN201
     return Path(__file__).parent.parent
 
 
 @pytest.fixture(scope="session")
-def build_code(root_dir):
+def build_code(root_dir) -> bool:  # noqa: ANN001
     # run make.py in a subprocess
     make_py = root_dir / "make.py"
     assert make_py.exists()
@@ -49,7 +63,7 @@ def build_code(root_dir):
 
 
 @pytest.fixture(scope="session")
-def build_setup(root_dir, build_code):
+def build_setup(root_dir, build_code) -> bool:  # noqa: ANN001
     build_path = str(root_dir / "build")
     if build_path not in sys.path:
         sys.path.append(build_path)
@@ -63,13 +77,16 @@ def build_setup(root_dir, build_code):
 
 
 @pytest.fixture(scope="session")
-def soffice_path():
+def soffice_path():  # noqa: ANN201
     return mPaths.get_soffice_path()
 
 
 def _get_loader_pipe_default(
-    headless: bool, soffice: str, working_dir: Any, env_vars: Optional[Dict[str, str]] = None
-) -> Any:
+    headless: bool,
+    soffice: str,
+    working_dir: Any,
+    env_vars: Optional[Dict[str, str]] = None,  # noqa: ANN401
+) -> Any:  # noqa: ANN401
     dynamic = False
     verbose = False
     visible = False
@@ -81,13 +98,13 @@ def _get_loader_pipe_default(
 
 
 @pytest.fixture(scope="session")
-def soffice_env():
+def soffice_env():  # noqa: ANN201
     # for snap testing the PYTHONPATH must be set to the virtual environment
     return {}
 
 
 @pytest.fixture(scope="session")
-def run_headless():
+def run_headless():  # noqa: ANN201
     # windows/powershell
     #   $env:NO_HEADLESS='1'; pytest; Remove-Item Env:\NO_HEADLESS
     # linux
@@ -96,7 +113,7 @@ def run_headless():
 
 
 @pytest.fixture(scope="session")
-def loader(build_setup, tmp_path_session, run_headless, soffice_path, soffice_env):
+def loader(build_setup, tmp_path_session, run_headless, soffice_path, soffice_env):  # noqa: ANN001, ANN201
     # for testing with a snap the cache_obj must be omitted.
     # This because the snap is not allowed to write to the real tmp directory.
     connect_kind = os.environ.get("ODEV_TEST_CONN_SOCKET_KIND", "default")

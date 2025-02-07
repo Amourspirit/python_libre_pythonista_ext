@@ -1,7 +1,8 @@
 from __future__ import annotations
-from ooodev.utils.helper.dot_dict import DotDict
+import ast
 import types
 import re
+from ooodev.utils.helper.dot_dict import DotDict
 from ...utils import str_util
 
 
@@ -26,17 +27,19 @@ class RegexLastLine:
         self.use_match_value = use_match_value
         self.match: re.Match[str] | None = None
 
-    def set_values(self, mod: types.ModuleType, code: str) -> None:
+    def set_values(self, mod: types.ModuleType, code: str, ast_mod: ast.Module | None) -> None:
         """
         Set the values for the class.
 
         Args:
             mod (types.ModuleType): Module
             code (str): Code string.
+            ast_mod (ast.Module, None): AST module.
         """
         self._result = None
         self.mod = mod
         self.code = code
+        self.ast_mod = ast_mod
 
     def get_is_match(self) -> bool:
         """Check if rules is a match for the last line of code."""
@@ -65,6 +68,7 @@ class RegexLastLine:
         self._result = None
         self.mod = None
         self.code = None
+        self.ast_mod = None
 
     def __repr__(self) -> str:
-        return f"<RegexLastLine()>"
+        return "<RegexLastLine()>"
