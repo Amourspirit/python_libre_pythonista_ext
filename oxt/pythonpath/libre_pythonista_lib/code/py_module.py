@@ -99,11 +99,12 @@ class PyModule:
 
         self.mod = types.ModuleType("PyMod")
         self._cr = CodeRules()
+
         # _private_enabled should default to True.
         # If this is to be added as a setting it must be at the document level.
         # This way when a document is shared the setting is also shared.
-        # If this were a setting, it would have to be on the document level.
-        self._private_enabled = False
+        self._private_enabled = True
+
         self._current_ast_mod = None
         self._current_match_rule = None  # used for testing
         self._init_mod()
@@ -113,7 +114,7 @@ class PyModule:
         self._log.debug("_init_mod()")
         code = get_module_init_code()
         try:
-            self.execute_code(code, self.mod.__dict__)
+            self._execute_init_code(code, self.mod.__dict__)
             self._init_dict = self.mod.__dict__.copy()
             if lp_plot is not None:
                 self._init_dict.update(**lp_plot.__dict__.copy())
@@ -123,6 +124,41 @@ class PyModule:
         except Exception:
             self._log.exception("Error initializing module")
             raise
+
+    def _execute_init_code(self, code_snippet: str, globals: dict | None = None) -> Any:  # noqa: ANN401
+        """
+        Compiles and executes the given code snippet.
+        - If the last statement is an expression, returns its value.
+        - Otherwise, returns the value of `result` if it exists in local variables.
+        """
+
+        try:
+            if globals is None:
+                globals = {}
+            globals["_"] = None
+            locals = {}
+
+            # Parse the code as a full module
+            tree = ast.parse(code_snippet, mode="exec")
+
+            module_body = ast.fix_missing_locations(ast.Module(body=tree.body, type_ignores=[]))
+            exec_code = compile(module_body, "<string>", "exec")
+
+            # Execute statements
+            # do not use locals here or the module values will be assigned to locals
+            # exec(exec_code, globals, locals)
+            exec(exec_code, globals)
+
+            # If there was a final expression node, evaluate it
+
+        except SyntaxError as e:
+            self._log.exception("Syntax error executing code: \n%s", code_snippet)
+            return None
+
+        except Exception as e:
+            self._log.exception("Error executing  error: '%s' code: \n%s", e, code_snippet)
+            # traceback.print_exc()
+            return None
 
     def execute_code(self, code_snippet: str, globals: dict | None = None) -> Any:  # noqa: ANN401
         """
@@ -137,10 +173,12 @@ class PyModule:
             if globals is None:
                 globals = {}
             globals["_"] = None
-            locals = {}
 
             # Parse the code as a full module
             tree = ast.parse(code_snippet, mode="exec")
+            # Transform AST so underscore-assignments become local assigns
+            # tree = UnderscoreLocalTransformer().visit(tree)
+            # ast.fix_missing_locations(tree)
             # needs a copy because may pop the last node below.
             self._current_ast_mod = copy.deepcopy(tree)
 
@@ -170,24 +208,30 @@ class PyModule:
             exec_code = compile(module_body, "<string>", "exec")
 
             # Execute statements
-            # do not use locals here or the module values will be assigned to locals
-            # exec(exec_code, globals, locals)
-            exec(exec_code, globals)
+            local_dict = {}
+            exec(exec_code, globals, local_dict)
+
+            if self._private_enabled:
+                filtered_dict = {k: v for k, v in local_dict.items() if not k.startswith("_")}
+            else:
+                filtered_dict = local_dict
 
             # If there was a final expression node, evaluate it
+
             if last_expr:
                 expr = ast.Expression(last_expr.value)
                 expr = ast.fix_missing_locations(expr)
                 eval_code = compile(expr, "<string>", "eval")
-                result = eval(eval_code, globals, locals)
+                result = eval(eval_code, globals, local_dict)
                 if assign_name:
                     if self._private_enabled:
                         if not assign_name.startswith("_"):
-                            globals[assign_name] = result
+                            filtered_dict[assign_name] = result
                     else:
-                        globals[assign_name] = result
+                        filtered_dict[assign_name] = result
+                filtered_dict["_"] = result
 
-                globals["_"] = result
+            globals.update(filtered_dict)
 
             # If there's no final expression, fallback to returning locals["_"], if present
             return globals.get("_")
@@ -318,7 +362,7 @@ class PyModule:
         code = str_util.remove_comments(code)
         code = str_util.clean_string(code)
         if code:
-            self.execute_code(code, self.mod.__dict__)
+            self._execute_init_code(code, self.mod.__dict__)
         else:
             return None
         rule = self._cr.get_matched_rule(self.mod, code, self._current_ast_mod)
