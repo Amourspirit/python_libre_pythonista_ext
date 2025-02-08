@@ -203,6 +203,8 @@ def test_packages(
     else:
         mock_config_instance.is_linux = False
 
+    mock_config_instance.lp_settings.experimental_editor = False
+
     _ = mocker.patch("libre_pythonista.install.py_packages.packages.OxtLogger")
 
     mock_pkg_config = mocker.patch("libre_pythonista.install.py_packages.packages.PackageConfig")
@@ -345,6 +347,8 @@ def test_packages_rules(
         mock_config_instance.is_linux = True
     else:
         mock_config_instance.is_linux = False
+
+    mock_config_instance.lp_settings.experimental_editor = False
 
     _ = mocker.patch("libre_pythonista.install.py_packages.packages.OxtLogger")
 
