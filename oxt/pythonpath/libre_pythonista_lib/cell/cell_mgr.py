@@ -37,6 +37,7 @@ from ..const.event_const import (
 from ..log.log_inst import LogInst
 
 from .array.array_mgr import ArrayMgr
+from ..menus import menu_util as mu
 
 if TYPE_CHECKING:
     from com.sun.star.sheet import SheetCell  # service
@@ -96,6 +97,11 @@ class CellMgr(SingletonBase):
         # self.add_all_listeners()
 
         self._is_init = True
+
+    def _dispatch_command(self, url_main: str) -> None:
+        """Dispatches a command to the cell."""
+        url = mu.get_url_from_command(url_main)
+        mu.dispatch_cs_cmd(cmd=url_main, in_thread=False, url=url, log=self._log)
 
     def dispose(self) -> None:
         if self._se is not None:
@@ -904,10 +910,12 @@ class CellMgr(SingletonBase):
             # lp.ctl_state = StateKind.ARRAY
             # dpc = f".uno:libre_pythonista.calc.py_obj.state?sheet={cc.calc_sheet.name}&cell={co}"
             dpc = f"{DISPATCH_PY_OBJ_STATE}?sheet={cc.calc_sheet.name}&cell={co}"
-            doc.dispatch_cmd(dpc)
+            # doc.dispatch_cmd(dpc)
+            self._dispatch_command(dpc)
             rule_dpc = cds.get_rule_dispatch_cmd()
             if rule_dpc:
-                doc.dispatch_cmd(rule_dpc)
+                self._dispatch_command(rule_dpc)
+                # doc.dispatch_cmd(rule_dpc)
 
         self._log.debug("PyInstance after source update Done")
 

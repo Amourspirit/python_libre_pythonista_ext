@@ -3,7 +3,7 @@ from typing import cast, TYPE_CHECKING
 from urllib.parse import parse_qs
 from ooodev.calc import CalcCell, CalcSheet
 from ooodev.utils.helper.dot_dict import DotDict
-from ooodev.exceptions import ex as mEx
+from ooodev.exceptions import ex as mEx  # noqa: N812
 from ooodev.calc import CellObj
 from ..dispatch.cell_dispatch_state import CellDispatchState
 from .ctl.ctl_mgr import CtlMgr
@@ -14,6 +14,7 @@ from ..const import DISPATCH_PY_OBJ_STATE, DISPATCH_DF_STATE
 from ..cell.result_action.pyc.rules.pyc_rules import PycRules
 from ..code.py_source_mgr import PySource, PyInstance
 from ..utils.pandas_util import PandasUtil
+from ..menus import menu_util as mu
 
 
 if TYPE_CHECKING:
@@ -38,7 +39,7 @@ class LplCell:
     def __init__(self, cell: CalcCell) -> None:
         self._log = OxtLogger(log_name=self.__class__.__name__)
         with self._log.indent(True):
-            self._log.debug(f"Creating LplCell({cell.cell_obj})")
+            self._log.debug("Creating LplCell(%s)", cell.cell_obj)
         self._cell = cell
         self._cell_dispatch_state = CellDispatchState(cell)
         self._key_maker = KeyMaker()
@@ -177,6 +178,11 @@ class LplCell:
     def refresh(self) -> None:
         self._cache.clear()
 
+    def _dispatch_command(self, url_main: str) -> None:
+        """Dispatches a command to the cell."""
+        url = mu.get_url_from_command(url_main)
+        mu.dispatch_cs_cmd(cmd=url_main, in_thread=False, url=url, log=self._log)
+
     # endregion Methods
 
     # region Reset Methods
@@ -218,9 +224,9 @@ class LplCell:
     @ctl_state.setter
     def ctl_state(self, value: StateKind) -> None:
         with self._log.indent(True):
-            self._log.debug(f"ctl_state Setting state to {value}")
+            self._log.debug("ctl_state Setting state to %s", value)
             current_state = self.ctl_state
-            self._log.debug(f"ctl_state Current state is {current_state}")
+            self._log.debug("ctl_state Current state is %s", current_state)
             if current_state == value:
                 return
             key = "ctl_state"
@@ -237,7 +243,8 @@ class LplCell:
                     # url_main = pyc_rule.get_dispatch_state()
                     url_main = DISPATCH_PY_OBJ_STATE
                     cmd = self.get_dispatch_command(url_main)
-                    self.cell.calc_doc.dispatch_cmd(cmd)
+                    # self.cell.calc_doc.dispatch_cmd(cmd)
+                    self._dispatch_command(cmd)
                 self._ctl_mgr.remove_ctl(self.cell)
                 return
             if value == StateKind.ARRAY and current_state != StateKind.ARRAY:
@@ -257,8 +264,9 @@ class LplCell:
                     self._log.error("ctl_state No dispatch command found. Returning")
                     return
                 cmd = self.get_dispatch_command(url_main)
-                self._log.debug(f"ctl_state Dispatching command: {cmd}")
-                self.cell.calc_doc.dispatch_cmd(cmd)
+                self._log.debug("ctl_state Dispatching command: %s", cmd)
+                # self.cell.calc_doc.dispatch_cmd(cmd)
+                self._dispatch_command(cmd)
                 return
             # a known value
             # if there is a rule and a dispatch the toggle the state with a dispatch.
@@ -272,9 +280,10 @@ class LplCell:
                 self._log.debug("ctl_state No dispatch command found. Returning")
                 return
             cmd = self.get_dispatch_command(url_main)
-            self._log.debug(f"ctl_state Dispatching command: {cmd}")
+            self._log.debug("ctl_state Dispatching command: %s", cmd)
             # dispatch will change the state to StateKind.PY_OBJ if it is not already.
-            self.cell.calc_doc.dispatch_cmd(cmd)
+            # self.cell.calc_doc.dispatch_cmd(cmd)
+            self._dispatch_command(cmd)
             ctl_state_obj = CtlState(self.cell)
             ctl_state = ctl_state_obj.get_state()
             if ctl_state == value:
