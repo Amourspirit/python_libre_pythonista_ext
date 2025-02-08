@@ -84,7 +84,7 @@ def soffice_path():  # noqa: ANN201
 def _get_loader_pipe_default(
     headless: bool,
     soffice: str,
-    working_dir: Any,
+    working_dir: Any,  # noqa: ANN401
     env_vars: Optional[Dict[str, str]] = None,  # noqa: ANN401
 ) -> Any:  # noqa: ANN401
     dynamic = False
@@ -92,7 +92,7 @@ def _get_loader_pipe_default(
     visible = False
     return Lo.load_office(
         connector=connectors.ConnectPipe(headless=headless, soffice=soffice, env_vars=env_vars, invisible=not visible),
-        cache_obj=mCache.Cache(working_dir=working_dir),
+        cache_obj=mCache.Cache(working_dir=working_dir, profile_path="", no_shared_ext=True),
         opt=LoOptions(verbose=verbose, dynamic=dynamic, log_level=logging.DEBUG),
     )
 

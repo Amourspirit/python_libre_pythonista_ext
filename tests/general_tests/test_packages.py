@@ -176,14 +176,15 @@ def test_packages(
     num_pkg: int,
     packages: List[Dict[str, str]],
     mocker: MockerFixture,
-) -> None:
+    build_setup,
+):
     # package name and version are not being tested here.
     # python_versions is being tested here.
     # ignore_platforms is being tested here.
-    def get_py_version() -> str:
+    def get_py_version():
         return py_version
 
-    mock_config = mocker.patch("oxt.___lo_pip___.install.py_packages.packages.Config")
+    mock_config = mocker.patch("libre_pythonista.install.py_packages.packages.Config")
     mock_config_instance = mock_config.return_value
     mock_config_instance.is_flatpak = is_flatpak
     mock_config_instance.is_snap = is_snap
@@ -202,9 +203,9 @@ def test_packages(
     else:
         mock_config_instance.is_linux = False
 
-    _ = mocker.patch("oxt.___lo_pip___.install.py_packages.packages.OxtLogger")
+    _ = mocker.patch("libre_pythonista.install.py_packages.packages.OxtLogger")
 
-    mock_pkg_config = mocker.patch("oxt.___lo_pip___.install.py_packages.packages.PackageConfig")
+    mock_pkg_config = mocker.patch("libre_pythonista.install.py_packages.packages.PackageConfig")
     mock_pkg_config_instance = mock_pkg_config.return_value
     py_packages = packages  # [{"name": "requests", "version": "3.9.0"}]
     # mocked_instance.py_packages.return_value = py_packages
@@ -213,7 +214,7 @@ def test_packages(
     if TYPE_CHECKING:
         from ...oxt.___lo_pip___.install.py_packages.packages import Packages
     else:
-        from oxt.___lo_pip___.install.py_packages.packages import Packages
+        from libre_pythonista.install.py_packages.packages import Packages
 
     mocker.patch.object(Packages, "_get_py_ver", side_effect=get_py_version)
 
@@ -318,14 +319,15 @@ def test_packages_rules(
     match_count: int,
     packages: List[Dict[str, str]],
     mocker: MockerFixture,
-) -> None:
+    build_setup,
+):
     # package name and version are not being tested here.
     # python_versions is being tested here.
     # ignore_platforms is being tested here.
-    def get_py_version() -> str:
+    def get_py_version():
         return py_version
 
-    mock_config = mocker.patch("oxt.___lo_pip___.install.py_packages.packages.Config")
+    mock_config = mocker.patch("libre_pythonista.install.py_packages.packages.Config")
     mock_config_instance = mock_config.return_value
     mock_config_instance.is_flatpak = is_flatpak
     mock_config_instance.is_snap = is_snap
@@ -344,9 +346,9 @@ def test_packages_rules(
     else:
         mock_config_instance.is_linux = False
 
-    _ = mocker.patch("oxt.___lo_pip___.install.py_packages.packages.OxtLogger")
+    _ = mocker.patch("libre_pythonista.install.py_packages.packages.OxtLogger")
 
-    mock_pkg_config = mocker.patch("oxt.___lo_pip___.install.py_packages.packages.PackageConfig")
+    mock_pkg_config = mocker.patch("libre_pythonista.install.py_packages.packages.PackageConfig")
     mock_pkg_config_instance = mock_pkg_config.return_value
     py_packages = packages  # [{"name": "requests", "version": "3.9.0"}]
     # mocked_instance.py_packages.return_value = py_packages
@@ -356,8 +358,8 @@ def test_packages_rules(
         from ...oxt.___lo_pip___.install.py_packages.packages import Packages
         from ...oxt.___lo_pip___.ver.rules.ver_rules import VerRules
     else:
-        from oxt.___lo_pip___.install.py_packages.packages import Packages
-        from oxt.___lo_pip___.ver.rules.ver_rules import VerRules
+        from libre_pythonista.install.py_packages.packages import Packages
+        from libre_pythonista.ver.rules.ver_rules import VerRules
 
     mocker.patch.object(Packages, "_get_py_ver", side_effect=get_py_version)
 

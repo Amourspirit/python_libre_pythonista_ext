@@ -5,7 +5,6 @@ No Internet needed.
 """
 
 from __future__ import annotations
-import sys
 
 import importlib.util
 from importlib.metadata import PackageNotFoundError, version
@@ -48,11 +47,6 @@ class RequirementsCheck(metaclass=Singleton):
             if spec is None:
                 self._log.warning("Import %s failed.", imp)
                 return False
-            # try:
-            #     __import__(imp)
-            # except (ModuleNotFoundError, ImportError):
-            #     self._log.warning(f"Import {imp} failed.")
-            #     return False
 
         if self._config.is_linux:
             for imp in self._config.run_imports_linux:
@@ -60,11 +54,6 @@ class RequirementsCheck(metaclass=Singleton):
                 if spec is None:
                     self._log.warning("Import %s failed.", imp)
                     return False
-                # try:
-                #     __import__(imp)
-                # except (ModuleNotFoundError, ImportError):
-                #     self._log.warning(f"Linux Import {imp} failed.")
-                #     return False
 
         if self._config.is_mac:
             for imp in self._config.run_imports_macos:
@@ -72,11 +61,6 @@ class RequirementsCheck(metaclass=Singleton):
                 if spec is None:
                     self._log.warning("Import %s failed.", imp)
                     return False
-                # try:
-                #     __import__(imp)
-                # except (ModuleNotFoundError, ImportError):
-                #     self._log.warning(f"Mac Import {imp} failed.")
-                #     return False
 
         if self._config.is_win:
             for imp in self._config.run_imports_win:
@@ -84,11 +68,6 @@ class RequirementsCheck(metaclass=Singleton):
                 if spec is None:
                     self._log.warning("Import %s failed.", imp)
                     return False
-                # try:
-                #     __import__(imp)
-                # except (ModuleNotFoundError, ImportError):
-                #     self._log.warning(f"Windows Import {imp} failed.")
-                #     return False
         self._log.debug("All runtime imports are ready.")
         return True
 

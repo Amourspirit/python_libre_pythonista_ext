@@ -1,6 +1,8 @@
 from __future__ import annotations
 from typing import Any, cast, TYPE_CHECKING, Tuple
 from pathlib import Path
+from pytest_mock import MockerFixture
+
 from ooodev.loader import Lo
 from ooodev.calc import CalcDoc, CalcSheet
 from ooodev.utils.data_type.cell_obj import CellObj
@@ -15,7 +17,7 @@ if __name__ == "__main__":
     pytest.main([__file__])
 
 
-def test_src_manager_simple(loader) -> None:
+def test_src_manager_simple(loader, build_setup, mocker: MockerFixture) -> None:
     """
     This test is testing the source manager in a simple way.
 
@@ -27,9 +29,10 @@ def test_src_manager_simple(loader) -> None:
     The source code for the sheet is treated as a single module.
     This means when a previous cell get updated then all other cells that were using its vars will also be updated.
     """
+    _ = mocker.patch("libre_pythonista_lib.code.cell_cache.LogInst")
     if TYPE_CHECKING:
-        from build.pythonpath.libre_pythonista_lib.code import py_source_mgr
-        from build.pythonpath.libre_pythonista_lib.code import cell_cache
+        from ...oxt.pythonpath.libre_pythonista_lib.code import py_source_mgr
+        from ...oxt.pythonpath.libre_pythonista_lib.code import cell_cache
     else:
         # import libre_pythonista_lib
         # import libre_pythonista

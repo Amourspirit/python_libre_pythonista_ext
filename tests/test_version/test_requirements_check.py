@@ -31,28 +31,37 @@ if TYPE_CHECKING:
         pytest.param("requests", "1.3.0", "^1.2.4", True, id="requests 1.3.0 ^1.2.4"),
     ],
 )
-def test_check_requirements(pkg_name: str, installed_ver: str, check_ver: str, result: bool, mocker: MockerFixture):
+def test_check_requirements(
+    pkg_name: str, installed_ver: str, check_ver: str, result: bool, mocker: MockerFixture, build_setup
+):
     # The packages being tested do not need to be installed for this test.
     def get_version(package_name):
         return installed_ver
 
-    mock_config = mocker.patch("oxt.___lo_pip___.install.requirements_check.Config")
+    mock_config = mocker.patch("libre_pythonista.install.requirements_check.Config")
     mock_config.Config = mocker.Mock()
     # mock_config.Config.requirements = {"ruff": ">=0.8.1"}
 
-    _ = mocker.patch("oxt.___lo_pip___.install.requirements_check.OxtLogger")
+    _ = mocker.patch("libre_pythonista.install.requirements_check.OxtLogger")
     # mock_logger.OxtLogger = dummy_logger
 
     # mock the importlib.metadata.version function
-    mock_version = mocker.patch("oxt.___lo_pip___.install.requirements_check.version")
+    mock_version = mocker.patch("libre_pythonista.install.requirements_check.version")
     # assign the get_version function to the mock_version function
     mock_version.side_effect = get_version
 
-    mock_pkg = mocker.patch("oxt.___lo_pip___.install.requirements_check.Packages")
+    mock_pkg = mocker.patch("libre_pythonista.install.requirements_check.Packages")
     mock_pkg_inst = mock_pkg.return_value
     mock_pkg_inst.packages = []
 
-    from oxt.___lo_pip___.install.requirements_check import RequirementsCheck
+    mock_install_settings = mocker.patch("libre_pythonista.install.requirements_check.InstallSettings")
+    mock_install_settings_inst = mock_install_settings.return_value
+    mock_install_settings_inst.no_install_packages = set()
+
+    if TYPE_CHECKING:
+        from ...oxt.___lo_pip___.install.requirements_check import RequirementsCheck
+    else:
+        from libre_pythonista.install.requirements_check import RequirementsCheck
 
     rc = RequirementsCheck()
     rc._config.requirements = {pkg_name: check_ver}  # type: ignore
@@ -88,6 +97,7 @@ def test_check_requirements_packages(
     result: bool,
     packages: List[Dict[str, str]],
     mocker: MockerFixture,
+    build_setup,
 ):
     # python versions are not checked in this test.
     # They are not relevant to the test.
@@ -98,25 +108,35 @@ def test_check_requirements_packages(
     def get_version(package_name):
         return installed_ver
 
-    mock_config = mocker.patch("oxt.___lo_pip___.install.requirements_check.Config")
+    mock_config = mocker.patch("libre_pythonista.install.requirements_check.Config")
     mock_config.Config = mocker.Mock()
 
-    _ = mocker.patch("oxt.___lo_pip___.install.requirements_check.OxtLogger")
+    _ = mocker.patch("libre_pythonista.install.requirements_check.OxtLogger")
 
     # mock the importlib.metadata.version function
-    mock_version = mocker.patch("oxt.___lo_pip___.install.requirements_check.version")
+    mock_version = mocker.patch("libre_pythonista.install.requirements_check.version")
     # assign the get_version function to the mock_version function
     mock_version.side_effect = get_version
 
-    from oxt.___lo_pip___.install.py_packages.py_package import PyPackage
+    if TYPE_CHECKING:
+        from ...oxt.___lo_pip___.install.py_packages.py_package import PyPackage
+    else:
+        from libre_pythonista.install.py_packages.py_package import PyPackage
 
     pkg = PyPackage.from_dict(**packages[0])
 
-    mock_pkg = mocker.patch("oxt.___lo_pip___.install.requirements_check.Packages")
+    mock_pkg = mocker.patch("libre_pythonista.install.requirements_check.Packages")
     mock_pkg_inst = mock_pkg.return_value
     mock_pkg_inst.packages = [pkg]
 
-    from oxt.___lo_pip___.install.requirements_check import RequirementsCheck
+    mock_install_settings = mocker.patch("libre_pythonista.install.requirements_check.InstallSettings")
+    mock_install_settings_inst = mock_install_settings.return_value
+    mock_install_settings_inst.no_install_packages = set()
+
+    if TYPE_CHECKING:
+        from ...oxt.___lo_pip___.install.requirements_check import RequirementsCheck
+    else:
+        from libre_pythonista.install.requirements_check import RequirementsCheck
 
     rc = RequirementsCheck()
     mocker.patch.object(rc, "_get_package_version", side_effect=get_version)

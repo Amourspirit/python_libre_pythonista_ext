@@ -9,7 +9,6 @@ keywords = ["pip", "libreoffice","uno", "pyuno"]
 dependencies = [
     "ooo-dev-tools>=0.52.1",
     "oooenv>=0.2.4",
-    "pandas>=2",
     "sortedcontainers>=2.4.0",
     "toml>=0.10.2",
     "typing-extensions>=4.12.2",
@@ -233,6 +232,7 @@ dev = [
     "matplotlib>=3.7.5",
     "pytest-mock>=3.14.0",
     "viztracer>=0.16.3",
+    "pandas>=2",
 ]
 
 [tool.hatch.build]
