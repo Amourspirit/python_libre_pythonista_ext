@@ -1,5 +1,6 @@
 from __future__ import annotations
 from typing import Any, TYPE_CHECKING
+import contextlib
 
 try:
     # python 3.12+
@@ -20,43 +21,65 @@ from ...const.event_const import DOCUMENT_EVENT
 if TYPE_CHECKING:
     from com.sun.star.lang import EventObject
     from com.sun.star.document import DocumentEvent
-    from .....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from oxt.pythonpath.libre_pythonista_lib.doc.doc_globals import DocGlobals
+    from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
 else:
-    from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from libre_pythonista_lib.doc.doc_globals import DocGlobals
+    from libre_pythonista_lib.log.log_mixin import LogMixin
+
+_DOCUMENT_EVENT_LISTENER_KEY = "libre_pythonista_lib.doc.listen.document_event_listener.DocumentEventListener"
 
 
-class DocumentEventListener(XDocumentEventListener, unohelper.Base):
+class DocumentEventListener(XDocumentEventListener, LogMixin, unohelper.Base):
     """Singleton class for Document Event Listener."""
 
-    _instances = {}
-
     def __new__(cls) -> DocumentEventListener:
-        key = cls._get_key()
-        if key not in cls._instances:
-            inst = super().__new__(cls)
-            inst._is_init = False
-            inst._inst_name = key
-            cls._instances[key] = inst
-        return cls._instances[key]
+        gbl_cache = DocGlobals.get_current()
+        if _DOCUMENT_EVENT_LISTENER_KEY in gbl_cache.mem_cache:
+            return gbl_cache.mem_cache[_DOCUMENT_EVENT_LISTENER_KEY]
 
-    @classmethod
-    def _get_key(cls) -> str:
-        return f"{Lo.current_doc.runtime_uid}_uid_{cls.__name__}"
+        inst = super().__new__(cls)
+        inst._is_init = False
+
+        gbl_cache.mem_cache[_DOCUMENT_EVENT_LISTENER_KEY] = inst
+        return inst
 
     def __init__(self) -> None:
         if getattr(self, "_is_init", False):
             return
         XDocumentEventListener.__init__(self)
+        LogMixin.__init__(self)
         unohelper.Base.__init__(self)
-        self._inst_name: str  # = inst_name
-        self._log = OxtLogger(log_name=self.__class__.__name__)
-        self._log.debug("Init")
+        self.log.debug("Init")
         self._uid = Lo.current_doc.runtime_uid
+        self._trigger_events = True
         self._shared_event = SharedEvent()
         self._is_init = True
 
+    def set_trigger_state(self, trigger: bool) -> None:
+        """
+        Sets the state of the trigger events.
+
+        Args:
+            trigger (bool): The state to set for the trigger events. If True,
+                trigger events will be enabled. If False, they will be disabled.
+        Returns:
+            None
+        """
+        self._trigger_events = trigger
+
+    def get_trigger_state(self) -> bool:
+        """
+        Returns the current state of the trigger events.
+
+        Returns:
+            bool: The state of the trigger events.
+        """
+
+        return self._trigger_events
+
     @override
-    def documentEventOccured(self, Event: DocumentEvent) -> None:
+    def documentEventOccured(self, Event: DocumentEvent) -> None:  # noqa: N803
         """
         Is called whenever a document event occurred
         """
@@ -71,14 +94,18 @@ class DocumentEventListener(XDocumentEventListener, unohelper.Base):
         # - OnUnfocus
         # - OnTitleChanged
         # and more. See: https://ask.libreoffice.org/t/extension-run-on-libreoffice-startup/94512
-        self._log.debug(f"Document Event Occurred: {Event.EventName}")
+        if not self._trigger_events:
+            self.log.debug("Trigger events is False. Not raising DOCUMENT_EVENT event.")
+            return
+
+        self.log.debug("Document Event Occurred: %s", Event.EventName)
         eargs = EventArgs(self)
         dd = DotDict(run_id=self._uid, event_name=Event.EventName)
         eargs.event_data = dd
         self._shared_event.trigger_event(DOCUMENT_EVENT, eargs)
 
     @override
-    def disposing(self, Source: EventObject) -> None:
+    def disposing(self, Source: EventObject) -> None:  # noqa: N803
         """
         gets called when the broadcaster is about to be disposed.
 
@@ -90,8 +117,13 @@ class DocumentEventListener(XDocumentEventListener, unohelper.Base):
         interfaced, not only for registrations at XComponent.
         """
 
-        if self._log is not None:
-            self._log.debug("Disposing")
-        if self._inst_name in DocumentEventListener._instances:
-            del DocumentEventListener._instances[self._inst_name]
-        setattr(self, "_log", None)  # avoid type checker complaining about
+        with contextlib.suppress(Exception):
+            gbl_cache = DocGlobals.get_current()
+            if _DOCUMENT_EVENT_LISTENER_KEY in gbl_cache.mem_cache:
+                del gbl_cache.mem_cache[_DOCUMENT_EVENT_LISTENER_KEY]
+
+    def __del__(self) -> None:
+        with contextlib.suppress(Exception):
+            gbl_cache = DocGlobals.get_current()
+            if _DOCUMENT_EVENT_LISTENER_KEY in gbl_cache.mem_cache:
+                del gbl_cache.mem_cache[_DOCUMENT_EVENT_LISTENER_KEY]

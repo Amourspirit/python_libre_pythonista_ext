@@ -10,48 +10,48 @@ except ImportError:
 import uno
 import unohelper
 from com.sun.star.sheet import XActivationEventListener
-from ooodev.loader import Lo
 from ooodev.calc import CalcDoc
-from ooodev.events.lo_events import LoEvents
-from ooodev.events.args.event_args import EventArgs
-from .code_sheet_modify_listener import CodeSheetModifyListener
-from ...const.event_const import GBL_DOC_CLOSING
 from ...sheet.calculate import set_doc_sheets_calculate_event
 
 if TYPE_CHECKING:
     from com.sun.star.lang import EventObject
     from com.sun.star.sheet import ActivationEvent
-    from .....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from oxt.pythonpath.libre_pythonista_lib.doc.doc_globals import DocGlobals
+    from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
 else:
-    from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from libre_pythonista_lib.doc.doc_globals import DocGlobals
+    from libre_pythonista_lib.log.log_mixin import LogMixin
 
 
-class SheetCalculationEventListener(unohelper.Base, XActivationEventListener):
+_SHEET_CALCULATION_EVENT_LISTENER_KEY = (
+    "pythonpath.libre_pythonista_lib.sheet.listen.sheet_calculation_event_listener.SheetCalculationEventListener"
+)
+
+
+class SheetCalculationEventListener(XActivationEventListener, LogMixin, unohelper.Base):
     """Singleton Class for Sheet Activation Listener."""
 
-    _instances = {}
-
     def __new__(cls) -> SheetCalculationEventListener:
-        key = cls._get_key()
-        if key not in cls._instances:
-            inst = super().__new__(cls)
-            inst._is_init = False
-            cls._instances[key] = inst
-        return cls._instances[key]
+        gbl_cache = DocGlobals.get_current()
+        if _SHEET_CALCULATION_EVENT_LISTENER_KEY in gbl_cache.mem_cache:
+            return gbl_cache.mem_cache[_SHEET_CALCULATION_EVENT_LISTENER_KEY]
 
-    @classmethod
-    def _get_key(cls) -> str:
-        return f"{Lo.current_doc.runtime_uid}_uid"
+        inst = super().__new__(cls)
+        inst._is_init = False
+
+        gbl_cache.mem_cache[_SHEET_CALCULATION_EVENT_LISTENER_KEY] = inst
+        return inst
 
     def __init__(self) -> None:
         if getattr(self, "_is_init", False):
             return
-        super().__init__()
-        self._log = OxtLogger(log_name=self.__class__.__name__)
+        XActivationEventListener.__init__(self)
+        LogMixin.__init__(self)
+        unohelper.Base.__init__(self)
         self._is_init = True
 
     @override
-    def activeSpreadsheetChanged(self, aEvent: ActivationEvent) -> None:
+    def activeSpreadsheetChanged(self, aEvent: ActivationEvent) -> None:  # noqa: N803
         """
         Is called whenever data or a selection changed.
 
@@ -61,15 +61,15 @@ class SheetCalculationEventListener(unohelper.Base, XActivationEventListener):
 
             OOo 2.0
         """
-        self._log.debug("activeSpreadsheetChanged")
+        self.log.debug("activeSpreadsheetChanged")
         doc = CalcDoc.from_current_doc()
         try:
             set_doc_sheets_calculate_event(doc)
-        except Exception as e:
-            self._log.error("Error setting document sheets calculate event", exc_info=True)
+        except Exception:
+            self.log.exception("Error setting document sheets calculate event")
 
     @override
-    def disposing(self, Source: EventObject) -> None:
+    def disposing(self, Source: EventObject) -> None:  # noqa: N803
         """
         gets called when the broadcaster is about to be disposed.
 
@@ -80,22 +80,11 @@ class SheetCalculationEventListener(unohelper.Base, XActivationEventListener):
         This method is called for every listener registration of derived listener
         interfaced, not only for registrations at XComponent.
         """
-        if self._log is not None:
-            self._log.debug("Disposing")
-        setattr(self, "_log", None)  # avoid type checker complaining about log being none.
+        gbl_cache = DocGlobals.get_current()
+        if _SHEET_CALCULATION_EVENT_LISTENER_KEY in gbl_cache.mem_cache:
+            del gbl_cache.mem_cache[_SHEET_CALCULATION_EVENT_LISTENER_KEY]
 
     def __del__(self) -> None:
-        if self._log is not None:
-            self._log.debug("Deleted")
-        setattr(self, "_log", None)
-
-
-def _on_doc_closing(src: Any, event: EventArgs) -> None:
-    # clean up singleton
-    uid = str(event.event_data.uid)
-    key = f"{uid}_uid"
-    if key in SheetCalculationEventListener._instances:
-        del SheetCalculationEventListener._instances[key]
-
-
-LoEvents().on(GBL_DOC_CLOSING, _on_doc_closing)
+        gbl_cache = DocGlobals.get_current()
+        if _SHEET_CALCULATION_EVENT_LISTENER_KEY in gbl_cache.mem_cache:
+            del gbl_cache.mem_cache[_SHEET_CALCULATION_EVENT_LISTENER_KEY]

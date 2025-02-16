@@ -37,3 +37,5 @@ CONTROL_UPDATED = "control_updated"
 CONTROL_INSERTING_CELL_IMG_LINKED = "control_insert_cell_img_linked"
 CONTROL_INSERTED_CELL_IMG_LINKED = "control_inserted_cell_img_linked"
 # endregion cell.ctl shared events
+
+DOC_GBL_DEL_INSTANCE = "doc_gbl_del_instance"

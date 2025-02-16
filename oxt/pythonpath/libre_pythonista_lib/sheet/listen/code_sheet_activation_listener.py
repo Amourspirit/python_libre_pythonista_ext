@@ -7,62 +7,49 @@ try:
 except ImportError:
     from typing_extensions import override
 
-import uno
 import unohelper
 from com.sun.star.sheet import XActivationEventListener
-from ooodev.loader import Lo
 from ooodev.calc import CalcDoc
-from ooodev.events.lo_events import LoEvents
-from ooodev.events.args.event_args import EventArgs
-from ooodev.utils.helper.dot_dict import DotDict
 from .code_sheet_modify_listener import CodeSheetModifyListener
-from ...const.event_const import GBL_DOC_CLOSING
-from ...ex.exceptions import SingletonKeyError
 
 if TYPE_CHECKING:
     from com.sun.star.lang import EventObject
     from com.sun.star.sheet import ActivationEvent
-    from .....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from oxt.pythonpath.libre_pythonista_lib.doc.doc_globals import DocGlobals
+    from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
 else:
-    from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from libre_pythonista_lib.doc.doc_globals import DocGlobals
+    from libre_pythonista_lib.log.log_mixin import LogMixin
+
+_CODE_SHEET_ACTIVATION_LISTENER_KEY = (
+    "libre_pythonista_lib.sheet.listen.code_sheet_activation_listener.CodeSheetActivationListener"
+)
 
 
-class CodeSheetActivationListener(unohelper.Base, XActivationEventListener):
+class CodeSheetActivationListener(XActivationEventListener, LogMixin, unohelper.Base):
     """Singleton Class for Sheet Activation Listener."""
 
-    _instances = {}
-
     def __new__(cls) -> CodeSheetActivationListener:
-        key = cls._get_key()
-        if key not in cls._instances:
-            inst = super().__new__(cls)
-            inst._is_init = False
-            cls._instances[key] = inst
-        return cls._instances[key]
+        gbl_cache = DocGlobals.get_current()
+        if _CODE_SHEET_ACTIVATION_LISTENER_KEY in gbl_cache.mem_cache:
+            return gbl_cache.mem_cache[_CODE_SHEET_ACTIVATION_LISTENER_KEY]
 
-    @classmethod
-    def _get_key(cls) -> str:
-        eargs = EventArgs(cls)
-        eargs.event_data = DotDict(class_name=cls.__name__, key="")
-        LoEvents().trigger("LibrePythonistaCodeSheetActivationListenerGetKey", eargs)
-        if eargs.event_data.key:
-            return eargs.event_data.key
-        try:
-            return f"{Lo.current_doc.runtime_uid}_uid"
-        except Exception as e:
-            raise SingletonKeyError(
-                f"Error getting single key for class name: {cls.__name__}"
-            ) from e
+        inst = super().__new__(cls)
+        inst._is_init = False
+
+        gbl_cache.mem_cache[_CODE_SHEET_ACTIVATION_LISTENER_KEY] = inst
+        return inst
 
     def __init__(self) -> None:
         if getattr(self, "_is_init", False):
             return
-        super().__init__()
-        self._log = OxtLogger(log_name=self.__class__.__name__)
+        XActivationEventListener.__init__(self)
+        LogMixin.__init__(self)
+        unohelper.Base.__init__(self)
         self._is_init = True
 
     @override
-    def activeSpreadsheetChanged(self, aEvent: ActivationEvent) -> None:
+    def activeSpreadsheetChanged(self, aEvent: ActivationEvent) -> None:  # noqa: N803
         """
         is called whenever data or a selection changed.
 
@@ -72,23 +59,19 @@ class CodeSheetActivationListener(unohelper.Base, XActivationEventListener):
 
             OOo 2.0
         """
-        self._log.debug("activeSpreadsheetChanged")
+        self.log.debug("activeSpreadsheetChanged")
         doc = CalcDoc.from_current_doc()
         sheet = doc.sheets.get_sheet(aEvent.ActiveSheet)
         unique_id = sheet.unique_id
         if not CodeSheetModifyListener.has_listener(unique_id):
-            self._log.debug(
-                f"Adding Modify Listener to sheet with unique id of: {unique_id}"
-            )
+            self.log.debug("Adding Modify Listener to sheet with unique id of: %s", unique_id)
             listener = CodeSheetModifyListener(unique_id)  # singleton
             sheet.component.addModifyListener(listener)
         else:
-            self._log.debug(
-                f"Sheet with unique id of: {unique_id} already has a Modify Listener"
-            )
+            self.log.debug("Sheet with unique id of: %s already has a Modify Listener", unique_id)
 
     @override
-    def disposing(self, Source: EventObject) -> None:
+    def disposing(self, Source: EventObject) -> None:  # noqa: N803
         """
         gets called when the broadcaster is about to be disposed.
 
@@ -99,24 +82,11 @@ class CodeSheetActivationListener(unohelper.Base, XActivationEventListener):
         This method is called for every listener registration of derived listener
         interfaced, not only for registrations at XComponent.
         """
-        if self._log is not None:
-            self._log.debug("Disposing")
-        setattr(
-            self, "_log", None
-        )  # avoid type checker complaining about log being none.
+        gbl_cache = DocGlobals.get_current()
+        if _CODE_SHEET_ACTIVATION_LISTENER_KEY in gbl_cache.mem_cache:
+            del gbl_cache.mem_cache[_CODE_SHEET_ACTIVATION_LISTENER_KEY]
 
     def __del__(self) -> None:
-        if self._log is not None:
-            self._log.debug("Deleted")
-        setattr(self, "_log", None)
-
-
-def _on_doc_closing(src: Any, event: EventArgs) -> None:
-    # clean up singleton
-    uid = str(event.event_data.uid)
-    key = f"{uid}_uid"
-    if key in CodeSheetActivationListener._instances:
-        del CodeSheetActivationListener._instances[key]
-
-
-LoEvents().on(GBL_DOC_CLOSING, _on_doc_closing)
+        gbl_cache = DocGlobals.get_current()
+        if _CODE_SHEET_ACTIVATION_LISTENER_KEY in gbl_cache.mem_cache:
+            del gbl_cache.mem_cache[_CODE_SHEET_ACTIVATION_LISTENER_KEY]

@@ -1,7 +1,6 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 import pytest
-from pytest_mock import MockerFixture
 
 if __name__ == "__main__":
     pytest.main([__file__])
@@ -10,7 +9,7 @@ if TYPE_CHECKING:
     from .....build.pythonpath.libre_pythonista_lib.code.py_module import PyModule
 
 
-def test_sum_it(py_mod: PyModule, mocker: MockerFixture) -> None:
+def test_sum_it(py_mod: PyModule) -> None:
     if TYPE_CHECKING:
         from .....build.pythonpath.libre_pythonista_lib.code.rules.expr import Expr
     else:

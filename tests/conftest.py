@@ -18,6 +18,7 @@ from ooodev.loader import Lo
 from ooodev.conn import connectors
 from ooodev.conn import cache as mCache  # noqa: N812
 from ooodev.loader.inst import Options as LoOptions
+import contextlib
 
 
 @pytest.fixture(scope="session")
@@ -124,7 +125,8 @@ def loader(build_setup, tmp_path_session, run_headless, soffice_path, soffice_en
     if connect_kind == "no_start":
         # only close office if it was started by the test
         return
-    Lo.close_office()
+    with contextlib.suppress(Exception):
+        Lo.close_office()
 
 
 # endregion soffice
