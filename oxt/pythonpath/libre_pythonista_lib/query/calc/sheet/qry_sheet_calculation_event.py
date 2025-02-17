@@ -10,11 +10,13 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.query.calc.sheet.qry_sheet_cache_t import QrySheetCacheT
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.const.cache_const import SHEET_CALCULATION_EVENT
+    from oxt.pythonpath.libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
 else:
     from libre_pythonista_lib.sheet import calculate
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.query.calc.sheet.qry_sheet_cache_t import QrySheetCacheT
     from libre_pythonista_lib.const.cache_const import SHEET_CALCULATION_EVENT
+    from libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
 
 
 class QrySheetCalculationEvent(LogMixin, QrySheetCacheT):
@@ -45,3 +47,7 @@ class QrySheetCalculationEvent(LogMixin, QrySheetCacheT):
     def cache_key(self) -> str:
         """Gets the cache key."""
         return SHEET_CALCULATION_EVENT
+
+    @property
+    def kind(self) -> CalcQryKind:
+        return CalcQryKind.SHEET_CACHE

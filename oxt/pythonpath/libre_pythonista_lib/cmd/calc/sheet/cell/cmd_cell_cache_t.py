@@ -1,22 +1,15 @@
 from __future__ import annotations
-from typing import Tuple, Protocol
+from typing import Tuple, Protocol, TYPE_CHECKING
 
 
 from ooodev.calc import CalcCell
 
+if TYPE_CHECKING:
+    from oxt.pythonpath.libre_pythonista_lib.cmd.calc.sheet.cell.cmd_cell_t import CmdCellT
+else:
+    from libre_pythonista_lib.cmd.calc.sheet.cell.cmd_cell_t import CmdCellT
 
-class CmdCellCacheT(Protocol):
-    def execute(self) -> None:  # noqa: ANN401
-        ...
 
-    def undo(self) -> None:  # noqa: ANN401
-        ...
-
-    @property
-    def success(self) -> bool: ...
-
-    @property
-    def cell(self) -> CalcCell: ...
-
+class CmdCellCacheT(CmdCellT, Protocol):
     @property
     def cache_keys(self) -> Tuple[str, ...]: ...

@@ -13,6 +13,7 @@ class MemCache:
         Memory Cache
         """
         self._cache = {}
+        self._hits = 0
 
     # endregion Initialization
 
@@ -79,6 +80,7 @@ class MemCache:
             raise TypeError("Key must not be None.")
         if key not in self._cache:
             return None
+        self._hits += 1
         return self._cache[key]
 
     def __setitem__(self, key: Any, value: Any) -> None:  # noqa: ANN401
@@ -105,3 +107,16 @@ class MemCache:
         return len(self._cache)
 
     # endregion Dunder Methods
+
+    # region Properties
+    @property
+    def hits(self) -> int:
+        """
+        Hits count.
+
+        Returns:
+            int: Hits count.
+        """
+        return self._hits
+
+    # endregion Properties

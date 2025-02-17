@@ -8,10 +8,12 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.sheet import calculate
     from oxt.pythonpath.libre_pythonista_lib.query.qry_t import QryT
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
+    from oxt.pythonpath.libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
 else:
     from libre_pythonista_lib.sheet import calculate
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.query.qry_t import QryT
+    from libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
 
 
 class QrySheetScriptUrl(LogMixin, QryT):
@@ -32,3 +34,7 @@ class QrySheetScriptUrl(LogMixin, QryT):
         except Exception:
             self.log.exception("Error getting script url")
         return None
+
+    @property
+    def kind(self) -> CalcQryKind:
+        return CalcQryKind.SIMPLE

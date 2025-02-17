@@ -6,12 +6,14 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cmd.calc.sheet.cmd_sheet_calc_formula import CmdSheetCalcFormula
     from oxt.pythonpath.libre_pythonista_lib.cmd.cmd_t import CmdT
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
-    from oxt.pythonpath.libre_pythonista_lib.cache.calc.sheet_cache import get_sheet_cache
+    from oxt.pythonpath.libre_pythonista_lib.cache.calc.sheet.sheet_cache import get_sheet_cache
+    from oxt.pythonpath.libre_pythonista_lib.cmd.cmd_handler import CmdHandler
 else:
     from libre_pythonista_lib.cmd.calc.sheet.cmd_sheet_calc_formula import CmdSheetCalcFormula
     from libre_pythonista_lib.log.log_mixin import LogMixin
-    from libre_pythonista_lib.cache.calc.sheet_cache import get_sheet_cache
+    from libre_pythonista_lib.cache.calc.sheet.sheet_cache import get_sheet_cache
     from libre_pythonista_lib.cmd.cmd_t import CmdT
+    from libre_pythonista_lib.cmd.cmd_handler import CmdHandler
 
     CalcSheet = Any
 
@@ -48,9 +50,10 @@ class CmdInitSheet(List[Type[CmdT]], LogMixin, CmdT):
             self._success = True
             return
         try:
+            handler = CmdHandler()
             for cmd in self:
                 inst = cmd()
-                inst.execute()
+                handler.handle(inst)
                 if inst.success:  # Only add if command was successful
                     self.executed_commands.append(inst)
                 else:

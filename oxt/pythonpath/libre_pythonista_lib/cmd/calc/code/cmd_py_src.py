@@ -10,10 +10,12 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.pyc.code.py_source import PySource, PySrcProvider
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.cmd.cmd_t import CmdT
+    from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
 else:
     from libre_pythonista_lib.pyc.code.py_source import PySource, PySrcProvider
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.cmd.cmd_t import CmdT
+    from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
 
 
 class CmdPySrc(LogMixin, CmdT):
@@ -58,3 +60,7 @@ class CmdPySrc(LogMixin, CmdT):
     @property
     def py_src(self) -> PySource:
         return self._py_src
+
+    @property
+    def kind(self) -> CalcCmdKind:
+        return CalcCmdKind.SIMPLE

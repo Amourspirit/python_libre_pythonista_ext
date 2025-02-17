@@ -1,5 +1,10 @@
 from __future__ import annotations
-from typing import Protocol
+from typing import Protocol, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
+else:
+    from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
 
 
 class CmdT(Protocol):
@@ -11,3 +16,6 @@ class CmdT(Protocol):
 
     @property
     def success(self) -> bool: ...
+
+    @property
+    def kind(self) -> CalcCmdKind: ...

@@ -9,10 +9,12 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.doc.doc_globals import MemCache
     from oxt.pythonpath.libre_pythonista_lib.query.qry_t import QryT
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
+    from oxt.pythonpath.libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
 else:
     from libre_pythonista_lib.cache.calc.sheet.sheet_cache import get_sheet_cache
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.query.qry_t import QryT
+    from libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
 
 
 class QrySheetCache(LogMixin, QryT):
@@ -33,3 +35,7 @@ class QrySheetCache(LogMixin, QryT):
         except Exception:
             self.log.exception("Error executing query")
         return None
+
+    @property
+    def kind(self) -> CalcQryKind:
+        return CalcQryKind.SIMPLE

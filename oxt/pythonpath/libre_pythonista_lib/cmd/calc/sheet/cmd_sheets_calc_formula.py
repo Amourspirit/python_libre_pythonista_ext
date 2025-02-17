@@ -1,18 +1,25 @@
 from __future__ import annotations
-from typing import cast, TYPE_CHECKING
+from typing import Any, cast, List, TYPE_CHECKING
 import time
 
 from ooodev.loader import Lo
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcDoc
-    from oxt.pythonpath.libre_pythonista_lib.sheet import calculate
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.cmd.cmd_t import CmdT
+    from oxt.pythonpath.libre_pythonista_lib.cmd.calc.sheet.cmd_sheet_cache_t import CmdSheetCacheT
+    from oxt.pythonpath.libre_pythonista_lib.cmd.calc.sheet.cmd_sheet_calc_formula import CmdSheetCalcFormula
+    from oxt.pythonpath.libre_pythonista_lib.cmd.cmd_handler import CmdHandler
+    from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
 else:
-    from libre_pythonista_lib.sheet import calculate
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.cmd.cmd_t import CmdT
+    from libre_pythonista_lib.cmd.calc.sheet.cmd_sheet_calc_formula import CmdSheetCalcFormula
+    from libre_pythonista_lib.cmd.cmd_handler import CmdHandler
+    from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
+
+    CmdSheetCacheT = Any
 
 
 class CmdSheetsCalcFormula(LogMixin, CmdT):
@@ -22,49 +29,51 @@ class CmdSheetsCalcFormula(LogMixin, CmdT):
         LogMixin.__init__(self)
         self._doc = cast("CalcDoc", Lo.current_doc)
         self._success = False
-        self._current = []
-
-    def _undo_current(self) -> None:
-        for sheet, script in self._current:
-            if script:
-                calculate.set_sheet_calculate_event(sheet, script)
-            else:
-                calculate.remove_doc_sheet_calculate_event(sheet)
+        self._success_cmds: List[CmdSheetCacheT] = []
 
     def execute(self) -> None:
         self._success = False
+        self._success_cmds.clear()
         try:
-            self._current.clear()
+            handler = CmdHandler()
             for sheet in self._doc.sheets:
-                if calculate.sheet_has_calculate_event(sheet):
-                    self._success = True
-                    continue
-                current_script = calculate.get_sheet_calculate_event(sheet)
-                self._success = calculate.set_sheet_calculate_event(sheet)
-                if not self._success:
+                cmd = CmdSheetCalcFormula(sheet)
+                handler.handle(cmd)
+                self._success = cmd.success
+                if self._success:
+                    self._success_cmds.append(cmd)
+                else:
+                    self.log.error("Error setting sheet calculate event for sheet %s", sheet.name)
                     break
-                self._current.append((sheet, current_script))
+
             if not self._success:
-                self._undo_current()
-                self._current.clear()
+                self._undo()
 
         except Exception:
             self.log.exception("Error setting sheet calculate event")
+            self._undo()
             return
         self.log.debug("Successfully executed command")
-        self._success = True
+
+    def _undo(self) -> None:
+        try:
+            for cmd in self._success_cmds:
+                cmd.undo()
+            self.log.debug("Successfully executed undo command")
+        except Exception:
+            self.log.exception("Error removing sheet calculate event")
+        self._success_cmds.clear()
 
     def undo(self) -> None:
         if self._success:
-            try:
-                self._undo_current()
-                self._current.clear()
-                self.log.debug("Successfully executed undo command")
-            except Exception:
-                self.log.exception("Error removing sheet calculate event")
+            self._undo()
         else:
             self.log.debug("Undo not needed.")
 
     @property
     def success(self) -> bool:
         return self._success
+
+    @property
+    def kind(self) -> CalcCmdKind:
+        return CalcCmdKind.SIMPLE

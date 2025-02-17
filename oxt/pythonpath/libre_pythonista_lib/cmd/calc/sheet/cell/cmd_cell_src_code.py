@@ -10,16 +10,18 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.pyc.code.py_source import PySource
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.query.calc.sheet.cell.qry_cell_src_code import QryCellSrcCode
-    from oxt.pythonpath.libre_pythonista_lib.query.calc.sheet.cell.qry_handler_cell_cache import QryHandlerCellCache
+    from oxt.pythonpath.libre_pythonista_lib.query.qry_handler import QryHandler
     from oxt.pythonpath.libre_pythonista_lib.cmd.calc.sheet.cell.cmd_cell_cache_t import CmdCellCacheT
     from oxt.pythonpath.libre_pythonista_lib.const.cache_const import CELL_SRC_CODE
+    from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
 else:
     from libre_pythonista_lib.pyc.code.py_source import PySource
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.query.calc.sheet.cell.qry_cell_src_code import QryCellSrcCode
-    from libre_pythonista_lib.query.calc.sheet.cell.qry_handler_cell_cache import QryHandlerCellCache
+    from libre_pythonista_lib.query.qry_handler import QryHandler
     from libre_pythonista_lib.cmd.calc.sheet.cell.cmd_cell_cache_t import CmdCellCacheT
     from libre_pythonista_lib.const.cache_const import CELL_SRC_CODE
+    from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
 
 # this class should be call in:
 # libre_pythonista_lib.cmd.calc.sheet.cmd_handler_sheet_cache.CmdHandlerSheetCache
@@ -35,7 +37,6 @@ class CmdCellSrcCode(LogMixin, CmdCellCacheT):
         LogMixin.__init__(self)
         self._doc = cast("CalcDoc", Lo.current_doc)
         self._success = False
-        self.__cell = cell
         self._uri = uri
         self._cell = cell
         self._code = code
@@ -44,7 +45,7 @@ class CmdCellSrcCode(LogMixin, CmdCellCacheT):
 
     def _get_current_src_code(self) -> str | None:
         qry = QryCellSrcCode(uri=self._uri, cell=self.cell, src_provider=self._src_provider)
-        handler = QryHandlerCellCache()
+        handler = QryHandler()
 
         return handler.handle(qry)
 
@@ -55,22 +56,26 @@ class CmdCellSrcCode(LogMixin, CmdCellCacheT):
             py_code.source_code = self._code
         except Exception:
             self.log.exception("Error setting cell Code")
+            self._undo()
             return
         self.log.debug("Successfully executed command.")
         self._success = True
 
+    def _undo(self) -> None:
+        try:
+            py_code = PySource(uri=self._uri, cell=self.cell.cell_obj, src_provider=self._src_provider)
+            if self._current_src is None:
+                py_code.del_source()
+            else:
+                py_code.source_code = self._current_src
+
+            self.log.debug("Successfully executed undo command.")
+        except Exception:
+            self.log.exception("Error undoing cell Code")
+
     def undo(self) -> None:
         if self._success:
-            try:
-                py_code = PySource(uri=self._uri, cell=self.cell.cell_obj, src_provider=self._src_provider)
-                if self._current_src is None:
-                    py_code.del_source()
-                else:
-                    py_code.source_code = self._current_src
-
-                self.log.debug("Successfully executed undo command.")
-            except Exception:
-                self.log.exception("Error undoing cell Code")
+            self._undo()
         else:
             self.log.debug("Undo not needed.")
 
@@ -80,8 +85,12 @@ class CmdCellSrcCode(LogMixin, CmdCellCacheT):
 
     @property
     def cell(self) -> CalcCell:
-        return self.__cell
+        return self._cell
 
     @property
     def cache_keys(self) -> Tuple[str, ...]:
         return (CELL_SRC_CODE,)
+
+    @property
+    def kind(self) -> CalcCmdKind:
+        return CalcCmdKind.CELL_CACHE

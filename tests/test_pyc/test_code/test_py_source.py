@@ -1,15 +1,15 @@
 from __future__ import annotations
 
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING
 import pytest
 
 if __name__ == "__main__":
     pytest.main([__file__])
 
 
-def test_url_info(py_src_mocks) -> None:
+def test_url_info(build_setup) -> None:
     if TYPE_CHECKING:
-        from ....oxt.pythonpath.libre_pythonista_lib.pyc.code.py_source import UrlInfo
+        from oxt.pythonpath.libre_pythonista_lib.pyc.code.py_source import UrlInfo
     else:
         from libre_pythonista_lib.pyc.code.py_source import UrlInfo
     root_url = "vnd.sun.star.tdoc:/1/random_dir"
@@ -28,30 +28,38 @@ def test_url_info(py_src_mocks) -> None:
     assert info.ext == "py"
 
 
-def test_py_src(py_src_provider) -> None:
+def test_py_src(build_setup, loader) -> None:
     from ooodev.utils.data_type.cell_obj import CellObj
+    from ooodev.calc import CalcDoc
 
     if TYPE_CHECKING:
-        from ....oxt.pythonpath.libre_pythonista_lib.pyc.code.py_source import PySource
-        from ....oxt.pythonpath.libre_pythonista_lib.pyc.code.py_source import UrlInfo
+        from oxt.pythonpath.libre_pythonista_lib.pyc.code.py_source import PySource
+        from oxt.pythonpath.libre_pythonista_lib.pyc.code.py_source import UrlInfo
     else:
         from libre_pythonista_lib.pyc.code.py_source import PySource
         from libre_pythonista_lib.pyc.code.py_source import UrlInfo
-    co = CellObj.from_idx(col_idx=0, row_idx=0, sheet_idx=0)
-    src_code = "print('Hello')"
-    provider = py_src_provider(src_code)
-    root_url = "vnd.sun.star.tdoc:/1/random_dir"
-    sheet_unique_id = "rr34jlkj53"
-    code_id = "reu44340ttr"
-    uri = f"{root_url}/{sheet_unique_id}/{code_id}.py"
-    info = UrlInfo.from_url(uri)
-    py_src = PySource(uri=info.url, cell=co, src_provider=provider)
-    assert py_src.exists()
-    assert py_src.source_code == src_code
-    assert py_src.col == 0
-    assert py_src.row == 0
-    assert py_src.sheet_idx == 0
+    doc = None
+    try:
+        doc = CalcDoc.create_doc(loader=loader)
+        co = CellObj.from_idx(col_idx=0, row_idx=0, sheet_idx=0)
+        src_code = "print('Hello')"
+        root_url = f"vnd.sun.star.tdoc:/{doc.runtime_uid}/random_dir"
+        sheet_unique_id = "rr34jlkj53"
+        code_id = "reu44340ttr"
+        uri = f"{root_url}/{sheet_unique_id}/{code_id}.py"
+        info = UrlInfo.from_url(uri)
+        py_src = PySource(uri=info.url, cell=co, src_provider=None)
+        assert py_src.exists() is False
+        py_src.source_code = src_code
+        assert py_src.exists()
+        assert py_src.source_code == src_code
+        assert py_src.col == 0
+        assert py_src.row == 0
+        assert py_src.sheet_idx == 0
 
-    src_code = "print('World')"
-    py_src.source_code = src_code
-    assert py_src.source_code == src_code
+        src_code = "print('World')"
+        py_src.source_code = src_code
+        assert py_src.source_code == src_code
+    finally:
+        if not doc is None:
+            doc.close()

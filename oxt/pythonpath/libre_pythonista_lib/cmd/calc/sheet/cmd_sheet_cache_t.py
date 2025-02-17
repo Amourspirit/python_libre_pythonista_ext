@@ -1,22 +1,14 @@
 from __future__ import annotations
-from typing import Tuple, Protocol
-
+from typing import Tuple, Protocol, TYPE_CHECKING
 
 from ooodev.calc import CalcSheet
 
+if TYPE_CHECKING:
+    from oxt.pythonpath.libre_pythonista_lib.cmd.calc.sheet.cmd_sheet_t import CmdSheetT
+else:
+    from libre_pythonista_lib.cmd.calc.sheet.cmd_sheet_t import CmdSheetT
 
-class CmdSheetCacheT(Protocol):
-    def execute(self) -> None:  # noqa: ANN401
-        ...
 
-    def undo(self) -> None:  # noqa: ANN401
-        ...
-
-    @property
-    def success(self) -> bool: ...
-
-    @property
-    def sheet(self) -> CalcSheet: ...
-
+class CmdSheetCacheT(CmdSheetT, Protocol):
     @property
     def cache_keys(self) -> Tuple[str, ...]: ...

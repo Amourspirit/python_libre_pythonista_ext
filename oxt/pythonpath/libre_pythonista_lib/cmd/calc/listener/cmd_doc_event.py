@@ -1,6 +1,5 @@
 from __future__ import annotations
 from typing import cast, TYPE_CHECKING
-import time
 
 from ooodev.loader import Lo
 
@@ -9,10 +8,12 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.doc.listen.document_event_listener import DocumentEventListener
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.cmd.cmd_t import CmdT
+    from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
 else:
     from libre_pythonista_lib.doc.listen.document_event_listener import DocumentEventListener
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.cmd.cmd_t import CmdT
+    from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
 
 
 class CmdDocEvent(LogMixin, CmdT):
@@ -50,3 +51,7 @@ class CmdDocEvent(LogMixin, CmdT):
     @property
     def success(self) -> bool:
         return self._success
+
+    @property
+    def kind(self) -> CalcCmdKind:
+        return CalcCmdKind.SIMPLE

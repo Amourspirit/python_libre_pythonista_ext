@@ -1,19 +1,19 @@
 from __future__ import annotations
 from typing import cast, TYPE_CHECKING
-import time
 
 from ooodev.loader import Lo
-from ooodev.exceptions import ex as mEx  # noqa: N812
 
 if TYPE_CHECKING:
-    from ooodev.calc import CalcDoc, CalcSheetView
+    from ooodev.calc import CalcDoc
     from oxt.pythonpath.libre_pythonista_lib.sheet.listen.code_sheet_modify_listener import CodeSheetModifyListener
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.cmd.cmd_t import CmdT
+    from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
 else:
     from libre_pythonista_lib.sheet.listen.code_sheet_modify_listener import CodeSheetModifyListener
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.cmd.cmd_t import CmdT
+    from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
 
 
 class CmdSheetsModified(LogMixin, CmdT):
@@ -67,3 +67,7 @@ class CmdSheetsModified(LogMixin, CmdT):
     @property
     def success(self) -> bool:
         return self._success
+
+    @property
+    def kind(self) -> CalcCmdKind:
+        return CalcCmdKind.SIMPLE

@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, List, Type, TYPE_CHECKING
+from typing import List, Type, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.doc.doc_globals import DocGlobals
@@ -26,7 +26,7 @@ class CmdInitDoc(List[Type[CmdT]], LogMixin, CmdT):
         list.__init__(self)
         LogMixin.__init__(self)
         self.append(CmdDocEvent)
-        self.executed_commands: List[CmdT] = []
+        self._success_cmds: List[CmdT] = []
         self._success = False
 
     def execute(self) -> None:
@@ -48,26 +48,38 @@ class CmdInitDoc(List[Type[CmdT]], LogMixin, CmdT):
         if key_val == "1":
             self._success = True
             return
+        self._success = False
         try:
             for cmd in self:
                 inst = cmd()
                 inst.execute()
-                if inst.success:  # Only add if command was successful
-                    self.executed_commands.append(inst)
+                self._success = inst.success
+                if self._success:  # Only add if command was successful
+                    self._success_cmds.append(inst)
                 else:
                     self.log.debug("A command failed. Undoing previously executed commands.")
-                    self.undo()  # Undo all successfully executed commands.
-                    self._success = False  # Composite command failed.
-                    return
-            self._success = True  # Composite command succeeded.
+                    break
+
+            if not self._success:
+                self.log.debug("Composite command failed.")
+                self._undo()
+                return
             doc_globals.mem_cache[_KEY] = "1"
         except Exception as e:
             self.log.exception("An unexpected error occurred: %s", e)
-            self.undo()
+            self._undo()
             self._success = False
 
         if self.success:
             self.log.debug("Successfully executed command.")
+
+    def _undo(self) -> None:
+        for cmd in reversed(self._success_cmds):
+            cmd.undo()
+        self._success_cmds = []  # Clear executed commands
+        self._success = False  # Reset success flag.
+        doc_globals = DocGlobals.get_current()
+        doc_globals.mem_cache[_KEY] = "0"
 
     def undo(self) -> None:
         """
@@ -81,13 +93,10 @@ class CmdInitDoc(List[Type[CmdT]], LogMixin, CmdT):
         Returns:
             None: This method does not return anything.
         """
-
-        for cmd in reversed(self.executed_commands):
-            cmd.undo()
-        self.executed_commands = []  # Clear executed commands
-        self._success = False  # Reset success flag.
-        doc_globals = DocGlobals.get_current()
-        doc_globals.mem_cache[_KEY] = "0"
+        if self._success:
+            self._undo()
+        else:
+            self.log.debug("Undo not needed.")
 
     @property
     def success(self) -> bool:

@@ -10,11 +10,13 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.query.calc.sheet.cell.qry_cell_cache_t import QryCellCacheT
     from oxt.pythonpath.libre_pythonista_lib.const.cache_const import CELL_SRC_CODE
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
+    from oxt.pythonpath.libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
 else:
     from libre_pythonista_lib.pyc.code.py_source import PySource
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.const.cache_const import CELL_SRC_CODE
     from libre_pythonista_lib.query.calc.sheet.cell.qry_cell_cache_t import QryCellCacheT
+    from libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
 
     PySrcProvider = Any
 
@@ -53,3 +55,7 @@ class QryCellSrcCode(LogMixin, QryCellCacheT):
     def cache_key(self) -> str:
         """Gets the cache key."""
         return CELL_SRC_CODE
+
+    @property
+    def kind(self) -> CalcQryKind:
+        return CalcQryKind.CELL_CACHE
