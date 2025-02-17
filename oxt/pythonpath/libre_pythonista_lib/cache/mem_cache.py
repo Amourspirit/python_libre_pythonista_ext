@@ -11,9 +11,6 @@ class MemCache:
     def __init__(self) -> None:
         """
         Memory Cache
-
-        Args:
-            capacity (int): Cache capacity.
         """
         self._cache = {}
 
@@ -73,6 +70,9 @@ class MemCache:
     # endregion Dictionary Methods
 
     # region Dunder Methods
+
+    def __bool__(self) -> bool:
+        return True
 
     def __getitem__(self, key: Any) -> Any:  # noqa: ANN401
         if key is None:

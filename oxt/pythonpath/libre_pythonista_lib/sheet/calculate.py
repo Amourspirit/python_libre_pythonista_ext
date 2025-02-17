@@ -9,9 +9,9 @@ from ..log.log_inst import LogInst
 if TYPE_CHECKING:
     from com.sun.star.container import XNameReplace
     from com.sun.star.beans import PropertyValue
-    from ....___lo_pip___.basic_config import BasicConfig as Config
+    from oxt.___lo_pip___.config import Config
 else:
-    from ___lo_pip___.basic_config import BasicConfig as Config
+    from ___lo_pip___.config import Config
 
 
 def get_script_url() -> str:
@@ -87,8 +87,8 @@ def set_sheet_calculate_event(sheet: CalcSheet, script: str = "") -> bool:
             except Exception:
                 log.exception("set_doc_sheets_calculate_event() - Sheet %s", sheet.name)
 
-        except Exception:
-            log.exception("calculate.set_sheet_calculate_event() - Sheet %s", sheet.name)
+        except Exception as e:
+            log.exception("calculate.set_sheet_calculate_event() - Sheet %s: Error %s", sheet.name, e)
     else:
         log.debug("calculate.set_sheet_calculate_event() Sheet %s does not have OnCalculate event", sheet.name)
     return result

@@ -2,10 +2,10 @@ from __future__ import annotations
 from typing import Tuple, Protocol
 
 
-from ooodev.calc import CalcSheet
+from ooodev.calc import CalcCell
 
 
-class CmdSheetCacheT(Protocol):
+class CmdCellCacheT(Protocol):
     def execute(self) -> None:  # noqa: ANN401
         ...
 
@@ -16,7 +16,7 @@ class CmdSheetCacheT(Protocol):
     def success(self) -> bool: ...
 
     @property
-    def sheet(self) -> CalcSheet: ...
+    def cell(self) -> CalcCell: ...
 
     @property
     def cache_keys(self) -> Tuple[str, ...]: ...

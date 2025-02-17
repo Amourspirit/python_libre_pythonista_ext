@@ -1,16 +1,12 @@
 from __future__ import annotations
-from typing import Protocol
+from typing import Protocol, TYPE_CHECKING
 
-
-from ooodev.calc import CalcSheet
+if TYPE_CHECKING:
+    from oxt.pythonpath.libre_pythonista_lib.cmd.calc.sheet.cmd_sheet_cache_t import CmdSheetCacheT
+else:
+    from libre_pythonista_lib.cmd.calc.sheet.cmd_sheet_cache_t import CmdSheetCacheT
 
 
 class CmdHandlerSheetCacheT(Protocol):
-    def execute(self) -> None:  # noqa: ANN401
+    def handle(self, cmd: CmdSheetCacheT) -> None:  # noqa: ANN401
         ...
-
-    @property
-    def sheet(self) -> CalcSheet: ...
-
-    @property
-    def cache_key(self) -> str: ...

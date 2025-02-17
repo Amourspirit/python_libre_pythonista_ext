@@ -5,10 +5,10 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.query.qry_handler_t import QryHandlerT
     from oxt.pythonpath.libre_pythonista_lib.query.qry_t import QryT
 else:
-    from libre_pythonista_lib.cmd.qry_handler_t import QryHandlerT
-    from libre_pythonista_lib.cmd.qry_t import QryT
+    from libre_pythonista_lib.query.qry_handler_t import QryHandlerT
+    from libre_pythonista_lib.query.qry_t import QryT
 
 
-class QryHandlerSheet(QryHandlerT):
+class QryHandler(QryHandlerT):
     def handle(self, query: QryT) -> Any:  # noqa: ANN401
         return query.execute()

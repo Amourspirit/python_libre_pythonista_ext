@@ -9,6 +9,6 @@ else:
     from libre_pythonista_lib.cmd.qry_t import QryT
 
 
-class QryHandlerSheet(QryHandlerT):
+class QryHandlerDoc(QryHandlerT):
     def handle(self, query: QryT) -> Any:  # noqa: ANN401
         return query.execute()
