@@ -132,7 +132,6 @@ class PySource(LogMixin):
         self._row = cell.row - 1
         self._col = cell.col_obj.index
         self._sheet_idx = cell.sheet_idx
-        self._src_code = None
 
     def __lt__(self, other: Any) -> bool:  # noqa: ANN401
         # for sort
@@ -160,7 +159,6 @@ class PySource(LogMixin):
 
     def del_source(self) -> None:
         """Deletes the source file."""
-        self._src_code = None
         self.log.debug("PySource.del_source() - Deleting Source")
         if self.exists():
             self._src_provider.del_source()
@@ -188,14 +186,11 @@ class PySource(LogMixin):
     @property
     def source_code(self) -> str:
         """Gets/Sets the source code from the file. This value is cached after the first call."""
-        if self._src_code is None:
-            self._src_code = self._get_source()
-        return self._src_code
+        return self._get_source()
 
     @source_code.setter
     def source_code(self, code: str) -> None:
         self._set_source(code)
-        self._src_code = code
 
 
 # class PySourceManager(EventsPartial):

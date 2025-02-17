@@ -1,13 +1,15 @@
 from __future__ import annotations
-from typing import Any, Protocol
+from typing import Any, Protocol, TYPE_CHECKING
 
 
 from ooodev.calc import CalcSheet
 
+if TYPE_CHECKING:
+    from oxt.pythonpath.libre_pythonista_lib.query.qry_t import QryT
+else:
+    from libre_pythonista_lib.query.qry_t import QryT
 
-class QrySheetT(Protocol):
-    def execute(self) -> Any:  # noqa: ANN401
-        ...
 
+class QrySheetT(QryT, Protocol):
     @property
     def sheet(self) -> CalcSheet: ...

@@ -25,6 +25,7 @@ else:
 class QrySheetHasCalculationEvent(LogMixin, QrySheetCacheT):
     def __init__(self, sheet: CalcSheet) -> None:
         LogMixin.__init__(self)
+        self._kind = CalcQryKind.SHEET_CACHE
         self._sheet = sheet
 
     def execute(self) -> bool:
@@ -52,4 +53,11 @@ class QrySheetHasCalculationEvent(LogMixin, QrySheetCacheT):
 
     @property
     def kind(self) -> CalcQryKind:
-        return CalcQryKind.SHEET_CACHE
+        """
+        Gets/Sets the kind of the query. Defaults to ``CalcQryKind.SHEET_CACHE``.
+        """
+        return self._kind
+
+    @kind.setter
+    def kind(self, value: CalcQryKind) -> None:
+        self._kind = value

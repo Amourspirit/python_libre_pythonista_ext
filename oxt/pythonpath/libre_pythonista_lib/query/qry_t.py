@@ -13,3 +13,6 @@ class QryT(Protocol):
 
     @property
     def kind(self) -> CalcQryKind: ...
+
+    @kind.setter
+    def kind(self, value: CalcQryKind) -> None: ...

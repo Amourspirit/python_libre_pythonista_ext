@@ -20,6 +20,7 @@ else:
 class QryCellCache(LogMixin, QryT):
     def __init__(self, cell: CalcCell) -> None:
         LogMixin.__init__(self)
+        self._kind = CalcQryKind.SIMPLE
         self._cell = cell
 
     def execute(self) -> MemCache | None:
@@ -38,4 +39,11 @@ class QryCellCache(LogMixin, QryT):
 
     @property
     def kind(self) -> CalcQryKind:
-        return CalcQryKind.SIMPLE
+        """
+        Gets/Sets the kind of the query. Defaults to ``CalcQryKind.SIMPLE``.
+        """
+        return self._kind
+
+    @kind.setter
+    def kind(self, value: CalcQryKind) -> None:
+        self._kind = value

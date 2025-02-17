@@ -20,11 +20,12 @@ else:
 # from libre_pythonista_lib.query.calc.sheet.cell.qry_handler_cell_cache import QryHandlerCellCache
 
 
-class QryCellProp(LogMixin, QryCellT):
+class QryCellPropValue(LogMixin, QryCellT):
     def __init__(self, cell: CalcCell, name: str, default: Any = NULL_OBJ) -> None:  # noqa: ANN401
         LogMixin.__init__(self)
         self._cell = cell
         self._name = name
+        self._kind = CalcQryKind.SIMPLE
         self._default = default
 
     def execute(self) -> Any:  # noqa: ANN401
@@ -33,6 +34,10 @@ class QryCellProp(LogMixin, QryCellT):
 
         Returns:
             Any: The custom property value if successful, otherwise Default or ``NULL_OBJ``.
+                If no default is provided, ``NULL_OBJ`` is returned when the query fails.
+
+        Note:
+            ``NULL_OBJ`` can be imported from ``ooodev.utils.gen_util``.
         """
 
         try:
@@ -49,4 +54,11 @@ class QryCellProp(LogMixin, QryCellT):
 
     @property
     def kind(self) -> CalcQryKind:
-        return CalcQryKind.SIMPLE
+        """
+        Gets/Sets the kind of the cell query. Defaults to ``CalcQryKind.SIMPLE``.
+        """
+        return self._kind
+
+    @kind.setter
+    def kind(self, value: CalcQryKind) -> None:
+        self._kind = value

@@ -21,6 +21,7 @@ if TYPE_CHECKING:
     )
     from oxt.pythonpath.libre_pythonista_lib.query.qry_handler import QryHandler
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
+    from oxt.pythonpath.libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
 
 else:
     from libre_pythonista_lib.sheet import calculate
@@ -32,6 +33,7 @@ else:
     from libre_pythonista_lib.query.calc.sheet.qry_sheet_calculation_event import QrySheetCalculationEvent
     from libre_pythonista_lib.query.qry_handler import QryHandler
     from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
+    from libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
 
 # Should be called with:
 # libre_pythonista_lib.cmd.calc.sheet.cmd_handler_sheet_cache.CmdHandlerSheetCache
@@ -44,16 +46,19 @@ class CmdSheetCalcFormula(LogMixin, CmdSheetCacheT):
         LogMixin.__init__(self)
         self._success = False
         self._sheet = sheet
+        self._kind = CalcCmdKind.SHEET_CACHE
         self._has_calc_event = self._get_has_calculate_event()
         self._current_script = self._get_current_script()
 
     def _get_current_script(self) -> str | None:
         qry = QrySheetCalculationEvent(sheet=self._sheet)
+        qry.kind = CalcQryKind.SHEET  # bypass the cache
         handler = QryHandler()
         return handler.handle(qry)
 
     def _get_has_calculate_event(self) -> bool:
         qry = QrySheetHasCalculationEvent(sheet=self._sheet)
+        qry.kind = CalcQryKind.SHEET  # bypass the cache
         handler = QryHandler()
         result = handler.handle(qry)
         if result is None:
@@ -104,4 +109,9 @@ class CmdSheetCalcFormula(LogMixin, CmdSheetCacheT):
 
     @property
     def kind(self) -> CalcCmdKind:
-        return CalcCmdKind.SHEET_CACHE
+        """Gets/Sets the kind of the command. Defaults to ``CalcCmdKind.SHEET_CACHE``."""
+        return self._kind
+
+    @kind.setter
+    def kind(self, value: CalcCmdKind) -> None:
+        self._kind = value

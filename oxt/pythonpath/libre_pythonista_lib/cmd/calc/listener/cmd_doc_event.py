@@ -23,6 +23,7 @@ class CmdDocEvent(LogMixin, CmdT):
         LogMixin.__init__(self)
         self._doc = cast("CalcDoc", Lo.current_doc)
         self._listener = None
+        self._kind = CalcCmdKind.SIMPLE
         self._success = False
 
     def execute(self) -> None:
@@ -54,4 +55,9 @@ class CmdDocEvent(LogMixin, CmdT):
 
     @property
     def kind(self) -> CalcCmdKind:
-        return CalcCmdKind.SIMPLE
+        """Gets/Sets the kind of the command. Defaults to ``CalcCmdKind.SIMPLE``."""
+        return self._kind
+
+    @kind.setter
+    def kind(self, value: CalcCmdKind) -> None:
+        self._kind = value

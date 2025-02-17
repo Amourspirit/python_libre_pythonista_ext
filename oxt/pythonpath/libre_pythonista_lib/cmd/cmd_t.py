@@ -19,3 +19,6 @@ class CmdT(Protocol):
 
     @property
     def kind(self) -> CalcCmdKind: ...
+
+    @kind.setter
+    def kind(self, value: CalcCmdKind) -> None: ...

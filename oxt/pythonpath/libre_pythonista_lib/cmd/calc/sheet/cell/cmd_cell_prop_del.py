@@ -7,13 +7,13 @@ from ooodev.utils.gen_util import NULL_OBJ
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcDoc, CalcCell
-    from oxt.pythonpath.libre_pythonista_lib.query.calc.sheet.cell.qry_cell_prop import QryCellProp
+    from oxt.pythonpath.libre_pythonista_lib.query.calc.sheet.cell.qry_cell_prop_value import QryCellPropValue
     from oxt.pythonpath.libre_pythonista_lib.query.qry_handler import QryHandler
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.cmd.calc.sheet.cell.cmd_cell_t import CmdCellT
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
 else:
-    from libre_pythonista_lib.query.calc.sheet.cell.qry_cell_prop import QryCellProp
+    from libre_pythonista_lib.query.calc.sheet.cell.qry_cell_prop_value import QryCellPropValue
     from libre_pythonista_lib.query.qry_handler import QryHandler
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.cmd.calc.sheet.cell.cmd_cell_t import CmdCellT
@@ -35,10 +35,11 @@ class CmdCellPropDel(LogMixin, CmdCellT):
         self._success = False
         self._cell = cell
         self._name = name
+        self._kind = CalcCmdKind.CELL
         self._current_value = self._get_current_value()
 
     def _get_current_value(self) -> Any:  # noqa: ANN401
-        qry = QryCellProp(cell=self._cell, name=self._name)
+        qry = QryCellPropValue(cell=self._cell, name=self._name)
         handler = QryHandler()
 
         return handler.handle(qry)  # returns NULL_OBJ if not found
@@ -85,4 +86,9 @@ class CmdCellPropDel(LogMixin, CmdCellT):
 
     @property
     def kind(self) -> CalcCmdKind:
-        return CalcCmdKind.CELL
+        """Gets/Sets the kind of the command. Defaults to ``CalcCmdKind.CELL``."""
+        return self._kind
+
+    @kind.setter
+    def kind(self, value: CalcCmdKind) -> None:
+        self._kind = value

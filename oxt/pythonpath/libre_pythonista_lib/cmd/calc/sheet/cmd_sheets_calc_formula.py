@@ -29,6 +29,7 @@ class CmdSheetsCalcFormula(LogMixin, CmdT):
         LogMixin.__init__(self)
         self._doc = cast("CalcDoc", Lo.current_doc)
         self._success = False
+        self._kind = CalcCmdKind.SIMPLE
         self._success_cmds: List[CmdSheetCacheT] = []
 
     def execute(self) -> None:
@@ -76,4 +77,9 @@ class CmdSheetsCalcFormula(LogMixin, CmdT):
 
     @property
     def kind(self) -> CalcCmdKind:
-        return CalcCmdKind.SIMPLE
+        """Gets/Sets the kind of the command. Defaults to ``CalcCmdKind.SIMPLE``."""
+        return self._kind
+
+    @kind.setter
+    def kind(self, value: CalcCmdKind) -> None:
+        self._kind = value

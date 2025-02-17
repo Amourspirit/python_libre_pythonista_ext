@@ -6,11 +6,13 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cmd.calc.listener.cmd_doc_event import CmdDocEvent
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.cmd.cmd_t import CmdT
+    from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
 else:
     from libre_pythonista_lib.doc.doc_globals import DocGlobals
     from libre_pythonista_lib.cmd.calc.listener.cmd_doc_event import CmdDocEvent
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.cmd.cmd_t import CmdT
+    from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
 
 
 _KEY = "libre_pythonista_lib.init.init_doc.InitDoc"
@@ -28,6 +30,7 @@ class CmdInitDoc(List[Type[CmdT]], LogMixin, CmdT):
         self.append(CmdDocEvent)
         self._success_cmds: List[CmdT] = []
         self._success = False
+        self._kind = CalcCmdKind.SIMPLE
 
     def execute(self) -> None:
         """
@@ -102,3 +105,12 @@ class CmdInitDoc(List[Type[CmdT]], LogMixin, CmdT):
     def success(self) -> bool:
         """Gets if the command was successful."""
         return self._success
+
+    @property
+    def kind(self) -> CalcCmdKind:
+        """Gets/Sets the kind of the command. Defaults to ``CalcCmdKind.SIMPLE``."""
+        return self._kind
+
+    @kind.setter
+    def kind(self, value: CalcCmdKind) -> None:
+        self._kind = value

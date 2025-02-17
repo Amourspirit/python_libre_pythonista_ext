@@ -23,6 +23,7 @@ class CmdSheetsModified(LogMixin, CmdT):
         LogMixin.__init__(self)
         self._doc = cast("CalcDoc", Lo.current_doc)
         self._success = False
+        self._kind = CalcCmdKind.SIMPLE
         self._unique_ids = set()
 
     def execute(self) -> None:
@@ -70,4 +71,9 @@ class CmdSheetsModified(LogMixin, CmdT):
 
     @property
     def kind(self) -> CalcCmdKind:
-        return CalcCmdKind.SIMPLE
+        """Gets/Sets the kind of the command. Defaults to ``CalcCmdKind.SIMPLE``."""
+        return self._kind
+
+    @kind.setter
+    def kind(self, value: CalcCmdKind) -> None:
+        self._kind = value

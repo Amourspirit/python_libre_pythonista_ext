@@ -19,6 +19,7 @@ else:
 class QrySheetScriptUrl(LogMixin, QryT):
     def __init__(self) -> None:
         LogMixin.__init__(self)
+        self._kind = CalcQryKind.SIMPLE
 
     def execute(self) -> str | None:
         """
@@ -37,4 +38,11 @@ class QrySheetScriptUrl(LogMixin, QryT):
 
     @property
     def kind(self) -> CalcQryKind:
-        return CalcQryKind.SIMPLE
+        """
+        Gets/Sets the kind of the query. Defaults to ``CalcQryKind.SIMPLE``.
+        """
+        return self._kind
+
+    @kind.setter
+    def kind(self, value: CalcQryKind) -> None:
+        self._kind = value

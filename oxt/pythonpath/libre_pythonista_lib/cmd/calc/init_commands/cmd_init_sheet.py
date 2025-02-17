@@ -8,12 +8,14 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.cache.calc.sheet.sheet_cache import get_sheet_cache
     from oxt.pythonpath.libre_pythonista_lib.cmd.cmd_handler import CmdHandler
+    from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
 else:
     from libre_pythonista_lib.cmd.calc.sheet.cmd_sheet_calc_formula import CmdSheetCalcFormula
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.cache.calc.sheet.sheet_cache import get_sheet_cache
     from libre_pythonista_lib.cmd.cmd_t import CmdT
     from libre_pythonista_lib.cmd.cmd_handler import CmdHandler
+    from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
 
     CalcSheet = Any
 
@@ -28,6 +30,7 @@ class CmdInitSheet(List[Type[CmdT]], LogMixin, CmdT):
         self.executed_commands: List[CmdT] = []
         self._success = False
         self._sheet = sheet
+        self._kind = CalcCmdKind.SIMPLE
         self._cache = get_sheet_cache(self._sheet)
         self.append(CmdSheetCalcFormula)
 
@@ -95,3 +98,12 @@ class CmdInitSheet(List[Type[CmdT]], LogMixin, CmdT):
     def success(self) -> bool:
         """Gets if the command was successful."""
         return self._success
+
+    @property
+    def kind(self) -> CalcCmdKind:
+        """Gets/Sets the kind of the command. Defaults to ``CalcCmdKind.SIMPLE``."""
+        return self._kind
+
+    @kind.setter
+    def kind(self, value: CalcCmdKind) -> None:
+        self._kind = value

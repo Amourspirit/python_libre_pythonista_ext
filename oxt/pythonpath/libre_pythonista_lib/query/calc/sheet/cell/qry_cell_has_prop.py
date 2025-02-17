@@ -24,6 +24,7 @@ class QryCellHasProp(LogMixin, QryCellT):
     def __init__(self, cell: CalcCell, name: str) -> None:
         LogMixin.__init__(self)
         self._cell = cell
+        self._kind = CalcQryKind.CELL
         self._name = name
 
     def execute(self) -> bool:
@@ -46,4 +47,12 @@ class QryCellHasProp(LogMixin, QryCellT):
 
     @property
     def kind(self) -> CalcQryKind:
-        return CalcQryKind.CELL
+        """
+        Gets/Sets the kind of the cell query. Defaults to ``CalcQryKind.CELL``.
+        """
+
+        return self._kind
+
+    @kind.setter
+    def kind(self, value: CalcQryKind) -> None:
+        self._kind = value
