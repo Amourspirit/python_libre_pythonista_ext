@@ -10,21 +10,19 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.pyc.code.py_source import PySource
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.query.calc.sheet.cell.qry_cell_src_code import QryCellSrcCode
-    from oxt.pythonpath.libre_pythonista_lib.query.qry_handler import QryHandler
+    from oxt.pythonpath.libre_pythonista_lib.query.qry_handler_no_cache import QryHandlerNoCache
     from oxt.pythonpath.libre_pythonista_lib.cmd.calc.sheet.cell.cmd_cell_cache_t import CmdCellCacheT
     from oxt.pythonpath.libre_pythonista_lib.const.cache_const import CELL_SRC_CODE, CELL_SRC_CODE_EXIST
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
-    from oxt.pythonpath.libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
     from oxt.pythonpath.libre_pythonista_lib.query.calc.sheet.cell.qry_cell_src_code_exist import QryCellSrcCodeExist
 else:
     from libre_pythonista_lib.pyc.code.py_source import PySource
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.query.calc.sheet.cell.qry_cell_src_code import QryCellSrcCode
-    from libre_pythonista_lib.query.qry_handler import QryHandler
+    from libre_pythonista_lib.query.qry_handler_no_cache import QryHandlerNoCache
     from libre_pythonista_lib.cmd.calc.sheet.cell.cmd_cell_cache_t import CmdCellCacheT
     from libre_pythonista_lib.const.cache_const import CELL_SRC_CODE, CELL_SRC_CODE_EXIST
     from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
-    from libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
     from libre_pythonista_lib.query.calc.sheet.cell.qry_cell_src_code_exist import QryCellSrcCodeExist
 
 # this class should be call in:
@@ -51,15 +49,13 @@ class CmdCellSrcCode(LogMixin, CmdCellCacheT):
 
     def _get_current_src_code(self) -> str | None:
         qry = QryCellSrcCode(uri=self._uri, cell=self.cell, src_provider=self._src_provider)
-        qry.kind = CalcQryKind.CELL  # bypass the cache
-        handler = QryHandler()
+        handler = QryHandlerNoCache()
 
         return handler.handle(qry)
 
     def _get_src_code_exist(self) -> bool:
         qry = QryCellSrcCodeExist(uri=self._uri, cell=self.cell, src_provider=self._src_provider)
-        handler = QryHandler()
-        qry.kind = CalcQryKind.CELL  # bypass the cache
+        handler = QryHandlerNoCache()
         return handler.handle(qry)
 
     def execute(self) -> None:
