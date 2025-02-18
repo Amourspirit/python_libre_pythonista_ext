@@ -27,7 +27,7 @@ else:
 
 
 class CmdUnRegisterDispatchInterceptor(LogMixin, CmdT):
-    """Add OnCalculate event to sheet"""
+    """Unregister Dispatch Provider Interceptor from doc"""
 
     def __init__(self, doc: CalcDoc) -> None:
         LogMixin.__init__(self)

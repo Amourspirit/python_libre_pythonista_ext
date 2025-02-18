@@ -1,43 +1,48 @@
 from __future__ import annotations
-from typing import Any, TYPE_CHECKING
-
-try:
-    # python 3.12+
-    from typing import override  # type: ignore
-except ImportError:
-    from typing_extensions import override
+from typing import Any, Generator, TYPE_CHECKING
+import contextlib
 
 import unohelper
 from com.sun.star.sheet import XActivationEventListener
 from ooodev.calc import CalcDoc
-from .code_sheet_modify_listener import CodeSheetModifyListener
 
 if TYPE_CHECKING:
+    from typing_extensions import override
     from com.sun.star.lang import EventObject
     from com.sun.star.sheet import ActivationEvent
+    from oxt.pythonpath.libre_pythonista_lib.sheet.listen.code_sheet_modify_listener import CodeSheetModifyListener
     from oxt.pythonpath.libre_pythonista_lib.doc.doc_globals import DocGlobals
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
+    from oxt.pythonpath.libre_pythonista_lib.mixin.listener.trigger_state_mixin import TriggerStateMixin
 else:
+    from libre_pythonista_lib.sheet.listen.code_sheet_modify_listener import CodeSheetModifyListener
     from libre_pythonista_lib.doc.doc_globals import DocGlobals
     from libre_pythonista_lib.log.log_mixin import LogMixin
+    from libre_pythonista_lib.mixin.listener.trigger_state_mixin import TriggerStateMixin
 
-_CODE_SHEET_ACTIVATION_LISTENER_KEY = (
-    "libre_pythonista_lib.sheet.listen.code_sheet_activation_listener.CodeSheetActivationListener"
-)
+    def override(func: Any) -> Any:  # noqa: ANN401
+        return func
 
 
-class CodeSheetActivationListener(XActivationEventListener, LogMixin, unohelper.Base):
-    """Singleton Class for Sheet Activation Listener."""
+_KEY = "libre_pythonista_lib.sheet.listen.code_sheet_activation_listener.CodeSheetActivationListener"
+
+
+class CodeSheetActivationListener(XActivationEventListener, LogMixin, TriggerStateMixin, unohelper.Base):
+    """
+    Singleton Class for Sheet Activation Listener.
+
+    Automatically adds a Modify Listener to the sheet when activated if it does not already have one.
+    """
 
     def __new__(cls) -> CodeSheetActivationListener:
         gbl_cache = DocGlobals.get_current()
-        if _CODE_SHEET_ACTIVATION_LISTENER_KEY in gbl_cache.mem_cache:
-            return gbl_cache.mem_cache[_CODE_SHEET_ACTIVATION_LISTENER_KEY]
+        if _KEY in gbl_cache.mem_cache:
+            return gbl_cache.mem_cache[_KEY]
 
         inst = super().__new__(cls)
         inst._is_init = False
 
-        gbl_cache.mem_cache[_CODE_SHEET_ACTIVATION_LISTENER_KEY] = inst
+        gbl_cache.mem_cache[_KEY] = inst
         return inst
 
     def __init__(self) -> None:
@@ -45,11 +50,12 @@ class CodeSheetActivationListener(XActivationEventListener, LogMixin, unohelper.
             return
         XActivationEventListener.__init__(self)
         LogMixin.__init__(self)
+        TriggerStateMixin.__init__(self)
         unohelper.Base.__init__(self)
         self._is_init = True
 
     @override
-    def activeSpreadsheetChanged(self, aEvent: ActivationEvent) -> None:  # noqa: N803
+    def activeSpreadsheetChanged(self, aEvent: ActivationEvent) -> None:  # noqa: N802, N803
         """
         is called whenever data or a selection changed.
 
@@ -59,6 +65,9 @@ class CodeSheetActivationListener(XActivationEventListener, LogMixin, unohelper.
 
             OOo 2.0
         """
+        if not self.is_trigger():
+            self.log.debug("activeSpreadsheetChanged() Trigger events is False. Returning.")
+            return
         self.log.debug("activeSpreadsheetChanged")
         doc = CalcDoc.from_current_doc()
         sheet = doc.sheets.get_sheet(aEvent.ActiveSheet)
@@ -82,11 +91,13 @@ class CodeSheetActivationListener(XActivationEventListener, LogMixin, unohelper.
         This method is called for every listener registration of derived listener
         interfaced, not only for registrations at XComponent.
         """
-        gbl_cache = DocGlobals.get_current()
-        if _CODE_SHEET_ACTIVATION_LISTENER_KEY in gbl_cache.mem_cache:
-            del gbl_cache.mem_cache[_CODE_SHEET_ACTIVATION_LISTENER_KEY]
+        with contextlib.suppress(Exception):
+            gbl_cache = DocGlobals.get_current()
+            if _KEY in gbl_cache.mem_cache:
+                del gbl_cache.mem_cache[_KEY]
 
     def __del__(self) -> None:
-        gbl_cache = DocGlobals.get_current()
-        if _CODE_SHEET_ACTIVATION_LISTENER_KEY in gbl_cache.mem_cache:
-            del gbl_cache.mem_cache[_CODE_SHEET_ACTIVATION_LISTENER_KEY]
+        with contextlib.suppress(Exception):
+            gbl_cache = DocGlobals.get_current()
+            if _KEY in gbl_cache.mem_cache:
+                del gbl_cache.mem_cache[_KEY]

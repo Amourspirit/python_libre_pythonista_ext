@@ -11,14 +11,14 @@ def test_cmd_sheets_modified(loader, build_setup) -> None:
     from ooodev.calc import CalcDoc
 
     if TYPE_CHECKING:
-        from oxt.pythonpath.libre_pythonista_lib.cmd.calc.listener.cmd_sheet_modified import CmdSheetsModified
+        from oxt.pythonpath.libre_pythonista_lib.cmd.calc.doc.listener.cmd_sheet_modified import CmdSheetsModified
     else:
-        from libre_pythonista_lib.cmd.calc.listener.cmd_sheet_modified import CmdSheetsModified
+        from libre_pythonista_lib.cmd.calc.doc.listener.cmd_sheet_modified import CmdSheetsModified
 
     doc = None
     try:
         doc = CalcDoc.create_doc(loader=loader)
-        cmd = CmdSheetsModified()
+        cmd = CmdSheetsModified(doc)
         cmd.execute()
         assert cmd.success
     finally:
@@ -31,11 +31,11 @@ def test_cmd_sheets_modified_cell(loader, build_setup) -> None:
     from ooodev.events.args.event_args import EventArgs
 
     if TYPE_CHECKING:
-        from oxt.pythonpath.libre_pythonista_lib.cmd.calc.listener.cmd_sheet_modified import CmdSheetsModified
+        from oxt.pythonpath.libre_pythonista_lib.cmd.calc.doc.listener.cmd_sheet_modified import CmdSheetsModified
         from oxt.pythonpath.libre_pythonista_lib.const.event_const import SHEET_MODIFIED
         from oxt.pythonpath.libre_pythonista_lib.event.shared_event import SharedEvent
     else:
-        from libre_pythonista_lib.cmd.calc.listener.cmd_sheet_modified import CmdSheetsModified
+        from libre_pythonista_lib.cmd.calc.doc.listener.cmd_sheet_modified import CmdSheetsModified
         from libre_pythonista_lib.const.event_const import SHEET_MODIFIED
         from libre_pythonista_lib.event.shared_event import SharedEvent
 
@@ -57,7 +57,7 @@ def test_cmd_sheets_modified_cell(loader, build_setup) -> None:
         cell.value = "Hello"
         assert fired is False
 
-        cmd = CmdSheetsModified()
+        cmd = CmdSheetsModified(doc)
         cmd.execute()
         assert cmd.success
         cell.value = "nice"

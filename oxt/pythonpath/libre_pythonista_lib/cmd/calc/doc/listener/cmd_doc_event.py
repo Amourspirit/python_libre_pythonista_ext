@@ -1,27 +1,26 @@
 from __future__ import annotations
-from typing import cast, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
-from ooodev.loader import Lo
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcDoc
     from oxt.pythonpath.libre_pythonista_lib.doc.listen.document_event_listener import DocumentEventListener
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
-    from oxt.pythonpath.libre_pythonista_lib.cmd.cmd_t import CmdT
+    from oxt.pythonpath.libre_pythonista_lib.cmd.calc.doc.cmd_doc_t import CmdDocT
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
 else:
     from libre_pythonista_lib.doc.listen.document_event_listener import DocumentEventListener
     from libre_pythonista_lib.log.log_mixin import LogMixin
-    from libre_pythonista_lib.cmd.cmd_t import CmdT
+    from libre_pythonista_lib.cmd.calc.doc.cmd_doc_t import CmdDocT
     from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
 
 
-class CmdDocEvent(LogMixin, CmdT):
+class CmdDocEvent(LogMixin, CmdDocT):
     """Adds new modifier listeners to new sheets"""
 
-    def __init__(self) -> None:
+    def __init__(self, doc: CalcDoc) -> None:
         LogMixin.__init__(self)
-        self._doc = cast("CalcDoc", Lo.current_doc)
+        self._doc = doc
         self._listener = None
         self._kind = CalcCmdKind.SIMPLE
         self._success = False

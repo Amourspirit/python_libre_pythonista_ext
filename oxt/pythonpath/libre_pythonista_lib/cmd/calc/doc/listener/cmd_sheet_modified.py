@@ -7,21 +7,21 @@ if TYPE_CHECKING:
     from ooodev.calc import CalcDoc
     from oxt.pythonpath.libre_pythonista_lib.sheet.listen.code_sheet_modify_listener import CodeSheetModifyListener
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
-    from oxt.pythonpath.libre_pythonista_lib.cmd.cmd_t import CmdT
+    from oxt.pythonpath.libre_pythonista_lib.cmd.calc.doc.cmd_doc_t import CmdDocT
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
 else:
     from libre_pythonista_lib.sheet.listen.code_sheet_modify_listener import CodeSheetModifyListener
     from libre_pythonista_lib.log.log_mixin import LogMixin
-    from libre_pythonista_lib.cmd.cmd_t import CmdT
+    from libre_pythonista_lib.cmd.calc.doc.cmd_doc_t import CmdDocT
     from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
 
 
-class CmdSheetsModified(LogMixin, CmdT):
+class CmdSheetsModified(LogMixin, CmdDocT):
     """Adds Sheet Modified listeners to all sheets that don't have one"""
 
-    def __init__(self) -> None:
+    def __init__(self, doc: CalcDoc) -> None:
         LogMixin.__init__(self)
-        self._doc = cast("CalcDoc", Lo.current_doc)
+        self._doc = doc
         self._success = False
         self._kind = CalcCmdKind.SIMPLE
         self._unique_ids = set()

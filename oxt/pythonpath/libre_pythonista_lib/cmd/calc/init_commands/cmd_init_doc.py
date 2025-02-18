@@ -2,34 +2,50 @@ from __future__ import annotations
 from typing import List, Type, TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from ooodev.calc import CalcDoc
     from oxt.pythonpath.libre_pythonista_lib.doc.doc_globals import DocGlobals
-    from oxt.pythonpath.libre_pythonista_lib.cmd.calc.listener.cmd_doc_event import CmdDocEvent
+    from oxt.pythonpath.libre_pythonista_lib.cmd.calc.doc.listener.cmd_doc_event import CmdDocEvent
+    from oxt.pythonpath.libre_pythonista_lib.cmd.calc.doc.listener.cmd_code_sheet_activation_listener import (
+        CmdCodeSheetActivation,
+    )
+    from oxt.pythonpath.libre_pythonista_lib.cmd.calc.doc.listener.cmd_sheet_modified import CmdSheetsModified
+    from oxt.pythonpath.libre_pythonista_lib.cmd.calc.doc.listener.cmd_sheet_activation import CmdSheetActivation
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
-    from oxt.pythonpath.libre_pythonista_lib.cmd.cmd_t import CmdT
+    from oxt.pythonpath.libre_pythonista_lib.cmd.calc.doc.cmd_doc_t import CmdDocT
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
+    from oxt.pythonpath.libre_pythonista_lib.cmd.calc.doc.listener.cmd_form_design_mode_off import CmdFormDesignModeOff
 else:
     from libre_pythonista_lib.doc.doc_globals import DocGlobals
-    from libre_pythonista_lib.cmd.calc.listener.cmd_doc_event import CmdDocEvent
+    from libre_pythonista_lib.cmd.calc.doc.listener.cmd_doc_event import CmdDocEvent
+    from libre_pythonista_lib.cmd.calc.doc.listener.cmd_code_sheet_activation_listener import CmdCodeSheetActivation
+    from libre_pythonista_lib.cmd.calc.doc.listener.cmd_sheet_modified import CmdSheetsModified
+    from libre_pythonista_lib.cmd.calc.doc.listener.cmd_sheet_activation import CmdSheetActivation
     from libre_pythonista_lib.log.log_mixin import LogMixin
-    from libre_pythonista_lib.cmd.cmd_t import CmdT
+    from libre_pythonista_lib.cmd.calc.doc.cmd_doc_t import CmdDocT
     from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
+    from libre_pythonista_lib.cmd.calc.doc.listener.cmd_form_design_mode_off import CmdFormDesignModeOff
 
 
 _KEY = "libre_pythonista_lib.init.init_doc.InitDoc"
 
 
 # Composite Command
-class CmdInitDoc(List[Type[CmdT]], LogMixin, CmdT):
+class CmdInitDoc(List[Type[CmdDocT]], LogMixin, CmdDocT):
     """
     Composite command to initialize the document.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, doc: CalcDoc) -> None:
         list.__init__(self)
         LogMixin.__init__(self)
         self.append(CmdDocEvent)
-        self._success_cmds: List[CmdT] = []
+        self.append(CmdCodeSheetActivation)
+        self.append(CmdSheetsModified)
+        self.append(CmdSheetActivation)
+        self.append(CmdFormDesignModeOff)
+        self._success_cmds: List[CmdDocT] = []
         self._success = False
+        self._doc = doc
         self._kind = CalcCmdKind.SIMPLE
 
     def execute(self) -> None:
@@ -54,7 +70,7 @@ class CmdInitDoc(List[Type[CmdT]], LogMixin, CmdT):
         self._success = False
         try:
             for cmd in self:
-                inst = cmd()
+                inst = cmd(self._doc)
                 inst.execute()
                 self._success = inst.success
                 if self._success:  # Only add if command was successful

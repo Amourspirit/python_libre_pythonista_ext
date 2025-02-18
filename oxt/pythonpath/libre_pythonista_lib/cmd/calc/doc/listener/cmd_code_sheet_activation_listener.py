@@ -1,29 +1,29 @@
 from __future__ import annotations
-from typing import cast, TYPE_CHECKING
-import time
+from typing import TYPE_CHECKING
 
-from ooodev.loader import Lo
 from ooodev.exceptions import ex as mEx  # noqa: N812
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcDoc, CalcSheetView
-    from oxt.pythonpath.libre_pythonista_lib.sheet.listen.sheet_activation_listener import SheetActivationListener
+    from oxt.pythonpath.libre_pythonista_lib.sheet.listen.code_sheet_activation_listener import (
+        CodeSheetActivationListener,
+    )
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
-    from oxt.pythonpath.libre_pythonista_lib.cmd.cmd_t import CmdT
+    from oxt.pythonpath.libre_pythonista_lib.cmd.calc.doc.cmd_doc_t import CmdDocT
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
 else:
-    from libre_pythonista_lib.sheet.listen.sheet_activation_listener import SheetActivationListener
+    from libre_pythonista_lib.sheet.listen.code_sheet_activation_listener import CodeSheetActivationListener
     from libre_pythonista_lib.log.log_mixin import LogMixin
-    from libre_pythonista_lib.cmd.cmd_t import CmdT
+    from libre_pythonista_lib.cmd.calc.doc.cmd_doc_t import CmdDocT
     from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
 
 
-class CmdSheetActivation(LogMixin, CmdT):
-    """Adds new modifier listeners for new sheets"""
+class CmdCodeSheetActivation(LogMixin, CmdDocT):
+    """Adds code sheet activation listener"""
 
-    def __init__(self) -> None:
+    def __init__(self, doc: CalcDoc) -> None:
         LogMixin.__init__(self)
-        self._doc = cast("CalcDoc", Lo.current_doc)
+        self._doc = doc
         self._kind = CalcCmdKind.SIMPLE
         self._success = False
 
@@ -53,24 +53,10 @@ class CmdSheetActivation(LogMixin, CmdT):
             self.log.debug("View is None. May be print preview. Returning.")
             return
         try:
-            sheet_act_listener = SheetActivationListener()  # singleton
-            sheet_act_listener.set_trigger_state(True)
-            view.component.removeActivationEventListener(sheet_act_listener)
-            view.component.addActivationEventListener(sheet_act_listener)
-
-            if view.is_form_design_mode():
-                try:
-                    self.log.debug("Setting form design mode to False")
-                    view.set_form_design_mode(False)
-                    self.log.debug("Form design mode set to False")
-                    # doc.toggle_design_mode()
-                except Exception:
-                    self.log.warning("Unable to set form design mode", exc_info=True)
-            else:
-                self.log.debug("Form design mode is False. Toggling on and off.")
-                view.set_form_design_mode(True)
-                time.sleep(0.1)
-                view.set_form_design_mode(False)
+            listener = CodeSheetActivationListener()  # singleton
+            listener.set_trigger_state(True)
+            view.component.removeActivationEventListener(listener)
+            view.component.addActivationEventListener(listener)
         except Exception:
             self.log.exception("Error initializing sheet activation listener")
             return
@@ -82,9 +68,9 @@ class CmdSheetActivation(LogMixin, CmdT):
             view = self._get_view()
             try:
                 if view is not None:
-                    sheet_act_listener = SheetActivationListener()  # singleton
-                    sheet_act_listener.set_trigger_state(False)
-                    view.component.removeActivationEventListener(sheet_act_listener)
+                    listener = CodeSheetActivationListener()  # singleton
+                    listener.set_trigger_state(False)
+                    view.component.removeActivationEventListener(listener)
                     self.log.debug("Successfully executed undo command.")
             except Exception:
                 self.log.exception("Error removing sheet activation listener")

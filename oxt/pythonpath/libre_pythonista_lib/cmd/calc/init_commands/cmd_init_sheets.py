@@ -2,18 +2,19 @@ from __future__ import annotations
 from typing import Any, List, Type, TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from ooodev.calc import CalcDoc
     from oxt.pythonpath.libre_pythonista_lib.doc.doc_globals import DocGlobals
-    from oxt.pythonpath.libre_pythonista_lib.cmd.calc.listener.cmd_sheet_modified import CmdSheetsModified
-    from oxt.pythonpath.libre_pythonista_lib.cmd.calc.listener.cmd_sheet_activation import CmdSheetActivation
-    from oxt.pythonpath.libre_pythonista_lib.cmd.cmd_t import CmdT
+    from oxt.pythonpath.libre_pythonista_lib.cmd.calc.doc.listener.cmd_sheet_modified import CmdSheetsModified
+    from oxt.pythonpath.libre_pythonista_lib.cmd.calc.doc.listener.cmd_sheet_activation import CmdSheetActivation
+    from oxt.pythonpath.libre_pythonista_lib.cmd.calc.doc.cmd_doc_t import CmdDocT
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
 else:
     from libre_pythonista_lib.doc.doc_globals import DocGlobals
-    from libre_pythonista_lib.cmd.calc.listener.cmd_sheet_modified import CmdSheetsModified
-    from libre_pythonista_lib.cmd.calc.listener.cmd_sheet_activation import CmdSheetActivation
+    from libre_pythonista_lib.cmd.calc.doc.listener.cmd_sheet_modified import CmdSheetsModified
+    from libre_pythonista_lib.cmd.calc.doc.listener.cmd_sheet_activation import CmdSheetActivation
     from libre_pythonista_lib.log.log_mixin import LogMixin
-    from libre_pythonista_lib.cmd.cmd_t import CmdT
+    from libre_pythonista_lib.cmd.calc.doc.cmd_doc_t import CmdDocT
     from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
 
 
@@ -21,12 +22,13 @@ _KEY = "libre_pythonista_lib.init.init_sheet.InitSheet"
 
 
 # Composite Command
-class CmdInitSheets(List[Type[CmdT]], LogMixin, CmdT):
-    def __init__(self) -> None:
+class CmdInitSheets(List[Type[CmdDocT]], LogMixin, CmdDocT):
+    def __init__(self, doc: CalcDoc) -> None:
         list.__init__(self)
         LogMixin.__init__(self)
-        self.executed_commands: List[CmdT] = []
+        self.executed_commands: List[CmdDocT] = []
         self._success = False
+        self._doc = doc
         self._kind = CalcCmdKind.SIMPLE
         self.append(CmdSheetsModified)
         self.append(CmdSheetActivation)
@@ -52,7 +54,7 @@ class CmdInitSheets(List[Type[CmdT]], LogMixin, CmdT):
             return
         try:
             for cmd in self:
-                inst = cmd()
+                inst = cmd(self._doc)
                 inst.execute()
                 if inst.success:  # Only add if command was successful
                     self.executed_commands.append(inst)

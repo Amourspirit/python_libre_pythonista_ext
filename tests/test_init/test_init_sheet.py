@@ -18,7 +18,7 @@ def test_init_sheets(loader, build_setup) -> None:
     doc = None
     try:
         doc = CalcDoc.create_doc(loader=loader)
-        cmd = CmdInitSheets()
+        cmd = CmdInitSheets(doc)
         cmd.execute()
         assert cmd.success
         cmd.execute()

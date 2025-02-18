@@ -18,7 +18,7 @@ def test_init_doc(loader, build_setup) -> None:
     doc = None
     try:
         doc = CalcDoc.create_doc(loader=loader)
-        inst = CmdInitDoc()
+        inst = CmdInitDoc(doc)
         inst.execute()
         assert inst.success
         inst.execute()

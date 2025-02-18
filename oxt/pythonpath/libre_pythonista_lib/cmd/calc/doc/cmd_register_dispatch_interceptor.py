@@ -7,18 +7,7 @@ if TYPE_CHECKING:
     from ooodev.calc import CalcDoc
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.cmd.cmd_t import CmdT
-    from oxt.pythonpath.libre_pythonista_lib.const.cache_const import (
-        SHEET_HAS_CALCULATION_EVENT,
-        SHEET_CALCULATION_EVENT,
-    )
-    from oxt.pythonpath.libre_pythonista_lib.query.calc.sheet.qry_sheet_has_calculation_event import (
-        QrySheetHasCalculationEvent,
-    )
-    from oxt.pythonpath.libre_pythonista_lib.query.calc.sheet.qry_sheet_calculation_event import (
-        QrySheetCalculationEvent,
-    )
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
-    from oxt.pythonpath.libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
     from oxt.pythonpath.libre_pythonista_lib.menus.cell_reg_interceptor import (
         register_interceptor,
         unregister_interceptor,
@@ -30,11 +19,7 @@ if TYPE_CHECKING:
 else:
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.cmd.cmd_t import CmdT
-    from libre_pythonista_lib.const.cache_const import SHEET_HAS_CALCULATION_EVENT, SHEET_CALCULATION_EVENT
-    from libre_pythonista_lib.query.calc.sheet.qry_sheet_has_calculation_event import QrySheetHasCalculationEvent
-    from libre_pythonista_lib.query.calc.sheet.qry_sheet_calculation_event import QrySheetCalculationEvent
     from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
-    from libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
     from libre_pythonista_lib.menus.cell_reg_interceptor import register_interceptor, unregister_interceptor
     from libre_pythonista_lib.dispatch.calc_sheet_cell_dispatch_provider import CalcSheetCellDispatchProvider
 
@@ -43,7 +28,7 @@ else:
 
 
 class CmdRegisterDispatchInterceptor(LogMixin, CmdT):
-    """Add OnCalculate event to sheet"""
+    """Register Dispatch Provider Interceptor to doc"""
 
     def __init__(self, doc: CalcDoc) -> None:
         LogMixin.__init__(self)

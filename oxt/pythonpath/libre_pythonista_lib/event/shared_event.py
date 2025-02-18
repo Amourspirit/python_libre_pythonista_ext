@@ -20,19 +20,19 @@ else:
     from libre_pythonista_lib.doc.doc_globals import DocGlobals
     from libre_pythonista_lib.event.doc_event_partial import DocEventPartial
 
-_SHARED_EVENT_KEY = "libre_pythonista_lib.event.shared_event.SharedEvent"
+_KEY = "libre_pythonista_lib.event.shared_event.SharedEvent"
 
 
 class SharedEvent(DocEventPartial):
     def __new__(cls, doc: OfficeDocumentT | None = None) -> SharedEvent:
         gbl_cache = DocGlobals.get_current()
-        if _SHARED_EVENT_KEY in gbl_cache.mem_cache:
-            return gbl_cache.mem_cache[_SHARED_EVENT_KEY]
+        if _KEY in gbl_cache.mem_cache:
+            return gbl_cache.mem_cache[_KEY]
 
         inst = super(SharedEvent, cls).__new__(cls)
         inst._is_init = False
         inst.__init__(doc)
-        gbl_cache.mem_cache[_SHARED_EVENT_KEY] = inst
+        gbl_cache.mem_cache[_KEY] = inst
         return inst
 
         # if doc is None:
