@@ -4,11 +4,9 @@ import time
 
 
 if TYPE_CHECKING:
-    from ooodev.calc import CalcSheet
-    from oxt.pythonpath.libre_pythonista_lib.sheet import calculate
-    from oxt.pythonpath.libre_pythonista_lib.query.qry_handler import QryHandler
+    from ooodev.calc import CalcDoc
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
-    from oxt.pythonpath.libre_pythonista_lib.cmd.calc.sheet.cmd_sheet_cache_t import CmdSheetCacheT
+    from oxt.pythonpath.libre_pythonista_lib.cmd.cmd_t import CmdT
     from oxt.pythonpath.libre_pythonista_lib.const.cache_const import (
         SHEET_HAS_CALCULATION_EVENT,
         SHEET_CALCULATION_EVENT,
@@ -21,57 +19,50 @@ if TYPE_CHECKING:
     )
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
+    from oxt.pythonpath.libre_pythonista_lib.menus.cell_reg_interceptor import (
+        register_interceptor,
+        unregister_interceptor,
+    )
+    from oxt.pythonpath.libre_pythonista_lib.dispatch.calc_sheet_cell_dispatch_provider import (
+        CalcSheetCellDispatchProvider,
+    )
 
 else:
-    from libre_pythonista_lib.sheet import calculate
-    from libre_pythonista_lib.query.qry_handler import QryHandler
     from libre_pythonista_lib.log.log_mixin import LogMixin
-    from libre_pythonista_lib.cmd.calc.sheet.cmd_sheet_cache_t import CmdSheetCacheT
+    from libre_pythonista_lib.cmd.cmd_t import CmdT
     from libre_pythonista_lib.const.cache_const import SHEET_HAS_CALCULATION_EVENT, SHEET_CALCULATION_EVENT
     from libre_pythonista_lib.query.calc.sheet.qry_sheet_has_calculation_event import QrySheetHasCalculationEvent
     from libre_pythonista_lib.query.calc.sheet.qry_sheet_calculation_event import QrySheetCalculationEvent
     from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
     from libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
+    from libre_pythonista_lib.menus.cell_reg_interceptor import register_interceptor, unregister_interceptor
+    from libre_pythonista_lib.dispatch.calc_sheet_cell_dispatch_provider import CalcSheetCellDispatchProvider
 
 # Should be called with:
 # libre_pythonista_lib.cmd.calc.sheet.cmd_handler_sheet_cache.CmdHandlerSheetCache
 
 
-class CmdSheetCalcFormula(LogMixin, CmdSheetCacheT):
+class CmdRegisterDispatchInterceptor(LogMixin, CmdT):
     """Add OnCalculate event to sheet"""
 
-    def __init__(self, sheet: CalcSheet) -> None:
+    def __init__(self, doc: CalcDoc) -> None:
         LogMixin.__init__(self)
         self._success = False
-        self._sheet = sheet
-        self._kind = CalcCmdKind.SHEET_CACHE
-        self._has_calc_event = self._get_has_calculate_event()
-        self._current_script = self._get_current_script()
-
-    def _get_current_script(self) -> str | None:
-        qry = QrySheetCalculationEvent(sheet=self._sheet)
-        qry.kind = CalcQryKind.SHEET  # bypass the cache
-        handler = QryHandler()
-        return handler.handle(qry)
-
-    def _get_has_calculate_event(self) -> bool:
-        qry = QrySheetHasCalculationEvent(sheet=self._sheet)
-        qry.kind = CalcQryKind.SHEET  # bypass the cache
-        handler = QryHandler()
-        result = handler.handle(qry)
-        if result is None:
-            return False
-        return result
+        self._doc = doc
+        self._kind = CalcCmdKind.SIMPLE
+        self._has_instance = CalcSheetCellDispatchProvider.has_instance(doc)
 
     def execute(self) -> None:
         self._success = False
         try:
-            if self._has_calc_event:
+            if self._has_instance:
+                self.log.debug("Dispatch Provider Interceptor already registered.")
                 self._success = True
                 return
-            calculate.set_sheet_calculate_event(self._sheet)
-        except Exception:
-            self.log.exception("Error setting sheet calculate event")
+            register_interceptor(self._doc)
+            self._has_instance = CalcSheetCellDispatchProvider.has_instance(self._doc)
+        except Exception as e:
+            self.log.exception("Error registering Dispatch Provider Interceptor. Error: %s", e)
             self._undo()
             return
         self.log.debug("Successfully executed command.")
@@ -79,13 +70,14 @@ class CmdSheetCalcFormula(LogMixin, CmdSheetCacheT):
 
     def _undo(self) -> None:
         try:
-            if self._current_script:
-                calculate.set_sheet_calculate_event(self._sheet, self._current_script)
+            if CalcSheetCellDispatchProvider.has_instance(self._doc):
+                unregister_interceptor(self._doc)
+                self._has_instance = CalcSheetCellDispatchProvider.has_instance(self._doc)
             else:
-                calculate.remove_doc_sheet_calculate_event(self._sheet)
+                self.log.debug("Dispatch Provider Interceptor not registered.")
             self.log.debug("Successfully executed undo command.")
         except Exception:
-            self.log.exception("Error removing Document Event listener")
+            self.log.exception("Error unregistering Dispatch Provider Interceptor")
 
     def undo(self) -> None:
         if self._success:
@@ -98,16 +90,8 @@ class CmdSheetCalcFormula(LogMixin, CmdSheetCacheT):
         return self._success
 
     @property
-    def sheet(self) -> CalcSheet:
-        return self._sheet
-
-    @property
-    def cache_keys(self) -> Tuple[str, ...]:
-        return (SHEET_HAS_CALCULATION_EVENT, SHEET_CALCULATION_EVENT)
-
-    @property
     def kind(self) -> CalcCmdKind:
-        """Gets/Sets the kind of the command. Defaults to ``CalcCmdKind.SHEET_CACHE``."""
+        """Gets/Sets the kind of the command. Defaults to ``CalcCmdKind.SIMPLE``."""
         return self._kind
 
     @kind.setter

@@ -1,12 +1,20 @@
-from typing import Any, cast
+from typing import Any, cast, TYPE_CHECKING
 import contextlib
 
 from ooodev.calc import CalcDoc
 from ooodev.loader.inst.doc_type import DocType
 
-from ..dispatch.calc_sheet_cell_dispatch_provider import CalcSheetCellDispatchProvider
-from ..log.log_inst import LogInst
-from . import cell_intercept as ci
+
+if TYPE_CHECKING:
+    from oxt.pythonpath.libre_pythonista_lib.menus import cell_intercept as ci
+    from oxt.pythonpath.libre_pythonista_lib.log.log_inst import LogInst
+    from oxt.pythonpath.libre_pythonista_lib.dispatch.calc_sheet_cell_dispatch_provider import (
+        CalcSheetCellDispatchProvider,
+    )
+else:
+    from libre_pythonista_lib.menus import cell_intercept as ci
+    from libre_pythonista_lib.log.log_inst import LogInst
+    from libre_pythonista_lib.dispatch.calc_sheet_cell_dispatch_provider import CalcSheetCellDispatchProvider
 
 
 def register_interceptor(doc_comp: Any) -> None:  # noqa: ANN401
