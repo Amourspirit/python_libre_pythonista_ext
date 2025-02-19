@@ -5,8 +5,10 @@ from typing import TYPE_CHECKING
 from ooodev.exceptions import ex as mEx  # noqa: N812
 
 
+from ooodev.utils.props import Props
+
 if TYPE_CHECKING:
-    from ooodev.calc import CalcDoc, CalcSheetView
+    from ooodev.calc import CalcDoc
     from oxt.pythonpath.libre_pythonista_lib.query.calc.doc.qry_doc_t import QryDocT
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
@@ -19,45 +21,27 @@ else:
 
 # this class should be call in:
 # libre_pythonista_lib.query.calc.sheet.qry_handler_sheet_cache.QryHandlerSheetCache
-class QryFormDesignMode(LogMixin, QryDocT):
+class QryIsDocNew(LogMixin, QryDocT):
     def __init__(self, doc: CalcDoc) -> None:
         LogMixin.__init__(self)
         self._kind = CalcQryKind.SIMPLE
         self._doc = doc
 
-    def _get_view(self) -> CalcSheetView | None:
-        try:
-            view = self._doc.get_view()
-            if view.view_controller_name == "Default":
-                self.log.debug("View controller is Default.")
-                return view
-            else:
-                # this could mean that the print preview has been activated.
-                # Print Preview view controller Name: PrintPreview
-                self.log.debug(
-                    "'%s' is not the default view controller. Returning None.",
-                    view.view_controller_name,
-                )
-            return None
-
-        except mEx.MissingInterfaceError as e:
-            self.log.debug("Error getting view from document. %s", e)
-            return None
-
     def execute(self) -> bool | None:
         """
-        Executes the query to check if the document is in form design mode.
+        Executes the query to check if the document is a new unsaved document.
 
         Returns:
-            bool | None: True if the document is in form design mode, None if unable to get the view; False otherwise.
+            bool | None: True if the document is new, None if there are any errors; False otherwise.
         """
-        view = self._get_view()
-        if view is None:
-            self.log.debug("View is None. May be print preview. Returning.")
-            return None
-
         try:
-            return view.is_form_design_mode()
+            result = True
+            doc_args = self._doc.component.getArgs()
+            args_dic = Props.props_to_dot_dict(doc_args)
+            if hasattr(args_dic, "URL"):
+                result = args_dic.URL == ""
+            self.log.debug("Document is new: %s", result)
+            return result
         except Exception:
             self.log.exception("Error executing query")
         return None

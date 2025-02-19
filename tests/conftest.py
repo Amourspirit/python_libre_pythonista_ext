@@ -20,6 +20,8 @@ from ooodev.conn import cache as mCache  # noqa: N812
 from ooodev.loader.inst import Options as LoOptions
 import contextlib
 
+from tests.files.calc import __test__path__ as calc_fixture_path
+
 
 @pytest.fixture(scope="session")
 def import_available() -> Any:  # noqa: ANN401
@@ -157,3 +159,14 @@ def loader(build_setup, tmp_path_session, run_headless, soffice_path, soffice_en
 
 
 # endregion soffice
+
+
+@pytest.fixture(scope="session")
+def copy_fix_calc(tmp_path_session):  # noqa: ANN001, ANN201
+    def copy_res(fnm):  # noqa: ANN202
+        src = Path(calc_fixture_path, fnm)
+        dst = Path(tmp_path_session, fnm)
+        shutil.copy2(src=src, dst=dst)
+        return dst
+
+    return copy_res

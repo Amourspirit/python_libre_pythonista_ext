@@ -81,10 +81,12 @@ class LoadFinishedJob(unohelper.Base, XJob):
     # region execute
     @override
     def execute(self, Arguments: Any) -> None:
-        # This job may be executed more then once.
+        # This job may be executed more then once or not at all.
         # When a spreadsheet is put into print preview this is fired.
         # When the print preview is closed this is fired again.
         # print("ViewJob execute")
+        # Load Finished Job is not fired by LibreOffice when a new document is created.
+        # It is fired when a document is loaded.
         self._log.debug("ViewJob execute")
         try:
             # loader = Lo.load_office()

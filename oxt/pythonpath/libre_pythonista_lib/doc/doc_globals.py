@@ -190,4 +190,18 @@ class DocGlobals(EventsPartial, metaclass=_MetaGlobals):
             raise ValueError("No current document.")
         return DocGlobals(runtime_uid=uid)
 
+    @classmethod
+    def get_current_mem_cache(cls) -> MemCache:
+        """
+        Get the current DocGlobals MemCache instance.
+
+        Raises:
+            ValueError: If there is no current document.
+
+        Returns:
+            MemCache: The current MemCache instance.
+        """
+        current = cls.get_current()
+        return current.mem_cache
+
     # endregion Static Methods

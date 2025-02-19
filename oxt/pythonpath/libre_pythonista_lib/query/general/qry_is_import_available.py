@@ -1,39 +1,49 @@
 from __future__ import annotations
 
 
+import importlib.util
 from typing import TYPE_CHECKING
 
 
 if TYPE_CHECKING:
-    from oxt.pythonpath.libre_pythonista_lib.event.shared_event import SharedEvent
     from oxt.pythonpath.libre_pythonista_lib.query.qry_t import QryT
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
 else:
-    from libre_pythonista_lib.event.shared_event import SharedEvent
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.query.qry_t import QryT
     from libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
 
 
-class QrySharedEvent(LogMixin, QryT):
-    def __init__(self) -> None:
+class QryIsImportAvailable(LogMixin, QryT):
+    def __init__(self, module_name: str) -> None:
+        """
+        Initializes the instance.
+
+        Args:
+            module_name (str): The name of the module to check for import availability.
+        """
+
         LogMixin.__init__(self)
         self._kind = CalcQryKind.SIMPLE
+        self._module_name = module_name
 
-    def execute(self) -> SharedEvent | None:
+    def execute(self) -> bool:
         """
-        Executes the query to get the shared event.
+        Executes the query to get if import is available.
 
         Returns:
-            SharedEvent: The shared event or None if an error occurred.
+            bool: True if import is available, False otherwise.
         """
 
         try:
-            return SharedEvent()
+            spec = importlib.util.find_spec(self._module_name)
+            result = spec is not None
+            self.log.debug("Import available: %s", result)
+            return result
         except Exception:
             self.log.exception("Error getting script url")
-        return None
+        return False
 
     @property
     def kind(self) -> CalcQryKind:
