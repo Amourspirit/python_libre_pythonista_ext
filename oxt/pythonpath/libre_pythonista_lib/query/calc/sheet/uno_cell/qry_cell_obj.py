@@ -20,7 +20,7 @@ else:
     SheetCell = Any
 
 
-class QryCellObj(QryUnoCellT):
+class QryCellObj(QryUnoCellT[CellObj]):
     """Gets the cell object."""
 
     def __init__(self, cell: SheetCell) -> None:

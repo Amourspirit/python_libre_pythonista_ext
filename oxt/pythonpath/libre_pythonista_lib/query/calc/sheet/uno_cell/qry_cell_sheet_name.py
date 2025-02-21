@@ -14,7 +14,7 @@ else:
     SheetCell = Any
 
 
-class QryCellSheetName(QryUnoCellT):
+class QryCellSheetName(QryUnoCellT[str]):
     """Gets the sheet name of the cell."""
 
     def __init__(self, cell: SheetCell) -> None:

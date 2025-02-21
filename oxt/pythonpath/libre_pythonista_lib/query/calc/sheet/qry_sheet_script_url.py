@@ -16,7 +16,7 @@ else:
     from libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
 
 
-class QrySheetScriptUrl(LogMixin, QryT):
+class QrySheetScriptUrl(LogMixin, QryT[str | None]):
     def __init__(self) -> None:
         LogMixin.__init__(self)
         self._kind = CalcQryKind.SIMPLE

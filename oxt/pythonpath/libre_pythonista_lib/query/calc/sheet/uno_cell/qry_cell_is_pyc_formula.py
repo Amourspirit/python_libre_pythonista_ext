@@ -21,7 +21,7 @@ else:
     SheetCell = Any
 
 
-class QryCellIsPycFormula(LogMixin, QryUnoCellT):
+class QryCellIsPycFormula(LogMixin, QryUnoCellT[bool]):
     """Checks if the cell formula is a pyc formula."""
 
     def __init__(self, cell: SheetCell) -> None:

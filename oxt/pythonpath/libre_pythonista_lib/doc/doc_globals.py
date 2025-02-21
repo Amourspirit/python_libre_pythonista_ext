@@ -8,7 +8,8 @@ from ooodev.utils.cache import LRUCache
 from ooodev.events.args.event_args import EventArgs
 from ooodev.utils.helper.dot_dict import DotDict
 from ooodev.events.partial.events_partial import EventsPartial
-# from ..meta.constructor_singleton import ConstructorSingleton
+
+from ooodev.meta.class_property_readonly import ClassPropertyReadonly
 
 if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.const.event_const import DOC_GBL_DEL_INSTANCE
@@ -62,6 +63,14 @@ class _MetaGlobals(type):
 
 
 class DocGlobals(EventsPartial, metaclass=_MetaGlobals):
+    """
+    Global variables for a LibreOffice document.
+
+    This class is a singleton and is created for each LibreOffice document.
+    """
+
+    _IS_PYTEST_RUNNING = "PYTEST_CURRENT_TEST" in os.environ
+
     class CacheType(Enum):
         CALC_SHEET = "libre_pythonista_lib_cache_calc_sheet_key"
         CALC_DOC = "libre_pythonista_lib_cache_calc_doc_key"
@@ -74,7 +83,6 @@ class DocGlobals(EventsPartial, metaclass=_MetaGlobals):
         self._runtime_uid = runtime_uid
         self._lru_cache = LRUCache(capacity=5000)
         self._mem_cache = MemCache()
-        self._is_pytest_running = "PYTEST_CURRENT_TEST" in os.environ
 
     def on_delete_instance(self) -> None:
         """
@@ -148,11 +156,6 @@ class DocGlobals(EventsPartial, metaclass=_MetaGlobals):
         return self._mem_cache
 
     @property
-    def is_pytest_running(self) -> bool:
-        """Check if the code is running under pytest."""
-        return self._is_pytest_running
-
-    @property
     def runtime_uid(self) -> str:
         """The runtime unique id of the LibreOffice document."""
         return self._runtime_uid
@@ -160,6 +163,11 @@ class DocGlobals(EventsPartial, metaclass=_MetaGlobals):
     # endregion Properties
 
     # region Static Methods
+    @ClassPropertyReadonly
+    @classmethod
+    def is_pytest_running(cls) -> bool:  # noqa: N805
+        """Check if the code is running under pytest."""
+        return cls._IS_PYTEST_RUNNING
 
     @staticmethod
     def get_current() -> DocGlobals:

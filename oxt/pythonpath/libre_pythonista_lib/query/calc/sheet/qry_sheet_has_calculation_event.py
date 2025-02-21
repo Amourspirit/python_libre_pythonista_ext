@@ -22,7 +22,7 @@ else:
 
 # this class should be call in:
 # libre_pythonista_lib.query.calc.sheet.qry_handler_sheet_cache.QryHandlerSheetCache
-class QrySheetHasCalculationEvent(LogMixin, QrySheetCacheT):
+class QrySheetHasCalculationEvent(LogMixin, QrySheetCacheT[bool]):
     def __init__(self, sheet: CalcSheet) -> None:
         LogMixin.__init__(self)
         self._kind = CalcQryKind.SHEET_CACHE

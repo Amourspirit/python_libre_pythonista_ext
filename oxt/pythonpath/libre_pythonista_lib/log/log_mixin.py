@@ -14,8 +14,8 @@ class LogMixin:
         self.__log = self._get_logger_instance()
 
     def _get_logger_instance(self) -> OxtLogger:
-        gbl_cache = DocGlobals.get_current()
-        if gbl_cache.is_pytest_running:
+        # gbl_cache = DocGlobals.get_current()
+        if DocGlobals.is_pytest_running:
             if TYPE_CHECKING:
                 from oxt.pythonpath.libre_pythonista_lib.log.dummy_log import DummyLogger
             else:

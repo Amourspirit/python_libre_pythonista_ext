@@ -14,7 +14,7 @@ else:
     from libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
 
 
-class QryCellHasProp(LogMixin, QryCellT):
+class QryCellHasProp(LogMixin, QryCellT[bool]):
     """Checks if the cell has a custom property"""
 
     def __init__(self, cell: CalcCell, name: str) -> None:

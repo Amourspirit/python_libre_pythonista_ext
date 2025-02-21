@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 
-from typing import TYPE_CHECKING
+from typing import Any, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcCell
@@ -16,8 +16,10 @@ else:
     from libre_pythonista_lib.query.qry_t import QryT
     from libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
 
+    MemCache = Any
 
-class QryCellCache(LogMixin, QryT):
+
+class QryCellCache(LogMixin, QryT[MemCache | None]):
     """Gets the cell cache"""
 
     def __init__(self, cell: CalcCell) -> None:

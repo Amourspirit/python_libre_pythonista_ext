@@ -15,7 +15,7 @@ else:
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
 
 
-class QryCellPropValue(LogMixin, QryCellT):
+class QryCellPropValue(LogMixin, QryCellT[Any]):
     """Gets the value of a custom property of a cell"""
 
     def __init__(self, cell: CalcCell, name: str, default: Any = NULL_OBJ) -> None:  # noqa: ANN401

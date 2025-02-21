@@ -15,7 +15,7 @@ else:
     from libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
 
 
-class QryIsImportAvailable(LogMixin, QryT):
+class QryIsImportAvailable(LogMixin, QryT[bool]):
     def __init__(self, module_name: str) -> None:
         """
         Initializes the instance.

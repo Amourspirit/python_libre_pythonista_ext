@@ -19,7 +19,7 @@ else:
 
 # this class should be call in:
 # libre_pythonista_lib.query.calc.sheet.qry_handler_sheet_cache.QryHandlerSheetCache
-class QryFormDesignMode(LogMixin, QryDocT):
+class QryFormDesignMode(LogMixin, QryDocT[bool | None]):
     def __init__(self, doc: CalcDoc) -> None:
         LogMixin.__init__(self)
         self._kind = CalcQryKind.SIMPLE

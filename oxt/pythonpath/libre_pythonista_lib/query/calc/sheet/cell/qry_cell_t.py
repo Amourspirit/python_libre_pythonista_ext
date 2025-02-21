@@ -3,11 +3,11 @@ from typing import Protocol, TYPE_CHECKING
 from ooodev.calc import CalcCell
 
 if TYPE_CHECKING:
-    from oxt.pythonpath.libre_pythonista_lib.query.qry_t import QryT
+    from oxt.pythonpath.libre_pythonista_lib.query.qry_t import QryT, TResult
 else:
-    from libre_pythonista_lib.query.qry_t import QryT
+    from libre_pythonista_lib.query.qry_t import QryT, TResult
 
 
-class QryCellT(QryT, Protocol):
+class QryCellT(QryT[TResult], Protocol):
     @property
     def cell(self) -> CalcCell: ...

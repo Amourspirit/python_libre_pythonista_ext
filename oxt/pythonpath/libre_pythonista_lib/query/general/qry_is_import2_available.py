@@ -19,7 +19,7 @@ else:
     from ___lo_pip___.basic_config import BasicConfig
 
 
-class QryIsImport2Available(LogMixin, QryT):
+class QryIsImport2Available(LogMixin, QryT[bool]):
     def __init__(self) -> None:
         """
         Initializes the instance.

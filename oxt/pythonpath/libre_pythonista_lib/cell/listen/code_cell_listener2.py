@@ -117,7 +117,7 @@ class CodeCellListener2(XModifyListener, LogMixin, EventsPartial, unohelper.Base
                 for key, value in dd.items():
                     calc_cell.extra_data[key] = value
                 trigger_name = "cell_pyc_formula_removed"
-                self.log.debug(f"modified: Triggering event: {trigger_name}")
+                self.log.debug("modified: Triggering event: %s", trigger_name)
                 self.trigger_event(trigger_name, eargs)
                 return
             if name == self._absolute_name:
@@ -150,7 +150,7 @@ class CodeCellListener2(XModifyListener, LogMixin, EventsPartial, unohelper.Base
                         eargs.event_data.calc_cell = calc_cell
                         eargs.event_data.cell_cp_codename = cfg.cell_cp_codename
 
-                        self.log.debug(f"modified: Triggering event: {trigger_name}")
+                        self.log.debug("modified: Triggering event: %s", trigger_name)
                         self.trigger_event("cell_custom_prop_modify", eargs)
                         if eargs.event_data.remove_custom_property and calc_cell.has_custom_property(key):
                             calc_cell.remove_custom_property(key)
@@ -197,9 +197,7 @@ class CodeCellListener2(XModifyListener, LogMixin, EventsPartial, unohelper.Base
             if cc is not None:
                 return cc
         except Exception as e:
-            self.log.warning(
-                f"_get_calc_cell() warning error. {e}",
-            )
+            self.log.warning("_get_calc_cell() warning error. %s", e)
         try:
             qry_cell_doc = QryCellSheetDoc(cell=cell)
             doc = cast(CalcDoc, self._qry_handler.handle(qry_cell_doc))
@@ -235,8 +233,8 @@ class CodeCellListener2(XModifyListener, LogMixin, EventsPartial, unohelper.Base
         self._absolute_name = name
         self.cell_obj = cell_obj
         if is_db:
-            self.log.debug(f"update_absolute_name: Old Name: {old_name} New Name: {name}")
-            self.log.debug(f"update_absolute_name: Old Cell Obj: {old_co} New Cell Obj: {self.cell_obj}")
+            self.log.debug("update_absolute_name: Old Name: %s New Name: %s", old_name, name)
+            self.log.debug("update_absolute_name: Old Cell Obj: %s New Cell Obj: %s", old_co, self.cell_obj)
             self.log.debug("update_absolute_name: Done")
 
     def subscribe_cell_deleted(self, cb: Callable[[Any, Any], None]) -> None:

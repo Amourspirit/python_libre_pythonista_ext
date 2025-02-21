@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 
-from typing import TYPE_CHECKING
+from typing import Any, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcSheet
@@ -16,8 +16,10 @@ else:
     from libre_pythonista_lib.query.qry_t import QryT
     from libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
 
+    MemCache = Any
 
-class QrySheetCache(LogMixin, QryT):
+
+class QrySheetCache(LogMixin, QryT[MemCache | None]):
     def __init__(self, sheet: CalcSheet) -> None:
         LogMixin.__init__(self)
         self._kind = CalcQryKind.SIMPLE

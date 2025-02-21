@@ -21,7 +21,7 @@ else:
     PySrcProvider = Any
 
 
-class QryCellSrcCodeExist(LogMixin, QryCellCacheT):
+class QryCellSrcCodeExist(LogMixin, QryCellCacheT[bool]):
     """Checks if the source code exists for a cell"""
 
     def __init__(self, uri: str, cell: CalcCell, src_provider: PySrcProvider | None = None) -> None:

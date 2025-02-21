@@ -16,7 +16,7 @@ else:
     from libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
 
 
-class QryIsMacroEnabled(LogMixin, QryT):
+class QryIsMacroEnabled(LogMixin, QryT[bool]):
     def __init__(self, doc: OfficeDocumentT) -> None:
         LogMixin.__init__(self)
         self._kind = CalcQryKind.SIMPLE

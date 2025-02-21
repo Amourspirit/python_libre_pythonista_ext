@@ -17,7 +17,7 @@ else:
     SheetCell = Any
 
 
-class QryCellIsDeleted(QryUnoCellT):
+class QryCellIsDeleted(QryUnoCellT[bool]):
     """Checks if the cell is deleted."""
 
     def __init__(self, cell: SheetCell) -> None:

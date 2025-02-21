@@ -15,7 +15,7 @@ else:
     SheetCell = Any
 
 
-class QryCellSheetDoc(QryUnoCellT):
+class QryCellSheetDoc(QryUnoCellT[CalcDoc | None]):
     """Gets the sheet document of the cell."""
 
     def __init__(self, cell: SheetCell) -> None:

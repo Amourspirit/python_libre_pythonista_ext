@@ -19,7 +19,7 @@ else:
     from libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
 
 
-class QrySheetCalculationEvent(LogMixin, QrySheetCacheT):
+class QrySheetCalculationEvent(LogMixin, QrySheetCacheT[str | None]):
     def __init__(self, sheet: CalcSheet) -> None:
         LogMixin.__init__(self)
         self._kind = CalcQryKind.SHEET_CACHE
