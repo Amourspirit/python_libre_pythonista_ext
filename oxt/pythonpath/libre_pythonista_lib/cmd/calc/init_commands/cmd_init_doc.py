@@ -3,6 +3,7 @@ from typing import List, Type, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcDoc
+    from oxt.pythonpath.libre_pythonista_lib.cmd.cmd_handler import CmdHandler
     from oxt.pythonpath.libre_pythonista_lib.doc.doc_globals import DocGlobals
     from oxt.pythonpath.libre_pythonista_lib.cmd.calc.doc.listener.cmd_doc_event import CmdDocEvent
     from oxt.pythonpath.libre_pythonista_lib.cmd.calc.doc.listener.cmd_code_sheet_activation_listener import (
@@ -18,6 +19,7 @@ if TYPE_CHECKING:
         CmdRegisterDispatchInterceptor,
     )
 else:
+    from libre_pythonista_lib.cmd.cmd_handler import CmdHandler
     from libre_pythonista_lib.doc.doc_globals import DocGlobals
     from libre_pythonista_lib.cmd.calc.doc.listener.cmd_doc_event import CmdDocEvent
     from libre_pythonista_lib.cmd.calc.doc.listener.cmd_code_sheet_activation_listener import CmdCodeSheetActivation
@@ -51,6 +53,7 @@ class CmdInitDoc(List[Type[CmdDocT]], LogMixin, CmdDocT):
         self._success_cmds: List[CmdDocT] = []
         self._success = False
         self._doc = doc
+        self._handler = CmdHandler()
         self._kind = CalcCmdKind.SIMPLE
 
     def execute(self) -> None:
@@ -76,7 +79,7 @@ class CmdInitDoc(List[Type[CmdDocT]], LogMixin, CmdDocT):
         try:
             for cmd in self:
                 inst = cmd(self._doc)
-                inst.execute()
+                self._handler.handle(inst)
                 self._success = inst.success
                 if self._success:  # Only add if command was successful
                     self._success_cmds.append(inst)

@@ -1,13 +1,14 @@
 from __future__ import annotations
 
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING
 import pytest
+from pytest_mock import MockerFixture
 
 if __name__ == "__main__":
     pytest.main([__file__])
 
 
-def test_init_doc(loader, build_setup) -> None:
+def test_init_doc(loader, build_setup, mocker: MockerFixture) -> None:
     """
     Tests initialization of a Calc document.
 
@@ -24,13 +25,25 @@ def test_init_doc(loader, build_setup) -> None:
     from ooodev.calc import CalcDoc
 
     if TYPE_CHECKING:
+        from oxt.___lo_pip___.basic_config import BasicConfig
+
+    else:
+        from libre_pythonista.basic_config import BasicConfig
+
+    mock_lp_settings = mocker.Mock()
+    mock_lp_settings_inst = mock_lp_settings.return_value
+    mock_lp_settings_inst.experimental_editor = False
+
+    mock_config = mocker.patch("libre_pythonista_lib.dispatch.calc_sheet_cell_dispatch_provider.Config", BasicConfig)
+    _ = mocker.patch(
+        "libre_pythonista_lib.dispatch.calc_sheet_cell_dispatch_provider.Config", new_callable=lambda: BasicConfig
+    )
+    mocker.patch.object(mock_config, "lp_settings", mock_lp_settings_inst, create=True)
+
+    if TYPE_CHECKING:
         from oxt.pythonpath.libre_pythonista_lib.cmd.calc.init_commands.cmd_init_doc import CmdInitDoc
-        from oxt.pythonpath.libre_pythonista_lib.query.calc.sheet.qry_sheet_has_calculation_event import (
-            QrySheetHasCalculationEvent,
-        )
     else:
         from libre_pythonista_lib.cmd.calc.init_commands.cmd_init_doc import CmdInitDoc
-        from libre_pythonista_lib.query.calc.sheet.qry_sheet_has_calculation_event import QrySheetHasCalculationEvent
 
     doc = None
     try:
