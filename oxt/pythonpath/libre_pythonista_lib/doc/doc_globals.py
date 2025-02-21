@@ -2,6 +2,7 @@ from __future__ import annotations
 from typing import Any, TYPE_CHECKING
 import os
 from enum import Enum
+import uno
 from ooodev.loader import Lo
 from ooodev.utils.cache import LRUCache
 from ooodev.events.args.event_args import EventArgs
@@ -180,14 +181,23 @@ class DocGlobals(EventsPartial, metaclass=_MetaGlobals):
         # In this case, we can use the last runtime id if it exists.
         # When a document is closed it uid is removed from the RUNTIME_IDS list.
         # This is done in the Cleanup Job.
+
+        if doc_component is None and Lo.is_macro_mode:
+            ctx = uno.getComponentContext()
+            service_mgr = ctx.getServiceManager()  # type: ignore
+            desktop = service_mgr.DefaultContext.getByName("/singletons/com.sun.star.frame.theDesktop")
+            doc_component = desktop.getCurrentComponent()
+
         if doc_component is not None:
             uid = doc_component.RuntimeUID  # type: ignore
+            # print(f"DocGlobals.get_current() - uid: {uid}")
         else:
             if DocGlobals.RUNTIME_IDS:
                 uid = DocGlobals.RUNTIME_IDS[-1]
 
         if uid is None:
             raise ValueError("No current document.")
+        # print(f"DocGlobals.get_current() - uid: {uid}")
         return DocGlobals(runtime_uid=uid)
 
     @classmethod

@@ -10,5 +10,7 @@ else:
 
 
 class CmdSheetT(CmdT, Protocol):
+    def __init__(self, sheet: CalcSheet) -> None: ...
+
     @property
     def sheet(self) -> CalcSheet: ...

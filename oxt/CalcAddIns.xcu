@@ -4,12 +4,60 @@
 	oor:package="org.openoffice.Office">
 	<node oor:name="AddInInfo">
 		<node oor:name="___lo_identifier___.PyImpl" oor:op="replace">
-
 			<node oor:name="AddInFunctions">
 				<node oor:name="pyc" oor:op="replace">
 					<prop oor:name="DisplayName">
 						<value xml:lang="en">PY.C</value>
 						<value xml:lang="fr">PY.C</value>
+					</prop>
+					<prop oor:name="Description">
+						<value xml:lang="en">Python in Calc</value>
+						<value xml:lang="fr">Python dans Calc</value>
+					</prop>
+					<prop oor:name="Category">
+						<value>Add-in</value>
+					</prop>
+					<node oor:name="Parameters">
+						<node oor:name="sheetIdx" oor:op="replace">
+							<prop oor:name="DisplayName">
+								<value xml:lang="en">INDEX</value>
+								<value xml:lang="fr">INDEX</value>
+							</prop>
+							<prop oor:name="Description">
+								<value xml:lang="en">Sheet Index. Usually SHEET()</value>
+								<value xml:lang="fr">Index de feuille. Habituellement SHEET()</value>
+							</prop>
+						</node>
+						<node oor:name="cAddress" oor:op="replace">
+							<prop oor:name="DisplayName">
+								<value xml:lang="en">ADDRESS</value>
+								<value xml:lang="fr">ADDRESS</value>
+							</prop>
+							<prop oor:name="Description">
+								<value xml:lang="en">Cell Address string. Usually CELL(&quot;ADDRESS&quot;).</value>
+								<value xml:lang="fr">Chaîne d&apos;adresse de cellule. Habituellement CELL(&quot;ADDRESS&quot;).</value>
+							</prop>
+						</node>
+						<node oor:name="extras" oor:op="replace">
+							<prop oor:name="DisplayName">
+								<value xml:lang="en">extras</value>
+								<value xml:lang="fr">extras</value>
+							</prop>
+							<prop oor:name="Description">
+								<value xml:lang="en">Optional Cell Range. The range or cell that causes this formula to be update when changes occur.</value>
+								<value xml:lang="fr">Plage de cellules en option. Plage ou cellule qui entraîne la mise à jour de cette formule en cas de modifications.</value>
+							</prop>
+						</node>
+					</node>
+				</node>
+			</node>
+		</node>
+		<node oor:name="___lo_identifier___.PyImpl2" oor:op="replace">
+			<node oor:name="AddInFunctions">
+				<node oor:name="pyc2" oor:op="replace">
+					<prop oor:name="DisplayName">
+						<value xml:lang="en">PY.D</value>
+						<value xml:lang="fr">PY.D</value>
 					</prop>
 					<prop oor:name="Description">
 						<value xml:lang="en">Python in Calc</value>

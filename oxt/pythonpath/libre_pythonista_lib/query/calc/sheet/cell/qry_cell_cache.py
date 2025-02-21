@@ -18,6 +18,8 @@ else:
 
 
 class QryCellCache(LogMixin, QryT):
+    """Gets the cell cache"""
+
     def __init__(self, cell: CalcCell) -> None:
         LogMixin.__init__(self)
         self._kind = CalcQryKind.SIMPLE

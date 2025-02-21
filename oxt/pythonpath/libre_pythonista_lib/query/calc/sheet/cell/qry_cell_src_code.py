@@ -25,7 +25,16 @@ else:
 
 
 class QryCellSrcCode(LogMixin, QryCellCacheT):
+    """Gets the source code for a cell"""
+
     def __init__(self, uri: str, cell: CalcCell, src_provider: PySrcProvider | None = None) -> None:
+        """Constructor
+
+        Args:
+            uri (str): URI of the source code.
+            cell (CalcCell): Cell to query.
+            src_provider (PySrcProvider, optional): Source provider. Defaults to None.
+        """
         LogMixin.__init__(self)
         self._uri = uri
         self._cell = cell

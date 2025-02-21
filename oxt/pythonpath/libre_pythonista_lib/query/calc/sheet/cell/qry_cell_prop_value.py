@@ -14,14 +14,18 @@ else:
     from libre_pythonista_lib.query.calc.sheet.cell.qry_cell_t import QryCellT
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
 
-    PySrcProvider = Any
-
-# call with QryHandlerCellCache
-# from libre_pythonista_lib.query.calc.sheet.cell.qry_handler_cell_cache import QryHandlerCellCache
-
 
 class QryCellPropValue(LogMixin, QryCellT):
+    """Gets the value of a custom property of a cell"""
+
     def __init__(self, cell: CalcCell, name: str, default: Any = NULL_OBJ) -> None:  # noqa: ANN401
+        """Constructor
+
+        Args:
+            cell (CalcCell): Cell to query.
+            name (str): Name of the custom property.
+            default (Any, optional): Default value to return if the custom property is not found. Defaults to ``NULL_OBJ``.
+        """
         LogMixin.__init__(self)
         self._cell = cell
         self._name = name

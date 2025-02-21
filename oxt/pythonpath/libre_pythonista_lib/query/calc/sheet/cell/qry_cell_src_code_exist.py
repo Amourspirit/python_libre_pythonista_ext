@@ -20,12 +20,18 @@ else:
 
     PySrcProvider = Any
 
-# call with QryHandlerCellCache
-# from libre_pythonista_lib.query.calc.sheet.cell.qry_handler_cell_cache import QryHandlerCellCache
-
 
 class QryCellSrcCodeExist(LogMixin, QryCellCacheT):
+    """Checks if the source code exists for a cell"""
+
     def __init__(self, uri: str, cell: CalcCell, src_provider: PySrcProvider | None = None) -> None:
+        """Constructor
+
+        Args:
+            uri (str): URI of the source code.
+            cell (CalcCell): Cell to query.
+            src_provider (PySrcProvider, optional): Source provider. Defaults to None.
+        """
         LogMixin.__init__(self)
         self._uri = uri
         self._cell = cell

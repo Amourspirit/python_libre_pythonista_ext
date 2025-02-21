@@ -21,6 +21,7 @@ RUN apk update \
     linux-headers \
     libc-dev \
     rsync \
+    g++ \
     gcc \
     python3-dev \
     git \
@@ -102,11 +103,10 @@ COPY --from=uv_full_src /uv /uvx /bin/
 ENV VIRTUAL_ENV=/workspace/libreoffice_pip_ext/.venv
 
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --frozen --no-install-project --no-dev \
+    uv sync --frozen --no-install-project \
     && sed -i "s/include-system-site-packages = false/include-system-site-packages = true/g" /workspace/libreoffice_pip_ext/.venv/pyvenv.cfg \
     && if [ -f "$CONFIG_DIR/.tmp/res/req/requirements.txt" ]; then \
     uv pip install --requirement "$CONFIG_DIR/.tmp/res/req/requirements.txt"; fi
-
 
 
 

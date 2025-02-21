@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ooodev.calc import CalcDoc
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
-    from oxt.pythonpath.libre_pythonista_lib.cmd.cmd_t import CmdT
+    from oxt.pythonpath.libre_pythonista_lib.cmd.calc.doc.cmd_doc_t import CmdDocT
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
     from oxt.pythonpath.libre_pythonista_lib.menus.cell_reg_interceptor import (
         register_interceptor,
@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 
 else:
     from libre_pythonista_lib.log.log_mixin import LogMixin
-    from libre_pythonista_lib.cmd.cmd_t import CmdT
+    from libre_pythonista_lib.cmd.calc.doc.cmd_doc_t import CmdDocT
     from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
     from libre_pythonista_lib.menus.cell_reg_interceptor import register_interceptor, unregister_interceptor
     from libre_pythonista_lib.dispatch.calc_sheet_cell_dispatch_provider import CalcSheetCellDispatchProvider
@@ -26,7 +26,7 @@ else:
 # libre_pythonista_lib.cmd.calc.sheet.cmd_handler_sheet_cache.CmdHandlerSheetCache
 
 
-class CmdUnRegisterDispatchInterceptor(LogMixin, CmdT):
+class CmdUnRegisterDispatchInterceptor(LogMixin, CmdDocT):
     """Unregister Dispatch Provider Interceptor from doc"""
 
     def __init__(self, doc: CalcDoc) -> None:

@@ -14,6 +14,9 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cmd.calc.doc.cmd_doc_t import CmdDocT
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
     from oxt.pythonpath.libre_pythonista_lib.cmd.calc.doc.listener.cmd_form_design_mode_off import CmdFormDesignModeOff
+    from oxt.pythonpath.libre_pythonista_lib.cmd.calc.doc.cmd_register_dispatch_interceptor import (
+        CmdRegisterDispatchInterceptor,
+    )
 else:
     from libre_pythonista_lib.doc.doc_globals import DocGlobals
     from libre_pythonista_lib.cmd.calc.doc.listener.cmd_doc_event import CmdDocEvent
@@ -24,6 +27,7 @@ else:
     from libre_pythonista_lib.cmd.calc.doc.cmd_doc_t import CmdDocT
     from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
     from libre_pythonista_lib.cmd.calc.doc.listener.cmd_form_design_mode_off import CmdFormDesignModeOff
+    from libre_pythonista_lib.cmd.calc.doc.cmd_register_dispatch_interceptor import CmdRegisterDispatchInterceptor
 
 
 _KEY = "libre_pythonista_lib.init.init_doc.InitDoc"
@@ -43,6 +47,7 @@ class CmdInitDoc(List[Type[CmdDocT]], LogMixin, CmdDocT):
         self.append(CmdSheetsModified)
         self.append(CmdSheetActivation)
         self.append(CmdFormDesignModeOff)
+        self.append(CmdRegisterDispatchInterceptor)
         self._success_cmds: List[CmdDocT] = []
         self._success = False
         self._doc = doc
