@@ -5,68 +5,64 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ooodev.calc import CalcCell
     from oxt.pythonpath.libre_pythonista_lib.cell.props.key_maker import KeyMaker
-    from oxt.pythonpath.libre_pythonista_lib.cell.state.state_kind import StateKind
     from oxt.pythonpath.libre_pythonista_lib.cmd.calc.sheet.cell.cmd_cell_t import CmdCellT
-    from oxt.pythonpath.libre_pythonista_lib.cmd.calc.sheet.cell.prop.cmd_cell_prop_set import CmdCellPropSet
+    from oxt.pythonpath.libre_pythonista_lib.cmd.calc.sheet.cell.prop.cmd_cell_prop_del import CmdCellPropDel
+    from oxt.pythonpath.libre_pythonista_lib.cmd.calc.sheet.cell.prop.cmd_pyc_rule import CmdPycRule
     from oxt.pythonpath.libre_pythonista_lib.cmd.cmd_handler import CmdHandler
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
-    from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
-    from oxt.pythonpath.libre_pythonista_lib.query.calc.sheet.cell.prop.qry_state import QryState
+    from oxt.pythonpath.libre_pythonista_lib.query.calc.sheet.cell.prop.qry_pyc_rule import QryPycRule
     from oxt.pythonpath.libre_pythonista_lib.query.calc.sheet.cell.qry_key_maker import QryKeyMaker
     from oxt.pythonpath.libre_pythonista_lib.query.qry_handler_no_cache import QryHandlerNoCache
 else:
-    from libre_pythonista_lib.cell.state.state_kind import StateKind
     from libre_pythonista_lib.cmd.calc.sheet.cell.cmd_cell_t import CmdCellT
-    from libre_pythonista_lib.cmd.calc.sheet.cell.prop.cmd_cell_prop_set import CmdCellPropSet
+    from libre_pythonista_lib.cmd.calc.sheet.cell.prop.cmd_cell_prop_del import CmdCellPropDel
+    from libre_pythonista_lib.cmd.calc.sheet.cell.prop.cmd_pyc_rule import CmdPycRule
     from libre_pythonista_lib.cmd.cmd_handler import CmdHandler
     from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
     from libre_pythonista_lib.log.log_mixin import LogMixin
-    from libre_pythonista_lib.query.calc.sheet.cell.prop.qry_state import QryState
+    from libre_pythonista_lib.query.calc.sheet.cell.prop.qry_pyc_rule import QryPycRule
     from libre_pythonista_lib.query.calc.sheet.cell.qry_key_maker import QryKeyMaker
     from libre_pythonista_lib.query.qry_handler_no_cache import QryHandlerNoCache
 
 
-class CmdState(LogMixin, CmdCellT):
-    """Sets the state of the cell"""
+class CmdPycRuleDel(LogMixin, CmdCellT):
+    """Deletes the pyc rule of the cell if it exists"""
 
-    def __init__(self, cell: CalcCell, state: StateKind) -> None:
+    def __init__(self, cell: CalcCell) -> None:
+        """Constructor
+
+        Args:
+            cell (CalcCell): Cell to delete the pyc rule for.
+        """
         LogMixin.__init__(self)
         self._cell = cell
         self._success = False
-        self._state = state
         self._kind = CalcCmdKind.SIMPLE
         self._cmd_handler = CmdHandler()
         self._qry_handler = QryHandlerNoCache()
         self._keys = self._get_keys()
         self._current_state = self._get_current_state()
-        self._state_changed = False
-
-    def _get_state(self) -> StateKind:
-        # use method to make possible to mock for testing
-        return self._state
 
     def _get_keys(self) -> KeyMaker:
         qry = QryKeyMaker()
         return self._qry_handler.handle(qry)
 
-    def _get_current_state(self) -> StateKind:
-        qry = QryState(cell=self.cell)
+    def _get_current_state(self) -> str:
+        qry = QryPycRule(cell=self.cell)
         return self._qry_handler.handle(qry)
 
     def execute(self) -> None:
         self._success = False
-        self._state_changed = False
         try:
-            if self._get_state() == self._current_state:
-                self.log.debug("State is already set.")
+            if not self._current_state:
+                self.log.debug("Property does not exist on cell. Nothing to delete.")
                 self._success = True
                 return
-            cmd = CmdCellPropSet(cell=self.cell, name=self._keys.ctl_state_key, value=self._state.value)
+            cmd = CmdCellPropDel(cell=self.cell, name=self._keys.pyc_rule_key)
             self._cmd_handler.handle(cmd)
-            self._state_changed = True
         except Exception:
-            self.log.exception("Error setting cell state")
+            self.log.exception("Error deleting cell pyc rule")
             self._undo()
             return
         self.log.debug("Successfully executed command.")
@@ -74,14 +70,17 @@ class CmdState(LogMixin, CmdCellT):
 
     def _undo(self) -> None:
         try:
-            if not self._state_changed:
-                self.log.debug("State is already set. Undo not needed.")
+            if not self._current_state:
+                self.log.debug("No Current State. Unable to undo.")
                 return
-            cmd = CmdCellPropSet(cell=self.cell, name=self._keys.ctl_state_key, value=self._current_state.value)
+            cmd = CmdPycRule(cell=self.cell, name=self._current_state)
             self._cmd_handler.handle(cmd)
-            self.log.debug("Successfully executed undo command.")
+            if cmd.success:
+                self.log.debug("Successfully executed undo command.")
+            else:
+                self.log.error("Failed to execute undo command.")
         except Exception:
-            self.log.exception("Error undoing cell state")
+            self.log.exception("Error undoing cell pyc rule")
 
     def undo(self) -> None:
         if self._success:
