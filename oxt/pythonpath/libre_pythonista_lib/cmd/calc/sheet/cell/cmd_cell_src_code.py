@@ -1,11 +1,9 @@
 from __future__ import annotations
-from typing import cast, Tuple, TYPE_CHECKING
-import time
+from typing import Tuple, TYPE_CHECKING
 
-from ooodev.loader import Lo
 
 if TYPE_CHECKING:
-    from ooodev.calc import CalcDoc, CalcCell
+    from ooodev.calc import CalcCell
     from oxt.pythonpath.libre_pythonista_lib.pyc.code.py_source import PySrcProvider
     from oxt.pythonpath.libre_pythonista_lib.pyc.code.py_source import PySource
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
@@ -25,19 +23,12 @@ else:
     from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
     from libre_pythonista_lib.query.calc.sheet.cell.qry_cell_src_code_exist import QryCellSrcCodeExist
 
-# this class should be call in:
-# libre_pythonista_lib.cmd.calc.sheet.cmd_handler_sheet_cache.CmdHandlerSheetCache
-
-# this class should be called with:
-# pythonpath.libre_pythonista_lib.cmd.calc.sheet.cell.cmd_handler_cell_cache.CmdHandlerCellCache
-
 
 class CmdCellSrcCode(LogMixin, CmdCellCacheT):
     """Add OnCalculate event to sheet"""
 
     def __init__(self, uri: str, cell: CalcCell, code: str, src_provider: PySrcProvider | None = None) -> None:
         LogMixin.__init__(self)
-        self._doc = cast("CalcDoc", Lo.current_doc)
         self._success = False
         self._uri = uri
         self._cell = cell

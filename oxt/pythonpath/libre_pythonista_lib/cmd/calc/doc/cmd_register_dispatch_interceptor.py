@@ -1,6 +1,5 @@
 from __future__ import annotations
-from typing import cast, Tuple, TYPE_CHECKING
-import time
+from typing import TYPE_CHECKING
 
 
 if TYPE_CHECKING:
@@ -22,9 +21,6 @@ else:
     from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
     from libre_pythonista_lib.menus.cell_reg_interceptor import register_interceptor, unregister_interceptor
     from libre_pythonista_lib.dispatch.calc_sheet_cell_dispatch_provider import CalcSheetCellDispatchProvider
-
-# Should be called with:
-# libre_pythonista_lib.cmd.calc.sheet.cmd_handler_sheet_cache.CmdHandlerSheetCache
 
 
 class CmdRegisterDispatchInterceptor(LogMixin, CmdDocT):

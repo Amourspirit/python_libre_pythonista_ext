@@ -1,27 +1,20 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
-from ...utils.singleton_base import SingletonBase
 
 if TYPE_CHECKING:
-    from .....___lo_pip___.config import Config
+    from oxt.___lo_pip___.basic_config import BasicConfig
+    from oxt.pythonpath.libre_pythonista_lib.meta.singleton import Singleton
 else:
-    from ___lo_pip___.config import Config
+    from ___lo_pip___.basic_config import BasicConfig
+    from libre_pythonista_lib.meta.singleton import Singleton
 
 
-class RuleNames(SingletonBase):
-    # _instance = None
-
-    # def __new__(cls) -> RuleNames:
-    #     if cls._instance is None:
-    #         cls._instance = super().__new__(cls)
-    #         cls._instance._is_init = False
-    #     return cls._instance
-
+class RuleNames(metaclass=Singleton):
     def __init__(self) -> None:
         if getattr(self, "_is_init", False):
             return
-        cfg = Config()
+        cfg = BasicConfig()
         self._cell_cp_prefix = cfg.cell_cp_prefix
         self._is_init = True
 

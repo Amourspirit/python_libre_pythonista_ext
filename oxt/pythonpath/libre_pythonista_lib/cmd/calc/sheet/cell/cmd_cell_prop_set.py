@@ -1,6 +1,5 @@
 from __future__ import annotations
 from typing import Any, cast, TYPE_CHECKING
-import time
 
 from ooodev.loader import Lo
 from ooodev.utils.gen_util import NULL_OBJ

@@ -1,27 +1,21 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
-from .rule_names import RuleNames
-from ...utils.singleton_base import SingletonBase
 
 if TYPE_CHECKING:
-    from .....___lo_pip___.config import Config
+    from oxt.___lo_pip___.basic_config import BasicConfig
+    from oxt.pythonpath.libre_pythonista_lib.meta.singleton import Singleton
+    from oxt.pythonpath.libre_pythonista_lib.cell.props.rule_names import RuleNames
 else:
-    from ___lo_pip___.config import Config
+    from ___lo_pip___.basic_config import BasicConfig
+    from libre_pythonista_lib.meta.singleton import Singleton
+    from libre_pythonista_lib.cell.props.rule_names import RuleNames
 
 
-class KeyMaker(SingletonBase):
-    # _instance = None
-
-    # def __new__(cls) -> KeyMaker:
-    #     if cls._instance is None:
-    #         cls._instance = super().__new__(cls)
-    #         cls._instance._is_init = False
-    #     return cls._instance
-
+class KeyMaker(metaclass=Singleton):
     def __init__(self) -> None:
         if getattr(self, "_is_init", False):
             return
-        self._cfg = Config()
+        self._cfg = BasicConfig()
         self._cell_cp_prefix = self._cfg.cell_cp_prefix
         self._rule_names = RuleNames()
         self._is_init = True

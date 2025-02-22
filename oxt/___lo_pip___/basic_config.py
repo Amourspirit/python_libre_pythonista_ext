@@ -1,13 +1,13 @@
 from __future__ import annotations
 from pathlib import Path
-from typing import Any, Dict, List, Set, cast
+from typing import Dict, List, Set, cast
 import json
 
 
 class ConfigMeta(type):
     _instance = None
 
-    def __call__(cls, *args, **kwargs) -> Any:  # noqa: ANN002, ANN003, ANN401
+    def __call__(cls, *args, **kwargs):  # noqa: ANN002, ANN003, ANN204, ANN401
         if cls._instance is None:
             root = Path(__file__).parent
             config_file = Path(root, "config.json")
@@ -19,6 +19,7 @@ class ConfigMeta(type):
 
 
 class BasicConfig(metaclass=ConfigMeta):
+    # class BasicConfig(object):
     def __init__(self, **kwargs) -> None:  # noqa: ANN003
         self._author_names = cast(List[str], kwargs.get("author_names", []))
         self._py_pkg_dir = str(kwargs["py_pkg_dir"])

@@ -22,9 +22,6 @@ else:
     from libre_pythonista_lib.menus.cell_reg_interceptor import register_interceptor, unregister_interceptor
     from libre_pythonista_lib.dispatch.calc_sheet_cell_dispatch_provider import CalcSheetCellDispatchProvider
 
-# Should be called with:
-# libre_pythonista_lib.cmd.calc.sheet.cmd_handler_sheet_cache.CmdHandlerSheetCache
-
 
 class CmdUnRegisterDispatchInterceptor(LogMixin, CmdDocT):
     """Unregister Dispatch Provider Interceptor from doc"""
