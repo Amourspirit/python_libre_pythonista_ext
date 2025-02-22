@@ -8,14 +8,14 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
     from oxt.pythonpath.libre_pythonista_lib.cell.state.state_kind import StateKind
     from oxt.pythonpath.libre_pythonista_lib.query.qry_handler import QryHandler
-    from oxt.pythonpath.libre_pythonista_lib.query.calc.sheet.cell.qry_cell_prop_value import QryCellPropValue
+    from oxt.pythonpath.libre_pythonista_lib.query.calc.sheet.cell.prop.qry_cell_prop_value import QryCellPropValue
     from oxt.pythonpath.libre_pythonista_lib.query.calc.sheet.cell.qry_key_maker import QryKeyMaker
 else:
     from libre_pythonista_lib.query.qry_t import QryT
     from libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
     from libre_pythonista_lib.cell.state.state_kind import StateKind
     from libre_pythonista_lib.query.qry_handler import QryHandler
-    from libre_pythonista_lib.query.calc.sheet.cell.qry_cell_prop_value import QryCellPropValue
+    from libre_pythonista_lib.query.calc.sheet.cell.prop.qry_cell_prop_value import QryCellPropValue
     from libre_pythonista_lib.query.calc.sheet.cell.qry_key_maker import QryKeyMaker
 
 

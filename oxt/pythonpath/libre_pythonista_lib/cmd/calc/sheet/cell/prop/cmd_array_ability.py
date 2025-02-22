@@ -9,31 +9,29 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.query.qry_handler_no_cache import QryHandlerNoCache
     from oxt.pythonpath.libre_pythonista_lib.cmd.calc.sheet.cell.cmd_cell_t import CmdCellT
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
-    from oxt.pythonpath.libre_pythonista_lib.cell.state.state_kind import StateKind
-    from oxt.pythonpath.libre_pythonista_lib.cmd.calc.sheet.cell.cmd_cell_prop_set import CmdCellPropSet
+    from oxt.pythonpath.libre_pythonista_lib.cmd.calc.sheet.cell.prop.cmd_cell_prop_set import CmdCellPropSet
     from oxt.pythonpath.libre_pythonista_lib.cmd.cmd_handler import CmdHandler
     from oxt.pythonpath.libre_pythonista_lib.query.calc.sheet.cell.qry_key_maker import QryKeyMaker
-    from oxt.pythonpath.libre_pythonista_lib.query.calc.sheet.cell.qry_state import QryState
+    from oxt.pythonpath.libre_pythonista_lib.query.calc.sheet.cell.prop.qry_array_ability import QryArrayAbility
 else:
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.query.qry_handler_no_cache import QryHandlerNoCache
     from libre_pythonista_lib.cmd.calc.sheet.cell.cmd_cell_t import CmdCellT
     from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
-    from libre_pythonista_lib.cell.state.state_kind import StateKind
-    from libre_pythonista_lib.cmd.calc.sheet.cell.cmd_cell_prop_set import CmdCellPropSet
+    from libre_pythonista_lib.cmd.calc.sheet.cell.prop.cmd_cell_prop_set import CmdCellPropSet
     from libre_pythonista_lib.cmd.cmd_handler import CmdHandler
     from libre_pythonista_lib.query.calc.sheet.cell.qry_key_maker import QryKeyMaker
-    from libre_pythonista_lib.query.calc.sheet.cell.qry_state import QryState
+    from libre_pythonista_lib.query.calc.sheet.cell.prop.qry_array_ability import QryArrayAbility
 
 
-class CmdState(LogMixin, CmdCellT):
-    """Add OnCalculate event to sheet"""
+class CmdArrayAbility(LogMixin, CmdCellT):
+    """Sets the array ability of the cell"""
 
-    def __init__(self, cell: CalcCell, state: StateKind) -> None:
+    def __init__(self, cell: CalcCell, ability: bool) -> None:
         LogMixin.__init__(self)
         self._cell = cell
         self._success = False
-        self._state = state
+        self._state = ability
         self._kind = CalcCmdKind.SIMPLE
         self._cmd_handler = CmdHandler()
         self._qry_handler = QryHandlerNoCache()
@@ -41,7 +39,7 @@ class CmdState(LogMixin, CmdCellT):
         self._current_state = self._get_current_state()
         self._state_changed = False
 
-    def _get_state(self) -> StateKind:
+    def _get_state(self) -> bool:
         # use method to make possible to mock for testing
         return self._state
 
@@ -49,8 +47,8 @@ class CmdState(LogMixin, CmdCellT):
         qry = QryKeyMaker()
         return self._qry_handler.handle(qry)
 
-    def _get_current_state(self) -> StateKind:
-        qry = QryState(cell=self.cell)
+    def _get_current_state(self) -> bool:
+        qry = QryArrayAbility(cell=self.cell)
         return self._qry_handler.handle(qry)
 
     def execute(self) -> None:
@@ -61,11 +59,11 @@ class CmdState(LogMixin, CmdCellT):
                 self.log.debug("State is already set.")
                 self._success = True
                 return
-            cmd = CmdCellPropSet(cell=self.cell, name=self._keys.ctl_state_key, value=self._state.value)
+            cmd = CmdCellPropSet(cell=self.cell, name=self._keys.cell_array_ability_key, value=self._state)
             self._cmd_handler.handle(cmd)
             self._state_changed = True
         except Exception:
-            self.log.exception("Error setting cell Code")
+            self.log.exception("Error setting Array Ability")
             self._undo()
             return
         self.log.debug("Successfully executed command.")
@@ -76,11 +74,11 @@ class CmdState(LogMixin, CmdCellT):
             if not self._state_changed:
                 self.log.debug("State is already set. Undo not needed.")
                 return
-            cmd = CmdCellPropSet(cell=self.cell, name=self._keys.ctl_state_key, value=self._current_state.value)
+            cmd = CmdCellPropSet(cell=self.cell, name=self._keys.ctl_state_key, value=self._current_state)
             self._cmd_handler.handle(cmd)
             self.log.debug("Successfully executed undo command.")
         except Exception:
-            self.log.exception("Error undoing cell Code")
+            self.log.exception("Error undoing Array Ability")
 
     def undo(self) -> None:
         if self._success:

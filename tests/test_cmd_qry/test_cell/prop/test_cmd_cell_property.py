@@ -14,18 +14,18 @@ def test_cmd_cell_prop(loader, build_setup) -> None:
 
     if TYPE_CHECKING:
         from oxt.pythonpath.libre_pythonista_lib.cmd.cmd_handler import CmdHandler
-        from oxt.pythonpath.libre_pythonista_lib.cmd.calc.sheet.cell.cmd_cell_prop_set import CmdCellPropSet
-        from oxt.pythonpath.libre_pythonista_lib.cmd.calc.sheet.cell.cmd_cell_prop_del import CmdCellPropDel
+        from oxt.pythonpath.libre_pythonista_lib.cmd.calc.sheet.cell.prop.cmd_cell_prop_set import CmdCellPropSet
+        from oxt.pythonpath.libre_pythonista_lib.cmd.calc.sheet.cell.prop.cmd_cell_prop_del import CmdCellPropDel
         from oxt.pythonpath.libre_pythonista_lib.query.qry_handler import QryHandler
-        from oxt.pythonpath.libre_pythonista_lib.query.calc.sheet.cell.qry_cell_has_prop import QryCellHasProp
-        from oxt.pythonpath.libre_pythonista_lib.query.calc.sheet.cell.qry_cell_prop_value import QryCellPropValue
+        from oxt.pythonpath.libre_pythonista_lib.query.calc.sheet.cell.prop.qry_cell_has_prop import QryCellHasProp
+        from oxt.pythonpath.libre_pythonista_lib.query.calc.sheet.cell.prop.qry_cell_prop_value import QryCellPropValue
     else:
         from libre_pythonista_lib.cmd.cmd_handler import CmdHandler
-        from libre_pythonista_lib.cmd.calc.sheet.cell.cmd_cell_prop_set import CmdCellPropSet
-        from libre_pythonista_lib.cmd.calc.sheet.cell.cmd_cell_prop_del import CmdCellPropDel
+        from libre_pythonista_lib.cmd.calc.sheet.cell.prop.cmd_cell_prop_set import CmdCellPropSet
+        from libre_pythonista_lib.cmd.calc.sheet.cell.prop.cmd_cell_prop_del import CmdCellPropDel
         from libre_pythonista_lib.query.qry_handler import QryHandler
-        from libre_pythonista_lib.query.calc.sheet.cell.qry_cell_has_prop import QryCellHasProp
-        from libre_pythonista_lib.query.calc.sheet.cell.qry_cell_prop_value import QryCellPropValue
+        from libre_pythonista_lib.query.calc.sheet.cell.prop.qry_cell_has_prop import QryCellHasProp
+        from libre_pythonista_lib.query.calc.sheet.cell.prop.qry_cell_prop_value import QryCellPropValue
 
     doc = None
     try:
