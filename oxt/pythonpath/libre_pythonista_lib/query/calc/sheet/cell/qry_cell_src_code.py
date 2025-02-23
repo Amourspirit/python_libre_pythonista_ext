@@ -20,9 +20,6 @@ else:
 
     PySrcProvider = Any
 
-# call with QryHandlerCellCache
-# from libre_pythonista_lib.query.calc.sheet.cell.qry_handler_cell_cache import QryHandlerCellCache
-
 
 class QryCellSrcCode(LogMixin, QryCellCacheT[str | None]):
     """Gets the source code for a cell"""

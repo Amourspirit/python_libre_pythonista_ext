@@ -7,7 +7,7 @@ requires-python = ">=3.8"
 license = {text="OSI Approved :: Apache Software License"}
 keywords = ["pip", "libreoffice","uno", "pyuno"]
 dependencies = [
-    "ooo-dev-tools>=0.52.1",
+    "ooo-dev-tools>=0.52.2",
     "oooenv>=0.2.4",
     "sortedcontainers>=2.4.0",
     "toml>=0.10.2",

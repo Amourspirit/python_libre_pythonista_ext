@@ -2,12 +2,6 @@ from __future__ import annotations
 from typing import Any, TYPE_CHECKING, Tuple
 import contextlib
 
-try:
-    # python 3.12+
-    from typing import override  # type: ignore
-except ImportError:
-    from typing_extensions import override
-
 from com.sun.star.drawing import XControlShape
 from com.sun.star.container import NoSuchElementException
 from ooo.dyn.drawing.text_vertical_adjust import TextVerticalAdjust
@@ -17,20 +11,25 @@ from ooodev.events.args.cancel_event_args import CancelEventArgs
 from ooodev.exceptions import ex as mEx  # noqa: N812
 from ooodev.loader import Lo
 from ooodev.utils.helper.dot_dict import DotDict
-from .mixin.ctl_namer_mixin import CtlNamerMixin
 
 if TYPE_CHECKING:
+    from typing_extensions import override
     from com.sun.star.sheet import Shape  # service
     from ooodev.calc.calc_cell import CalcCell
     from ooodev.loader.inst.lo_inst import LoInst
     from ooodev.calc.calc_form import CalcForm
     from oxt.pythonpath.libre_pythonista_lib.ex.exceptions import CustomPropertyMissingError
-    from ....log.log_mixin import LogMixin
-    from ......___lo_pip___.config import Config
+    from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
+    from oxt.___lo_pip___.basic_config import BasicConfig
+    from oxt.pythonpath.libre_pythonista_lib.pyc.cell.ctl.mixin.ctl_namer_mixin import CtlNamerMixin
 else:
-    from ___lo_pip___.config import Config
+    from ___lo_pip___.basic_config import BasicConfig
     from libre_pythonista_lib.ex.exceptions import CustomPropertyMissingError
     from libre_pythonista_lib.log.log_mixin import LogMixin
+    from libre_pythonista_lib.pyc.cell.ctl.mixin.ctl_namer_mixin import CtlNamerMixin
+
+    def override(func):  # noqa: ANN001, ANN201
+        return func
 
 
 class CellControl(SheetControlBase, LogMixin, CtlNamerMixin):
@@ -40,7 +39,7 @@ class CellControl(SheetControlBase, LogMixin, CtlNamerMixin):
         SheetControlBase.__init__(self, calc_cell, lo_inst)
         LogMixin.__init__(self)
         CtlNamerMixin.__init__(self, calc_cell)
-        self._cfg = Config()
+        self._cfg = BasicConfig()
         self.log.debug("__init__(): Entered")
 
         self._form_name = f"Form_{self._cfg.general_code_name}"
@@ -68,7 +67,7 @@ class CellControl(SheetControlBase, LogMixin, CtlNamerMixin):
         return sheet.draw_page.forms.get_by_name(self._form_name)
 
     @override
-    def _find_current_control(self) -> Any:
+    def _find_current_control(self) -> Any:  # noqa: ANN401
         self.log.debug("_find_current_control(): Entered")
         # pylint: disable=import-outside-toplevel
         cargs = CancelEventArgs(source=self)
