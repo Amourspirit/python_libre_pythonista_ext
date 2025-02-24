@@ -12,9 +12,11 @@ def test_ctl_builder(loader, build_setup) -> None:
 
     if TYPE_CHECKING:
         from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl_builder import CtlBuilder
+        from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl_reader import CtlReader
         from oxt.___lo_pip___.basic_config import BasicConfig
     else:
         from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl_builder import CtlBuilder
+        from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl_reader import CtlReader
         from libre_pythonista.basic_config import BasicConfig
 
     doc = None
@@ -33,6 +35,12 @@ def test_ctl_builder(loader, build_setup) -> None:
         assert builder.success
 
         assert result.ctl_code_name.startswith("id_")
+        assert result.addr == f"sheet_index={sheet.sheet_index}&cell_addr={cell.cell_obj}"
+
+        reader = CtlReader(cell=cell)
+        ctl = reader.read()
+        assert ctl.ctl_code_name == result.ctl_code_name
+        assert ctl.addr == result.addr
 
     finally:
         if doc is not None:

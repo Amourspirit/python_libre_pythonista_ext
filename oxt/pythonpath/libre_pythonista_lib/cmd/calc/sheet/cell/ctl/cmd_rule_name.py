@@ -74,6 +74,7 @@ class CmdRuleName(LogMixin, CmdCellCtlT):
             return
         for cmd in reversed(self._success_cmds):
             cmd.undo()
+        self._success_cmds.clear()
         self._ctl.ctl_rule_kind = self._current
         self.log.debug("Successfully executed undo command.")
 

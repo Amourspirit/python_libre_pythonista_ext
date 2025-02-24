@@ -45,16 +45,16 @@ class QryCtlRuleName(LogMixin, QryCellT[str]):
             str: The control rule name
         """
         qry_shape = QryPycRule(cell=self.cell)
-        name = self._qry_handler.handle(qry_shape)
+        value = self._qry_handler.handle(qry_shape)
         if self._ctl is not None:
             try:
-                kind = RuleNameKind(name)
+                kind = RuleNameKind(value)
                 self._ctl.ctl_rule_kind = kind
                 if not self._ctl.cell:
                     self._ctl.cell = self.cell
             except Exception:
                 self.log.exception("Error getting rule name")
-        return name
+        return value
 
     @property
     def cell(self) -> CalcCell:

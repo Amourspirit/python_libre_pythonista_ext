@@ -10,6 +10,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cmd.calc.sheet.cell.ctl.cmd_cell_ctl_t import CmdCellCtlT
     from oxt.pythonpath.libre_pythonista_lib.cmd.cmd_handler import CmdHandler
     from oxt.pythonpath.libre_pythonista_lib.cmd.calc.sheet.cell.ctl.cmd_code_name import CmdCodeName
+    from oxt.pythonpath.libre_pythonista_lib.cmd.calc.sheet.cell.ctl.cmd_addr import CmdAddr
 
     # from oxt.pythonpath.libre_pythonista_lib.cmd.calc.sheet.cell.ctl.cmd_ctl_name import CmdCtlName
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl import Ctl
@@ -18,6 +19,7 @@ else:
     from libre_pythonista_lib.cmd.calc.sheet.cell.ctl.cmd_cell_ctl_t import CmdCellCtlT
     from libre_pythonista_lib.cmd.cmd_handler import CmdHandler
     from libre_pythonista_lib.cmd.calc.sheet.cell.ctl.cmd_code_name import CmdCodeName
+    from libre_pythonista_lib.cmd.calc.sheet.cell.ctl.cmd_addr import CmdAddr
 
     # from libre_pythonista_lib.cmd.calc.sheet.cell.ctl.cmd_ctl_name import CmdCtlName
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl import Ctl
@@ -36,7 +38,7 @@ class CtlBuilder(List[CmdCellCtlT], LogMixin):
     def append_commands(self) -> None:
         self.clear()
         self.append(CmdCodeName(self.cell, self.ctl))
-        # self.append(CmdCtlName(self.cell, self.ctl))
+        self.append(CmdAddr(self.cell, self.ctl))
 
     def _execute(self) -> None:
         """

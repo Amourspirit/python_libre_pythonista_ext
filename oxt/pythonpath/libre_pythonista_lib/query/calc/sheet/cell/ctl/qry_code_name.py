@@ -42,13 +42,13 @@ class QryCodeName(QryCellT[str]):
             str: The code name
         """
         qry_code_name = QryPropCodeName(cell=self.cell)
-        name = self._qry_handler.handle(qry_code_name)
+        value = self._qry_handler.handle(qry_code_name)
 
         if self._ctl is not None:
-            self._ctl.ctl_code_name = name
+            self._ctl.ctl_code_name = value
             if not self._ctl.cell:
                 self._ctl.cell = self.cell
-        return name
+        return value
 
     @property
     def cell(self) -> CalcCell:

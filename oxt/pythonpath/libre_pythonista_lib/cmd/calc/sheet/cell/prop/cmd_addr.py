@@ -12,6 +12,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cmd.calc.sheet.cell.cmd_cell_t import CmdCellT
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
     from oxt.pythonpath.libre_pythonista_lib.cmd.calc.sheet.cell.prop.cmd_cell_prop_set import CmdCellPropSet
+    from oxt.pythonpath.libre_pythonista_lib.cmd.calc.sheet.cell.prop.cmd_cell_prop_del import CmdCellPropDel
     from oxt.pythonpath.libre_pythonista_lib.cmd.cmd_handler import CmdHandler
     from oxt.pythonpath.libre_pythonista_lib.query.calc.sheet.cell.qry_key_maker import QryKeyMaker
     from oxt.pythonpath.libre_pythonista_lib.query.calc.sheet.cell.prop.qry_addr import QryAddr
@@ -22,6 +23,7 @@ else:
     from libre_pythonista_lib.cmd.calc.sheet.cell.cmd_cell_t import CmdCellT
     from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
     from libre_pythonista_lib.cmd.calc.sheet.cell.prop.cmd_cell_prop_set import CmdCellPropSet
+    from libre_pythonista_lib.cmd.calc.sheet.cell.prop.cmd_cell_prop_del import CmdCellPropDel
     from libre_pythonista_lib.cmd.cmd_handler import CmdHandler
     from libre_pythonista_lib.query.calc.sheet.cell.qry_key_maker import QryKeyMaker
     from libre_pythonista_lib.query.calc.sheet.cell.prop.qry_addr import QryAddr
@@ -40,7 +42,7 @@ class CmdAddr(LogMixin, CmdCellT):
         self._cmd_handler = CmdHandler()
         self._qry_handler = QryHandler()
         self._keys = cast("KeyMaker", NULL_OBJ)
-        self._current_state = NULL_OBJ
+        self._current_state = cast(str, NULL_OBJ)
         self._errors = True
         try:
             self._state = Addr(str(addr))
@@ -97,7 +99,10 @@ class CmdAddr(LogMixin, CmdCellT):
             if not self._current_state:
                 self.log.debug("No Current State. Unable to undo.")
                 return
-            cmd = CmdCellPropSet(cell=self.cell, name=self._keys.cell_addr_key, value=self._current_state)
+            if self._current_state:
+                cmd = CmdCellPropSet(cell=self.cell, name=self._keys.cell_addr_key, value=self._current_state)
+            else:
+                cmd = CmdCellPropDel(cell=self.cell, name=self._keys.cell_addr_key)
             self._cmd_handler.handle(cmd)
             self.log.debug("Successfully executed undo command.")
         except Exception:
