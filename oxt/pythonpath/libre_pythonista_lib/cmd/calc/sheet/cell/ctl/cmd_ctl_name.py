@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ooodev.calc import CalcCell
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
-    from oxt.pythonpath.libre_pythonista_lib.query.qry_handler_no_cache import QryHandlerNoCache
     from oxt.pythonpath.libre_pythonista_lib.cmd.calc.sheet.cell.ctl.cmd_cell_ctl_t import CmdCellCtlT
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
     from oxt.pythonpath.libre_pythonista_lib.cmd.cmd_handler import CmdHandler
@@ -13,7 +12,6 @@ if TYPE_CHECKING:
     from oxt.___lo_pip___.basic_config import BasicConfig
 else:
     from libre_pythonista_lib.log.log_mixin import LogMixin
-    from libre_pythonista_lib.query.qry_handler_no_cache import QryHandlerNoCache
     from libre_pythonista_lib.cmd.calc.sheet.cell.ctl.cmd_cell_ctl_t import CmdCellCtlT
     from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
     from libre_pythonista_lib.cmd.cmd_handler import CmdHandler
@@ -33,7 +31,6 @@ class CmdCtlName(LogMixin, CmdCellCtlT):
 
         self._kind = CalcCmdKind.SIMPLE
         self._cmd_handler = CmdHandler()
-        self._qry_handler = QryHandlerNoCache()
         if not self._ctl.cell:
             self._ctl.cell = cell
         self._current_state = self._ctl.ctl_name

@@ -13,7 +13,6 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl import Ctl
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
-    from oxt.pythonpath.libre_pythonista_lib.query.qry_handler import QryHandler
 else:
     from ___lo_pip___.basic_config import BasicConfig
     from libre_pythonista_lib.cell.props.rule_name_kind import RuleNameKind
@@ -24,7 +23,6 @@ else:
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl import Ctl
     from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
     from libre_pythonista_lib.log.log_mixin import LogMixin
-    from libre_pythonista_lib.query.qry_handler import QryHandler
 
 
 class CmdRuleName(LogMixin, CmdCellCtlT):
@@ -38,7 +36,6 @@ class CmdRuleName(LogMixin, CmdCellCtlT):
 
         self._kind = CalcCmdKind.SIMPLE
         self._cmd_handler = CmdHandler()
-        self._qry_handler = QryHandler()
         self._success_cmds: List[CmdT] = []
         if not self._ctl.cell:
             self._ctl.cell = cell

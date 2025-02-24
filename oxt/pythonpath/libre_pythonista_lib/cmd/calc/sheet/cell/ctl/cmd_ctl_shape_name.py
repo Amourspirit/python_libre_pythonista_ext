@@ -1,6 +1,7 @@
 from __future__ import annotations
-from typing import List, TYPE_CHECKING
+from typing import cast, List, TYPE_CHECKING
 
+from ooodev.utils.gen_util import NULL_OBJ
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcCell
@@ -14,7 +15,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.query.calc.sheet.cell.qry_key_maker import QryKeyMaker
-    from oxt.pythonpath.libre_pythonista_lib.query.qry_handler_no_cache import QryHandlerNoCache
+    from oxt.pythonpath.libre_pythonista_lib.query.qry_handler import QryHandler
 else:
     from ___lo_pip___.basic_config import BasicConfig
     from libre_pythonista_lib.cmd.calc.sheet.cell.ctl.cmd_cell_ctl_t import CmdCellCtlT
@@ -25,7 +26,7 @@ else:
     from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.query.calc.sheet.cell.qry_key_maker import QryKeyMaker
-    from libre_pythonista_lib.query.qry_handler_no_cache import QryHandlerNoCache
+    from libre_pythonista_lib.query.qry_handler import QryHandler
 
 
 class CmdCtlShapeName(LogMixin, CmdCellCtlT):
@@ -39,8 +40,8 @@ class CmdCtlShapeName(LogMixin, CmdCellCtlT):
         self._config = BasicConfig()
         self._kind = CalcCmdKind.SIMPLE
         self._cmd_handler = CmdHandler()
-        self._qry_handler = QryHandlerNoCache()
-        self._keys = self._get_keys()
+        self._qry_handler = QryHandler()
+        self._keys = cast("KeyMaker", NULL_OBJ)
         self._success_cmds: List[CmdT] = []
         if not self._ctl.cell:
             self._ctl.cell = cell
@@ -51,6 +52,9 @@ class CmdCtlShapeName(LogMixin, CmdCellCtlT):
         return self._qry_handler.handle(qry)
 
     def execute(self) -> None:
+        if self._keys is NULL_OBJ:
+            self._keys = self._get_keys()
+
         self._success = False
         self._state_changed = False
         self._success_cmds.clear()
