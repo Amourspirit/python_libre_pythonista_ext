@@ -15,15 +15,15 @@ else:
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
 
 
-class QryCellPropValue(LogMixin, QryCellT[Any]):
-    """Gets the value of a custom property of a cell"""
+class QryCellExtraValue(LogMixin, QryCellT[Any]):
+    """Gets the value of an extra data of a cell"""
 
     def __init__(self, cell: CalcCell, name: str, default: Any = NULL_OBJ) -> None:  # noqa: ANN401
         """Constructor
 
         Args:
             cell (CalcCell): Cell to query.
-            name (str): Name of the custom property.
+            name (str): Name of the extra data.
             default (Any, optional): Default value to return if the custom property is not found. Defaults to ``NULL_OBJ``.
         """
         LogMixin.__init__(self)
@@ -45,7 +45,7 @@ class QryCellPropValue(LogMixin, QryCellT[Any]):
         """
 
         try:
-            return self._cell.get_custom_property(self._name, default=self._default)
+            return self._cell.extra_data.get(self._name, default=self._default)
         except AttributeError as e:
             self.log.debug("Error executing query, Missing Attribute. Default will be returned. Error: %s", e)
         except Exception:

@@ -5,17 +5,21 @@ from ooodev.utils.gen_util import NULL_OBJ
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcDoc, CalcCell
-    from oxt.pythonpath.libre_pythonista_lib.query.calc.sheet.cell.prop.qry_cell_prop_value import QryCellPropValue
     from oxt.pythonpath.libre_pythonista_lib.query.qry_handler import QryHandler
+    from oxt.pythonpath.libre_pythonista_lib.cmd.cmd_handler import CmdHandler
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.cmd.calc.sheet.cell.cmd_cell_t import CmdCellT
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
+    from oxt.pythonpath.libre_pythonista_lib.query.calc.sheet.cell.extra.qry_cell_extra_value import QryCellExtraValue
+    from oxt.pythonpath.libre_pythonista_lib.cmd.calc.sheet.cell.extra.cmd_cell_extra_del import CmdCellExtraDel
 else:
-    from libre_pythonista_lib.query.calc.sheet.cell.prop.qry_cell_prop_value import QryCellPropValue
     from libre_pythonista_lib.query.qry_handler import QryHandler
+    from libre_pythonista_lib.cmd.cmd_handler import CmdHandler
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.cmd.calc.sheet.cell.cmd_cell_t import CmdCellT
     from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
+    from libre_pythonista_lib.query.calc.sheet.cell.extra.qry_cell_extra_value import QryCellExtraValue
+    from libre_pythonista_lib.cmd.calc.sheet.cell.extra.cmd_cell_extra_del import CmdCellExtraDel
 
 # this class should be call in:
 # libre_pythonista_lib.cmd.calc.sheet.cmd_handler_sheet_cache.CmdHandlerSheetCache
@@ -24,30 +28,34 @@ else:
 # pythonpath.libre_pythonista_lib.cmd.calc.sheet.cell.cmd_handler_cell_cache.CmdHandlerCellCache
 
 
-class CmdCellPropDel(LogMixin, CmdCellT):
-    """Deletes a custom property of a cell"""
+class CmdCellExtraSet(LogMixin, CmdCellT):
+    """Sets the value of an extra data of a cell"""
 
-    def __init__(self, cell: CalcCell, name: str) -> None:  # noqa: ANN401
+    def __init__(self, cell: CalcCell, name: str, value: Any) -> None:  # noqa: ANN401
         LogMixin.__init__(self)
         self._success = False
         self._cell = cell
         self._name = name
+        self._value = value
         self._kind = CalcCmdKind.CELL
-        self._current_value = NULL_OBJ
+        self._cmd_handler = CmdHandler()
+        self._null = object()
+        self._current_value = self._null
 
     def _get_current_value(self) -> Any:  # noqa: ANN401
-        qry = QryCellPropValue(cell=self._cell, name=self._name)
+        # can return NULL_OBJ
+        qry = QryCellExtraValue(cell=self._cell, name=self._name)
         handler = QryHandler()
 
         return handler.handle(qry)  # returns NULL_OBJ if not found
 
     def execute(self) -> None:
-        if self._current_value is NULL_OBJ:
+        if self._current_value is self._null:
             self._current_value = self._get_current_value()
 
         self._success = False
         try:
-            self._cell.remove_custom_property(self._name)
+            self._cell.extra_data[self._name] = self._value
         except Exception:
             self.log.exception("Error setting cell Code")
             self._undo()
@@ -57,16 +65,16 @@ class CmdCellPropDel(LogMixin, CmdCellT):
 
     def _undo(self) -> None:
         if self._current_value is NULL_OBJ:
-            try:
-                if self._cell.has_custom_property(self._name):
-                    self._cell.remove_custom_property(self._name)
-            except Exception:
-                self.log.exception("Error undoing cell Code")
+            cmd = CmdCellExtraDel(cell=self._cell, name=self._name)
+            self._cmd_handler.handle(cmd)
+            if cmd.success:
+                self.log.debug("Successfully executed undo command.")
+            else:
+                self.log.error("Failed to execute undo command.")
         else:
             try:
-                self._cell.set_custom_property(self._name, self._current_value)
+                self._cell.extra_data[self._name] = self._current_value
                 self.log.debug("Successfully executed undo command.")
-                return
             except Exception:
                 self.log.exception("Error undoing cell Code")
 

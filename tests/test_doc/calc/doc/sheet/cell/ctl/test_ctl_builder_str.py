@@ -12,11 +12,13 @@ def test_ctl_builder_str(loader, build_setup) -> None:
 
     if TYPE_CHECKING:
         from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl_builder_str import CtlBuilderStr
+        from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl_reader_str import CtlReaderStr
         from oxt.pythonpath.libre_pythonista_lib.cell.props.key_maker import KeyMaker
         from oxt.pythonpath.libre_pythonista_lib.cell.props.rule_name_kind import RuleNameKind
         from oxt.___lo_pip___.basic_config import BasicConfig
     else:
         from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl_builder_str import CtlBuilderStr
+        from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl_reader_str import CtlReaderStr
         from libre_pythonista_lib.cell.props.key_maker import KeyMaker
         from libre_pythonista_lib.cell.props.rule_name_kind import RuleNameKind
         from libre_pythonista.basic_config import BasicConfig
@@ -36,11 +38,8 @@ def test_ctl_builder_str(loader, build_setup) -> None:
         # Verify execution
         assert builder.success
 
-        assert result.ctl_code_name == config.cell_cp_codename
-        control_name = f"{config.general_code_name}_ctl_cell_{result.ctl_code_name}"
-        assert result.ctl_name == control_name
-        control_shape_name = f"SHAPE_{result.ctl_name}"
-        assert result.ctl_shape_name == control_shape_name
+        assert result.ctl_code_name.startswith("id_")
+        assert result.ctl_shape_name == f"SHAPE_{config.general_code_name}_ctl_cell_{result.ctl_code_name}"
 
         km = KeyMaker()
         assert cell.has_custom_property(km.ctl_orig_ctl_key)
@@ -48,6 +47,14 @@ def test_ctl_builder_str(loader, build_setup) -> None:
 
         assert cell.has_custom_property(km.ctl_shape_key)
         assert cell.get_custom_property(km.ctl_shape_key) == result.ctl_shape_name
+
+        reader = CtlReaderStr(cell=cell)
+        ctl = reader.read()
+        assert ctl.ctl_rule_kind == RuleNameKind.CELL_DATA_TYPE_STR
+        assert ctl.ctl_orig_rule_kind == RuleNameKind.CELL_DATA_TYPE_STR
+        assert ctl.ctl_shape_name == result.ctl_shape_name
+        assert ctl.ctl_code_name == result.ctl_code_name
+        assert ctl.cell == cell
 
     finally:
         if doc is not None:

@@ -24,8 +24,8 @@ else:
 # pythonpath.libre_pythonista_lib.cmd.calc.sheet.cell.cmd_handler_cell_cache.CmdHandlerCellCache
 
 
-class CmdCellPropDel(LogMixin, CmdCellT):
-    """Deletes a custom property of a cell"""
+class CmdCellExtraDel(LogMixin, CmdCellT):
+    """Deletes an extra data of a cell"""
 
     def __init__(self, cell: CalcCell, name: str) -> None:  # noqa: ANN401
         LogMixin.__init__(self)
@@ -47,7 +47,8 @@ class CmdCellPropDel(LogMixin, CmdCellT):
 
         self._success = False
         try:
-            self._cell.remove_custom_property(self._name)
+            if self._cell.extra_data.has(self._name):
+                del self._cell.extra_data[self._name]
         except Exception:
             self.log.exception("Error setting cell Code")
             self._undo()
