@@ -14,4 +14,4 @@ else:
 
 
 class CmdCellCtlT(CmdCellT, Protocol):
-    def __init__(self, cell: CalcCell, ctl: Ctl) -> None: ...
+    def __init__(self, cell: CalcCell, ctl: Ctl, **kwargs: Any) -> None: ...  # noqa: ANN401

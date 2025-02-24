@@ -35,6 +35,7 @@ def test_ctl_builder(loader, build_setup) -> None:
         assert result.ctl_code_name == config.cell_cp_codename
         control_name = f"{config.general_code_name}_ctl_cell_{result.ctl_code_name}"
         assert result.ctl_name == control_name
+
     finally:
         if doc is not None:
             doc.close(True)

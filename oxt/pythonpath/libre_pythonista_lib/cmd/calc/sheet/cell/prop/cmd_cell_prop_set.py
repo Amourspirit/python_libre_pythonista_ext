@@ -36,7 +36,7 @@ class CmdCellPropSet(LogMixin, CmdCellT):
         self._name = name
         self._value = value
         self._kind = CalcCmdKind.CELL
-        self._current_value = self._get_current_value()
+        self._current_value = NULL_OBJ
 
     def _get_current_value(self) -> Any:  # noqa: ANN401
         qry = QryCellPropValue(cell=self._cell, name=self._name)
@@ -45,6 +45,9 @@ class CmdCellPropSet(LogMixin, CmdCellT):
         return handler.handle(qry)  # returns NULL_OBJ if not found
 
     def execute(self) -> None:
+        if self._current_value is NULL_OBJ:
+            self._current_value = self._get_current_value()
+
         self._success = False
         try:
             self._cell.set_custom_property(self._name, self._value)

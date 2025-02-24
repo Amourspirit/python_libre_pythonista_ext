@@ -1,12 +1,14 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import cast, TYPE_CHECKING
+
+from ooodev.utils.gen_util import NULL_OBJ
 
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcCell
     from oxt.pythonpath.libre_pythonista_lib.cell.props.key_maker import KeyMaker
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
-    from oxt.pythonpath.libre_pythonista_lib.query.qry_handler_no_cache import QryHandlerNoCache
+    from oxt.pythonpath.libre_pythonista_lib.query.qry_handler import QryHandler
     from oxt.pythonpath.libre_pythonista_lib.cmd.calc.sheet.cell.cmd_cell_t import CmdCellT
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
     from oxt.pythonpath.libre_pythonista_lib.cmd.calc.sheet.cell.prop.cmd_cell_prop_set import CmdCellPropSet
@@ -15,7 +17,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.query.calc.sheet.cell.prop.qry_array_ability import QryArrayAbility
 else:
     from libre_pythonista_lib.log.log_mixin import LogMixin
-    from libre_pythonista_lib.query.qry_handler_no_cache import QryHandlerNoCache
+    from libre_pythonista_lib.query.qry_handler import QryHandler
     from libre_pythonista_lib.cmd.calc.sheet.cell.cmd_cell_t import CmdCellT
     from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
     from libre_pythonista_lib.cmd.calc.sheet.cell.prop.cmd_cell_prop_set import CmdCellPropSet
@@ -34,9 +36,9 @@ class CmdArrayAbility(LogMixin, CmdCellT):
         self._state = ability
         self._kind = CalcCmdKind.SIMPLE
         self._cmd_handler = CmdHandler()
-        self._qry_handler = QryHandlerNoCache()
-        self._keys = self._get_keys()
-        self._current_state = self._get_current_state()
+        self._qry_handler = QryHandler()
+        self._keys = cast("KeyMaker", NULL_OBJ)
+        self._current_state = NULL_OBJ
         self._state_changed = False
 
     def _get_state(self) -> bool:
@@ -52,6 +54,11 @@ class CmdArrayAbility(LogMixin, CmdCellT):
         return self._qry_handler.handle(qry)
 
     def execute(self) -> None:
+        if self._current_state is NULL_OBJ:
+            self._current_state = self._get_current_state()
+        if self._keys is NULL_OBJ:
+            self._keys = self._get_keys()
+
         self._success = False
         self._state_changed = False
         try:

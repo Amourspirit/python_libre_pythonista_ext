@@ -12,9 +12,13 @@ def test_ctl_builder_str(loader, build_setup) -> None:
 
     if TYPE_CHECKING:
         from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl_builder_str import CtlBuilderStr
+        from oxt.pythonpath.libre_pythonista_lib.cell.props.key_maker import KeyMaker
+        from oxt.pythonpath.libre_pythonista_lib.cell.props.rule_name_kind import RuleNameKind
         from oxt.___lo_pip___.basic_config import BasicConfig
     else:
         from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl_builder_str import CtlBuilderStr
+        from libre_pythonista_lib.cell.props.key_maker import KeyMaker
+        from libre_pythonista_lib.cell.props.rule_name_kind import RuleNameKind
         from libre_pythonista.basic_config import BasicConfig
 
     doc = None
@@ -37,6 +41,14 @@ def test_ctl_builder_str(loader, build_setup) -> None:
         assert result.ctl_name == control_name
         control_shape_name = f"SHAPE_{result.ctl_name}"
         assert result.ctl_shape_name == control_shape_name
+
+        km = KeyMaker()
+        assert cell.has_custom_property(km.ctl_orig_ctl_key)
+        assert cell.get_custom_property(km.ctl_orig_ctl_key) == str(RuleNameKind.CELL_DATA_TYPE_STR)
+
+        assert cell.has_custom_property(km.ctl_shape_key)
+        assert cell.get_custom_property(km.ctl_shape_key) == result.ctl_shape_name
+
     finally:
         if doc is not None:
             doc.close(True)

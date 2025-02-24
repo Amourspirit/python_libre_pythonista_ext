@@ -23,7 +23,7 @@ else:
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl import Ctl
 
 
-class CtlBuilder(List[Type[CmdCellCtlT]], LogMixin):
+class CtlBuilder(List[CmdCellCtlT], LogMixin):
     def __init__(self, cell: CalcCell) -> None:
         list.__init__(self)
         LogMixin.__init__(self)
@@ -35,8 +35,8 @@ class CtlBuilder(List[Type[CmdCellCtlT]], LogMixin):
 
     def append_commands(self) -> None:
         self.clear()
-        self.append(CmdCodeName)
-        self.append(CmdCtlName)
+        self.append(CmdCodeName(self.cell, self.ctl))
+        self.append(CmdCtlName(self.cell, self.ctl))
 
     def _execute(self) -> None:
         """
@@ -53,11 +53,10 @@ class CtlBuilder(List[Type[CmdCellCtlT]], LogMixin):
         self._success = False
         try:
             for cmd in self:
-                inst = cmd(self.cell, self.ctl)
-                self._handler.handle(inst)
-                self._success = inst.success
+                self._handler.handle(cmd)
+                self._success = cmd.success
                 if self._success:  # Only add if command was successful
-                    self._success_cmds.append(inst)
+                    self._success_cmds.append(cmd)
                 else:
                     self.log.debug("A command failed. Undoing previously executed commands.")
                     break
