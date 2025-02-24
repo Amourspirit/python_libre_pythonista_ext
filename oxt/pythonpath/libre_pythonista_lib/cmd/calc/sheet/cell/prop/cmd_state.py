@@ -1,6 +1,7 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import cast, TYPE_CHECKING
 
+from ooodev.utils.gen_util import NULL_OBJ
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcCell
@@ -38,8 +39,8 @@ class CmdState(LogMixin, CmdCellT):
         self._kind = CalcCmdKind.SIMPLE
         self._cmd_handler = CmdHandler()
         self._qry_handler = QryHandlerNoCache()
-        self._keys = self._get_keys()
-        self._current_state = self._get_current_state()
+        self._keys = cast("KeyMaker", NULL_OBJ)
+        self._current_state = cast(StateKind, NULL_OBJ)
         self._state_changed = False
 
     def _get_state(self) -> StateKind:
@@ -55,6 +56,11 @@ class CmdState(LogMixin, CmdCellT):
         return self._qry_handler.handle(qry)
 
     def execute(self) -> None:
+        if self._current_state is NULL_OBJ:
+            self._current_state = self._get_current_state()
+        if self._keys is NULL_OBJ:
+            self._keys = self._get_keys()
+
         self._success = False
         self._state_changed = False
         try:
