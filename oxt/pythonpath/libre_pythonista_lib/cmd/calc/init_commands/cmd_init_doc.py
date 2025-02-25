@@ -3,7 +3,7 @@ from typing import List, Type, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcDoc
-    from oxt.pythonpath.libre_pythonista_lib.cmd.cmd_handler import CmdHandler
+    from oxt.pythonpath.libre_pythonista_lib.cmd.cmd_base import CmdBase
     from oxt.pythonpath.libre_pythonista_lib.doc.doc_globals import DocGlobals
     from oxt.pythonpath.libre_pythonista_lib.cmd.calc.doc.listener.cmd_doc_event import CmdDocEvent
     from oxt.pythonpath.libre_pythonista_lib.cmd.calc.doc.listener.cmd_code_sheet_activation_listener import (
@@ -13,13 +13,12 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cmd.calc.doc.listener.cmd_sheet_activation import CmdSheetActivation
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.cmd.calc.doc.cmd_doc_t import CmdDocT
-    from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
     from oxt.pythonpath.libre_pythonista_lib.cmd.calc.doc.listener.cmd_form_design_mode_off import CmdFormDesignModeOff
     from oxt.pythonpath.libre_pythonista_lib.cmd.calc.doc.cmd_register_dispatch_interceptor import (
         CmdRegisterDispatchInterceptor,
     )
 else:
-    from libre_pythonista_lib.cmd.cmd_handler import CmdHandler
+    from libre_pythonista_lib.cmd.cmd_base import CmdBase
     from libre_pythonista_lib.doc.doc_globals import DocGlobals
     from libre_pythonista_lib.cmd.calc.doc.listener.cmd_doc_event import CmdDocEvent
     from libre_pythonista_lib.cmd.calc.doc.listener.cmd_code_sheet_activation_listener import CmdCodeSheetActivation
@@ -27,7 +26,6 @@ else:
     from libre_pythonista_lib.cmd.calc.doc.listener.cmd_sheet_activation import CmdSheetActivation
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.cmd.calc.doc.cmd_doc_t import CmdDocT
-    from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
     from libre_pythonista_lib.cmd.calc.doc.listener.cmd_form_design_mode_off import CmdFormDesignModeOff
     from libre_pythonista_lib.cmd.calc.doc.cmd_register_dispatch_interceptor import CmdRegisterDispatchInterceptor
 
@@ -36,12 +34,13 @@ _KEY = "libre_pythonista_lib.init.init_doc.InitDoc"
 
 
 # Composite Command
-class CmdInitDoc(List[Type[CmdDocT]], LogMixin, CmdDocT):
+class CmdInitDoc(CmdBase, List[Type[CmdDocT]], LogMixin, CmdDocT):
     """
     Composite command to initialize the document.
     """
 
     def __init__(self, doc: CalcDoc) -> None:
+        CmdBase.__init__(self)
         list.__init__(self)
         LogMixin.__init__(self)
         self.append(CmdDocEvent)
@@ -51,10 +50,7 @@ class CmdInitDoc(List[Type[CmdDocT]], LogMixin, CmdDocT):
         self.append(CmdFormDesignModeOff)
         self.append(CmdRegisterDispatchInterceptor)
         self._success_cmds: List[CmdDocT] = []
-        self._success = False
         self._doc = doc
-        self._handler = CmdHandler()
-        self._kind = CalcCmdKind.SIMPLE
 
     def execute(self) -> None:
         """
@@ -73,21 +69,21 @@ class CmdInitDoc(List[Type[CmdDocT]], LogMixin, CmdDocT):
         doc_globals = DocGlobals.get_current()
         key_val = doc_globals.mem_cache[_KEY]
         if key_val == "1":
-            self._success = True
+            self.success = True
             return
-        self._success = False
+        self.success = False
         try:
             for cmd in self:
                 inst = cmd(self._doc)
-                self._handler.handle(inst)
-                self._success = inst.success
-                if self._success:  # Only add if command was successful
+                self._execute_cmd(inst)
+                self.success = inst.success
+                if self.success:  # Only add if command was successful
                     self._success_cmds.append(inst)
                 else:
                     self.log.debug("A command failed. Undoing previously executed commands.")
                     break
 
-            if not self._success:
+            if not self.success:
                 self.log.debug("Composite command failed.")
                 self._undo()
                 return
@@ -95,7 +91,7 @@ class CmdInitDoc(List[Type[CmdDocT]], LogMixin, CmdDocT):
         except Exception as e:
             self.log.exception("An unexpected error occurred: %s", e)
             self._undo()
-            self._success = False
+            self.success = False
 
         if self.success:
             self.log.debug("Successfully executed command.")
@@ -104,7 +100,7 @@ class CmdInitDoc(List[Type[CmdDocT]], LogMixin, CmdDocT):
         for cmd in reversed(self._success_cmds):
             cmd.undo()
         self._success_cmds = []  # Clear executed commands
-        self._success = False  # Reset success flag.
+        self.success = False  # Reset success flag.
         doc_globals = DocGlobals.get_current()
         doc_globals.mem_cache[_KEY] = "0"
 
@@ -120,21 +116,7 @@ class CmdInitDoc(List[Type[CmdDocT]], LogMixin, CmdDocT):
         Returns:
             None: This method does not return anything.
         """
-        if self._success:
+        if self.success:
             self._undo()
         else:
             self.log.debug("Undo not needed.")
-
-    @property
-    def success(self) -> bool:
-        """Gets if the command was successful."""
-        return self._success
-
-    @property
-    def kind(self) -> CalcCmdKind:
-        """Gets/Sets the kind of the command. Defaults to ``CalcCmdKind.SIMPLE``."""
-        return self._kind
-
-    @kind.setter
-    def kind(self, value: CalcCmdKind) -> None:
-        self._kind = value

@@ -102,7 +102,7 @@ def test_cmd_kind(build_setup, mocker: MockerFixture) -> None:
     cell = mocker.MagicMock()
 
     cmd = CmdState(cell=cell, state=StateKind.UNKNOWN)
-    assert cmd.kind == CalcCmdKind.SIMPLE
+    assert cmd.kind == CalcCmdKind.CELL
 
     cmd.kind = CalcCmdKind.SHEET
     assert cmd.kind == CalcCmdKind.SHEET
@@ -119,7 +119,7 @@ def test_cmd_del_kind(build_setup, mocker: MockerFixture) -> None:
     cell = mocker.MagicMock()
 
     cmd = CmdStateDel(cell=cell)
-    assert cmd.kind == CalcCmdKind.SIMPLE
+    assert cmd.kind == CalcCmdKind.CELL
 
     cmd.kind = CalcCmdKind.SHEET
     assert cmd.kind == CalcCmdKind.SHEET
@@ -136,7 +136,7 @@ def test_qry_kind(build_setup, mocker: MockerFixture) -> None:
     cell = mocker.MagicMock()
 
     qry = QryState(cell=cell)
-    assert qry.kind == CalcQryKind.SIMPLE
+    assert qry.kind == CalcQryKind.CELL
 
     qry.kind = CalcQryKind.SHEET
     assert qry.kind == CalcQryKind.SHEET

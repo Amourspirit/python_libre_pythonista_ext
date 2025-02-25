@@ -1,33 +1,31 @@
 from __future__ import annotations
 from typing import cast, TYPE_CHECKING
 
-from ooodev.loader import Lo
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcDoc
+    from oxt.pythonpath.libre_pythonista_lib.cmd.cmd_base import CmdBase
     from oxt.pythonpath.libre_pythonista_lib.sheet.listen.code_sheet_modify_listener import CodeSheetModifyListener
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.cmd.calc.doc.cmd_doc_t import CmdDocT
-    from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
 else:
+    from libre_pythonista_lib.cmd.cmd_base import CmdBase
     from libre_pythonista_lib.sheet.listen.code_sheet_modify_listener import CodeSheetModifyListener
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.cmd.calc.doc.cmd_doc_t import CmdDocT
-    from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
 
 
-class CmdSheetsModified(LogMixin, CmdDocT):
+class CmdSheetsModified(CmdBase, LogMixin, CmdDocT):
     """Adds Sheet Modified listeners to all sheets that don't have one"""
 
     def __init__(self, doc: CalcDoc) -> None:
+        CmdBase.__init__(self)
         LogMixin.__init__(self)
         self._doc = doc
-        self._success = False
-        self._kind = CalcCmdKind.SIMPLE
         self._unique_ids = set()
 
     def execute(self) -> None:
-        self._success = False
+        self.success = False
         try:
             self._unique_ids.clear()
             for sheet in self._doc.sheets:
@@ -46,10 +44,10 @@ class CmdSheetsModified(LogMixin, CmdDocT):
         except Exception:
             self.log.exception("Error initializing sheet listeners")
             return
-        self._success = True
+        self.success = True
 
     def undo(self) -> None:
-        if self._success:
+        if self.success:
             try:
                 for sheet in self._doc.sheets:
                     unique_id = sheet.unique_id
@@ -64,16 +62,3 @@ class CmdSheetsModified(LogMixin, CmdDocT):
                 self.log.exception("Error removing sheet activation listener")
         else:
             self.log.debug("Undo not needed.")
-
-    @property
-    def success(self) -> bool:
-        return self._success
-
-    @property
-    def kind(self) -> CalcCmdKind:
-        """Gets/Sets the kind of the command. Defaults to ``CalcCmdKind.SIMPLE``."""
-        return self._kind
-
-    @kind.setter
-    def kind(self, value: CalcCmdKind) -> None:
-        self._kind = value

@@ -4,17 +4,15 @@ from typing import Any, TYPE_CHECKING
 from ooodev.utils.gen_util import NULL_OBJ
 
 if TYPE_CHECKING:
-    from ooodev.calc import CalcDoc, CalcCell
-    from oxt.pythonpath.libre_pythonista_lib.query.qry_handler import QryHandler
-    from oxt.pythonpath.libre_pythonista_lib.cmd.cmd_handler import CmdHandler
+    from ooodev.calc import CalcCell
+    from oxt.pythonpath.libre_pythonista_lib.cmd.cmd_base import CmdBase
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.cmd.calc.sheet.cell.cmd_cell_t import CmdCellT
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
     from oxt.pythonpath.libre_pythonista_lib.query.calc.sheet.cell.extra.qry_cell_extra_value import QryCellExtraValue
     from oxt.pythonpath.libre_pythonista_lib.cmd.calc.sheet.cell.extra.cmd_cell_extra_del import CmdCellExtraDel
 else:
-    from libre_pythonista_lib.query.qry_handler import QryHandler
-    from libre_pythonista_lib.cmd.cmd_handler import CmdHandler
+    from libre_pythonista_lib.cmd.cmd_base import CmdBase
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.cmd.calc.sheet.cell.cmd_cell_t import CmdCellT
     from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
@@ -28,32 +26,29 @@ else:
 # pythonpath.libre_pythonista_lib.cmd.calc.sheet.cell.cmd_handler_cell_cache.CmdHandlerCellCache
 
 
-class CmdCellExtraSet(LogMixin, CmdCellT):
+class CmdCellExtraSet(CmdBase, LogMixin, CmdCellT):
     """Sets the value of an extra data of a cell"""
 
     def __init__(self, cell: CalcCell, name: str, value: Any) -> None:  # noqa: ANN401
+        CmdBase.__init__(self)
         LogMixin.__init__(self)
-        self._success = False
+        self.kind = CalcCmdKind.CELL
         self._cell = cell
         self._name = name
         self._value = value
-        self._kind = CalcCmdKind.CELL
-        self._cmd_handler = CmdHandler()
         self._null = object()
         self._current_value = self._null
 
     def _get_current_value(self) -> Any:  # noqa: ANN401
         # can return NULL_OBJ
         qry = QryCellExtraValue(cell=self._cell, name=self._name)
-        handler = QryHandler()
-
-        return handler.handle(qry)  # returns NULL_OBJ if not found
+        return self._execute_qry(qry)  # returns NULL_OBJ if not found
 
     def execute(self) -> None:
         if self._current_value is self._null:
             self._current_value = self._get_current_value()
 
-        self._success = False
+        self.success = False
         try:
             self._cell.extra_data[self._name] = self._value
         except Exception:
@@ -61,12 +56,12 @@ class CmdCellExtraSet(LogMixin, CmdCellT):
             self._undo()
             return
         self.log.debug("Successfully executed command.")
-        self._success = True
+        self.success = True
 
     def _undo(self) -> None:
         if self._current_value is NULL_OBJ:
             cmd = CmdCellExtraDel(cell=self._cell, name=self._name)
-            self._cmd_handler.handle(cmd)
+            self._execute_cmd(cmd)
             if cmd.success:
                 self.log.debug("Successfully executed undo command.")
             else:
@@ -79,24 +74,11 @@ class CmdCellExtraSet(LogMixin, CmdCellT):
                 self.log.exception("Error undoing cell Code")
 
     def undo(self) -> None:
-        if self._success:
+        if self.success:
             self._undo()
         else:
             self.log.debug("Undo not needed.")
 
     @property
-    def success(self) -> bool:
-        return self._success
-
-    @property
     def cell(self) -> CalcCell:
         return self._cell
-
-    @property
-    def kind(self) -> CalcCmdKind:
-        """Gets/Sets the kind of the command. Defaults to ``CalcCmdKind.CELL``."""
-        return self._kind
-
-    @kind.setter
-    def kind(self, value: CalcCmdKind) -> None:
-        self._kind = value

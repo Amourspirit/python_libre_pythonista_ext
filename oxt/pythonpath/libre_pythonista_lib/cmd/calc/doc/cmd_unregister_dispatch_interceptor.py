@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcDoc
+    from oxt.pythonpath.libre_pythonista_lib.cmd.cmd_base import CmdBase
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.cmd.calc.doc.cmd_doc_t import CmdDocT
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
@@ -16,6 +17,7 @@ if TYPE_CHECKING:
     )
 
 else:
+    from libre_pythonista_lib.cmd.cmd_base import CmdBase
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.cmd.calc.doc.cmd_doc_t import CmdDocT
     from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
@@ -23,25 +25,24 @@ else:
     from libre_pythonista_lib.dispatch.calc_sheet_cell_dispatch_provider import CalcSheetCellDispatchProvider
 
 
-class CmdUnRegisterDispatchInterceptor(LogMixin, CmdDocT):
+class CmdUnRegisterDispatchInterceptor(CmdBase, LogMixin, CmdDocT):
     """Unregister Dispatch Provider Interceptor from doc"""
 
     def __init__(self, doc: CalcDoc) -> None:
+        CmdBase.__init__(self)
         LogMixin.__init__(self)
-        self._success = False
         self._doc = doc
-        self._kind = CalcCmdKind.SIMPLE
         self._has_instance = CalcSheetCellDispatchProvider.has_instance(doc)
 
     def execute(self) -> None:
-        self._success = False
+        self.success = False
         try:
             if self._has_instance:
                 unregister_interceptor(self._doc)
                 self._has_instance = CalcSheetCellDispatchProvider.has_instance(self._doc)
             else:
                 self.log.debug("Dispatch Provider Interceptor was not registered.")
-                self._success = True
+                self.success = True
                 return
 
         except Exception:
@@ -49,7 +50,7 @@ class CmdUnRegisterDispatchInterceptor(LogMixin, CmdDocT):
             self._undo()
             return
         self.log.debug("Successfully executed command.")
-        self._success = True
+        self.success = True
 
     def _undo(self) -> None:
         try:
@@ -63,20 +64,7 @@ class CmdUnRegisterDispatchInterceptor(LogMixin, CmdDocT):
             self.log.exception("Error undoing Dispatch Provider Interceptor")
 
     def undo(self) -> None:
-        if self._success:
+        if self.success:
             self._undo()
         else:
             self.log.debug("Undo not needed.")
-
-    @property
-    def success(self) -> bool:
-        return self._success
-
-    @property
-    def kind(self) -> CalcCmdKind:
-        """Gets/Sets the kind of the command. Defaults to ``CalcCmdKind.SIMPLE``."""
-        return self._kind
-
-    @kind.setter
-    def kind(self, value: CalcCmdKind) -> None:
-        self._kind = value

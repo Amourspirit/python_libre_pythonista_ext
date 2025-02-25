@@ -139,7 +139,7 @@ def test_cmd_kind(build_setup, mocker: MockerFixture) -> None:
     mocker.patch.object(CmdShape, "_get_current_state", return_value="")
 
     cmd = CmdShape(cell=cell, name="SHAPE_libre_pythonista_ctl_cell_id_l6fiSBIiNVcncf")
-    assert cmd.kind == CalcCmdKind.SIMPLE
+    assert cmd.kind == CalcCmdKind.CELL
 
     cmd.kind = CalcCmdKind.SHEET
     assert cmd.kind == CalcCmdKind.SHEET
@@ -156,7 +156,7 @@ def test_cmd_del_kind(build_setup, mocker: MockerFixture) -> None:
     cell = mocker.MagicMock()
 
     cmd = CmdShapeDel(cell=cell)
-    assert cmd.kind == CalcCmdKind.SIMPLE
+    assert cmd.kind == CalcCmdKind.CELL
 
     cmd.kind = CalcCmdKind.SHEET
     assert cmd.kind == CalcCmdKind.SHEET
@@ -173,7 +173,7 @@ def test_qry_kind(build_setup, mocker: MockerFixture) -> None:
     cell = mocker.MagicMock()
 
     qry = QryShape(cell=cell)
-    assert qry.kind == CalcQryKind.SIMPLE
+    assert qry.kind == CalcQryKind.CELL
 
     qry.kind = CalcQryKind.SHEET
     assert qry.kind == CalcQryKind.SHEET

@@ -4,23 +4,26 @@ from typing import TYPE_CHECKING
 from ooodev.calc import CalcCell
 
 if TYPE_CHECKING:
+    from oxt.pythonpath.libre_pythonista_lib.query.qry_base import QryBase
     from oxt.pythonpath.libre_pythonista_lib.query.calc.sheet.cell.qry_cell_t import QryCellT
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
 else:
+    from libre_pythonista_lib.query.qry_base import QryBase
     from libre_pythonista_lib.pyc.code.py_source import PySource
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.query.calc.sheet.cell.qry_cell_t import QryCellT
     from libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
 
 
-class QryCellHasProp(LogMixin, QryCellT[bool]):
+class QryCellHasProp(QryBase, LogMixin, QryCellT[bool]):
     """Checks if the cell has a custom property"""
 
     def __init__(self, cell: CalcCell, name: str) -> None:
+        QryBase.__init__(self)
         LogMixin.__init__(self)
+        self.kind = CalcQryKind.CELL
         self._cell = cell
-        self._kind = CalcQryKind.CELL
         self._name = name
 
     def execute(self) -> bool:
@@ -40,15 +43,3 @@ class QryCellHasProp(LogMixin, QryCellT[bool]):
     @property
     def cell(self) -> CalcCell:
         return self._cell
-
-    @property
-    def kind(self) -> CalcQryKind:
-        """
-        Gets/Sets the kind of the cell query. Defaults to ``CalcQryKind.CELL``.
-        """
-
-        return self._kind
-
-    @kind.setter
-    def kind(self, value: CalcQryKind) -> None:
-        self._kind = value

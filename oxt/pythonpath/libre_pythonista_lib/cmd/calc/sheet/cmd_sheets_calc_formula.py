@@ -1,53 +1,46 @@
 from __future__ import annotations
 from typing import Any, cast, List, TYPE_CHECKING
-import time
 
 from ooodev.loader import Lo
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcDoc
+    from oxt.pythonpath.libre_pythonista_lib.cmd.cmd_base import CmdBase
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.cmd.cmd_t import CmdT
     from oxt.pythonpath.libre_pythonista_lib.cmd.calc.sheet.cmd_sheet_cache_t import CmdSheetCacheT
     from oxt.pythonpath.libre_pythonista_lib.cmd.calc.sheet.cmd_sheet_calc_formula import CmdSheetCalcFormula
-    from oxt.pythonpath.libre_pythonista_lib.cmd.cmd_handler import CmdHandler
-    from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
 else:
+    from libre_pythonista_lib.cmd.cmd_base import CmdBase
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.cmd.cmd_t import CmdT
     from libre_pythonista_lib.cmd.calc.sheet.cmd_sheet_calc_formula import CmdSheetCalcFormula
-    from libre_pythonista_lib.cmd.cmd_handler import CmdHandler
-    from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
-
-    CmdSheetCacheT = Any
 
 
-class CmdSheetsCalcFormula(LogMixin, CmdT):
+class CmdSheetsCalcFormula(CmdBase, LogMixin, CmdT):
     """Add OnCalculate event to all sheets"""
 
     def __init__(self) -> None:
+        CmdBase.__init__(self)
         LogMixin.__init__(self)
         self._doc = cast("CalcDoc", Lo.current_doc)
-        self._success = False
-        self._kind = CalcCmdKind.SIMPLE
         self._success_cmds: List[CmdSheetCacheT] = []
 
     def execute(self) -> None:
-        self._success = False
+        self.success = False
         self._success_cmds.clear()
         try:
-            handler = CmdHandler()
             for sheet in self._doc.sheets:
                 cmd = CmdSheetCalcFormula(sheet)
-                handler.handle(cmd)
-                self._success = cmd.success
-                if self._success:
+                self._execute_cmd(cmd)
+                self.success = cmd.success
+                if self.success:
                     self._success_cmds.append(cmd)
                 else:
                     self.log.error("Error setting sheet calculate event for sheet %s", sheet.name)
                     break
 
-            if not self._success:
+            if not self.success:
                 self._undo()
 
         except Exception:
@@ -66,20 +59,7 @@ class CmdSheetsCalcFormula(LogMixin, CmdT):
         self._success_cmds.clear()
 
     def undo(self) -> None:
-        if self._success:
+        if self.success:
             self._undo()
         else:
             self.log.debug("Undo not needed.")
-
-    @property
-    def success(self) -> bool:
-        return self._success
-
-    @property
-    def kind(self) -> CalcCmdKind:
-        """Gets/Sets the kind of the command. Defaults to ``CalcCmdKind.SIMPLE``."""
-        return self._kind
-
-    @kind.setter
-    def kind(self, value: CalcCmdKind) -> None:
-        self._kind = value

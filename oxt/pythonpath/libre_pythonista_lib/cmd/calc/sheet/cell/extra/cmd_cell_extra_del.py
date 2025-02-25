@@ -4,15 +4,15 @@ from typing import Any, TYPE_CHECKING
 from ooodev.utils.gen_util import NULL_OBJ
 
 if TYPE_CHECKING:
-    from ooodev.calc import CalcDoc, CalcCell
+    from ooodev.calc import CalcCell
+    from oxt.pythonpath.libre_pythonista_lib.cmd.cmd_base import CmdBase
     from oxt.pythonpath.libre_pythonista_lib.query.calc.sheet.cell.prop.qry_cell_prop_value import QryCellPropValue
-    from oxt.pythonpath.libre_pythonista_lib.query.qry_handler import QryHandler
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.cmd.calc.sheet.cell.cmd_cell_t import CmdCellT
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
 else:
+    from libre_pythonista_lib.cmd.cmd_base import CmdBase
     from libre_pythonista_lib.query.calc.sheet.cell.prop.qry_cell_prop_value import QryCellPropValue
-    from libre_pythonista_lib.query.qry_handler import QryHandler
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.cmd.calc.sheet.cell.cmd_cell_t import CmdCellT
     from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
@@ -24,28 +24,26 @@ else:
 # pythonpath.libre_pythonista_lib.cmd.calc.sheet.cell.cmd_handler_cell_cache.CmdHandlerCellCache
 
 
-class CmdCellExtraDel(LogMixin, CmdCellT):
+class CmdCellExtraDel(CmdBase, LogMixin, CmdCellT):
     """Deletes an extra data of a cell"""
 
     def __init__(self, cell: CalcCell, name: str) -> None:  # noqa: ANN401
+        CmdBase.__init__(self)
         LogMixin.__init__(self)
-        self._success = False
+        self.kind = CalcCmdKind.CELL
         self._cell = cell
         self._name = name
-        self._kind = CalcCmdKind.CELL
         self._current_value = NULL_OBJ
 
     def _get_current_value(self) -> Any:  # noqa: ANN401
         qry = QryCellPropValue(cell=self._cell, name=self._name)
-        handler = QryHandler()
-
-        return handler.handle(qry)  # returns NULL_OBJ if not found
+        return self._execute_qry(qry)  # returns NULL_OBJ if not found
 
     def execute(self) -> None:
         if self._current_value is NULL_OBJ:
             self._current_value = self._get_current_value()
 
-        self._success = False
+        self.success = False
         try:
             if self._cell.extra_data.has(self._name):
                 del self._cell.extra_data[self._name]
@@ -54,7 +52,7 @@ class CmdCellExtraDel(LogMixin, CmdCellT):
             self._undo()
             return
         self.log.debug("Successfully executed command.")
-        self._success = True
+        self.success = True
 
     def _undo(self) -> None:
         if self._current_value is NULL_OBJ:
@@ -72,24 +70,11 @@ class CmdCellExtraDel(LogMixin, CmdCellT):
                 self.log.exception("Error undoing cell Code")
 
     def undo(self) -> None:
-        if self._success:
+        if self.success:
             self._undo()
         else:
             self.log.debug("Undo not needed.")
 
     @property
-    def success(self) -> bool:
-        return self._success
-
-    @property
     def cell(self) -> CalcCell:
         return self._cell
-
-    @property
-    def kind(self) -> CalcCmdKind:
-        """Gets/Sets the kind of the command. Defaults to ``CalcCmdKind.CELL``."""
-        return self._kind
-
-    @kind.setter
-    def kind(self, value: CalcCmdKind) -> None:
-        self._kind = value

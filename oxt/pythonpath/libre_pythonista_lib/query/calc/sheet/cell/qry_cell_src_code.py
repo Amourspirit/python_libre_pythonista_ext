@@ -5,6 +5,7 @@ from typing import Any, TYPE_CHECKING
 from ooodev.calc import CalcCell
 
 if TYPE_CHECKING:
+    from oxt.pythonpath.libre_pythonista_lib.query.qry_base import QryBase
     from oxt.pythonpath.libre_pythonista_lib.pyc.code.py_source import PySrcProvider
     from oxt.pythonpath.libre_pythonista_lib.pyc.code.py_source import PySource
     from oxt.pythonpath.libre_pythonista_lib.query.calc.sheet.cell.qry_cell_cache_t import QryCellCacheT
@@ -12,6 +13,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
 else:
+    from libre_pythonista_lib.query.qry_base import QryBase
     from libre_pythonista_lib.pyc.code.py_source import PySource
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.const.cache_const import CELL_SRC_CODE
@@ -21,7 +23,7 @@ else:
     PySrcProvider = Any
 
 
-class QryCellSrcCode(LogMixin, QryCellCacheT[str | None]):
+class QryCellSrcCode(QryBase, LogMixin, QryCellCacheT[str | None]):
     """Gets the source code for a cell"""
 
     def __init__(self, uri: str, cell: CalcCell, src_provider: PySrcProvider | None = None) -> None:
@@ -32,10 +34,11 @@ class QryCellSrcCode(LogMixin, QryCellCacheT[str | None]):
             cell (CalcCell): Cell to query.
             src_provider (PySrcProvider, optional): Source provider. Defaults to None.
         """
+        QryBase.__init__(self)
         LogMixin.__init__(self)
+        self.kind = CalcQryKind.CELL_CACHE
         self._uri = uri
         self._cell = cell
-        self._kind = CalcQryKind.CELL_CACHE
         self._src_provider = src_provider
 
     def execute(self) -> str | None:
@@ -62,14 +65,3 @@ class QryCellSrcCode(LogMixin, QryCellCacheT[str | None]):
     def cache_key(self) -> str:
         """Gets the cache key."""
         return CELL_SRC_CODE
-
-    @property
-    def kind(self) -> CalcQryKind:
-        """
-        Gets/Sets the kind of the cell query. Defaults to ``CalcQryKind.CELL_CACHE``.
-        """
-        return self._kind
-
-    @kind.setter
-    def kind(self, value: CalcQryKind) -> None:
-        self._kind = value

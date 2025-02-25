@@ -6,16 +6,18 @@ from ooodev.calc import CalcCell
 from ooodev.utils.gen_util import NULL_OBJ
 
 if TYPE_CHECKING:
+    from oxt.pythonpath.libre_pythonista_lib.query.qry_base import QryBase
     from oxt.pythonpath.libre_pythonista_lib.query.calc.sheet.cell.qry_cell_t import QryCellT
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
 else:
+    from libre_pythonista_lib.query.qry_base import QryBase
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.query.calc.sheet.cell.qry_cell_t import QryCellT
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
 
 
-class QryCellExtraValue(LogMixin, QryCellT[Any]):
+class QryCellExtraValue(QryBase, LogMixin, QryCellT[Any]):
     """Gets the value of an extra data of a cell"""
 
     def __init__(self, cell: CalcCell, name: str, default: Any = NULL_OBJ) -> None:  # noqa: ANN401
@@ -26,10 +28,11 @@ class QryCellExtraValue(LogMixin, QryCellT[Any]):
             name (str): Name of the extra data.
             default (Any, optional): Default value to return if the custom property is not found. Defaults to ``NULL_OBJ``.
         """
+        QryBase.__init__(self)
         LogMixin.__init__(self)
+        self.kind = CalcQryKind.CELL
         self._cell = cell
         self._name = name
-        self._kind = CalcQryKind.CELL
         self._default = default
 
     def execute(self) -> Any:  # noqa: ANN401
@@ -55,14 +58,3 @@ class QryCellExtraValue(LogMixin, QryCellT[Any]):
     @property
     def cell(self) -> CalcCell:
         return self._cell
-
-    @property
-    def kind(self) -> CalcQryKind:
-        """
-        Gets/Sets the kind of the cell query. Defaults to ``CalcQryKind.CELL``.
-        """
-        return self._kind
-
-    @kind.setter
-    def kind(self, value: CalcQryKind) -> None:
-        self._kind = value

@@ -1,29 +1,28 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
-import time
+from typing import cast, TYPE_CHECKING
 
 from ooodev.exceptions import ex as mEx  # noqa: N812
+from ooodev.utils.gen_util import NULL_OBJ
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcDoc, CalcSheetView
+    from oxt.pythonpath.libre_pythonista_lib.cmd.cmd_base import CmdBase
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.cmd.calc.doc.cmd_doc_t import CmdDocT
-    from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
 else:
+    from libre_pythonista_lib.cmd.cmd_base import CmdBase
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.cmd.calc.doc.cmd_doc_t import CmdDocT
-    from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
 
 
-class CmdFormDesignModeOn(LogMixin, CmdDocT):
+class CmdFormDesignModeOn(CmdBase, LogMixin, CmdDocT):
     """Sets Form Design Mode to True"""
 
     def __init__(self, doc: CalcDoc) -> None:
+        CmdBase.__init__(self)
         LogMixin.__init__(self)
         self._doc = doc
-        self._kind = CalcCmdKind.SIMPLE
-        self._current_state = self._get_form_design_mode()
-        self._success = False
+        self._current_state = cast(bool | None, NULL_OBJ)
 
     def _get_form_design_mode(self) -> bool | None:
         view = self._get_view()
@@ -51,7 +50,10 @@ class CmdFormDesignModeOn(LogMixin, CmdDocT):
             return None
 
     def execute(self) -> None:
-        self._success = False
+        if self._current_state is NULL_OBJ:
+            self._current_state = self._get_form_design_mode()
+
+        self.success = False
         view = self._get_view()
         if view is None:
             self.log.debug("View is None. May be print preview. Returning.")
@@ -68,10 +70,10 @@ class CmdFormDesignModeOn(LogMixin, CmdDocT):
             self.log.exception("Error initializing sheet activation listener")
             return
         self.log.debug("Successfully executed command.")
-        self._success = True
+        self.success = True
 
     def undo(self) -> None:
-        if self._success:
+        if self.success:
             if self._current_state is None:
                 self.log.debug("Current state is None. Unable to undo.")
                 return
@@ -86,16 +88,3 @@ class CmdFormDesignModeOn(LogMixin, CmdDocT):
                 self.log.exception("Error setting form design mode")
         else:
             self.log.debug("Undo not needed.")
-
-    @property
-    def success(self) -> bool:
-        return self._success
-
-    @property
-    def kind(self) -> CalcCmdKind:
-        """Gets/Sets the kind of the command. Defaults to ``CalcCmdKind.SIMPLE``."""
-        return self._kind
-
-    @kind.setter
-    def kind(self, value: CalcCmdKind) -> None:
-        self._kind = value

@@ -3,21 +3,17 @@ from typing import Any, List, Type, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcSheet
+    from oxt.pythonpath.libre_pythonista_lib.cmd.cmd_base import CmdBase
     from oxt.pythonpath.libre_pythonista_lib.cmd.calc.sheet.cmd_sheet_calc_formula import CmdSheetCalcFormula
-    from oxt.pythonpath.libre_pythonista_lib.cmd.cmd_t import CmdT
     from oxt.pythonpath.libre_pythonista_lib.cmd.calc.sheet.cmd_sheet_t import CmdSheetT
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.cache.calc.sheet.sheet_cache import get_sheet_cache
-    from oxt.pythonpath.libre_pythonista_lib.cmd.cmd_handler import CmdHandler
-    from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
 else:
+    from libre_pythonista_lib.cmd.cmd_base import CmdBase
     from libre_pythonista_lib.cmd.calc.sheet.cmd_sheet_calc_formula import CmdSheetCalcFormula
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.cache.calc.sheet.sheet_cache import get_sheet_cache
-    from libre_pythonista_lib.cmd.cmd_t import CmdT
     from libre_pythonista_lib.cmd.calc.sheet.cmd_sheet_t import CmdSheetT
-    from libre_pythonista_lib.cmd.cmd_handler import CmdHandler
-    from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
 
     CalcSheet = Any
 
@@ -25,14 +21,13 @@ _KEY = "libre_pythonista_lib.init.init_sheet.InitSheet"
 
 
 # Composite Command
-class CmdInitSheet(List[Type[CmdSheetT]], LogMixin, CmdSheetT):
+class CmdInitSheet(CmdBase, List[Type[CmdSheetT]], LogMixin, CmdSheetT):
     def __init__(self, sheet: CalcSheet) -> None:
+        CmdBase.__init__(self)
         list.__init__(self)
         LogMixin.__init__(self)
         self.executed_commands: List[CmdSheetT] = []
-        self._success = False
         self._sheet = sheet
-        self._kind = CalcCmdKind.SIMPLE
         self._cache = get_sheet_cache(self._sheet)
         self.append(CmdSheetCalcFormula)
 
@@ -52,26 +47,25 @@ class CmdInitSheet(List[Type[CmdSheetT]], LogMixin, CmdSheetT):
 
         key_val = self._cache[_KEY]
         if key_val == "1":
-            self._success = True
+            self.success = True
             return
         try:
-            handler = CmdHandler()
             for cmd in self:
                 inst = cmd(self._sheet)
-                handler.handle(inst)
+                self._execute_cmd(inst)
                 if inst.success:  # Only add if command was successful
                     self.executed_commands.append(inst)
                 else:
                     self.log.debug("A command failed. Undoing previously executed commands.")
                     self.undo()  # Undo all successfully executed commands.
-                    self._success = False  # Composite command failed.
+                    self.success = False  # Composite command failed.
                     return
-            self._success = True  # Composite command succeeded.
+            self.success = True  # Composite command succeeded.
             self._cache[_KEY] = "1"
         except Exception as e:
             self.log.exception("An unexpected error occurred: %s", e)
             self.undo()
-            self._success = False
+            self.success = False
 
         if self.success:
             self.log.debug("Successfully executed command.")
@@ -92,24 +86,6 @@ class CmdInitSheet(List[Type[CmdSheetT]], LogMixin, CmdSheetT):
         for cmd in reversed(self.executed_commands):
             cmd.undo()
         self.executed_commands = []  # Clear executed commands
-        self._success = False  # Reset success flag.
+        self.success = False  # Reset success flag.
 
         self._cache[_KEY] = "0"
-
-    @property
-    def success(self) -> bool:
-        """Gets if the command was successful."""
-        return self._success
-
-    @property
-    def kind(self) -> CalcCmdKind:
-        """Gets/Sets the kind of the command. Defaults to ``CalcCmdKind.SIMPLE``."""
-        return self._kind
-
-    @kind.setter
-    def kind(self, value: CalcCmdKind) -> None:
-        self._kind = value
-
-    @property
-    def sheet(self) -> CalcSheet:
-        return self._sheet

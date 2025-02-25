@@ -129,7 +129,7 @@ def test_qry_kind(build_setup, mocker: MockerFixture) -> None:
     cell = mocker.MagicMock()
 
     qry = QryAddr(cell=cell)
-    assert qry.kind == CalcQryKind.SIMPLE
+    assert qry.kind == CalcQryKind.CELL
 
     qry.kind = CalcQryKind.SHEET
     assert qry.kind == CalcQryKind.SHEET

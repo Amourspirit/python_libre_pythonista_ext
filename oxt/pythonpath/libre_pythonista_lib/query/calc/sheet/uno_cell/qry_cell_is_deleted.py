@@ -8,21 +8,21 @@ from com.sun.star.uno import RuntimeException
 
 if TYPE_CHECKING:
     from com.sun.star.sheet import SheetCell  # service
-    from oxt.pythonpath.libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
+    from oxt.pythonpath.libre_pythonista_lib.query.qry_base import QryBase
     from oxt.pythonpath.libre_pythonista_lib.query.calc.sheet.uno_cell.qry_uno_cell_t import QryUnoCellT
 else:
-    from libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
+    from libre_pythonista_lib.query.qry_base import QryBase
     from libre_pythonista_lib.query.calc.sheet.uno_cell.qry_uno_cell_t import QryUnoCellT
 
     SheetCell = Any
 
 
-class QryCellIsDeleted(QryUnoCellT[bool]):
+class QryCellIsDeleted(QryBase, QryUnoCellT[bool]):
     """Checks if the cell is deleted."""
 
     def __init__(self, cell: SheetCell) -> None:
+        QryBase.__init__(self)
         self._cell = cell
-        self._kind = CalcQryKind.SIMPLE
 
     def execute(self) -> bool:
         """
@@ -40,14 +40,3 @@ class QryCellIsDeleted(QryUnoCellT[bool]):
     @property
     def cell(self) -> SheetCell:
         return self._cell
-
-    @property
-    def kind(self) -> CalcQryKind:
-        """
-        Gets/Sets the kind of the cell query. Defaults to ``CalcQryKind.SIMPLE``.
-        """
-        return self._kind
-
-    @kind.setter
-    def kind(self, value: CalcQryKind) -> None:
-        self._kind = value

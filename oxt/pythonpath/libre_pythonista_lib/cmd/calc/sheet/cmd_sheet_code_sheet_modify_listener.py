@@ -1,12 +1,12 @@
 from __future__ import annotations
 from typing import cast, Tuple, TYPE_CHECKING
-import time
 
+from ooodev.utils.gen_util import NULL_OBJ
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcSheet
+    from oxt.pythonpath.libre_pythonista_lib.cmd.cmd_base import CmdBase
     from oxt.pythonpath.libre_pythonista_lib.sheet import calculate
-    from oxt.pythonpath.libre_pythonista_lib.query.qry_handler_no_cache import QryHandlerNoCache
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.cmd.calc.sheet.cmd_sheet_cache_t import CmdSheetCacheT
     from oxt.pythonpath.libre_pythonista_lib.const.cache_const import (
@@ -22,8 +22,8 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
 
 else:
+    from libre_pythonista_lib.cmd.cmd_base import CmdBase
     from libre_pythonista_lib.sheet import calculate
-    from libre_pythonista_lib.query.qry_handler_no_cache import QryHandlerNoCache
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.cmd.calc.sheet.cmd_sheet_cache_t import CmdSheetCacheT
     from libre_pythonista_lib.const.cache_const import SHEET_HAS_CALCULATION_EVENT, SHEET_CALCULATION_EVENT
@@ -35,35 +35,39 @@ else:
 # libre_pythonista_lib.cmd.calc.sheet.cmd_handler_sheet_cache.CmdHandlerSheetCache
 
 
-class CmdSheetCalcFormula(LogMixin, CmdSheetCacheT):
+class CmdSheetCalcFormula(CmdBase, LogMixin, CmdSheetCacheT):
     """Add OnCalculate event to sheet"""
 
     def __init__(self, sheet: CalcSheet) -> None:
+        CmdBase.__init__(self)
         LogMixin.__init__(self)
-        self._success = False
+        self.kind = CalcCmdKind.SHEET_CACHE
         self._sheet = sheet
-        self._kind = CalcCmdKind.SHEET_CACHE
-        self._has_calc_event = self._get_has_calculate_event()
-        self._current_script = self._get_current_script()
+        self._has_calc_event = cast(bool, NULL_OBJ)
+        self._current_script = cast(str | None, NULL_OBJ)
 
     def _get_current_script(self) -> str | None:
         qry = QrySheetCalculationEvent(sheet=self._sheet)
-        handler = QryHandlerNoCache()
-        return handler.handle(qry)
+        return self._execute_qry(qry)
 
     def _get_has_calculate_event(self) -> bool:
         qry = QrySheetHasCalculationEvent(sheet=self._sheet)
-        handler = QryHandlerNoCache()
-        result = handler.handle(qry)
+        result = self._execute_qry(qry)
         if result is None:
             return False
         return result
 
     def execute(self) -> None:
-        self._success = False
+        if self._current_script is NULL_OBJ:
+            self._current_script = self._get_current_script()
+
+        if self._has_calc_event is NULL_OBJ:
+            self._has_calc_event = self._get_has_calculate_event()
+
+        self.success = False
         try:
             if self._has_calc_event:
-                self._success = True
+                self.success = True
                 return
             calculate.set_sheet_calculate_event(self._sheet)
         except Exception:
@@ -71,7 +75,7 @@ class CmdSheetCalcFormula(LogMixin, CmdSheetCacheT):
             self._undo()
             return
         self.log.debug("Successfully executed command.")
-        self._success = True
+        self.success = True
 
     def _undo(self) -> None:
         try:
@@ -84,14 +88,10 @@ class CmdSheetCalcFormula(LogMixin, CmdSheetCacheT):
             self.log.exception("Error removing Document Event listener")
 
     def undo(self) -> None:
-        if self._success:
+        if self.success:
             self._undo()
         else:
             self.log.debug("Undo not needed.")
-
-    @property
-    def success(self) -> bool:
-        return self._success
 
     @property
     def sheet(self) -> CalcSheet:
@@ -100,12 +100,3 @@ class CmdSheetCalcFormula(LogMixin, CmdSheetCacheT):
     @property
     def cache_keys(self) -> Tuple[str, ...]:
         return (SHEET_HAS_CALCULATION_EVENT, SHEET_CALCULATION_EVENT)
-
-    @property
-    def kind(self) -> CalcCmdKind:
-        """Gets/Sets the kind of the command. Defaults to ``CalcCmdKind.SHEET_CACHE``."""
-        return self._kind
-
-    @kind.setter
-    def kind(self, value: CalcCmdKind) -> None:
-        self._kind = value

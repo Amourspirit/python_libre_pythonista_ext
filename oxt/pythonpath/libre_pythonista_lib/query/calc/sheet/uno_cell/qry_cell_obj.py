@@ -5,22 +5,20 @@ from ooodev.utils.data_type.cell_obj import CellObj
 
 if TYPE_CHECKING:
     from com.sun.star.sheet import SheetCell  # service
+    from oxt.pythonpath.libre_pythonista_lib.query.qry_base import QryBase
     from oxt.pythonpath.libre_pythonista_lib.ex.exceptions import CellDeletedError
-    from oxt.pythonpath.libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
-    from oxt.pythonpath.libre_pythonista_lib.query.qry_handler import QryHandler
     from oxt.pythonpath.libre_pythonista_lib.query.calc.sheet.uno_cell.qry_uno_cell_t import QryUnoCellT
     from oxt.pythonpath.libre_pythonista_lib.query.calc.sheet.uno_cell.qry_cell_is_deleted import QryCellIsDeleted
 else:
+    from libre_pythonista_lib.query.qry_base import QryBase
     from libre_pythonista_lib.ex.exceptions import CellDeletedError
-    from libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
-    from libre_pythonista_lib.query.qry_handler import QryHandler
     from libre_pythonista_lib.query.calc.sheet.uno_cell.qry_uno_cell_t import QryUnoCellT
     from libre_pythonista_lib.query.calc.sheet.uno_cell.qry_cell_is_deleted import QryCellIsDeleted
 
     SheetCell = Any
 
 
-class QryCellObj(QryUnoCellT[CellObj]):
+class QryCellObj(QryBase, QryUnoCellT[CellObj]):
     """Gets the cell object."""
 
     def __init__(self, cell: SheetCell) -> None:
@@ -29,9 +27,8 @@ class QryCellObj(QryUnoCellT[CellObj]):
         Args:
             cell (SheetCell): Cell to query.
         """
+        QryBase.__init__(self)
         self._cell = cell
-        self._kind = CalcQryKind.SIMPLE
-        self._query_handler = QryHandler()
 
     def execute(self) -> CellObj:
         """
@@ -43,7 +40,7 @@ class QryCellObj(QryUnoCellT[CellObj]):
         """
 
         qry_cell_del = QryCellIsDeleted(cell=self.cell)
-        if self._query_handler.handle(qry_cell_del):
+        if self._execute_qry(qry_cell_del):
             raise CellDeletedError("Cell is deleted.")
 
         addr = self.cell.getCellAddress()
@@ -52,14 +49,3 @@ class QryCellObj(QryUnoCellT[CellObj]):
     @property
     def cell(self) -> SheetCell:
         return self._cell
-
-    @property
-    def kind(self) -> CalcQryKind:
-        """
-        Gets/Sets the kind of the cell query. Defaults to ``CalcQryKind.SIMPLE``.
-        """
-        return self._kind
-
-    @kind.setter
-    def kind(self, value: CalcQryKind) -> None:
-        self._kind = value

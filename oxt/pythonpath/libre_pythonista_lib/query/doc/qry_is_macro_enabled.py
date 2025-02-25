@@ -1,25 +1,22 @@
 from __future__ import annotations
-
-
 from typing import TYPE_CHECKING
-
 from ooodev.utils.props import Props
 
 if TYPE_CHECKING:
     from ooodev.proto.office_document_t import OfficeDocumentT
+    from oxt.pythonpath.libre_pythonista_lib.query.qry_base import QryBase
     from oxt.pythonpath.libre_pythonista_lib.query.qry_t import QryT
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
-    from oxt.pythonpath.libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
 else:
+    from libre_pythonista_lib.query.qry_base import QryBase
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.query.qry_t import QryT
-    from libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
 
 
-class QryIsMacroEnabled(LogMixin, QryT[bool]):
+class QryIsMacroEnabled(QryBase, LogMixin, QryT[bool]):
     def __init__(self, doc: OfficeDocumentT) -> None:
+        QryBase.__init__(self)
         LogMixin.__init__(self)
-        self._kind = CalcQryKind.SIMPLE
         self._doc = doc
 
     def execute(self) -> bool:
@@ -39,14 +36,3 @@ class QryIsMacroEnabled(LogMixin, QryT[bool]):
         except Exception:
             self.log.exception("Error getting script url")
         return False
-
-    @property
-    def kind(self) -> CalcQryKind:
-        """
-        Gets/Sets the kind of the query. Defaults to ``CalcQryKind.SIMPLE``.
-        """
-        return self._kind
-
-    @kind.setter
-    def kind(self, value: CalcQryKind) -> None:
-        self._kind = value

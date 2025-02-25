@@ -3,33 +3,32 @@ from typing import Any, List, Type, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcDoc
+    from oxt.pythonpath.libre_pythonista_lib.cmd.cmd_base import CmdBase
     from oxt.pythonpath.libre_pythonista_lib.doc.doc_globals import DocGlobals
     from oxt.pythonpath.libre_pythonista_lib.cmd.calc.doc.listener.cmd_sheet_modified import CmdSheetsModified
     from oxt.pythonpath.libre_pythonista_lib.cmd.calc.doc.listener.cmd_sheet_activation import CmdSheetActivation
     from oxt.pythonpath.libre_pythonista_lib.cmd.calc.doc.cmd_doc_t import CmdDocT
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
-    from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
 else:
+    from libre_pythonista_lib.cmd.cmd_base import CmdBase
     from libre_pythonista_lib.doc.doc_globals import DocGlobals
     from libre_pythonista_lib.cmd.calc.doc.listener.cmd_sheet_modified import CmdSheetsModified
     from libre_pythonista_lib.cmd.calc.doc.listener.cmd_sheet_activation import CmdSheetActivation
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.cmd.calc.doc.cmd_doc_t import CmdDocT
-    from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
 
 
 _KEY = "libre_pythonista_lib.init.init_sheet.InitSheet"
 
 
 # Composite Command
-class CmdInitSheets(List[Type[CmdDocT]], LogMixin, CmdDocT):
+class CmdInitSheets(CmdBase, List[Type[CmdDocT]], LogMixin, CmdDocT):
     def __init__(self, doc: CalcDoc) -> None:
+        CmdBase.__init__(self)
         list.__init__(self)
         LogMixin.__init__(self)
         self.executed_commands: List[CmdDocT] = []
-        self._success = False
         self._doc = doc
-        self._kind = CalcCmdKind.SIMPLE
         self.append(CmdSheetsModified)
         self.append(CmdSheetActivation)
 
@@ -50,25 +49,25 @@ class CmdInitSheets(List[Type[CmdDocT]], LogMixin, CmdDocT):
         doc_globals = DocGlobals.get_current()
         key_val = doc_globals.mem_cache[_KEY]
         if key_val == "1":
-            self._success = True
+            self.success = True
             return
         try:
             for cmd in self:
                 inst = cmd(self._doc)
-                inst.execute()
+                self._execute_cmd(inst)
                 if inst.success:  # Only add if command was successful
                     self.executed_commands.append(inst)
                 else:
                     self.log.debug("A command failed. Undoing previously executed commands.")
                     self.undo()  # Undo all successfully executed commands.
-                    self._success = False  # Composite command failed.
+                    self.success = False  # Composite command failed.
                     return
-            self._success = True  # Composite command succeeded.
+            self.success = True  # Composite command succeeded.
             doc_globals.mem_cache[_KEY] = "1"
         except Exception as e:
             self.log.exception("An unexpected error occurred: %s", e)
             self.undo()
-            self._success = False
+            self.success = False
 
         if self.success:
             self.log.debug("Successfully executed command.")
@@ -89,20 +88,6 @@ class CmdInitSheets(List[Type[CmdDocT]], LogMixin, CmdDocT):
         for cmd in reversed(self.executed_commands):
             cmd.undo()
         self.executed_commands = []  # Clear executed commands
-        self._success = False  # Reset success flag.
+        self.success = False  # Reset success flag.
         doc_globals = DocGlobals.get_current()
         doc_globals.mem_cache[_KEY] = "0"
-
-    @property
-    def success(self) -> bool:
-        """Gets if the command was successful."""
-        return self._success
-
-    @property
-    def kind(self) -> CalcCmdKind:
-        """Gets/Sets the kind of the command. Defaults to ``CalcCmdKind.SIMPLE``."""
-        return self._kind
-
-    @kind.setter
-    def kind(self, value: CalcCmdKind) -> None:
-        self._kind = value

@@ -6,41 +6,33 @@ from ooodev.utils.gen_util import NULL_OBJ
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcCell
+    from oxt.pythonpath.libre_pythonista_lib.cmd.cmd_base import CmdBase
     from oxt.pythonpath.libre_pythonista_lib.cell.props.key_maker import KeyMaker
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
-    from oxt.pythonpath.libre_pythonista_lib.query.qry_handler import QryHandler
     from oxt.pythonpath.libre_pythonista_lib.cmd.calc.sheet.cell.cmd_cell_t import CmdCellT
-    from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
     from oxt.pythonpath.libre_pythonista_lib.cmd.calc.sheet.cell.prop.cmd_cell_prop_set import CmdCellPropSet
     from oxt.pythonpath.libre_pythonista_lib.cmd.calc.sheet.cell.prop.cmd_cell_prop_del import CmdCellPropDel
-    from oxt.pythonpath.libre_pythonista_lib.cmd.cmd_handler import CmdHandler
     from oxt.pythonpath.libre_pythonista_lib.query.calc.sheet.cell.qry_key_maker import QryKeyMaker
     from oxt.pythonpath.libre_pythonista_lib.query.calc.sheet.cell.prop.qry_addr import QryAddr
     from oxt.pythonpath.libre_pythonista_lib.data_type.calc.sheet.cell.prop.addr import Addr
 else:
+    from libre_pythonista_lib.cmd.cmd_base import CmdBase
     from libre_pythonista_lib.log.log_mixin import LogMixin
-    from libre_pythonista_lib.query.qry_handler import QryHandler
     from libre_pythonista_lib.cmd.calc.sheet.cell.cmd_cell_t import CmdCellT
-    from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
     from libre_pythonista_lib.cmd.calc.sheet.cell.prop.cmd_cell_prop_set import CmdCellPropSet
     from libre_pythonista_lib.cmd.calc.sheet.cell.prop.cmd_cell_prop_del import CmdCellPropDel
-    from libre_pythonista_lib.cmd.cmd_handler import CmdHandler
     from libre_pythonista_lib.query.calc.sheet.cell.qry_key_maker import QryKeyMaker
     from libre_pythonista_lib.query.calc.sheet.cell.prop.qry_addr import QryAddr
     from libre_pythonista_lib.data_type.calc.sheet.cell.prop.addr import Addr
 
 
-class CmdAddr(LogMixin, CmdCellT):
+class CmdAddr(CmdBase, LogMixin, CmdCellT):
     """Sets the address of the cell such as ``sheet_index=0&cell_addr=A1``"""
 
     def __init__(self, cell: CalcCell, addr: str | Addr) -> None:
+        CmdBase.__init__(self)
         LogMixin.__init__(self)
         self._cell = cell
-        self._success = False
-
-        self._kind = CalcCmdKind.SIMPLE
-        self._cmd_handler = CmdHandler()
-        self._qry_handler = QryHandler()
         self._keys = cast("KeyMaker", NULL_OBJ)
         self._current_state = cast(str, NULL_OBJ)
         self._errors = True
@@ -58,14 +50,14 @@ class CmdAddr(LogMixin, CmdCellT):
 
     def _get_keys(self) -> KeyMaker:
         qry = QryKeyMaker()
-        return self._qry_handler.handle(qry)
+        return self._execute_qry(qry)
 
     def _get_current_state(self) -> str:
         qry = QryAddr(cell=self.cell)
-        return self._qry_handler.handle(qry)
+        return self._execute_qry(qry)
 
     def execute(self) -> None:
-        self._success = False
+        self.success = False
         if self._errors:
             self.log.error("Errors occurred during initialization. Unable to execute command.")
             return
@@ -79,17 +71,17 @@ class CmdAddr(LogMixin, CmdCellT):
         try:
             if self._current_state and self._get_state() == self._current_state:
                 self.log.debug("State is already set.")
-                self._success = True
+                self.success = True
                 return
             cmd = CmdCellPropSet(cell=self.cell, name=self._keys.cell_addr_key, value=self._state.value)
-            self._cmd_handler.handle(cmd)
+            self._execute_cmd(cmd)
             self._state_changed = True
         except Exception:
             self.log.exception("Error setting cell address")
             self._undo()
             return
         self.log.debug("Successfully executed command.")
-        self._success = True
+        self.success = True
 
     def _undo(self) -> None:
         try:
@@ -103,30 +95,17 @@ class CmdAddr(LogMixin, CmdCellT):
                 cmd = CmdCellPropSet(cell=self.cell, name=self._keys.cell_addr_key, value=self._current_state)
             else:
                 cmd = CmdCellPropDel(cell=self.cell, name=self._keys.cell_addr_key)
-            self._cmd_handler.handle(cmd)
+            self._execute_cmd(cmd)
             self.log.debug("Successfully executed undo command.")
         except Exception:
             self.log.exception("Error undoing cell address")
 
     def undo(self) -> None:
-        if self._success:
+        if self.success:
             self._undo()
         else:
             self.log.debug("Undo not needed.")
 
     @property
-    def success(self) -> bool:
-        return self._success
-
-    @property
     def cell(self) -> CalcCell:
         return self._cell
-
-    @property
-    def kind(self) -> CalcCmdKind:
-        """Gets/Sets the kind of the command. Defaults to ``CalcCmdKind.SIMPLE``."""
-        return self._kind
-
-    @kind.setter
-    def kind(self, value: CalcCmdKind) -> None:
-        self._kind = value

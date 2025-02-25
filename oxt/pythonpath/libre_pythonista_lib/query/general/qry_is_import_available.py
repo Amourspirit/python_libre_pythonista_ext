@@ -6,16 +6,16 @@ from typing import TYPE_CHECKING
 
 
 if TYPE_CHECKING:
+    from oxt.pythonpath.libre_pythonista_lib.query.qry_base import QryBase
     from oxt.pythonpath.libre_pythonista_lib.query.qry_t import QryT
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
-    from oxt.pythonpath.libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
 else:
+    from libre_pythonista_lib.query.qry_base import QryBase
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.query.qry_t import QryT
-    from libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
 
 
-class QryIsImportAvailable(LogMixin, QryT[bool]):
+class QryIsImportAvailable(QryBase, LogMixin, QryT[bool]):
     def __init__(self, module_name: str) -> None:
         """
         Initializes the instance.
@@ -23,9 +23,8 @@ class QryIsImportAvailable(LogMixin, QryT[bool]):
         Args:
             module_name (str): The name of the module to check for import availability.
         """
-
+        QryBase.__init__(self)
         LogMixin.__init__(self)
-        self._kind = CalcQryKind.SIMPLE
         self._module_name = module_name
 
     def execute(self) -> bool:
@@ -44,14 +43,3 @@ class QryIsImportAvailable(LogMixin, QryT[bool]):
         except Exception:
             self.log.exception("Error getting script url")
         return False
-
-    @property
-    def kind(self) -> CalcQryKind:
-        """
-        Gets/Sets the kind of the query. Defaults to ``CalcQryKind.SIMPLE``.
-        """
-        return self._kind
-
-    @kind.setter
-    def kind(self, value: CalcQryKind) -> None:
-        self._kind = value

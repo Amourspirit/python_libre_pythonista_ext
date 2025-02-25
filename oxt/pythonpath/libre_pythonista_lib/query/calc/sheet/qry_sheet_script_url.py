@@ -1,25 +1,23 @@
 from __future__ import annotations
-
-
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 
 if TYPE_CHECKING:
+    from oxt.pythonpath.libre_pythonista_lib.query.qry_base import QryBase
     from oxt.pythonpath.libre_pythonista_lib.sheet import calculate
     from oxt.pythonpath.libre_pythonista_lib.query.qry_t import QryT
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
-    from oxt.pythonpath.libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
 else:
+    from libre_pythonista_lib.query.qry_base import QryBase
     from libre_pythonista_lib.sheet import calculate
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.query.qry_t import QryT
-    from libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
 
 
-class QrySheetScriptUrl(LogMixin, QryT[str | None]):
+class QrySheetScriptUrl(QryBase, LogMixin, QryT[str | None]):
     def __init__(self) -> None:
+        QryBase.__init__(self)
         LogMixin.__init__(self)
-        self._kind = CalcQryKind.SIMPLE
 
     def execute(self) -> str | None:
         """
@@ -35,14 +33,3 @@ class QrySheetScriptUrl(LogMixin, QryT[str | None]):
         except Exception:
             self.log.exception("Error getting script url")
         return None
-
-    @property
-    def kind(self) -> CalcQryKind:
-        """
-        Gets/Sets the kind of the query. Defaults to ``CalcQryKind.SIMPLE``.
-        """
-        return self._kind
-
-    @kind.setter
-    def kind(self, value: CalcQryKind) -> None:
-        self._kind = value

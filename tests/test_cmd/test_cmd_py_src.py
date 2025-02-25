@@ -12,10 +12,12 @@ if __name__ == "__main__":
 def test_cmd_py_src_no_src(loader, build_setup) -> None:
     if TYPE_CHECKING:
         from oxt.pythonpath.libre_pythonista_lib.cmd.calc.sheet.cell.cmd_cell_src_code import CmdCellSrcCode
+        from oxt.pythonpath.libre_pythonista_lib.cmd.cmd_handler import CmdHandler
         from oxt.pythonpath.libre_pythonista_lib.pyc.code.py_source import PySource
         from oxt.___lo_pip___.basic_config import BasicConfig as Config
     else:
         from libre_pythonista_lib.cmd.calc.sheet.cell.cmd_cell_src_code import CmdCellSrcCode
+        from libre_pythonista_lib.cmd.cmd_handler import CmdHandler
         from libre_pythonista_lib.pyc.code.py_source import PySource
         from libre_pythonista.basic_config import BasicConfig as Config
 
@@ -27,6 +29,7 @@ def test_cmd_py_src_no_src(loader, build_setup) -> None:
         code_prop_name = cfg.cell_cp_codename
         sheet = doc.sheets[0]
         cell = sheet[0, 0]
+        cmd_handler = CmdHandler()
 
         if not cell.has_custom_property(code_prop_name):
             cell.set_custom_property(code_prop_name, "code1_id")
@@ -36,7 +39,7 @@ def test_cmd_py_src_no_src(loader, build_setup) -> None:
         uri = f"{root_uri}/{sheet.unique_id}/{code_id}.py"
 
         cmd = CmdCellSrcCode(code=code, uri=uri, cell=cell)
-        cmd.execute()
+        cmd_handler.handle(cmd)
         assert cmd.success
         py_src = PySource(uri=uri, cell=cell.cell_obj)
         assert py_src.exists()
@@ -53,10 +56,12 @@ def test_cmd_py_src_no_src(loader, build_setup) -> None:
 def test_cmd_py_src_has_src(loader, build_setup) -> None:
     if TYPE_CHECKING:
         from oxt.pythonpath.libre_pythonista_lib.cmd.calc.sheet.cell.cmd_cell_src_code import CmdCellSrcCode
+        from oxt.pythonpath.libre_pythonista_lib.cmd.cmd_handler import CmdHandler
         from oxt.pythonpath.libre_pythonista_lib.pyc.code.py_source import PySource
         from oxt.___lo_pip___.basic_config import BasicConfig as Config
     else:
         from libre_pythonista_lib.cmd.calc.sheet.cell.cmd_cell_src_code import CmdCellSrcCode
+        from libre_pythonista_lib.cmd.cmd_handler import CmdHandler
         from libre_pythonista_lib.pyc.code.py_source import PySource
         from libre_pythonista.basic_config import BasicConfig as Config
 
@@ -68,6 +73,7 @@ def test_cmd_py_src_has_src(loader, build_setup) -> None:
         code_prop_name = cfg.cell_cp_codename
         sheet = doc.sheets[0]
         cell = sheet[0, 0]
+        cmd_handler = CmdHandler()
 
         if not cell.has_custom_property(code_prop_name):
             cell.set_custom_property(code_prop_name, "code1_id")
@@ -77,7 +83,7 @@ def test_cmd_py_src_has_src(loader, build_setup) -> None:
         uri = f"{root_uri}/{sheet.unique_id}/{code_id}.py"
 
         cmd = CmdCellSrcCode(code=code, uri=uri, cell=cell)
-        cmd.execute()
+        cmd_handler.handle(cmd)
         assert cmd.success
 
         py_src = PySource(uri=uri, cell=cell.cell_obj)
@@ -88,7 +94,7 @@ def test_cmd_py_src_has_src(loader, build_setup) -> None:
         code2 = "a = 1\nb = 2\nc = a + b"
 
         cmd = CmdCellSrcCode(code=code2, uri=uri, cell=cell)
-        cmd.execute()
+        cmd_handler.handle(cmd)
         assert cmd.success
         assert py_src.exists()
         assert py_src.source_code == code2

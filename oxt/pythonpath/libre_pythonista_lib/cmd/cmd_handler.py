@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import cast, TYPE_CHECKING
+from typing import Iterable, cast, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cmd.calc.sheet.cell.cmd_cell_cache_t import CmdCellCacheT
@@ -42,17 +42,27 @@ class CmdHandler(CmdHandlerT):
         if not cache:
             return
 
-        for key in cmd.cache_keys:
-            if key in cache:
-                del cache[key]
+        self._clear_cache(cache, cmd.cache_keys)
+
         cmd.execute()
+
+        # Executing some commands may call a query which will add the key back into the cache.
+        # So we need to remove it again after the command is executed to reflect new values that the command executed.
+        self._clear_cache(cache, cmd.cache_keys)
 
     def _handle_sheet_cache(self, cmd: CmdSheetCacheT) -> None:  # noqa: ANN401
         cache_qry = QrySheetCache(cmd.sheet)
         cache = cast("MemCache", QryHandler().handle(cache_qry))
         if not cache:
             return
-        for key in cmd.cache_keys:
+        self._clear_cache(cache, cmd.cache_keys)
+        cmd.execute()
+
+        # Executing some commands may call a query which will add the key back into the cache.
+        # So we need to remove it again after the command is executed to reflect new values that the command executed.
+        self._clear_cache(cache, cmd.cache_keys)
+
+    def _clear_cache(self, cache: MemCache, keys: Iterable[str]) -> None:
+        for key in keys:
             if key in cache:
                 del cache[key]
-        cmd.execute()

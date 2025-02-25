@@ -17,6 +17,9 @@ class CmdT(Protocol):
     @property
     def success(self) -> bool: ...
 
+    @success.setter
+    def success(self, value: bool) -> None: ...
+
     @property
     def kind(self) -> CalcCmdKind: ...
 

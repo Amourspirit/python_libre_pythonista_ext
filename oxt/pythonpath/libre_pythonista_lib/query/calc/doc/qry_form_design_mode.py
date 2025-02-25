@@ -7,22 +7,22 @@ from ooodev.exceptions import ex as mEx  # noqa: N812
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcDoc, CalcSheetView
+    from oxt.pythonpath.libre_pythonista_lib.query.qry_base import QryBase
     from oxt.pythonpath.libre_pythonista_lib.query.calc.doc.qry_doc_t import QryDocT
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
-    from oxt.pythonpath.libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
 
 else:
+    from libre_pythonista_lib.query.qry_base import QryBase
     from libre_pythonista_lib.query.calc.doc.qry_doc_t import QryDocT
     from libre_pythonista_lib.log.log_mixin import LogMixin
-    from libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
 
 
 # this class should be call in:
 # libre_pythonista_lib.query.calc.sheet.qry_handler_sheet_cache.QryHandlerSheetCache
-class QryFormDesignMode(LogMixin, QryDocT[bool | None]):
+class QryFormDesignMode(QryBase, LogMixin, QryDocT[bool | None]):
     def __init__(self, doc: CalcDoc) -> None:
+        QryBase.__init__(self)
         LogMixin.__init__(self)
-        self._kind = CalcQryKind.SIMPLE
         self._doc = doc
 
     def _get_view(self) -> CalcSheetView | None:
@@ -61,14 +61,3 @@ class QryFormDesignMode(LogMixin, QryDocT[bool | None]):
         except Exception:
             self.log.exception("Error executing query")
         return None
-
-    @property
-    def kind(self) -> CalcQryKind:
-        """
-        Gets/Sets the kind of the query. Defaults to ``CalcQryKind.SIMPLE``.
-        """
-        return self._kind
-
-    @kind.setter
-    def kind(self, value: CalcQryKind) -> None:
-        self._kind = value

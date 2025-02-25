@@ -127,7 +127,7 @@ def test_cmd_kind(build_setup, mocker: MockerFixture) -> None:
     mocker.patch.object(CmdPycRule, "_get_current_state", return_value="")
 
     cmd = CmdPycRule(cell=cell, name="cell_data_type_str")
-    assert cmd.kind == CalcCmdKind.SIMPLE
+    assert cmd.kind == CalcCmdKind.CELL
 
     cmd.kind = CalcCmdKind.SHEET
     assert cmd.kind == CalcCmdKind.SHEET
@@ -144,7 +144,7 @@ def test_cmd_del_kind(build_setup, mocker: MockerFixture) -> None:
     cell = mocker.MagicMock()
 
     cmd = CmdPycRuleDel(cell=cell)
-    assert cmd.kind == CalcCmdKind.SIMPLE
+    assert cmd.kind == CalcCmdKind.CELL
 
     cmd.kind = CalcCmdKind.SHEET
     assert cmd.kind == CalcCmdKind.SHEET
