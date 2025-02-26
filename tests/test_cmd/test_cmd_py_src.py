@@ -11,13 +11,13 @@ if __name__ == "__main__":
 
 def test_cmd_py_src_no_src(loader, build_setup) -> None:
     if TYPE_CHECKING:
-        from oxt.pythonpath.libre_pythonista_lib.cmd.calc.sheet.cell.cmd_cell_src_code import CmdCellSrcCode
-        from oxt.pythonpath.libre_pythonista_lib.cmd.cmd_handler import CmdHandler
+        from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.cmd_cell_src_code import CmdCellSrcCode
+        from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler import CmdHandler
         from oxt.pythonpath.libre_pythonista_lib.pyc.code.py_source import PySource
         from oxt.___lo_pip___.basic_config import BasicConfig as Config
     else:
-        from libre_pythonista_lib.cmd.calc.sheet.cell.cmd_cell_src_code import CmdCellSrcCode
-        from libre_pythonista_lib.cmd.cmd_handler import CmdHandler
+        from libre_pythonista_lib.cq.cmd.calc.sheet.cell.cmd_cell_src_code import CmdCellSrcCode
+        from libre_pythonista_lib.cq.cmd.cmd_handler import CmdHandler
         from libre_pythonista_lib.pyc.code.py_source import PySource
         from libre_pythonista.basic_config import BasicConfig as Config
 
@@ -55,13 +55,13 @@ def test_cmd_py_src_no_src(loader, build_setup) -> None:
 
 def test_cmd_py_src_has_src(loader, build_setup) -> None:
     if TYPE_CHECKING:
-        from oxt.pythonpath.libre_pythonista_lib.cmd.calc.sheet.cell.cmd_cell_src_code import CmdCellSrcCode
-        from oxt.pythonpath.libre_pythonista_lib.cmd.cmd_handler import CmdHandler
+        from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.cmd_cell_src_code import CmdCellSrcCode
+        from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler import CmdHandler
         from oxt.pythonpath.libre_pythonista_lib.pyc.code.py_source import PySource
         from oxt.___lo_pip___.basic_config import BasicConfig as Config
     else:
-        from libre_pythonista_lib.cmd.calc.sheet.cell.cmd_cell_src_code import CmdCellSrcCode
-        from libre_pythonista_lib.cmd.cmd_handler import CmdHandler
+        from libre_pythonista_lib.cq.cmd.calc.sheet.cell.cmd_cell_src_code import CmdCellSrcCode
+        from libre_pythonista_lib.cq.cmd.cmd_handler import CmdHandler
         from libre_pythonista_lib.pyc.code.py_source import PySource
         from libre_pythonista.basic_config import BasicConfig as Config
 

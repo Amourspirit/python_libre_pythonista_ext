@@ -11,13 +11,15 @@ if __name__ == "__main__":
 
 def test_cell_is_deleted(build_setup, mocker: MockerFixture) -> None:
     if TYPE_CHECKING:
-        from oxt.pythonpath.libre_pythonista_lib.query.calc.sheet.uno_cell.qry_cell_is_deleted import QryCellIsDeleted
+        from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.sheet.uno_cell.qry_cell_is_deleted import (
+            QryCellIsDeleted,
+        )
         from oxt.pythonpath.libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
-        from oxt.pythonpath.libre_pythonista_lib.query.qry_handler import QryHandler
+        from oxt.pythonpath.libre_pythonista_lib.cq.query.qry_handler import QryHandler
     else:
-        from libre_pythonista_lib.query.calc.sheet.uno_cell.qry_cell_is_deleted import QryCellIsDeleted
+        from libre_pythonista_lib.cq.query.calc.sheet.uno_cell.qry_cell_is_deleted import QryCellIsDeleted
         from libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
-        from libre_pythonista_lib.query.qry_handler import QryHandler
+        from libre_pythonista_lib.cq.query.qry_handler import QryHandler
 
     handler = QryHandler()
 

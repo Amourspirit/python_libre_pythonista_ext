@@ -7,21 +7,21 @@ from typing import List, TYPE_CHECKING
 if TYPE_CHECKING:
     from ooodev.calc import CalcCell
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
-    from oxt.pythonpath.libre_pythonista_lib.cmd.calc.sheet.cell.ctl.cmd_cell_ctl_t import CmdCellCtlT
-    from oxt.pythonpath.libre_pythonista_lib.cmd.cmd_handler import CmdHandler
-    from oxt.pythonpath.libre_pythonista_lib.cmd.calc.sheet.cell.ctl.cmd_code_name import CmdCodeName
-    from oxt.pythonpath.libre_pythonista_lib.cmd.calc.sheet.cell.ctl.cmd_addr import CmdAddr
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.cmd_cell_ctl_t import CmdCellCtlT
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler import CmdHandler
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.cmd_code_name import CmdCodeName
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.cmd_addr import CmdAddr
 
-    # from oxt.pythonpath.libre_pythonista_lib.cmd.calc.sheet.cell.ctl.cmd_ctl_name import CmdCtlName
+    # from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.cmd_ctl_name import CmdCtlName
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl import Ctl
 else:
     from libre_pythonista_lib.log.log_mixin import LogMixin
-    from libre_pythonista_lib.cmd.calc.sheet.cell.ctl.cmd_cell_ctl_t import CmdCellCtlT
-    from libre_pythonista_lib.cmd.cmd_handler import CmdHandler
-    from libre_pythonista_lib.cmd.calc.sheet.cell.ctl.cmd_code_name import CmdCodeName
-    from libre_pythonista_lib.cmd.calc.sheet.cell.ctl.cmd_addr import CmdAddr
+    from libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.cmd_cell_ctl_t import CmdCellCtlT
+    from libre_pythonista_lib.cq.cmd.cmd_handler import CmdHandler
+    from libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.cmd_code_name import CmdCodeName
+    from libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.cmd_addr import CmdAddr
 
-    # from libre_pythonista_lib.cmd.calc.sheet.cell.ctl.cmd_ctl_name import CmdCtlName
+    # from libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.cmd_ctl_name import CmdCtlName
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl import Ctl
 
 

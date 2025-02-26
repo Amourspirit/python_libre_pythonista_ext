@@ -12,17 +12,17 @@ if __name__ == "__main__":
 
 def test_cmd_orig_ctl(loader, build_setup) -> None:
     if TYPE_CHECKING:
-        from oxt.pythonpath.libre_pythonista_lib.cmd.calc.sheet.cell.prop.cmd_orig_ctl import CmdOrigCtl
-        from oxt.pythonpath.libre_pythonista_lib.cmd.cmd_handler import CmdHandler
-        from oxt.pythonpath.libre_pythonista_lib.query.qry_handler import QryHandler
-        from oxt.pythonpath.libre_pythonista_lib.query.calc.sheet.cell.prop.qry_orig_ctl import QryOrigCtl
-        from oxt.pythonpath.libre_pythonista_lib.cmd.calc.sheet.cell.prop.cmd_orig_ctl_del import CmdOrigCtlDel
+        from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_orig_ctl import CmdOrigCtl
+        from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler import CmdHandler
+        from oxt.pythonpath.libre_pythonista_lib.cq.query.qry_handler import QryHandler
+        from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.sheet.cell.prop.qry_orig_ctl import QryOrigCtl
+        from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_orig_ctl_del import CmdOrigCtlDel
     else:
-        from libre_pythonista_lib.cmd.calc.sheet.cell.prop.cmd_orig_ctl import CmdOrigCtl
-        from libre_pythonista_lib.cmd.cmd_handler import CmdHandler
-        from libre_pythonista_lib.query.qry_handler import QryHandler
-        from libre_pythonista_lib.query.calc.sheet.cell.prop.qry_orig_ctl import QryOrigCtl
-        from libre_pythonista_lib.cmd.calc.sheet.cell.prop.cmd_orig_ctl_del import CmdOrigCtlDel
+        from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_orig_ctl import CmdOrigCtl
+        from libre_pythonista_lib.cq.cmd.cmd_handler import CmdHandler
+        from libre_pythonista_lib.cq.query.qry_handler import QryHandler
+        from libre_pythonista_lib.cq.query.calc.sheet.cell.prop.qry_orig_ctl import QryOrigCtl
+        from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_orig_ctl_del import CmdOrigCtlDel
 
     doc = None
     try:
@@ -89,9 +89,9 @@ def test_cmd_orig_ctl(loader, build_setup) -> None:
 
 def test_cmd_orig_ctl_error_handling(loader, build_setup, mocker: MockerFixture) -> None:
     if TYPE_CHECKING:
-        from oxt.pythonpath.libre_pythonista_lib.cmd.calc.sheet.cell.prop.cmd_orig_ctl import CmdOrigCtl
+        from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_orig_ctl import CmdOrigCtl
     else:
-        from libre_pythonista_lib.cmd.calc.sheet.cell.prop.cmd_orig_ctl import CmdOrigCtl
+        from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_orig_ctl import CmdOrigCtl
 
     doc = None
     try:
@@ -101,7 +101,7 @@ def test_cmd_orig_ctl_error_handling(loader, build_setup, mocker: MockerFixture)
 
         # Mock execute to raise an exception
         mocker.patch(
-            "libre_pythonista_lib.cmd.calc.sheet.cell.prop.cmd_cell_prop_set.CmdCellPropSet.execute",
+            "libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_cell_prop_set.CmdCellPropSet.execute",
             side_effect=Exception("Test exception"),
         )
 
@@ -116,10 +116,10 @@ def test_cmd_orig_ctl_error_handling(loader, build_setup, mocker: MockerFixture)
 
 def test_cmd_kind(build_setup, mocker: MockerFixture) -> None:
     if TYPE_CHECKING:
-        from oxt.pythonpath.libre_pythonista_lib.cmd.calc.sheet.cell.prop.cmd_orig_ctl import CmdOrigCtl
+        from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_orig_ctl import CmdOrigCtl
         from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
     else:
-        from libre_pythonista_lib.cmd.calc.sheet.cell.prop.cmd_orig_ctl import CmdOrigCtl
+        from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_orig_ctl import CmdOrigCtl
         from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
 
     cell = mocker.MagicMock()
@@ -135,10 +135,10 @@ def test_cmd_kind(build_setup, mocker: MockerFixture) -> None:
 
 def test_cmd_del_kind(build_setup, mocker: MockerFixture) -> None:
     if TYPE_CHECKING:
-        from oxt.pythonpath.libre_pythonista_lib.cmd.calc.sheet.cell.prop.cmd_orig_ctl_del import CmdOrigCtlDel
+        from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_orig_ctl_del import CmdOrigCtlDel
         from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
     else:
-        from libre_pythonista_lib.cmd.calc.sheet.cell.prop.cmd_orig_ctl_del import CmdOrigCtlDel
+        from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_orig_ctl_del import CmdOrigCtlDel
         from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
 
     cell = mocker.MagicMock()
@@ -153,10 +153,10 @@ def test_cmd_del_kind(build_setup, mocker: MockerFixture) -> None:
 def test_qry_kind(build_setup, mocker: MockerFixture) -> None:
     if TYPE_CHECKING:
         from oxt.pythonpath.libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
-        from oxt.pythonpath.libre_pythonista_lib.query.calc.sheet.cell.prop.qry_orig_ctl import QryOrigCtl
+        from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.sheet.cell.prop.qry_orig_ctl import QryOrigCtl
     else:
         from libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
-        from libre_pythonista_lib.query.calc.sheet.cell.prop.qry_orig_ctl import QryOrigCtl
+        from libre_pythonista_lib.cq.query.calc.sheet.cell.prop.qry_orig_ctl import QryOrigCtl
 
     cell = mocker.MagicMock()
 

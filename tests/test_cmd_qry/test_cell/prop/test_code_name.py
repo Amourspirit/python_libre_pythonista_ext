@@ -11,17 +11,17 @@ def test_cmd_code_name(loader, build_setup, mocker: MockerFixture) -> None:
     from ooodev.calc import CalcDoc
 
     if TYPE_CHECKING:
-        from oxt.pythonpath.libre_pythonista_lib.cmd.calc.sheet.cell.prop.cmd_code_name import CmdCodeName
-        from oxt.pythonpath.libre_pythonista_lib.cmd.cmd_handler import CmdHandler
-        from oxt.pythonpath.libre_pythonista_lib.query.calc.sheet.cell.prop.qry_code_name import QryCodeName
-        from oxt.pythonpath.libre_pythonista_lib.query.qry_handler import QryHandler
-        from oxt.pythonpath.libre_pythonista_lib.cmd.calc.sheet.cell.prop.cmd_code_name_del import CmdCodeNameDel
+        from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_code_name import CmdCodeName
+        from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler import CmdHandler
+        from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.sheet.cell.prop.qry_code_name import QryCodeName
+        from oxt.pythonpath.libre_pythonista_lib.cq.query.qry_handler import QryHandler
+        from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_code_name_del import CmdCodeNameDel
     else:
-        from libre_pythonista_lib.cmd.calc.sheet.cell.prop.cmd_code_name import CmdCodeName
-        from libre_pythonista_lib.cmd.cmd_handler import CmdHandler
-        from libre_pythonista_lib.query.calc.sheet.cell.prop.qry_code_name import QryCodeName
-        from libre_pythonista_lib.query.qry_handler import QryHandler
-        from libre_pythonista_lib.cmd.calc.sheet.cell.prop.cmd_code_name_del import CmdCodeNameDel
+        from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_code_name import CmdCodeName
+        from libre_pythonista_lib.cq.cmd.cmd_handler import CmdHandler
+        from libre_pythonista_lib.cq.query.calc.sheet.cell.prop.qry_code_name import QryCodeName
+        from libre_pythonista_lib.cq.query.qry_handler import QryHandler
+        from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_code_name_del import CmdCodeNameDel
 
     doc = None
     try:
@@ -92,9 +92,9 @@ def test_cmd_code_name_error_handling(loader, build_setup, mocker: MockerFixture
     from ooodev.calc import CalcDoc
 
     if TYPE_CHECKING:
-        from oxt.pythonpath.libre_pythonista_lib.cmd.calc.sheet.cell.prop.cmd_code_name import CmdCodeName
+        from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_code_name import CmdCodeName
     else:
-        from libre_pythonista_lib.cmd.calc.sheet.cell.prop.cmd_code_name import CmdCodeName
+        from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_code_name import CmdCodeName
 
     doc = None
     try:
@@ -104,7 +104,7 @@ def test_cmd_code_name_error_handling(loader, build_setup, mocker: MockerFixture
 
         # Mock an exception during execution
         mocker.patch(
-            "libre_pythonista_lib.cmd.calc.sheet.cell.prop.cmd_cell_prop_set.CmdCellPropSet.execute",
+            "libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_cell_prop_set.CmdCellPropSet.execute",
             side_effect=Exception("Test exception"),
         )
 
@@ -119,10 +119,10 @@ def test_cmd_code_name_error_handling(loader, build_setup, mocker: MockerFixture
 
 def test_cmd_kind(build_setup, mocker: MockerFixture) -> None:
     if TYPE_CHECKING:
-        from oxt.pythonpath.libre_pythonista_lib.cmd.calc.sheet.cell.prop.cmd_code_name import CmdCodeName
+        from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_code_name import CmdCodeName
         from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
     else:
-        from libre_pythonista_lib.cmd.calc.sheet.cell.prop.cmd_code_name import CmdCodeName
+        from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_code_name import CmdCodeName
         from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
 
     cell = mocker.MagicMock()
@@ -138,10 +138,10 @@ def test_cmd_kind(build_setup, mocker: MockerFixture) -> None:
 
 def test_cmd_del_kind(build_setup, mocker: MockerFixture) -> None:
     if TYPE_CHECKING:
-        from oxt.pythonpath.libre_pythonista_lib.cmd.calc.sheet.cell.prop.cmd_code_name_del import CmdCodeNameDel
+        from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_code_name_del import CmdCodeNameDel
         from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
     else:
-        from libre_pythonista_lib.cmd.calc.sheet.cell.prop.cmd_code_name_del import CmdCodeNameDel
+        from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_code_name_del import CmdCodeNameDel
         from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
 
     cell = mocker.MagicMock()
@@ -156,10 +156,10 @@ def test_cmd_del_kind(build_setup, mocker: MockerFixture) -> None:
 def test_qry_kind(build_setup, mocker: MockerFixture) -> None:
     if TYPE_CHECKING:
         from oxt.pythonpath.libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
-        from oxt.pythonpath.libre_pythonista_lib.query.calc.sheet.cell.prop.qry_code_name import QryCodeName
+        from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.sheet.cell.prop.qry_code_name import QryCodeName
     else:
         from libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
-        from libre_pythonista_lib.query.calc.sheet.cell.prop.qry_code_name import QryCodeName
+        from libre_pythonista_lib.cq.query.calc.sheet.cell.prop.qry_code_name import QryCodeName
 
     cell = mocker.MagicMock()
 

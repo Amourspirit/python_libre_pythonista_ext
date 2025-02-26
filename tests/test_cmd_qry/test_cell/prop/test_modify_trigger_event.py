@@ -11,23 +11,25 @@ def test_cmd_modify_trigger_event(loader, build_setup) -> None:
     from ooodev.calc import CalcDoc
 
     if TYPE_CHECKING:
-        from oxt.pythonpath.libre_pythonista_lib.cmd.calc.sheet.cell.prop.cmd_modify_trigger_event import (
+        from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_modify_trigger_event import (
             CmdModifyTriggerEvent,
         )
-        from oxt.pythonpath.libre_pythonista_lib.cmd.cmd_handler import CmdHandler
-        from oxt.pythonpath.libre_pythonista_lib.query.qry_handler import QryHandler
-        from oxt.pythonpath.libre_pythonista_lib.query.calc.sheet.cell.prop.qry_modify_trigger_event import (
+        from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler import CmdHandler
+        from oxt.pythonpath.libre_pythonista_lib.cq.query.qry_handler import QryHandler
+        from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.sheet.cell.prop.qry_modify_trigger_event import (
             QryModifyTriggerEvent,
         )
-        from oxt.pythonpath.libre_pythonista_lib.cmd.calc.sheet.cell.prop.cmd_modify_trigger_event_del import (
+        from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_modify_trigger_event_del import (
             CmdModifyTriggerEventDel,
         )
     else:
-        from libre_pythonista_lib.cmd.calc.sheet.cell.prop.cmd_modify_trigger_event import CmdModifyTriggerEvent
-        from libre_pythonista_lib.cmd.cmd_handler import CmdHandler
-        from libre_pythonista_lib.query.qry_handler import QryHandler
-        from libre_pythonista_lib.query.calc.sheet.cell.prop.qry_modify_trigger_event import QryModifyTriggerEvent
-        from libre_pythonista_lib.cmd.calc.sheet.cell.prop.cmd_modify_trigger_event_del import CmdModifyTriggerEventDel
+        from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_modify_trigger_event import CmdModifyTriggerEvent
+        from libre_pythonista_lib.cq.cmd.cmd_handler import CmdHandler
+        from libre_pythonista_lib.cq.query.qry_handler import QryHandler
+        from libre_pythonista_lib.cq.query.calc.sheet.cell.prop.qry_modify_trigger_event import QryModifyTriggerEvent
+        from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_modify_trigger_event_del import (
+            CmdModifyTriggerEventDel,
+        )
 
     doc = None
     try:
@@ -96,11 +98,11 @@ def test_cmd_modify_trigger_event_error_handling(loader, build_setup, mocker: Mo
     from ooodev.calc import CalcDoc
 
     if TYPE_CHECKING:
-        from oxt.pythonpath.libre_pythonista_lib.cmd.calc.sheet.cell.prop.cmd_modify_trigger_event import (
+        from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_modify_trigger_event import (
             CmdModifyTriggerEvent,
         )
     else:
-        from libre_pythonista_lib.cmd.calc.sheet.cell.prop.cmd_modify_trigger_event import CmdModifyTriggerEvent
+        from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_modify_trigger_event import CmdModifyTriggerEvent
 
     doc = None
     try:
@@ -110,7 +112,7 @@ def test_cmd_modify_trigger_event_error_handling(loader, build_setup, mocker: Mo
 
         # Mock execute to raise an exception
         mocker.patch(
-            "libre_pythonista_lib.cmd.calc.sheet.cell.prop.cmd_cell_prop_set.CmdCellPropSet.execute",
+            "libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_cell_prop_set.CmdCellPropSet.execute",
             side_effect=Exception("Test exception"),
         )
 
@@ -125,12 +127,12 @@ def test_cmd_modify_trigger_event_error_handling(loader, build_setup, mocker: Mo
 
 def test_cmd_kind(build_setup, mocker: MockerFixture) -> None:
     if TYPE_CHECKING:
-        from oxt.pythonpath.libre_pythonista_lib.cmd.calc.sheet.cell.prop.cmd_modify_trigger_event import (
+        from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_modify_trigger_event import (
             CmdModifyTriggerEvent,
         )
         from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
     else:
-        from libre_pythonista_lib.cmd.calc.sheet.cell.prop.cmd_modify_trigger_event import CmdModifyTriggerEvent
+        from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_modify_trigger_event import CmdModifyTriggerEvent
         from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
 
     cell = mocker.MagicMock()
@@ -146,12 +148,14 @@ def test_cmd_kind(build_setup, mocker: MockerFixture) -> None:
 
 def test_cmd_del_kind(build_setup, mocker: MockerFixture) -> None:
     if TYPE_CHECKING:
-        from oxt.pythonpath.libre_pythonista_lib.cmd.calc.sheet.cell.prop.cmd_modify_trigger_event_del import (
+        from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_modify_trigger_event_del import (
             CmdModifyTriggerEventDel,
         )
         from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
     else:
-        from libre_pythonista_lib.cmd.calc.sheet.cell.prop.cmd_modify_trigger_event_del import CmdModifyTriggerEventDel
+        from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_modify_trigger_event_del import (
+            CmdModifyTriggerEventDel,
+        )
         from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
 
     cell = mocker.MagicMock()
@@ -166,12 +170,12 @@ def test_cmd_del_kind(build_setup, mocker: MockerFixture) -> None:
 def test_qry_kind(build_setup, mocker: MockerFixture) -> None:
     if TYPE_CHECKING:
         from oxt.pythonpath.libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
-        from oxt.pythonpath.libre_pythonista_lib.query.calc.sheet.cell.prop.qry_modify_trigger_event import (
+        from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.sheet.cell.prop.qry_modify_trigger_event import (
             QryModifyTriggerEvent,
         )
     else:
         from libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
-        from libre_pythonista_lib.query.calc.sheet.cell.prop.qry_modify_trigger_event import QryModifyTriggerEvent
+        from libre_pythonista_lib.cq.query.calc.sheet.cell.prop.qry_modify_trigger_event import QryModifyTriggerEvent
 
     cell = mocker.MagicMock()
 

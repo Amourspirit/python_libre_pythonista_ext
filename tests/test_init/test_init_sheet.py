@@ -11,9 +11,9 @@ def test_init_sheets(loader, build_setup) -> None:
     from ooodev.calc import CalcDoc
 
     if TYPE_CHECKING:
-        from oxt.pythonpath.libre_pythonista_lib.cmd.calc.init_commands.cmd_init_sheets import CmdInitSheets
+        from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.init_commands.cmd_init_sheets import CmdInitSheets
     else:
-        from libre_pythonista_lib.cmd.calc.init_commands.cmd_init_sheets import CmdInitSheets
+        from libre_pythonista_lib.cq.cmd.calc.init_commands.cmd_init_sheets import CmdInitSheets
 
     doc = None
     try:

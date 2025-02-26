@@ -13,25 +13,27 @@ def test_register(loader, py_src_uri, mocker: MockerFixture) -> None:
     from ooodev.calc import CalcDoc
 
     if TYPE_CHECKING:
-        from oxt.pythonpath.libre_pythonista_lib.cmd.calc.doc.cmd_register_dispatch_interceptor import (
+        from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.cmd_register_dispatch_interceptor import (
             CmdRegisterDispatchInterceptor,
         )
-        from oxt.pythonpath.libre_pythonista_lib.cmd.calc.doc.cmd_unregister_dispatch_interceptor import (
+        from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.cmd_unregister_dispatch_interceptor import (
             CmdUnRegisterDispatchInterceptor,
         )
         from oxt.pythonpath.libre_pythonista_lib.dispatch.calc_sheet_cell_dispatch_provider import (
             CalcSheetCellDispatchProvider,
         )
-        from oxt.pythonpath.libre_pythonista_lib.cmd.cmd_handler import CmdHandler
+        from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler import CmdHandler
         from oxt.___lo_pip___.basic_config import BasicConfig
 
     else:
-        from libre_pythonista_lib.cmd.calc.doc.cmd_register_dispatch_interceptor import CmdRegisterDispatchInterceptor
-        from libre_pythonista_lib.cmd.calc.doc.cmd_unregister_dispatch_interceptor import (
+        from libre_pythonista_lib.cq.cmd.calc.doc.cmd_register_dispatch_interceptor import (
+            CmdRegisterDispatchInterceptor,
+        )
+        from libre_pythonista_lib.cq.cmd.calc.doc.cmd_unregister_dispatch_interceptor import (
             CmdUnRegisterDispatchInterceptor,
         )
         from libre_pythonista_lib.dispatch.calc_sheet_cell_dispatch_provider import CalcSheetCellDispatchProvider
-        from libre_pythonista_lib.cmd.cmd_handler import CmdHandler
+        from libre_pythonista_lib.cq.cmd.cmd_handler import CmdHandler
         from libre_pythonista.basic_config import BasicConfig
 
     doc = None

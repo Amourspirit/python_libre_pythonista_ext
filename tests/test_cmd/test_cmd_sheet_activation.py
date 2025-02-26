@@ -11,9 +11,11 @@ def test_cmd_sheets_activation(loader, build_setup) -> None:
     from ooodev.calc import CalcDoc
 
     if TYPE_CHECKING:
-        from oxt.pythonpath.libre_pythonista_lib.cmd.calc.doc.listener.cmd_sheet_activation import CmdSheetActivation
+        from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.listener.cmd_sheet_activation import (
+            CmdSheetActivation,
+        )
     else:
-        from libre_pythonista_lib.cmd.calc.doc.listener.cmd_sheet_activation import CmdSheetActivation
+        from libre_pythonista_lib.cq.cmd.calc.doc.listener.cmd_sheet_activation import CmdSheetActivation
 
     doc = None
     try:
@@ -31,11 +33,13 @@ def test_cmd_sheets_activation_sheet_insert(loader, build_setup) -> None:
     from ooodev.events.args.event_args import EventArgs
 
     if TYPE_CHECKING:
-        from oxt.pythonpath.libre_pythonista_lib.cmd.calc.doc.listener.cmd_sheet_activation import CmdSheetActivation
+        from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.listener.cmd_sheet_activation import (
+            CmdSheetActivation,
+        )
         from oxt.pythonpath.libre_pythonista_lib.const.event_const import SHEET_ACTIVATION
         from oxt.pythonpath.libre_pythonista_lib.event.shared_event import SharedEvent
     else:
-        from libre_pythonista_lib.cmd.calc.doc.listener.cmd_sheet_activation import CmdSheetActivation
+        from libre_pythonista_lib.cq.cmd.calc.doc.listener.cmd_sheet_activation import CmdSheetActivation
         from libre_pythonista_lib.const.event_const import SHEET_ACTIVATION
         from libre_pythonista_lib.event.shared_event import SharedEvent
 

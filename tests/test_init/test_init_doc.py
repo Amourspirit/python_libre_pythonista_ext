@@ -41,9 +41,9 @@ def test_init_doc(loader, build_setup, mocker: MockerFixture) -> None:
     mocker.patch.object(mock_config, "lp_settings", mock_lp_settings_inst, create=True)
 
     if TYPE_CHECKING:
-        from oxt.pythonpath.libre_pythonista_lib.cmd.calc.init_commands.cmd_init_doc import CmdInitDoc
+        from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.init_commands.cmd_init_doc import CmdInitDoc
     else:
-        from libre_pythonista_lib.cmd.calc.init_commands.cmd_init_doc import CmdInitDoc
+        from libre_pythonista_lib.cq.cmd.calc.init_commands.cmd_init_doc import CmdInitDoc
 
     doc = None
     try:

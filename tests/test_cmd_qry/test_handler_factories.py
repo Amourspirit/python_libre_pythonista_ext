@@ -10,11 +10,11 @@ if __name__ == "__main__":
 
 def test_cmd_handler_factory(build_setup, mocker: MockerFixture) -> None:
     if TYPE_CHECKING:
-        from oxt.pythonpath.libre_pythonista_lib.cmd.cmd_handler_factory import CmdHandlerFactory
-        from oxt.pythonpath.libre_pythonista_lib.cmd.cmd_handler import CmdHandler
+        from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
+        from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler import CmdHandler
     else:
-        from libre_pythonista_lib.cmd.cmd_handler_factory import CmdHandlerFactory
-        from libre_pythonista_lib.cmd.cmd_handler import CmdHandler
+        from libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
+        from libre_pythonista_lib.cq.cmd.cmd_handler import CmdHandler
 
     # Reset factory state
     CmdHandlerFactory.reset()
@@ -39,11 +39,11 @@ def test_cmd_handler_factory(build_setup, mocker: MockerFixture) -> None:
 
 def test_qry_handler_factory(build_setup, mocker: MockerFixture) -> None:
     if TYPE_CHECKING:
-        from oxt.pythonpath.libre_pythonista_lib.query.qry_handler_factory import QryHandlerFactory
-        from oxt.pythonpath.libre_pythonista_lib.query.qry_handler import QryHandler
+        from oxt.pythonpath.libre_pythonista_lib.cq.query.qry_handler_factory import QryHandlerFactory
+        from oxt.pythonpath.libre_pythonista_lib.cq.query.qry_handler import QryHandler
     else:
-        from libre_pythonista_lib.query.qry_handler_factory import QryHandlerFactory
-        from libre_pythonista_lib.query.qry_handler import QryHandler
+        from libre_pythonista_lib.cq.query.qry_handler_factory import QryHandlerFactory
+        from libre_pythonista_lib.cq.query.qry_handler import QryHandler
 
     # Reset factory state
     QryHandlerFactory.reset()

@@ -9,14 +9,14 @@ if __name__ == "__main__":
 
 def test_cell_is_pyc_formula(build_setup, mocker: MockerFixture) -> None:
     if TYPE_CHECKING:
-        from oxt.pythonpath.libre_pythonista_lib.query.calc.sheet.uno_cell.qry_cell_is_pyc_formula import (
+        from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.sheet.uno_cell.qry_cell_is_pyc_formula import (
             QryCellIsPycFormula,
         )
-        from oxt.pythonpath.libre_pythonista_lib.query.qry_handler import QryHandler
+        from oxt.pythonpath.libre_pythonista_lib.cq.query.qry_handler import QryHandler
         from oxt.pythonpath.libre_pythonista_lib.const import FORMULA_PYC
     else:
-        from libre_pythonista_lib.query.calc.sheet.uno_cell.qry_cell_is_pyc_formula import QryCellIsPycFormula
-        from libre_pythonista_lib.query.qry_handler import QryHandler
+        from libre_pythonista_lib.cq.query.calc.sheet.uno_cell.qry_cell_is_pyc_formula import QryCellIsPycFormula
+        from libre_pythonista_lib.cq.query.qry_handler import QryHandler
         from libre_pythonista_lib.const import FORMULA_PYC
 
     handler = QryHandler()
@@ -26,7 +26,7 @@ def test_cell_is_pyc_formula(build_setup, mocker: MockerFixture) -> None:
 
     # Test case 1: Cell is deleted
     mock_is_deleted = mocker.patch(
-        "libre_pythonista_lib.query.calc.sheet.uno_cell.qry_cell_is_deleted.QryCellIsDeleted.execute",
+        "libre_pythonista_lib.cq.query.calc.sheet.uno_cell.qry_cell_is_deleted.QryCellIsDeleted.execute",
         return_value=True,
     )
     qry = QryCellIsPycFormula(cell=mock_cell)
@@ -53,12 +53,12 @@ def test_cell_is_pyc_formula(build_setup, mocker: MockerFixture) -> None:
 
 def test_cell_is_pyc_formula_properties(build_setup, mocker: MockerFixture) -> None:
     if TYPE_CHECKING:
-        from oxt.pythonpath.libre_pythonista_lib.query.calc.sheet.uno_cell.qry_cell_is_pyc_formula import (
+        from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.sheet.uno_cell.qry_cell_is_pyc_formula import (
             QryCellIsPycFormula,
         )
         from oxt.pythonpath.libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
     else:
-        from libre_pythonista_lib.query.calc.sheet.uno_cell.qry_cell_is_pyc_formula import QryCellIsPycFormula
+        from libre_pythonista_lib.cq.query.calc.sheet.uno_cell.qry_cell_is_pyc_formula import QryCellIsPycFormula
         from libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
 
     # Mock SheetCell

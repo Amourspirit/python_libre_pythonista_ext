@@ -11,11 +11,11 @@ def test_is_new_doc(loader, build_setup) -> None:
     from ooodev.calc import CalcDoc
 
     if TYPE_CHECKING:
-        from oxt.pythonpath.libre_pythonista_lib.query.qry_handler import QryHandler
-        from oxt.pythonpath.libre_pythonista_lib.query.calc.doc.qry_is_doc_new import QryIsDocNew
+        from oxt.pythonpath.libre_pythonista_lib.cq.query.qry_handler import QryHandler
+        from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.doc.qry_is_doc_new import QryIsDocNew
     else:
-        from libre_pythonista_lib.query.qry_handler import QryHandler
-        from libre_pythonista_lib.query.calc.doc.qry_is_doc_new import QryIsDocNew
+        from libre_pythonista_lib.cq.query.qry_handler import QryHandler
+        from libre_pythonista_lib.cq.query.calc.doc.qry_is_doc_new import QryIsDocNew
 
     doc = None
     try:
@@ -35,11 +35,11 @@ def test_is_existing_doc(loader, build_setup, copy_fix_calc) -> None:
     from ooodev.calc import CalcDoc
 
     if TYPE_CHECKING:
-        from oxt.pythonpath.libre_pythonista_lib.query.qry_handler import QryHandler
-        from oxt.pythonpath.libre_pythonista_lib.query.calc.doc.qry_is_doc_new import QryIsDocNew
+        from oxt.pythonpath.libre_pythonista_lib.cq.query.qry_handler import QryHandler
+        from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.doc.qry_is_doc_new import QryIsDocNew
     else:
-        from libre_pythonista_lib.query.qry_handler import QryHandler
-        from libre_pythonista_lib.query.calc.doc.qry_is_doc_new import QryIsDocNew
+        from libre_pythonista_lib.cq.query.qry_handler import QryHandler
+        from libre_pythonista_lib.cq.query.calc.doc.qry_is_doc_new import QryIsDocNew
 
     doc = None
     try:
