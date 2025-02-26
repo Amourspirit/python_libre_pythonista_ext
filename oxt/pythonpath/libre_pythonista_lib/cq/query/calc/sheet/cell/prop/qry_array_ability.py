@@ -17,7 +17,7 @@ else:
     from libre_pythonista_lib.cq.query.calc.sheet.cell.qry_key_maker import QryKeyMaker
 
 
-class QryArrayAbility(QryBase, QryCellT[bool]):
+class QryArrayAbility(QryBase, QryCellT[bool | None]):
     """Gets the state of the cell"""
 
     def __init__(self, cell: CalcCell) -> None:
@@ -25,23 +25,19 @@ class QryArrayAbility(QryBase, QryCellT[bool]):
         self.kind = CalcQryKind.CELL
         self._cell = cell
 
-    def execute(self) -> bool:
+    def execute(self) -> bool | None:
         """
         Executes the query and gets the array ability of the cell.
 
         Returns:
-            bool: The array ability of the cell.
-                If an error occurs, False is returned.
-                If the cell does not have a state, False is returned.
+            bool | None: The array ability of the cell.
+                If an error occurs, None is returned.
+                If the cell does not have a state, None is returned.
         """
         qry_km = QryKeyMaker()
         km = self._execute_qry(qry_km)
-        qry_state = QryCellPropValue(cell=self._cell, name=km.cell_array_ability_key, default=False)
-        state = self._execute_qry(qry_state)
-        result = False
-        with contextlib.suppress(Exception):
-            result = bool(state)
-        return result
+        qry_state = QryCellPropValue(cell=self._cell, name=km.cell_array_ability_key, default=None)
+        return self._execute_qry(qry_state)
 
     @property
     def cell(self) -> CalcCell:

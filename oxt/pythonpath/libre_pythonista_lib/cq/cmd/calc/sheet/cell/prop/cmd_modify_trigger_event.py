@@ -94,10 +94,20 @@ class CmdModifyTriggerEvent(CmdBase, LogMixin, CmdCellT):
             if not self._state_changed:
                 self.log.debug("State is already set. Undo not needed.")
                 return
-            if not self._current_state:
-                self.log.debug("No Current State. Unable to undo.")
-                return
-            cmd = CmdCellPropSet(cell=self.cell, name=self._keys.modify_trigger_event, value=self._current_state)
+
+            if self._current_state:
+                cmd = CmdCellPropSet(cell=self.cell, name=self._keys.modify_trigger_event, value=self._current_state)
+            else:
+                if TYPE_CHECKING:
+                    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_modify_trigger_event_del import (
+                        CmdModifyTriggerEventDel,
+                    )
+                else:
+                    from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_modify_trigger_event_del import (
+                        CmdModifyTriggerEventDel,
+                    )
+                cmd = CmdModifyTriggerEventDel(cell=self.cell)
+
             self._execute_cmd(cmd)
             self.log.debug("Successfully executed undo command.")
         except Exception:

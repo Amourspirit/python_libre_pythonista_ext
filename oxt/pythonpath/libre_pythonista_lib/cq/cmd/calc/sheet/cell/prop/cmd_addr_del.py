@@ -9,7 +9,6 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from oxt.pythonpath.libre_pythonista_lib.cell.props.key_maker import KeyMaker
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.cmd_cell_t import CmdCellT
-    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_addr import CmdAddr
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_cell_prop_del import CmdCellPropDel
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
@@ -18,7 +17,6 @@ if TYPE_CHECKING:
 else:
     from libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.cmd_cell_t import CmdCellT
-    from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_addr import CmdAddr
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_cell_prop_del import CmdCellPropDel
     from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
     from libre_pythonista_lib.log.log_mixin import LogMixin
@@ -72,6 +70,11 @@ class CmdAddrDel(CmdBase, LogMixin, CmdCellT):
             if not self._current_state:
                 self.log.debug("No Current State. Unable to undo.")
                 return
+            # avoid circular import
+            if TYPE_CHECKING:
+                from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_addr import CmdAddr
+            else:
+                from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_addr import CmdAddr
             cmd = CmdAddr(cell=self.cell, addr=self._current_state)
             self._execute_cmd(cmd)
             if cmd.success:

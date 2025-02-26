@@ -30,7 +30,7 @@ def test_cmd_array_ability(loader, build_setup) -> None:
         ch = CmdHandler()
         qry_handler = QryHandler()
         qry = QryArrayAbility(cell=cell)
-        assert qry_handler.handle(qry) is False
+        assert qry_handler.handle(qry) is None
 
         # Test setting array ability to True
         cmd = CmdArrayAbility(cell=cell, ability=True)

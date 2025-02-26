@@ -11,6 +11,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.sheet.cell.qry_cell_t import QryCellT
     from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.sheet.cell.ctl.qry_code_name import QryCodeName
     from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.sheet.cell.ctl.qry_addr import QryAddr
+    from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.sheet.cell.ctl.qry_array_ability import QryArrayAbility
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl import Ctl
 else:
     from libre_pythonista_lib.log.log_mixin import LogMixin
@@ -18,6 +19,7 @@ else:
     from libre_pythonista_lib.cq.query.calc.sheet.cell.qry_cell_t import QryCellT
     from libre_pythonista_lib.cq.query.calc.sheet.cell.ctl.qry_code_name import QryCodeName
     from libre_pythonista_lib.cq.query.calc.sheet.cell.ctl.qry_addr import QryAddr
+    from libre_pythonista_lib.cq.query.calc.sheet.cell.ctl.qry_array_ability import QryArrayAbility
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl import Ctl
 
 
@@ -29,12 +31,12 @@ class CtlReader(List[QryCellT], LogMixin, ABC):
         self.ctl.cell = cell
         self._success = False
         self._handler = QryHandler()
-        self._append_query()
 
-    def _append_query(self) -> None:
+    def _append_base_query(self) -> None:
         self.clear()
         self.append(QryCodeName(self.cell, self.ctl))
         self.append(QryAddr(self.cell, self.ctl))
+        self.append(QryArrayAbility(cell=self.cell, ctl=self.ctl))
         self.append_query()
 
     @abstractmethod
@@ -55,7 +57,7 @@ class CtlReader(List[QryCellT], LogMixin, ABC):
 
     def read(self) -> Ctl:
         """Reads the control from the cell"""
-        self.append_query()
+        self._append_base_query()
         self._execute()
         return self.ctl
 

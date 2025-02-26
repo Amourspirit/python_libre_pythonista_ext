@@ -44,17 +44,21 @@ def test_ctl_builder_str(loader, build_setup) -> None:
         assert result.ctl_shape_name == f"SHAPE_{config.general_code_name}_ctl_cell_{result.ctl_code_name}"
         # endregion CtlBuilder
 
-        # region CtlBuilder
+        # region CtlBuilderStr
         km = KeyMaker()
         assert cell.has_custom_property(km.ctl_orig_ctl_key)
         assert cell.get_custom_property(km.ctl_orig_ctl_key) == str(RuleNameKind.CELL_DATA_TYPE_STR)
 
+        assert result.array_ability is False
+        assert cell.has_custom_property(km.cell_array_ability_key)
+        assert cell.get_custom_property(km.cell_array_ability_key) is False
+        assert result.modify_trigger_event == RuleNameKind.CELL_DATA_TYPE_STR
         assert cell.has_custom_property(km.modify_trigger_event)
         assert cell.get_custom_property(km.modify_trigger_event) == str(RuleNameKind.CELL_DATA_TYPE_STR)
 
         assert cell.has_custom_property(km.ctl_shape_key)
         assert cell.get_custom_property(km.ctl_shape_key) == result.ctl_shape_name
-        # endregion CtlBuilder
+        # endregion CtlBuilderStr
 
         reader = CtlReaderStr(cell=cell)
         ctl = reader.read()
@@ -70,6 +74,7 @@ def test_ctl_builder_str(loader, build_setup) -> None:
         assert ctl.modify_trigger_event == RuleNameKind.CELL_DATA_TYPE_STR
         assert ctl.ctl_shape_name == result.ctl_shape_name
         assert ctl.ctl_code_name == result.ctl_code_name
+        assert ctl.array_ability == result.array_ability
         # end region CtlReaderStr
 
     finally:

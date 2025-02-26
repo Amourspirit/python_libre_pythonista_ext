@@ -34,9 +34,8 @@ class CtlBuilder(List[CmdCellCtlT], LogMixin, ABC):
         self._success = False
         self._success_cmds: List[CmdCellCtlT] = []
         self._handler = CmdHandler()
-        self._append_init_commands()
 
-    def _append_init_commands(self) -> None:
+    def _append_base_commands(self) -> None:
         self.clear()
         self.append(CmdCodeName(self.cell, self.ctl))
         self.append(CmdAddr(self.cell, self.ctl))
@@ -89,7 +88,7 @@ class CtlBuilder(List[CmdCellCtlT], LogMixin, ABC):
         self._success = False  # Reset success flag.
 
     def build(self) -> Ctl:
-        self.append_commands()
+        self._append_base_commands()
         self._execute()
         return self.ctl
 

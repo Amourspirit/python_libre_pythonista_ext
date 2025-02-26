@@ -10,7 +10,6 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cell.state.state_kind import StateKind
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.cmd_cell_t import CmdCellT
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_cell_prop_del import CmdCellPropDel
-    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_state import CmdState
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.sheet.cell.prop.qry_state import QryState
@@ -20,7 +19,6 @@ else:
     from libre_pythonista_lib.cell.state.state_kind import StateKind
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.cmd_cell_t import CmdCellT
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_cell_prop_del import CmdCellPropDel
-    from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_state import CmdState
     from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.cq.query.calc.sheet.cell.prop.qry_state import QryState
@@ -77,6 +75,11 @@ class CmdStateDel(CmdBase, LogMixin, CmdCellT):
             if self._current_state == StateKind.UNKNOWN:
                 self.log.debug("No Current State. Unable to undo.")
                 return
+            if TYPE_CHECKING:
+                from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_state import CmdState
+            else:
+                from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_state import CmdState
+
             cmd = CmdState(cell=self.cell, state=self._current_state)
             self._execute_cmd(cmd)
             if cmd.success:

@@ -11,7 +11,6 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.cmd_cell_t import CmdCellT
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_cell_prop_set import CmdCellPropSet
-    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_cell_prop_del import CmdCellPropDel
     from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.sheet.cell.qry_key_maker import QryKeyMaker
     from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.sheet.cell.prop.qry_addr import QryAddr
     from oxt.pythonpath.libre_pythonista_lib.data_type.calc.sheet.cell.prop.addr import Addr
@@ -20,7 +19,6 @@ else:
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.cmd_cell_t import CmdCellT
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_cell_prop_set import CmdCellPropSet
-    from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_cell_prop_del import CmdCellPropDel
     from libre_pythonista_lib.cq.query.calc.sheet.cell.qry_key_maker import QryKeyMaker
     from libre_pythonista_lib.cq.query.calc.sheet.cell.prop.qry_addr import QryAddr
     from libre_pythonista_lib.data_type.calc.sheet.cell.prop.addr import Addr
@@ -94,6 +92,13 @@ class CmdAddr(CmdBase, LogMixin, CmdCellT):
             if self._current_state:
                 cmd = CmdCellPropSet(cell=self.cell, name=self._keys.cell_addr_key, value=self._current_state)
             else:
+                # avoid circular import
+                if TYPE_CHECKING:
+                    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_cell_prop_del import (
+                        CmdCellPropDel,
+                    )
+                else:
+                    from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_cell_prop_del import CmdCellPropDel
                 cmd = CmdCellPropDel(cell=self.cell, name=self._keys.cell_addr_key)
             self._execute_cmd(cmd)
             self.log.debug("Successfully executed undo command.")

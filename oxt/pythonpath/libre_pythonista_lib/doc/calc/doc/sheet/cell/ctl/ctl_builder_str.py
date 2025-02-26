@@ -8,6 +8,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cell.props.rule_name_kind import RuleNameKind
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.cmd_rule_name import CmdRuleName
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.cmd_orig_rule_name import CmdOrigRuleName
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.cmd_array_ability import CmdArrayAbility
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.cmd_modify_trigger_event import (
         CmdModifyTriggerEvent,
     )
@@ -17,6 +18,7 @@ else:
     from libre_pythonista_lib.cell.props.rule_name_kind import RuleNameKind
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.cmd_rule_name import CmdRuleName
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.cmd_orig_rule_name import CmdOrigRuleName
+    from libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.cmd_array_ability import CmdArrayAbility
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.cmd_modify_trigger_event import CmdModifyTriggerEvent
 
     def override(f) -> object:  # noqa: ANN001
@@ -29,4 +31,5 @@ class CtlBuilderStr(CtlBuilder):
         self.append(CmdCtlShapeName(self.cell, self.ctl))
         self.append(CmdRuleName(cell=self.cell, ctl=self.ctl, kind=RuleNameKind.CELL_DATA_TYPE_STR))
         self.append(CmdOrigRuleName(cell=self.cell, ctl=self.ctl, kind=RuleNameKind.CELL_DATA_TYPE_STR))
+        self.append(CmdArrayAbility(cell=self.cell, ctl=self.ctl, ability=False))
         self.append(CmdModifyTriggerEvent(cell=self.cell, ctl=self.ctl, kind=RuleNameKind.CELL_DATA_TYPE_STR))

@@ -9,7 +9,6 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cell.props.key_maker import KeyMaker
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.cmd_cell_t import CmdCellT
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_cell_prop_del import CmdCellPropDel
-    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_shape import CmdShape
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.sheet.cell.prop.qry_shape import QryShape
@@ -18,7 +17,6 @@ else:
     from libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.cmd_cell_t import CmdCellT
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_cell_prop_del import CmdCellPropDel
-    from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_shape import CmdShape
     from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.cq.query.calc.sheet.cell.prop.qry_shape import QryShape
@@ -75,6 +73,12 @@ class CmdShapeDel(CmdBase, LogMixin, CmdCellT):
             if not self._current_state:
                 self.log.debug("No Current State. Unable to undo.")
                 return
+
+            if TYPE_CHECKING:
+                from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_shape import CmdShape
+            else:
+                from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_shape import CmdShape
+
             cmd = CmdShape(cell=self.cell, name=self._current_state)
             self._execute_cmd(cmd)
             if cmd.success:

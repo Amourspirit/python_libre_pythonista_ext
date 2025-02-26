@@ -79,7 +79,17 @@ class CmdState(CmdBase, LogMixin, CmdCellT):
             if not self._state_changed:
                 self.log.debug("State is already set. Undo not needed.")
                 return
-            cmd = CmdCellPropSet(cell=self.cell, name=self._keys.ctl_state_key, value=self._current_state.value)
+            if self._current_state == StateKind.UNKNOWN:
+                # avoid circular import
+                if TYPE_CHECKING:
+                    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_state_del import (
+                        CmdStateDel,
+                    )
+                else:
+                    from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_state_del import CmdStateDel
+                cmd = CmdStateDel(cell=self.cell)
+            else:
+                cmd = CmdCellPropSet(cell=self.cell, name=self._keys.ctl_state_key, value=self._current_state.value)
             self._execute_cmd(cmd)
             self.log.debug("Successfully executed undo command.")
         except Exception:
