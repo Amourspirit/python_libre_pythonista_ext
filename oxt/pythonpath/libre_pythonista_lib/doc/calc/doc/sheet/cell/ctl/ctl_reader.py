@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from __future__ import annotations
+from abc import ABC, abstractmethod
 from typing import List, TYPE_CHECKING
 
 
@@ -21,7 +21,7 @@ else:
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl import Ctl
 
 
-class CtlReader(List[QryCellT], LogMixin):
+class CtlReader(List[QryCellT], LogMixin, ABC):
     def __init__(self, cell: CalcCell) -> None:
         list.__init__(self)
         LogMixin.__init__(self)
@@ -29,11 +29,18 @@ class CtlReader(List[QryCellT], LogMixin):
         self.ctl.cell = cell
         self._success = False
         self._handler = QryHandler()
+        self._append_query()
 
-    def append_query(self) -> None:
+    def _append_query(self) -> None:
         self.clear()
         self.append(QryCodeName(self.cell, self.ctl))
         self.append(QryAddr(self.cell, self.ctl))
+        self.append_query()
+
+    @abstractmethod
+    def append_query(self) -> None:
+        """Appends queries to the list of queries to be executed."""
+        ...
 
     def _execute(self) -> None:
         self._success = False

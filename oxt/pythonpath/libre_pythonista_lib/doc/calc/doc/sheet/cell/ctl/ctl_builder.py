@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from __future__ import annotations
+from abc import ABC, abstractmethod
 from typing import List, TYPE_CHECKING
 
 
@@ -25,7 +25,7 @@ else:
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl import Ctl
 
 
-class CtlBuilder(List[CmdCellCtlT], LogMixin):
+class CtlBuilder(List[CmdCellCtlT], LogMixin, ABC):
     def __init__(self, cell: CalcCell) -> None:
         list.__init__(self)
         LogMixin.__init__(self)
@@ -34,11 +34,18 @@ class CtlBuilder(List[CmdCellCtlT], LogMixin):
         self._success = False
         self._success_cmds: List[CmdCellCtlT] = []
         self._handler = CmdHandler()
+        self._append_init_commands()
 
-    def append_commands(self) -> None:
+    def _append_init_commands(self) -> None:
         self.clear()
         self.append(CmdCodeName(self.cell, self.ctl))
         self.append(CmdAddr(self.cell, self.ctl))
+        self.append_commands()
+
+    @abstractmethod
+    def append_commands(self) -> None:
+        """Appends commands to the list of commands to be executed."""
+        ...
 
     def _execute(self) -> None:
         """

@@ -38,23 +38,39 @@ def test_ctl_builder_str(loader, build_setup) -> None:
         # Verify execution
         assert builder.success
 
+        # region CtlBuilder
         assert result.ctl_code_name.startswith("id_")
+        assert result.addr == f"sheet_index={sheet.sheet_index}&cell_addr={cell.cell_obj}"
         assert result.ctl_shape_name == f"SHAPE_{config.general_code_name}_ctl_cell_{result.ctl_code_name}"
+        # endregion CtlBuilder
 
+        # region CtlBuilder
         km = KeyMaker()
         assert cell.has_custom_property(km.ctl_orig_ctl_key)
         assert cell.get_custom_property(km.ctl_orig_ctl_key) == str(RuleNameKind.CELL_DATA_TYPE_STR)
 
+        assert cell.has_custom_property(km.modify_trigger_event)
+        assert cell.get_custom_property(km.modify_trigger_event) == str(RuleNameKind.CELL_DATA_TYPE_STR)
+
         assert cell.has_custom_property(km.ctl_shape_key)
         assert cell.get_custom_property(km.ctl_shape_key) == result.ctl_shape_name
+        # endregion CtlBuilder
 
         reader = CtlReaderStr(cell=cell)
         ctl = reader.read()
+        # region CtlReader
+        assert ctl.cell == cell
+        assert ctl.ctl_code_name == result.ctl_code_name
+        assert ctl.addr == result.addr
+        # end region CtlReader
+
+        # region CtlReaderStr
         assert ctl.ctl_rule_kind == RuleNameKind.CELL_DATA_TYPE_STR
         assert ctl.ctl_orig_rule_kind == RuleNameKind.CELL_DATA_TYPE_STR
+        assert ctl.modify_trigger_event == RuleNameKind.CELL_DATA_TYPE_STR
         assert ctl.ctl_shape_name == result.ctl_shape_name
         assert ctl.ctl_code_name == result.ctl_code_name
-        assert ctl.cell == cell
+        # end region CtlReaderStr
 
     finally:
         if doc is not None:
