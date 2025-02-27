@@ -26,7 +26,6 @@ class QryLpDocProps(QryBase, QryCacheT[dict | None]):
         QryBase.__init__(self)
         self.kind = CalcQryKind.SIMPLE_CACHE
         self._doc = doc
-        self._data = cast(dict | None, NULL_OBJ)
 
     def _get_data(self) -> dict | None:
         qry = QryLpDocJsonFile(self._doc)
@@ -36,9 +35,7 @@ class QryLpDocProps(QryBase, QryCacheT[dict | None]):
         return result.read_json(qry.file_name)
 
     def execute(self) -> Any:  # noqa: ANN401
-        if self._data is NULL_OBJ:
-            self._data = self._get_data()
-        return self._data
+        return self._get_data()
 
     @property
     def cache_key(self) -> str:

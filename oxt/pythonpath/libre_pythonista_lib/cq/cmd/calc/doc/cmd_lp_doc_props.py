@@ -62,20 +62,19 @@ class CmdLpDocProps(CmdBase, LogMixin, CmdCacheT):
         if self._ensured is False:
             self._ensured = self._ensure_json_file()
 
-        if self._json_file is NULL_OBJ:
-            self._json_file = self._get_json_file()
+        json_file = self._get_json_file()
 
-        if self._json_file is None:
+        if json_file is None:
             self.log.debug("JSON file does not exist. Nothing to do.")
             self.success = True
             return
 
         if self._current_state is NULL_OBJ:
-            self._current_state = self._json_file.read_json(self._file_name)
+            self._current_state = json_file.read_json(self._file_name)
 
         self.success = False
         try:
-            self._json_file.write_json(file_name=self._file_name, data=self._props)
+            json_file.write_json(file_name=self._file_name, data=self._props)
         except Exception as e:
             self.log.exception("Error setting document properties. Error: %s", e)
             return

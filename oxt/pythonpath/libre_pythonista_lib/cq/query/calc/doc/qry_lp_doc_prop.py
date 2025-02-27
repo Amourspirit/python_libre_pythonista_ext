@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, cast, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING
 
 from ooodev.utils.gen_util import NULL_OBJ
 
@@ -23,15 +23,13 @@ class QryLpDocProp(QryBase, QryDocT[Any]):
         self._doc = doc
         self._name = name
         self._default = default
-        self._data = cast(dict | None, NULL_OBJ)
 
     def _get_data(self) -> dict | None:
         qry = QryLpDocProps(self._doc)
         return self._execute_qry(qry)
 
     def execute(self) -> Any:  # noqa: ANN401
-        if self._data is NULL_OBJ:
-            self._data = self._get_data()
-        if self._data is None:
+        data = self._get_data()
+        if data is None:
             return self._default
-        return self._data.get(self._name, self._default)
+        return data.get(self._name, self._default)
