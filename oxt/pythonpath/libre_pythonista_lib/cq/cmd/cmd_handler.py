@@ -1,3 +1,4 @@
+# region Imports
 from __future__ import annotations
 from typing import Iterable, cast, TYPE_CHECKING
 
@@ -26,7 +27,11 @@ else:
     from libre_pythonista_lib.cq.query.qry_handler import QryHandler
 
 
+# endregion Imports
+
+
 class CmdHandler(CmdHandlerT):
+    # region Handle methods
     def handle(self, cmd: CmdT) -> None:  # noqa: ANN401
         if cmd.kind in (CalcCmdKind.SIMPLE, CalcCmdKind.SHEET, CalcCmdKind.CELL):
             self._handle_simple(cmd)
@@ -80,7 +85,57 @@ class CmdHandler(CmdHandlerT):
         # So we need to remove it again after the command is executed to reflect new values that the command executed.
         self._clear_cache(cache, cmd.cache_keys)
 
+    # endregion Handle methods
+
+    # regin Undo methods
+
+    def handle_undo(self, cmd: CmdT) -> None:  # noqa: ANN401
+        if cmd.kind in (CalcCmdKind.SIMPLE, CalcCmdKind.SHEET, CalcCmdKind.CELL):
+            self._handle_undo_simple(cmd)
+        elif cmd.kind == CalcCmdKind.SIMPLE_CACHE:
+            self._handle_undo_simple_cache(cast(CmdCacheT, cmd))
+        elif cmd.kind == CalcCmdKind.CELL_CACHE:
+            self._handle_undo_cell_cache(cast(CmdCellCacheT, cmd))
+
+    def _handle_undo_simple(self, cmd: CmdT) -> None:
+        cmd.undo()
+
+    def _handle_undo_simple_cache(self, cmd: CmdCacheT) -> None:  # noqa: ANN401
+        cache_qry = QryCache()
+        cache = cast("MemCache", QryHandler().handle(cache_qry))
+        if not cache:
+            return
+
+        self._clear_cache(cache, cmd.cache_keys)
+        cmd.undo()
+        self._clear_cache(cache, cmd.cache_keys)
+
+    def _handle_undo_cell_cache(self, cmd: CmdCellCacheT) -> None:  # noqa: ANN401
+        cache_qry = QryCellCache(cmd.cell)
+        cache = cast("MemCache", QryHandler().handle(cache_qry))
+        if not cache:
+            return
+
+        self._clear_cache(cache, cmd.cache_keys)
+        cmd.undo()
+        self._clear_cache(cache, cmd.cache_keys)
+
+    def _handle_undo_sheet_cache(self, cmd: CmdSheetCacheT) -> None:  # noqa: ANN401
+        cache_qry = QrySheetCache(cmd.sheet)
+        cache = cast("MemCache", QryHandler().handle(cache_qry))
+        if not cache:
+            return
+
+        self._clear_cache(cache, cmd.cache_keys)
+        cmd.undo()
+        self._clear_cache(cache, cmd.cache_keys)
+
+    # endregion Undo methods
+
+    # region Cache methods
     def _clear_cache(self, cache: MemCache, keys: Iterable[str]) -> None:
         for key in keys:
             if key in cache:
                 del cache[key]
+
+    # endregion Cache methods

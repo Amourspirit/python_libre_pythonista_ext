@@ -72,6 +72,11 @@ def test_cmd_lp_doc_json_file(loader, build_setup) -> None:
         result = qry_handler.handle(qry)
         assert result is None
 
+        cmd_handler.handle_undo(cmd_del)
+
+        result = qry_handler.handle(qry)
+        assert result is not None
+
     finally:
         if doc is not None:
             doc.close(True)
