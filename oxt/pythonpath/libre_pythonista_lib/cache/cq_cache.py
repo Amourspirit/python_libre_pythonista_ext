@@ -3,7 +3,8 @@ from __future__ import annotations
 from typing import Any, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from oxt.pythonpath.libre_pythonista_lib.doc.doc_globals import DocGlobals, MemCache
+    from ooodev.utils.cache import MemCache
+    from oxt.pythonpath.libre_pythonista_lib.doc.doc_globals import DocGlobals
 else:
     from libre_pythonista_lib.doc.doc_globals import DocGlobals
 

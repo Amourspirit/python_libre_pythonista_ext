@@ -2,12 +2,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from ooodev.utils.cache import MemCache
+
 if TYPE_CHECKING:
     from ooodev.calc import CalcCell
-    from oxt.pythonpath.libre_pythonista_lib.doc.doc_globals import MemCache
     from oxt.pythonpath.libre_pythonista_lib.cache.calc.sheet.sheet_cache import get_sheet_cache
 else:
-    from libre_pythonista_lib.doc.doc_globals import MemCache
     from libre_pythonista_lib.cache.calc.sheet.sheet_cache import get_sheet_cache
 
 

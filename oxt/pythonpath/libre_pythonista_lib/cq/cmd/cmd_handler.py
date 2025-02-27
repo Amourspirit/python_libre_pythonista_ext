@@ -1,15 +1,15 @@
 # region Imports
 from __future__ import annotations
-from typing import Iterable, cast, TYPE_CHECKING
+from typing import Any, Iterable, cast, TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from ooodev.utils.cache import MemCache
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.cmd_cell_cache_t import CmdCellCacheT
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cmd_sheet_cache_t import CmdSheetCacheT
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler_t import CmdHandlerT
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_t import CmdT
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_cache_t import CmdCacheT
     from oxt.pythonpath.libre_pythonista_lib.cq.query.general.qry_cache import QryCache
-    from oxt.pythonpath.libre_pythonista_lib.doc.doc_globals import MemCache
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
     from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.sheet.cell.qry_cell_cache import QryCellCache
     from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.sheet.qry_sheet_cache import QrySheetCache
@@ -26,6 +26,7 @@ else:
     from libre_pythonista_lib.cq.query.calc.sheet.qry_sheet_cache import QrySheetCache
     from libre_pythonista_lib.cq.query.qry_handler import QryHandler
 
+    MemCache = Any
 
 # endregion Imports
 
@@ -49,7 +50,7 @@ class CmdHandler(CmdHandlerT):
 
     def _handle_simple_cache(self, cmd: CmdCacheT) -> None:  # noqa: ANN401
         cache_qry = QryCache()
-        cache = cast("MemCache", QryHandler().handle(cache_qry))
+        cache = cast(MemCache, QryHandler().handle(cache_qry))
         if not cache:
             return
 
@@ -62,7 +63,7 @@ class CmdHandler(CmdHandlerT):
 
     def _handle_cell_cache(self, cmd: CmdCellCacheT) -> None:  # noqa: ANN401
         cache_qry = QryCellCache(cmd.cell)
-        cache = cast("MemCache", QryHandler().handle(cache_qry))
+        cache = cast(MemCache, QryHandler().handle(cache_qry))
         if not cache:
             return
 
@@ -75,7 +76,7 @@ class CmdHandler(CmdHandlerT):
 
     def _handle_sheet_cache(self, cmd: CmdSheetCacheT) -> None:  # noqa: ANN401
         cache_qry = QrySheetCache(cmd.sheet)
-        cache = cast("MemCache", QryHandler().handle(cache_qry))
+        cache = cast(MemCache, QryHandler().handle(cache_qry))
         if not cache:
             return
         # self._clear_cache(cache, cmd.cache_keys)
@@ -102,7 +103,7 @@ class CmdHandler(CmdHandlerT):
 
     def _handle_undo_simple_cache(self, cmd: CmdCacheT) -> None:  # noqa: ANN401
         cache_qry = QryCache()
-        cache = cast("MemCache", QryHandler().handle(cache_qry))
+        cache = cast(MemCache, QryHandler().handle(cache_qry))
         if not cache:
             return
 
@@ -112,7 +113,7 @@ class CmdHandler(CmdHandlerT):
 
     def _handle_undo_cell_cache(self, cmd: CmdCellCacheT) -> None:  # noqa: ANN401
         cache_qry = QryCellCache(cmd.cell)
-        cache = cast("MemCache", QryHandler().handle(cache_qry))
+        cache = cast(MemCache, QryHandler().handle(cache_qry))
         if not cache:
             return
 
@@ -122,7 +123,7 @@ class CmdHandler(CmdHandlerT):
 
     def _handle_undo_sheet_cache(self, cmd: CmdSheetCacheT) -> None:  # noqa: ANN401
         cache_qry = QrySheetCache(cmd.sheet)
-        cache = cast("MemCache", QryHandler().handle(cache_qry))
+        cache = cast(MemCache, QryHandler().handle(cache_qry))
         if not cache:
             return
 

@@ -1,25 +1,26 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import Any, TYPE_CHECKING
 
 from ooodev.events.partial.events_partial import EventsPartial
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcDoc, CalcSheet
-    from oxt.pythonpath.libre_pythonista_lib.const.event_const import SHEET_MODIFIED
+    from ooodev.utils.cache import MemCache
     from oxt.pythonpath.libre_pythonista_lib.event.shared_event import SharedEvent
-    from oxt.pythonpath.libre_pythonista_lib.doc.doc_globals import DocGlobals, MemCache
+    from oxt.pythonpath.libre_pythonista_lib.doc.doc_globals import DocGlobals
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler import CmdHandler
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.init_commands.cmd_init_doc import CmdInitDoc
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.init_commands.cmd_init_sheet import CmdInitSheet
 else:
     from libre_pythonista_lib.event.shared_event import SharedEvent
-    from libre_pythonista_lib.const.event_const import SHEET_MODIFIED
-    from libre_pythonista_lib.doc.doc_globals import DocGlobals, MemCache
+    from libre_pythonista_lib.doc.doc_globals import DocGlobals
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.cq.cmd.cmd_handler import CmdHandler
     from libre_pythonista_lib.cq.cmd.calc.init_commands.cmd_init_doc import CmdInitDoc
     from libre_pythonista_lib.cq.cmd.calc.init_commands.cmd_init_sheet import CmdInitSheet
+
+    MemCache = Any
 
 _KEY = "libre_pythonista_lib.doc.doc_monitor.DocMonitor"
 

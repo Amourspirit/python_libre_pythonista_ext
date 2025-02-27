@@ -4,10 +4,10 @@ from __future__ import annotations
 from typing import Any, TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from ooodev.utils.cache import MemCache
     from ooodev.calc import CalcSheet
     from oxt.pythonpath.libre_pythonista_lib.cq.query.qry_base import QryBase
     from oxt.pythonpath.libre_pythonista_lib.cache.calc.sheet.sheet_cache import get_sheet_cache
-    from oxt.pythonpath.libre_pythonista_lib.doc.doc_globals import MemCache
     from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.sheet.qry_sheet_t import QrySheetT
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind

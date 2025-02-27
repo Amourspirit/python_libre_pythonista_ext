@@ -1,8 +1,8 @@
 from __future__ import annotations
-from typing import cast, TYPE_CHECKING
+from typing import Any, cast, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from oxt.pythonpath.libre_pythonista_lib.cache.mem_cache import MemCache
+    from ooodev.utils.cache import MemCache
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
     from oxt.pythonpath.libre_pythonista_lib.cq.query.general.qry_cache import QryCache
     from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.sheet.cell.qry_cell_cache import QryCellCache
@@ -23,6 +23,8 @@ else:
     from libre_pythonista_lib.cq.query.qry_handler_t import QryHandlerT
     from libre_pythonista_lib.cq.query.qry_t import QryT, TResult
 
+    MemCache = Any
+
 
 class QryHandler(QryHandlerT):
     def handle(self, query: QryT[TResult]) -> TResult:  # noqa: ANN401
@@ -42,7 +44,7 @@ class QryHandler(QryHandlerT):
 
     def _handle_simple_cache(self, query: QryCacheT) -> object:  # noqa: ANN401
         cache_qry = QryCache()
-        cache = cast("MemCache", self._handle_simple(cache_qry))
+        cache = cast(MemCache, self._handle_simple(cache_qry))
         if not cache:
             return None
         if query.cache_key in cache:
@@ -55,7 +57,7 @@ class QryHandler(QryHandlerT):
 
     def _handle_cell_cache(self, query: QryCellCacheT) -> object:  # noqa: ANN401
         cache_qry = QryCellCache(query.cell)
-        cache = cast("MemCache", self._handle_simple(cache_qry))
+        cache = cast(MemCache, self._handle_simple(cache_qry))
         if not cache:
             return None
         if query.cache_key in cache:
@@ -68,7 +70,7 @@ class QryHandler(QryHandlerT):
 
     def _handle_sheet_cache(self, query: QrySheetCacheT) -> object:  # noqa: ANN401
         cache_qry = QrySheetCache(query.sheet)
-        cache = cast("MemCache", self._handle_simple(cache_qry))
+        cache = cast(MemCache, self._handle_simple(cache_qry))
         if not cache:
             return None
         if query.cache_key in cache:

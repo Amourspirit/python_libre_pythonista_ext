@@ -89,3 +89,7 @@ class CmdInitSheet(CmdBase, List[Type[CmdSheetT]], LogMixin, CmdSheetT):
         self.success = False  # Reset success flag.
 
         self._cache[_KEY] = "0"
+
+    @property
+    def sheet(self) -> CalcSheet:
+        return self._sheet

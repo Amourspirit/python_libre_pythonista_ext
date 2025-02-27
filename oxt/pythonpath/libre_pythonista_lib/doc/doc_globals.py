@@ -10,13 +10,12 @@ from ooodev.utils.helper.dot_dict import DotDict
 from ooodev.events.partial.events_partial import EventsPartial
 
 from ooodev.meta.class_property_readonly import ClassPropertyReadonly
+from ooodev.utils.cache import MemCache
 
 if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.const.event_const import DOC_GBL_DEL_INSTANCE
-    from oxt.pythonpath.libre_pythonista_lib.cache.mem_cache import MemCache
 else:
     from libre_pythonista_lib.const.event_const import DOC_GBL_DEL_INSTANCE
-    from libre_pythonista_lib.cache.mem_cache import MemCache
 
 
 class _MetaGlobals(type):

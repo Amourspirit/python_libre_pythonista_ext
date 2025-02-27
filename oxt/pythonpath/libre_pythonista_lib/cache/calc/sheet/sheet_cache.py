@@ -4,7 +4,8 @@ from typing import Any, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcSheet
-    from oxt.pythonpath.libre_pythonista_lib.doc.doc_globals import DocGlobals, MemCache
+    from ooodev.utils.cache import MemCache
+    from oxt.pythonpath.libre_pythonista_lib.doc.doc_globals import DocGlobals
 else:
     from libre_pythonista_lib.doc.doc_globals import DocGlobals
 

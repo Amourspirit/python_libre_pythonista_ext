@@ -11,9 +11,9 @@ if __name__ == "__main__":
 
 def test_cell_code(loader, py_src_uri) -> None:
     from ooodev.calc import CalcDoc
+    from ooodev.utils.cache import MemCache
 
     if TYPE_CHECKING:
-        from oxt.pythonpath.libre_pythonista_lib.cache.mem_cache import MemCache
         from oxt.pythonpath.libre_pythonista_lib.cq.query.qry_handler import QryHandler
         from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler import CmdHandler
         from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.cmd_cell_src_code import CmdCellSrcCode
@@ -21,7 +21,6 @@ def test_cell_code(loader, py_src_uri) -> None:
         from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.sheet.cell.qry_cell_cache import QryCellCache
 
     else:
-        from libre_pythonista_lib.cache.mem_cache import MemCache
         from libre_pythonista_lib.cq.query.qry_handler import QryHandler
         from libre_pythonista_lib.cq.cmd.cmd_handler import CmdHandler
         from libre_pythonista_lib.cq.query.calc.sheet.cell.qry_cell_src_code import QryCellSrcCode
