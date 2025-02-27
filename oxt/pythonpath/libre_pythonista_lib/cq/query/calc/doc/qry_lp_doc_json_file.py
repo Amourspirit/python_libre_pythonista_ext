@@ -1,7 +1,6 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
-from ooodev.io.json.doc_json_file import DocJsonFile
 
 if TYPE_CHECKING:
     from ooodev.proto.office_document_t import OfficeDocumentT

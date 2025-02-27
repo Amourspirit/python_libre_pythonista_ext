@@ -38,10 +38,12 @@ def test_cmd_sheets_activation_sheet_insert(loader, build_setup) -> None:
         )
         from oxt.pythonpath.libre_pythonista_lib.const.event_const import SHEET_ACTIVATION
         from oxt.pythonpath.libre_pythonista_lib.event.shared_event import SharedEvent
+        from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
     else:
         from libre_pythonista_lib.cq.cmd.calc.doc.listener.cmd_sheet_activation import CmdSheetActivation
         from libre_pythonista_lib.const.event_const import SHEET_ACTIVATION
         from libre_pythonista_lib.event.shared_event import SharedEvent
+        from libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
 
     doc = None
     try:
@@ -55,8 +57,9 @@ def test_cmd_sheets_activation_sheet_insert(loader, build_setup) -> None:
         doc = CalcDoc.create_doc(loader=loader)
         se = SharedEvent()
         se.subscribe_event(SHEET_ACTIVATION, on)
+        cmd_handler = CmdHandlerFactory.get_cmd_handler()
         cmd = CmdSheetActivation(doc)
-        cmd.execute()
+        cmd_handler.handle(cmd)
         assert cmd.success
 
         doc.sheets.insert_sheet("Sheet 2")
@@ -66,7 +69,8 @@ def test_cmd_sheets_activation_sheet_insert(loader, build_setup) -> None:
 
         fired = False
 
-        cmd.undo()
+        cmd_handler.handle_undo(cmd)
+        assert cmd._listener is cmd._undo_listener  # test singleton
         doc.sheets.set_active_sheet(doc.sheets[0])
         assert fired is False
 

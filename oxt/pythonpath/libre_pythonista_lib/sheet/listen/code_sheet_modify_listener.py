@@ -110,14 +110,19 @@ class CodeSheetModifyListener(XModifyListener, LogMixin, TriggerStateMixin, unoh
         This method is called for every listener registration of derived listener
         interfaced, not only for registrations at XComponent.
         """
+        # do not remove from cache when disposing.
+        # in some cased the listener is removed and then added again to ensure the listener is active.
+        # This may cause disposing to be called.
+        # If the listener is removed from the cache, it will not be added again but as a new instance.
+        # This would not be a true singleton and that leads to side effects.
+        pass
+        # with contextlib.suppress(Exception):
+        #     gbl_cache = DocGlobals.get_current()
+        #     if not _KEY in gbl_cache.mem_cache:
+        #         return
 
-        with contextlib.suppress(Exception):
-            gbl_cache = DocGlobals.get_current()
-            if not _KEY in gbl_cache.mem_cache:
-                return
-
-            if self._inst_name in gbl_cache.mem_cache[_KEY]:
-                del gbl_cache.mem_cache[_KEY][self._inst_name]
+        #     if self._inst_name in gbl_cache.mem_cache[_KEY]:
+        #         del gbl_cache.mem_cache[_KEY][self._inst_name]
 
     def __del__(self) -> None:
         with contextlib.suppress(Exception):

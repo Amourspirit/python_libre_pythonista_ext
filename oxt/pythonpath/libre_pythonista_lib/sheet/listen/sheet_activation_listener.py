@@ -26,7 +26,7 @@ else:
     from libre_pythonista_lib.log.log_mixin import LogMixin
 
 # is added when document view is complete.
-_SHEET_ACTIVATION_LISTENER_KEY = "libre_pythonista_lib.sheet.listen.sheet_activation_listener.SheetActivationListener"
+_KEY = "libre_pythonista_lib.sheet.listen.sheet_activation_listener.SheetActivationListener"
 
 
 class SheetActivationListener(XActivationEventListener, LogMixin, unohelper.Base):
@@ -34,13 +34,13 @@ class SheetActivationListener(XActivationEventListener, LogMixin, unohelper.Base
 
     def __new__(cls) -> SheetActivationListener:
         gbl_cache = DocGlobals.get_current()
-        if _SHEET_ACTIVATION_LISTENER_KEY in gbl_cache.mem_cache:
-            return gbl_cache.mem_cache[_SHEET_ACTIVATION_LISTENER_KEY]
+        if _KEY in gbl_cache.mem_cache:
+            return gbl_cache.mem_cache[_KEY]
 
         inst = super().__new__(cls)
         inst._is_init = False
 
-        gbl_cache.mem_cache[_SHEET_ACTIVATION_LISTENER_KEY] = inst
+        gbl_cache.mem_cache[_KEY] = inst
         return inst
 
     def __init__(self) -> None:
@@ -109,13 +109,19 @@ class SheetActivationListener(XActivationEventListener, LogMixin, unohelper.Base
         This method is called for every listener registration of derived listener
         interfaced, not only for registrations at XComponent.
         """
-        with contextlib.suppress(Exception):
-            gbl_cache = DocGlobals.get_current()
-            if _SHEET_ACTIVATION_LISTENER_KEY in gbl_cache.mem_cache:
-                del gbl_cache.mem_cache[_SHEET_ACTIVATION_LISTENER_KEY]
+        # do not remove from cache when disposing.
+        # in some cased the listener is removed and then added again to ensure the listener is active.
+        # This may cause disposing to be called.
+        # If the listener is removed from the cache, it will not be added again but as a new instance.
+        # This would not be a true singleton and that leads to side effects.
+        pass
+        # with contextlib.suppress(Exception):
+        #     gbl_cache = DocGlobals.get_current()
+        #     if _KEY in gbl_cache.mem_cache:
+        #         del gbl_cache.mem_cache[_KEY]
 
     def __del__(self) -> None:
         with contextlib.suppress(Exception):
             gbl_cache = DocGlobals.get_current()
-            if _SHEET_ACTIVATION_LISTENER_KEY in gbl_cache.mem_cache:
-                del gbl_cache.mem_cache[_SHEET_ACTIVATION_LISTENER_KEY]
+            if _KEY in gbl_cache.mem_cache:
+                del gbl_cache.mem_cache[_KEY]

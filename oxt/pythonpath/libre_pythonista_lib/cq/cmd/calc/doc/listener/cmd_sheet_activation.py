@@ -17,12 +17,14 @@ else:
 
 
 class CmdSheetActivation(CmdBase, LogMixin, CmdDocT):
-    """Adds new modifier listeners for new sheets"""
+    """Adds new sheet activation listeners to all sheets that don't have one"""
 
     def __init__(self, doc: CalcDoc) -> None:
         CmdBase.__init__(self)
         LogMixin.__init__(self)
         self._doc = doc
+        self._listener = None
+        self._undo_listener = None
 
     def _get_view(self) -> CalcSheetView | None:
         try:
@@ -45,15 +47,16 @@ class CmdSheetActivation(CmdBase, LogMixin, CmdDocT):
 
     def execute(self) -> None:
         self.success = False
+        self._listener = SheetActivationListener()  # singleton
+        self._listener.set_trigger_state(True)
         view = self._get_view()
         if view is None:
             self.log.debug("View is None. May be print preview. Returning.")
             return
         try:
-            listener = SheetActivationListener()  # singleton
-            listener.set_trigger_state(True)
-            view.component.removeActivationEventListener(listener)
-            view.component.addActivationEventListener(listener)
+            # removing may call disposing method.
+            view.component.removeActivationEventListener(self._listener)
+            view.component.addActivationEventListener(self._listener)
         except Exception:
             self.log.exception("Error initializing sheet activation listener")
             return
@@ -62,12 +65,13 @@ class CmdSheetActivation(CmdBase, LogMixin, CmdDocT):
 
     def undo(self) -> None:
         if self.success:
+            self._undo_listener = SheetActivationListener()  # singleton
+            self._undo_listener.set_trigger_state(False)
             view = self._get_view()
             try:
                 if view is not None:
-                    listener = SheetActivationListener()  # singleton
-                    listener.set_trigger_state(False)
-                    view.component.removeActivationEventListener(listener)
+                    # removing may call disposing method.
+                    view.component.removeActivationEventListener(self._undo_listener)
                     self.log.debug("Successfully executed undo command.")
             except Exception:
                 self.log.exception("Error removing sheet activation listener")

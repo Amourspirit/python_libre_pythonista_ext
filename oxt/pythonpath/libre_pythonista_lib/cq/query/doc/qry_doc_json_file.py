@@ -26,10 +26,10 @@ class QryDocJsonFile(QryBase, LogMixin, QryCacheT[DocJsonFile | None]):
         LogMixin.__init__(self)
         self.kind = CalcQryKind.SIMPLE_CACHE
         self._doc = doc
-        self._root_dir = root_dir
+        self.root_dir = root_dir
         if ext and not file_name.endswith(ext):
             file_name = f"{file_name}.{ext}"
-        self._name = file_name
+        self.file_name = file_name
 
     def execute(self) -> DocJsonFile | None:
         """
@@ -40,8 +40,8 @@ class QryDocJsonFile(QryBase, LogMixin, QryCacheT[DocJsonFile | None]):
         """
 
         try:
-            djf = DocJsonFile(self._doc, self._root_dir)
-            if djf.file_exist(self._name):
+            djf = DocJsonFile(self._doc, self.root_dir)
+            if djf.file_exist(self.file_name):
                 return djf
             return None
         except Exception:
@@ -51,4 +51,4 @@ class QryDocJsonFile(QryBase, LogMixin, QryCacheT[DocJsonFile | None]):
     @property
     def cache_key(self) -> str:
         """Gets the cache key."""
-        return f"DocJsonFile_{self._name}"
+        return f"DocJsonFile_{self.file_name}"

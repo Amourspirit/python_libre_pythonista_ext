@@ -16,8 +16,6 @@ else:
     from ___lo_pip___.basic_config import BasicConfig
 
 
-# this class should be call in:
-# libre_pythonista_lib.cq.query.calc.sheet.qry_handler_sheet_cache.QryHandlerSheetCache
 class QryLpCodeDir(QryBase, LogMixin, QryDocT[str]):
     def __init__(self, doc: CalcDoc) -> None:
         QryBase.__init__(self)
