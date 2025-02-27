@@ -3,5 +3,3 @@ SHEET_CALCULATION_EVENT = "SheetCalculationEvent"
 
 CELL_SRC_CODE = "CellSrcCode"
 CELL_SRC_CODE_EXIST = "CellSrcCodeExist"
-
-DOC_LP_PROPERTIES = "DocLpProperties"

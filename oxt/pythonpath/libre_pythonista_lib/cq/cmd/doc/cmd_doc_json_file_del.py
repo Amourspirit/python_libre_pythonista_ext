@@ -1,56 +1,61 @@
 from __future__ import annotations
-from typing import Any, cast, TYPE_CHECKING
+from typing import Any, cast, Tuple, TYPE_CHECKING
 
 from ooodev.io.json.doc_json_file import DocJsonFile
 from ooodev.utils.gen_util import NULL_OBJ
-from ooodev.io.sfa.sfa import Sfa
 
 if TYPE_CHECKING:
     from ooodev.proto.office_document_t import OfficeDocumentT
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
-    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.cmd_doc_t import CmdDocT
-    from oxt.pythonpath.libre_pythonista_lib.cq.query.doc.qry_doc_props import QryDocProps
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_cache_t import CmdCacheT
+    from oxt.pythonpath.libre_pythonista_lib.cq.query.doc.qry_doc_json_file import QryDocJsonFile
+    from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
 else:
     from libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from libre_pythonista_lib.log.log_mixin import LogMixin
-    from libre_pythonista_lib.cq.cmd.calc.doc.cmd_doc_t import CmdDocT
-    from libre_pythonista_lib.cq.query.doc.qry_doc_props import QryDocProps
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_cache_t import CmdCacheT
+    from libre_pythonista_lib.cq.query.doc.qry_doc_json_file import QryDocJsonFile
+    from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
 
 
-class CmdDocPropsDel(CmdBase, LogMixin, CmdDocT):
+class CmdDocJsonFileDel(CmdBase, LogMixin, CmdCacheT):
     def __init__(self, doc: OfficeDocumentT, file_name: str, root_dir: str = "json", ext: str = "json") -> None:
         CmdBase.__init__(self)
         LogMixin.__init__(self)
-        self._sfa = Sfa()
-        self._file_name = file_name
-        self._ext = ext
-        self._doc = doc
-        self._root_dir = root_dir
+        self.kind = CalcCmdKind.SIMPLE_CACHE
+        self.file_name = file_name
+        self.ext = ext
+        self.doc = doc
+        self.root_dir = root_dir
         if ext and not file_name.endswith(ext):
             file_name = f"{file_name}.{ext}"
-        self._name = file_name
-        self._current_state = cast(Any, NULL_OBJ)
+        self.name = file_name
+        self._current_state = cast(DocJsonFile | None, NULL_OBJ)
+        self._current_value = cast(Any, NULL_OBJ)
 
-    def _get_current_value(self) -> Any:  # noqa: ANN401
-        qry = QryDocProps(doc=self._doc, file_name=self._file_name, ext=self._ext)
-        result = self._execute_qry(qry)
-        if result is None:
-            return None
-        return result.read_json(self._name)
+    def _get_current_state(self) -> DocJsonFile | None:
+        qry = QryDocJsonFile(doc=self.doc, file_name=self.file_name, ext=self.ext)
+        return self._execute_qry(qry)
+
+    def _get_current_value(self, js: DocJsonFile) -> Any:  # noqa: ANN401
+        return js.read_json(self.name)
 
     def execute(self) -> None:
         self.success = False
         if self._current_state is NULL_OBJ:
-            self._current_state = self._get_current_value()
+            self._current_state = self._get_current_state()
 
         if self._current_state is None:
             self.log.debug("Current state does not exist. Nothing to do.")
             self.success = True
             return
 
+        if self._current_value is NULL_OBJ:
+            self._current_value = self._get_current_value(self._current_state)
+
         try:
-            self._sfa.delete_file(self._name)
+            self._current_state.delete_file(self.name)
         except Exception as e:
             self.log.exception("Error: %s", e)
             return
@@ -62,8 +67,8 @@ class CmdDocPropsDel(CmdBase, LogMixin, CmdDocT):
             if self._current_state is None:
                 self.log.debug("Current state is None. Unable to undo.")
                 return
-            djf = DocJsonFile(doc=self._doc, root_dir=self._root_dir)
-            djf.write_json(file_name=self._name, data=self._current_state)
+            djf = DocJsonFile(doc=self.doc, root_dir=self.root_dir)
+            djf.write_json(file_name=self.name, data=self._current_value)
         except Exception as e:
             self.log.exception("Error undoing command. Error: %s", e)
             return
@@ -74,3 +79,7 @@ class CmdDocPropsDel(CmdBase, LogMixin, CmdDocT):
             self._undo()
         else:
             self.log.debug("Undo not needed.")
+
+    @property
+    def cache_keys(self) -> Tuple[str, ...]:
+        return (f"DocJsonFile_{self.name}",)
