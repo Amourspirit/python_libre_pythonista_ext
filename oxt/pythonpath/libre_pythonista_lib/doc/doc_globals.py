@@ -74,6 +74,7 @@ class DocGlobals(EventsPartial, metaclass=_MetaGlobals):
     class CacheType(Enum):
         CALC_SHEET = "libre_pythonista_lib_cache_calc_sheet_key"
         CALC_DOC = "libre_pythonista_lib_cache_calc_doc_key"
+        GENERAL = "libre_pythonista_lib_cache_general_key"
 
         def __str__(self) -> str:
             return self.value

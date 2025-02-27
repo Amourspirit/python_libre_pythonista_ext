@@ -1,0 +1,43 @@
+from __future__ import annotations
+
+
+from typing import Any, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from oxt.pythonpath.libre_pythonista_lib.cq.query.qry_base import QryBase
+    from oxt.pythonpath.libre_pythonista_lib.cache.cq_cache import get_cq_cache
+    from oxt.pythonpath.libre_pythonista_lib.doc.doc_globals import MemCache
+    from oxt.pythonpath.libre_pythonista_lib.cq.query.qry_t import QryT
+    from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
+    from oxt.pythonpath.libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
+else:
+    from libre_pythonista_lib.cq.query.qry_base import QryBase
+    from libre_pythonista_lib.cache.cq_cache import get_cq_cache
+    from libre_pythonista_lib.log.log_mixin import LogMixin
+    from libre_pythonista_lib.cq.query.qry_t import QryT
+    from libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
+
+    MemCache = Any
+
+
+class QryCache(QryBase, LogMixin, QryT[MemCache | None]):
+    """Gets the cache"""
+
+    def __init__(self) -> None:
+        QryBase.__init__(self)
+        LogMixin.__init__(self)
+        self.kind = CalcQryKind.SIMPLE
+
+    def execute(self) -> MemCache | None:
+        """
+        Executes the query and gets the cache.
+
+        Returns:
+            MemCache | None: The cache if successful, otherwise None.
+        """
+
+        try:
+            return get_cq_cache()
+        except Exception:
+            self.log.exception("Error executing query")
+        return None

@@ -30,14 +30,14 @@ class CmdArrayAbilityDel(CmdBase, LogMixin, CmdCellT):
         LogMixin.__init__(self)
         self._cell = cell
         self._keys = cast("KeyMaker", NULL_OBJ)
-        self._current_state = cast(bool, NULL_OBJ)
+        self._current_state = cast(bool | None, NULL_OBJ)
         self._state_changed = False
 
     def _get_keys(self) -> KeyMaker:
         qry = QryKeyMaker()
         return self._execute_qry(qry)
 
-    def _get_current_state(self) -> bool:
+    def _get_current_state(self) -> bool | None:
         qry = QryArrayAbility(cell=self.cell)
         return self._execute_qry(qry)
 
@@ -50,7 +50,7 @@ class CmdArrayAbilityDel(CmdBase, LogMixin, CmdCellT):
         self.success = False
         self._state_changed = False
         try:
-            if not self._current_state:
+            if self._current_state is None:
                 self.log.debug("Property does not exist on cell. Nothing to delete.")
                 self.success = True
                 return
@@ -66,7 +66,7 @@ class CmdArrayAbilityDel(CmdBase, LogMixin, CmdCellT):
 
     def _undo(self) -> None:
         try:
-            if not self._current_state:
+            if self._current_state is None:
                 self.log.debug("No Current State. Unable to undo.")
                 return
 
@@ -79,7 +79,6 @@ class CmdArrayAbilityDel(CmdBase, LogMixin, CmdCellT):
                 from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_array_ability import CmdArrayAbility
 
             cmd = CmdArrayAbility(cell=self.cell, ability=self._current_state)
-            # cmd = CmdCellPropDel(cell=self.cell, name=self._keys.ctl_state_key)
             self._execute_cmd(cmd)
             self.log.debug("Successfully executed undo command.")
         except Exception:

@@ -6,6 +6,8 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cmd_sheet_cache_t import CmdSheetCacheT
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler_t import CmdHandlerT
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_t import CmdT
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_cache_t import CmdCacheT
+    from oxt.pythonpath.libre_pythonista_lib.cq.query.general.qry_cache import QryCache
     from oxt.pythonpath.libre_pythonista_lib.doc.doc_globals import MemCache
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
     from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.sheet.cell.qry_cell_cache import QryCellCache
@@ -16,6 +18,8 @@ else:
     from libre_pythonista_lib.cq.cmd.calc.sheet.cmd_sheet_cache_t import CmdSheetCacheT
     from libre_pythonista_lib.cq.cmd.cmd_handler_t import CmdHandlerT
     from libre_pythonista_lib.cq.cmd.cmd_t import CmdT
+    from libre_pythonista_lib.cq.cmd.cmd_cache_t import CmdCacheT
+    from libre_pythonista_lib.cq.query.general.qry_cache import QryCache
     from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
     from libre_pythonista_lib.cq.query.calc.sheet.cell.qry_cell_cache import QryCellCache
     from libre_pythonista_lib.cq.query.calc.sheet.qry_sheet_cache import QrySheetCache
@@ -26,6 +30,8 @@ class CmdHandler(CmdHandlerT):
     def handle(self, cmd: CmdT) -> None:  # noqa: ANN401
         if cmd.kind in (CalcCmdKind.SIMPLE, CalcCmdKind.SHEET, CalcCmdKind.CELL):
             self._handle_simple(cmd)
+        elif cmd.kind == CalcCmdKind.SIMPLE_CACHE:
+            self._handle_simple_cache(cast(CmdCacheT, cmd))
         elif cmd.kind == CalcCmdKind.CELL_CACHE:
             self._handle_cell_cache(cast(CmdCellCacheT, cmd))
         elif cmd.kind == CalcCmdKind.SHEET_CACHE:
@@ -35,6 +41,20 @@ class CmdHandler(CmdHandlerT):
 
     def _handle_simple(self, cmd: CmdT) -> None:
         cmd.execute()
+
+    def _handle_simple_cache(self, cmd: CmdCacheT) -> None:  # noqa: ANN401
+        cache_qry = QryCache()
+        cache = cast("MemCache", QryHandler().handle(cache_qry))
+        if not cache:
+            return
+
+        self._clear_cache(cache, cmd.cache_keys)
+
+        cmd.execute()
+
+        # Executing some commands may call a query which will add the key back into the cache.
+        # So we need to remove it again after the command is executed to reflect new values that the command executed.
+        self._clear_cache(cache, cmd.cache_keys)
 
     def _handle_cell_cache(self, cmd: CmdCellCacheT) -> None:  # noqa: ANN401
         cache_qry = QryCellCache(cmd.cell)
