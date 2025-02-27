@@ -39,8 +39,7 @@ class CustomPropsBase2:
         self._is_props_init = False
         self._is_doc_props_flag = False
         self._cfg = Config()
-        with self.log.indent(True):
-            self.log.debug("Init")
+        self.log.debug("Init")
         self._doc = doc
         self._json_doc = None
         self._props_id = props_id
@@ -49,12 +48,11 @@ class CustomPropsBase2:
         self._name = file_name
         self._file_exist = False
         self._props = {}
-        with self.log.indent(True):
-            self.log.debug(f"File Name: {self._name}")
-            self.log.debug("End Init")
+        self.log.debug(f"File Name: {self._name}")
+        self.log.debug("End Init")
         # please the type checker
 
-    def _init_props(self):
+    def _init_props(self) -> None:
         """
         Initializes the properties.
         """
@@ -133,7 +131,7 @@ class CustomPropsBase2:
             except Exception:
                 self.log.error(f"_save_properties() Error writing JSON file: {self._name}", exc_info=True)
 
-    def get_custom_property(self, name: str, default: Any = NULL_OBJ) -> Any:
+    def get_custom_property(self, name: str, default: Any = NULL_OBJ) -> Any:  # noqa: ANN401
         """
         Gets a custom property.
 
@@ -155,7 +153,7 @@ class CustomPropsBase2:
                 raise AttributeError(f"Property '{name}' not found.")
             return result
 
-    def set_custom_property(self, name: str, value: Any):
+    def set_custom_property(self, name: str, value: Any) -> None:  # noqa: ANN401
         """
         Sets a custom property.
 

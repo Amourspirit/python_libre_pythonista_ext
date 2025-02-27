@@ -48,8 +48,8 @@ class QryHandler(QryHandlerT):
         if query.cache_key in cache:
             return cache[query.cache_key]
         result = query.execute()
-        if result is None:
-            return None
+        # if result is None:
+        #     return None
         cache[query.cache_key] = result
         return result
 
@@ -61,8 +61,8 @@ class QryHandler(QryHandlerT):
         if query.cache_key in cache:
             return cache[query.cache_key]
         result = query.execute()
-        if result is None:
-            return None
+        # if result is None:
+        #     return None
         cache[query.cache_key] = result
         return result
 
@@ -74,7 +74,7 @@ class QryHandler(QryHandlerT):
         if query.cache_key in cache:
             return cache[query.cache_key]
         result = query.execute()
-        if result is None:
-            return None
+        # if result is None:
+        #     return None
         cache[query.cache_key] = result
         return result

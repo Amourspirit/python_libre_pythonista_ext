@@ -84,8 +84,8 @@ class MemCache:
         return self._cache[key]
 
     def __setitem__(self, key: Any, value: Any) -> None:  # noqa: ANN401
-        if key is None or value is None:
-            raise TypeError("Key and value must not be None.")
+        if key is None:
+            raise TypeError("Key must not be None.")
         self._cache[key] = value
 
     def __contains__(self, key: Any) -> bool:  # noqa: ANN401

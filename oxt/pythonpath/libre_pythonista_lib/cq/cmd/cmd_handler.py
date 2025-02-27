@@ -48,8 +48,7 @@ class CmdHandler(CmdHandlerT):
         if not cache:
             return
 
-        self._clear_cache(cache, cmd.cache_keys)
-
+        # self._clear_cache(cache, cmd.cache_keys)
         cmd.execute()
 
         # Executing some commands may call a query which will add the key back into the cache.
@@ -62,8 +61,7 @@ class CmdHandler(CmdHandlerT):
         if not cache:
             return
 
-        self._clear_cache(cache, cmd.cache_keys)
-
+        # self._clear_cache(cache, cmd.cache_keys)
         cmd.execute()
 
         # Executing some commands may call a query which will add the key back into the cache.
@@ -75,7 +73,7 @@ class CmdHandler(CmdHandlerT):
         cache = cast("MemCache", QryHandler().handle(cache_qry))
         if not cache:
             return
-        self._clear_cache(cache, cmd.cache_keys)
+        # self._clear_cache(cache, cmd.cache_keys)
         cmd.execute()
 
         # Executing some commands may call a query which will add the key back into the cache.
