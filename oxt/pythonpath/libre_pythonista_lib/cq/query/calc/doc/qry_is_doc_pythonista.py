@@ -12,14 +12,12 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.doc.qry_doc_t import QryDocT
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.doc.qry_lp_code_dir import QryLpCodeDir
-    from oxt.pythonpath.libre_pythonista_lib.cq.query.qry_handler import QryHandler
 
 else:
     from libre_pythonista_lib.cq.query.qry_base import QryBase
     from libre_pythonista_lib.cq.query.calc.doc.qry_doc_t import QryDocT
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.cq.query.calc.doc.qry_lp_code_dir import QryLpCodeDir
-    from libre_pythonista_lib.cq.query.qry_handler import QryHandler
 
 
 class QryIsDocPythonista(QryBase, LogMixin, QryDocT[bool | None]):
@@ -38,8 +36,7 @@ class QryIsDocPythonista(QryBase, LogMixin, QryDocT[bool | None]):
                 If there is an error, an empty string is returned.
         """
         qry = QryLpCodeDir(self._doc)
-        handler = QryHandler()
-        return handler.handle(qry)
+        return self._execute_qry(qry)
 
     def execute(self) -> bool | None:
         """

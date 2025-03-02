@@ -19,6 +19,8 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.cmd_register_dispatch_interceptor import (
         CmdRegisterDispatchInterceptor,
     )
+    from pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.cmd_doc_init import CmdDocInit
+    from oxt.pythonpath.libre_pythonista_lib.cq.query.doc.qry_doc_globals import QryDocGlobals
 else:
     from libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from libre_pythonista_lib.doc.doc_globals import DocGlobals
@@ -30,6 +32,8 @@ else:
     from libre_pythonista_lib.cq.cmd.calc.doc.cmd_doc_t import CmdDocT
     from libre_pythonista_lib.cq.cmd.calc.doc.listener.cmd_form_design_mode_off import CmdFormDesignModeOff
     from libre_pythonista_lib.cq.cmd.calc.doc.cmd_register_dispatch_interceptor import CmdRegisterDispatchInterceptor
+    from libre_pythonista_lib.cq.cmd.calc.doc.cmd_doc_init import CmdDocInit
+    from libre_pythonista_lib.cq.query.doc.qry_doc_globals import QryDocGlobals
 
 
 _KEY = "libre_pythonista_lib.init.init_doc.InitDoc"
@@ -51,8 +55,13 @@ class CmdInitDoc(CmdBase, List[Type[CmdDocT]], LogMixin, CmdDocT):
         self.append(CmdSheetActivation)
         self.append(CmdFormDesignModeOff)
         self.append(CmdRegisterDispatchInterceptor)
+        self.append(CmdDocInit)  # must be last in the list
         self._success_cmds: List[CmdDocT] = []
         self._doc = doc
+
+    def _get_globals(self) -> DocGlobals | None:
+        qry = QryDocGlobals()
+        return self._execute_qry(qry)
 
     def execute(self) -> None:
         """
@@ -68,7 +77,10 @@ class CmdInitDoc(CmdBase, List[Type[CmdDocT]], LogMixin, CmdDocT):
             None: This method does not return anything.
         """
 
-        doc_globals = DocGlobals.get_current()
+        doc_globals = self._get_globals()
+        if doc_globals is None:
+            self.log.error("DocGlobals is None. Unable to execute command.")
+            return
         key_val = doc_globals.mem_cache[_KEY]
         if key_val == "1":
             self.success = True

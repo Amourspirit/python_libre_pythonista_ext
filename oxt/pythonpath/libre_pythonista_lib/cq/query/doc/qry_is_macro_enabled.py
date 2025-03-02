@@ -5,15 +5,15 @@ from ooodev.utils.props import Props
 if TYPE_CHECKING:
     from ooodev.proto.office_document_t import OfficeDocumentT
     from oxt.pythonpath.libre_pythonista_lib.cq.query.qry_base import QryBase
-    from oxt.pythonpath.libre_pythonista_lib.cq.query.qry_t import QryT
+    from oxt.pythonpath.libre_pythonista_lib.cq.query.doc.qry_office_doc_t import QryOfficeDocT
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
 else:
     from libre_pythonista_lib.cq.query.qry_base import QryBase
     from libre_pythonista_lib.log.log_mixin import LogMixin
-    from libre_pythonista_lib.cq.query.qry_t import QryT
+    from libre_pythonista_lib.cq.query.doc.qry_office_doc_t import QryOfficeDocT
 
 
-class QryIsMacroEnabled(QryBase, LogMixin, QryT[bool]):
+class QryIsMacroEnabled(QryBase, LogMixin, QryOfficeDocT[bool]):
     def __init__(self, doc: OfficeDocumentT) -> None:
         QryBase.__init__(self)
         LogMixin.__init__(self)

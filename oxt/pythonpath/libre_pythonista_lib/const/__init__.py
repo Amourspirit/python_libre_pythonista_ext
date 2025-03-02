@@ -42,6 +42,8 @@ DISPATCH_PY_OBJ_STATE = f"{CS_PROTOCOL}{PATH_PY_OBJ_STATE}"
 DISPATCH_SEL_LP_FN = f"{CS_PROTOCOL}libre_pythonista.calc.sel.lp_fn"
 DISPATCH_SEL_RNG = f"{CS_PROTOCOL}{PATH_SEL_RNG}"
 
+LP_EXT_VERSION = "libre_pythonista.ext.version"
+
 
 def _get_formula_pyimpl() -> str:
     return f"___lo_identifier___.PyImpl".upper()

@@ -18,6 +18,7 @@ def test_cmd_calc_props(loader, build_setup, mocker: MockerFixture) -> None:
         from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.doc.qry_calc_props import QryCalcProps
         from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
         from oxt.pythonpath.libre_pythonista_lib.cq.query.qry_handler_factory import QryHandlerFactory
+        from oxt.___lo_pip___.config import Config
     else:
         from libre_pythonista_lib.cq.cmd.calc.doc.cmd_calc_props import CmdCalcProps
         from libre_pythonista_lib.const.cache_const import DOC_CALC_PROPS, DOC_LP_DOC_PROP_DATA
@@ -25,10 +26,20 @@ def test_cmd_calc_props(loader, build_setup, mocker: MockerFixture) -> None:
         from libre_pythonista_lib.cq.query.calc.doc.qry_calc_props import QryCalcProps
         from libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
         from libre_pythonista_lib.cq.query.qry_handler_factory import QryHandlerFactory
+        from libre_pythonista.config import Config
 
     doc = None
     try:
         doc = CalcDoc.create_doc(loader=loader)
+
+        log_fmt = "%(asctime)s - %(levelname)s - %(name)s: %(message)s"
+
+        mock_config = mocker.MagicMock(spec=Config)
+        mock_config.is_shared_installed = True
+        mock_config.lp_default_log_format = log_fmt
+
+        # Patch the Config class in calc_props2 module
+        mocker.patch("libre_pythonista_lib.doc_props.calc_props2.Config", return_value=mock_config)
 
         cmd_handler = CmdHandlerFactory.get_cmd_handler()
         qry_handler = QryHandlerFactory.get_qry_handler()
@@ -39,6 +50,7 @@ def test_cmd_calc_props(loader, build_setup, mocker: MockerFixture) -> None:
         # changing initial_props properties here also changes in the cache
         # because it is a reference to the same object
         assert initial_props.log_to_console is False
+        assert initial_props.log_format == log_fmt
 
         # Create command
         cmd = CmdCalcProps(doc=doc, props=initial_props)
