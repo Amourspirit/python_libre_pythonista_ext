@@ -4,6 +4,7 @@ from typing import List, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcCell
+    from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.cmd_cell_ctl_t import CmdCellCtlT
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_t import CmdT
@@ -13,6 +14,7 @@ if TYPE_CHECKING:
         CmdArrayAbility as CmdPropArrayAbility,
     )
 else:
+    from libre_pythonista_lib.utils.custom_ext import override
     from libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.cmd_cell_ctl_t import CmdCellCtlT
     from libre_pythonista_lib.cq.cmd.cmd_t import CmdT
@@ -40,6 +42,7 @@ class CmdArrayAbility(CmdBase, LogMixin, CmdCellCtlT):
             self._ctl.cell = cell
         self._current = self._ctl.array_ability
 
+    @override
     def execute(self) -> None:
         self.success = False
         self._state_changed = False
@@ -76,6 +79,7 @@ class CmdArrayAbility(CmdBase, LogMixin, CmdCellCtlT):
         self._ctl.array_ability = self._current
         self.log.debug("Successfully executed undo command.")
 
+    @override
     def undo(self) -> None:
         if self.success:
             self._undo()

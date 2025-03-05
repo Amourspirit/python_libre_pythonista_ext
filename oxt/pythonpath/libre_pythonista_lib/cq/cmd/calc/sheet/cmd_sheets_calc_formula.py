@@ -5,12 +5,14 @@ from ooodev.loader import Lo
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcDoc
+    from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_t import CmdT
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cmd_sheet_cache_t import CmdSheetCacheT
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cmd_sheet_calc_formula import CmdSheetCalcFormula
 else:
+    from libre_pythonista_lib.utils.custom_ext import override
     from libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.cq.cmd.cmd_t import CmdT
@@ -26,6 +28,7 @@ class CmdSheetsCalcFormula(CmdBase, LogMixin, CmdT):
         self._doc = cast("CalcDoc", Lo.current_doc)
         self._success_cmds: List[CmdSheetCacheT] = []
 
+    @override
     def execute(self) -> None:
         self.success = False
         self._success_cmds.clear()
@@ -58,6 +61,7 @@ class CmdSheetsCalcFormula(CmdBase, LogMixin, CmdT):
             self.log.exception("Error removing sheet calculate event")
         self._success_cmds.clear()
 
+    @override
     def undo(self) -> None:
         if self.success:
             self._undo()

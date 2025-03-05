@@ -5,6 +5,7 @@ from ooodev.utils.gen_util import NULL_OBJ
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcCell
+    from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.cmd_cell_ctl_t import CmdCellCtlT
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_addr import CmdAddr as CmdPropAddr
@@ -14,6 +15,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.sheet.cell.prop.qry_addr import QryAddr
 else:
+    from libre_pythonista_lib.utils.custom_ext import override
     from libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.cmd_cell_ctl_t import CmdCellCtlT
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_addr import CmdAddr as CmdPropAddr
@@ -42,6 +44,7 @@ class CmdAddr(CmdBase, LogMixin, CmdCellCtlT):
         qry = QryAddr(cell=self.cell)
         return self._execute_qry(qry)
 
+    @override
     def execute(self) -> None:
         if self._current_state is NULL_OBJ:
             self._current_state = self._get_current_state()
@@ -82,6 +85,7 @@ class CmdAddr(CmdBase, LogMixin, CmdCellCtlT):
         self._ctl.addr = self._current_state
         self.log.debug("Successfully executed undo command.")
 
+    @override
     def undo(self) -> None:
         if self.success:
             self._undo()

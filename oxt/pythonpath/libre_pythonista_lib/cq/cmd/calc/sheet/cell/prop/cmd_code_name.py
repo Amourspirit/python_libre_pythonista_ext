@@ -5,6 +5,7 @@ from ooodev.utils.gen_util import NULL_OBJ
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcCell
+    from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from oxt.pythonpath.libre_pythonista_lib.cell.props.key_maker import KeyMaker
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.cmd_cell_t import CmdCellT
@@ -14,6 +15,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.sheet.cell.prop.qry_code_name import QryCodeName
     from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.sheet.cell.qry_key_maker import QryKeyMaker
 else:
+    from libre_pythonista_lib.utils.custom_ext import override
     from libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.cmd_cell_t import CmdCellT
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_cell_prop_set import CmdCellPropSet
@@ -59,6 +61,7 @@ class CmdCodeName(CmdBase, LogMixin, CmdCellT):
         qry = QryCodeName(cell=self.cell)
         return self._execute_qry(qry)
 
+    @override
     def execute(self) -> None:
         self.success = False
         if self._errors:
@@ -108,6 +111,7 @@ class CmdCodeName(CmdBase, LogMixin, CmdCellT):
         except Exception:
             self.log.exception("Error undoing cell Code Name")
 
+    @override
     def undo(self) -> None:
         if self.success:
             self._undo()

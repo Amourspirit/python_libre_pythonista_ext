@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcDoc
+    from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.cmd_doc_t import CmdDocT
@@ -16,6 +17,7 @@ if TYPE_CHECKING:
     )
 
 else:
+    from libre_pythonista_lib.utils.custom_ext import override
     from libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.cq.cmd.calc.doc.cmd_doc_t import CmdDocT
@@ -32,6 +34,7 @@ class CmdRegisterDispatchInterceptor(CmdBase, LogMixin, CmdDocT):
         self._doc = doc
         self._has_instance = CalcSheetCellDispatchProvider.has_instance(doc)
 
+    @override
     def execute(self) -> None:
         self.success = False
         try:
@@ -59,6 +62,7 @@ class CmdRegisterDispatchInterceptor(CmdBase, LogMixin, CmdDocT):
         except Exception:
             self.log.exception("Error unregistering Dispatch Provider Interceptor")
 
+    @override
     def undo(self) -> None:
         if self.success:
             self._undo()

@@ -6,6 +6,7 @@ from ooodev.utils.gen_util import NULL_OBJ
 if TYPE_CHECKING:
     from ooodev.proto.office_document_t import OfficeDocumentT
     from oxt.___lo_pip___.basic_config import BasicConfig
+    from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.doc.cmd_office_doc_t import CmdOfficeDocT
@@ -15,6 +16,7 @@ if TYPE_CHECKING:
 
 else:
     from ___lo_pip___.basic_config import BasicConfig
+    from libre_pythonista_lib.utils.custom_ext import override
     from libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.cq.cmd.doc.cmd_office_doc_t import CmdOfficeDocT
@@ -43,6 +45,7 @@ class CmdLpVersion(CmdBase, LogMixin, CmdOfficeDocT):
         # for testing
         return CmdDocCustomProp(doc=self.doc, name=LP_EXT_VERSION, value=value)
 
+    @override
     def execute(self) -> None:
         """Executes the command."""
         self.success = False
@@ -74,6 +77,7 @@ class CmdLpVersion(CmdBase, LogMixin, CmdOfficeDocT):
             return
         self.log.debug("Successfully undone command.")
 
+    @override
     def undo(self) -> None:
         if self.success:
             self._undo()

@@ -133,6 +133,56 @@ class CmdHandler(CmdHandlerT):
 
     # endregion Undo methods
 
+    # region Redo methods
+
+    def handle_redo(self, cmd: CmdT) -> None:  # noqa: ANN401
+        if cmd.kind in (CalcCmdKind.SIMPLE, CalcCmdKind.SHEET, CalcCmdKind.CELL):
+            self._handle_redo_simple(cmd)
+        elif cmd.kind == CalcCmdKind.SIMPLE_CACHE:
+            self._handle_redo_simple_cache(cast(CmdCacheT, cmd))
+        elif cmd.kind == CalcCmdKind.CELL_CACHE:
+            self._handle_redo_cell_cache(cast(CmdCellCacheT, cmd))
+        elif cmd.kind == CalcCmdKind.SHEET_CACHE:
+            self._handle_redo_sheet_cache(cast(CmdSheetCacheT, cmd))
+        else:
+            raise NotImplementedError
+        return
+
+    def _handle_redo_simple(self, cmd: CmdT) -> None:
+        cmd.redo()
+
+    def _handle_redo_simple_cache(self, cmd: CmdCacheT) -> None:  # noqa: ANN401
+        cache_qry = QryCache()
+        cache = cast(MemCache, QryHandler().handle(cache_qry))
+        if not cache:
+            return
+
+        self._clear_cache(cache, cmd.cache_keys)
+        cmd.redo()
+        self._clear_cache(cache, cmd.cache_keys)
+
+    def _handle_redo_cell_cache(self, cmd: CmdCellCacheT) -> None:  # noqa: ANN401
+        cache_qry = QryCellCache(cmd.cell)
+        cache = cast(MemCache, QryHandler().handle(cache_qry))
+        if not cache:
+            return
+
+        self._clear_cache(cache, cmd.cache_keys)
+        cmd.redo()
+        self._clear_cache(cache, cmd.cache_keys)
+
+    def _handle_redo_sheet_cache(self, cmd: CmdSheetCacheT) -> None:  # noqa: ANN401
+        cache_qry = QrySheetCache(cmd.sheet)
+        cache = cast(MemCache, QryHandler().handle(cache_qry))
+        if not cache:
+            return
+
+        self._clear_cache(cache, cmd.cache_keys)
+        cmd.redo()
+        self._clear_cache(cache, cmd.cache_keys)
+
+    # endregion Redo methods
+
     # region Cache methods
     def _clear_cache(self, cache: MemCache, keys: Iterable[str]) -> None:
         for key in keys:

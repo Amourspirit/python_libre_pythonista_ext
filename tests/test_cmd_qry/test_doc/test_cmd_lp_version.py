@@ -91,11 +91,9 @@ def test_cmd_lp_version_error_get_state(build_setup, mocker: MockerFixture) -> N
         from libre_pythonista_lib.cq.cmd.doc.cmd_lp_version import CmdLpVersion
 
     doc = mocker.MagicMock()
-    mock_qry = mocker.patch("libre_pythonista_lib.cq.cmd.doc.cmd_lp_version.QryLpVersion")
-    mock_qry.return_value.execute.side_effect = Exception("Test error")
 
     cmd = CmdLpVersion(doc)
-    cmd._get_current_state()  # should handle error and return None
+    mocker.patch.object(cmd, "_get_current_state", side_effect=Exception("Test error"))
 
     cmd.execute()
     assert not cmd.success

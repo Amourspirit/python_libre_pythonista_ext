@@ -5,6 +5,7 @@ from ooodev.utils.gen_util import NULL_OBJ
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcSheet
+    from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from oxt.pythonpath.libre_pythonista_lib.sheet import calculate
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
@@ -22,6 +23,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
 
 else:
+    from libre_pythonista_lib.utils.custom_ext import override
     from libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from libre_pythonista_lib.sheet import calculate
     from libre_pythonista_lib.log.log_mixin import LogMixin
@@ -57,6 +59,7 @@ class CmdSheetCalcFormula(CmdBase, LogMixin, CmdSheetCacheT):
             return False
         return result
 
+    @override
     def execute(self) -> None:
         if self._current_script is NULL_OBJ:
             self._current_script = self._get_current_script()
@@ -87,6 +90,7 @@ class CmdSheetCalcFormula(CmdBase, LogMixin, CmdSheetCacheT):
         except Exception:
             self.log.exception("Error removing Document Event listener")
 
+    @override
     def undo(self) -> None:
         if self.success:
             self._undo()

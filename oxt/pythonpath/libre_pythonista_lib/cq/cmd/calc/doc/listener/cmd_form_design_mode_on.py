@@ -6,10 +6,12 @@ from ooodev.utils.gen_util import NULL_OBJ
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcDoc, CalcSheetView
+    from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.cmd_doc_t import CmdDocT
 else:
+    from libre_pythonista_lib.utils.custom_ext import override
     from libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.cq.cmd.calc.doc.cmd_doc_t import CmdDocT
@@ -49,6 +51,7 @@ class CmdFormDesignModeOn(CmdBase, LogMixin, CmdDocT):
             self.log.debug("Error getting view from document. %s", e)
             return None
 
+    @override
     def execute(self) -> None:
         if self._current_state is NULL_OBJ:
             self._current_state = self._get_form_design_mode()
@@ -72,6 +75,7 @@ class CmdFormDesignModeOn(CmdBase, LogMixin, CmdDocT):
         self.log.debug("Successfully executed command.")
         self.success = True
 
+    @override
     def undo(self) -> None:
         if self.success:
             if self._current_state is None:

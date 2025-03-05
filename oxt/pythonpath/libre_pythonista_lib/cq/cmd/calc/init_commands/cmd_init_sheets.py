@@ -3,6 +3,7 @@ from typing import Any, List, Type, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcDoc
+    from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from oxt.pythonpath.libre_pythonista_lib.doc.doc_globals import DocGlobals
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.listener.cmd_sheet_modified import CmdSheetsModified
@@ -10,6 +11,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.cmd_doc_t import CmdDocT
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
 else:
+    from libre_pythonista_lib.utils.custom_ext import override
     from libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from libre_pythonista_lib.doc.doc_globals import DocGlobals
     from libre_pythonista_lib.cq.cmd.calc.doc.listener.cmd_sheet_modified import CmdSheetsModified
@@ -27,11 +29,12 @@ class CmdInitSheets(CmdBase, List[Type[CmdDocT]], LogMixin, CmdDocT):
         CmdBase.__init__(self)
         list.__init__(self)
         LogMixin.__init__(self)
-        self.executed_commands: List[CmdDocT] = []
+        self._success_commands: List[CmdDocT] = []
         self._doc = doc
         self.append(CmdSheetsModified)
         self.append(CmdSheetActivation)
 
+    @override
     def execute(self) -> None:
         """
         Executes a series of commands as part of a composite command.
@@ -56,7 +59,7 @@ class CmdInitSheets(CmdBase, List[Type[CmdDocT]], LogMixin, CmdDocT):
                 inst = cmd(self._doc)
                 self._execute_cmd(inst)
                 if inst.success:  # Only add if command was successful
-                    self.executed_commands.append(inst)
+                    self._success_commands.append(inst)
                 else:
                     self.log.debug("A command failed. Undoing previously executed commands.")
                     self.undo()  # Undo all successfully executed commands.
@@ -72,6 +75,15 @@ class CmdInitSheets(CmdBase, List[Type[CmdDocT]], LogMixin, CmdDocT):
         if self.success:
             self.log.debug("Successfully executed command.")
 
+    def _undo(self) -> None:
+        for cmd in reversed(self._success_commands):
+            cmd.undo()
+        self._success_commands = []  # Clear executed commands
+        self.success = False  # Reset success flag.
+        doc_globals = DocGlobals.get_current()
+        doc_globals.mem_cache[_KEY] = "0"
+
+    @override
     def undo(self) -> None:
         """
         Reverses the execution of all previously executed commands.
@@ -85,9 +97,7 @@ class CmdInitSheets(CmdBase, List[Type[CmdDocT]], LogMixin, CmdDocT):
             None: This method does not return anything.
         """
 
-        for cmd in reversed(self.executed_commands):
-            cmd.undo()
-        self.executed_commands = []  # Clear executed commands
-        self.success = False  # Reset success flag.
-        doc_globals = DocGlobals.get_current()
-        doc_globals.mem_cache[_KEY] = "0"
+        if self.success:
+            self._undo()
+        else:
+            self.log.debug("Undo not needed.")

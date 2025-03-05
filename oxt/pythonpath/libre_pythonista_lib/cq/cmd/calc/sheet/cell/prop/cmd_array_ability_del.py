@@ -6,6 +6,7 @@ from ooodev.utils.gen_util import NULL_OBJ
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcCell
+    from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from oxt.pythonpath.libre_pythonista_lib.cell.props.key_maker import KeyMaker
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
@@ -14,6 +15,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.sheet.cell.qry_key_maker import QryKeyMaker
     from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.sheet.cell.prop.qry_array_ability import QryArrayAbility
 else:
+    from libre_pythonista_lib.utils.custom_ext import override
     from libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.cmd_cell_t import CmdCellT
@@ -41,6 +43,7 @@ class CmdArrayAbilityDel(CmdBase, LogMixin, CmdCellT):
         qry = QryArrayAbility(cell=self.cell)
         return self._execute_qry(qry)
 
+    @override
     def execute(self) -> None:
         if self._current_state is NULL_OBJ:
             self._current_state = self._get_current_state()
@@ -84,6 +87,7 @@ class CmdArrayAbilityDel(CmdBase, LogMixin, CmdCellT):
         except Exception:
             self.log.exception("Error undoing Array Ability")
 
+    @override
     def undo(self) -> None:
         if self.success:
             self._undo()

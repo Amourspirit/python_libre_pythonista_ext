@@ -13,3 +13,6 @@ class CmdHandlerT(Protocol):
 
     def handle_undo(self, cmd: CmdT) -> None:  # noqa: ANN401
         ...
+
+    def handle_redo(self, cmd: CmdT) -> None:  # noqa: ANN401
+        ...

@@ -14,6 +14,9 @@ class CmdT(Protocol):
     def undo(self) -> None:  # noqa: ANN401
         ...
 
+    def redo(self) -> None:  # noqa: ANN401
+        ...
+
     @property
     def success(self) -> bool: ...
 

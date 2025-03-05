@@ -5,6 +5,7 @@ from ooodev.utils.gen_util import NULL_OBJ
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcCell
+    from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from oxt.pythonpath.libre_pythonista_lib.pyc.code.py_source import PySrcProvider
     from oxt.pythonpath.libre_pythonista_lib.pyc.code.py_source import PySource
@@ -17,6 +18,7 @@ if TYPE_CHECKING:
         QryCellSrcCodeExist,
     )
 else:
+    from libre_pythonista_lib.utils.custom_ext import override
     from libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from libre_pythonista_lib.pyc.code.py_source import PySource
     from libre_pythonista_lib.log.log_mixin import LogMixin
@@ -49,6 +51,7 @@ class CmdCellSrcCode(CmdBase, LogMixin, CmdCellCacheT):
         qry = QryCellSrcCodeExist(uri=self._uri, cell=self.cell, src_provider=self._src_provider)
         return self._execute_qry(qry)
 
+    @override
     def execute(self) -> None:
         if self._current_src is NULL_OBJ:
             self._current_src = self._get_current_src_code()
@@ -82,6 +85,7 @@ class CmdCellSrcCode(CmdBase, LogMixin, CmdCellCacheT):
         except Exception:
             self.log.exception("Error undoing cell Code")
 
+    @override
     def undo(self) -> None:
         if self.success:
             self._undo()

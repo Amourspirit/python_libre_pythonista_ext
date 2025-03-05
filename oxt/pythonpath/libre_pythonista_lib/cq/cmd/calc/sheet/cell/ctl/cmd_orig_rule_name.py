@@ -4,6 +4,7 @@ from typing import List, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcCell
+    from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from oxt.___lo_pip___.basic_config import BasicConfig
     from oxt.pythonpath.libre_pythonista_lib.cell.props.rule_name_kind import RuleNameKind
@@ -13,6 +14,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl import Ctl
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
 else:
+    from libre_pythonista_lib.utils.custom_ext import override
     from libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from ___lo_pip___.basic_config import BasicConfig
     from libre_pythonista_lib.cell.props.rule_name_kind import RuleNameKind
@@ -37,6 +39,7 @@ class CmdOrigRuleName(CmdBase, LogMixin, CmdCellCtlT):
         self._config = BasicConfig()
         self._current = self._ctl.ctl_rule_kind
 
+    @override
     def execute(self) -> None:
         self.success = False
         self._state_changed = False
@@ -73,6 +76,7 @@ class CmdOrigRuleName(CmdBase, LogMixin, CmdCellCtlT):
         self._ctl.ctl_rule_kind = self._current
         self.log.debug("Successfully executed undo command.")
 
+    @override
     def undo(self) -> None:
         if self.success:
             self._undo()

@@ -4,11 +4,13 @@ from typing import cast, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcDoc
+    from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from oxt.pythonpath.libre_pythonista_lib.sheet.listen.code_sheet_modify_listener import CodeSheetModifyListener
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.cmd_doc_t import CmdDocT
 else:
+    from libre_pythonista_lib.utils.custom_ext import override
     from libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from libre_pythonista_lib.sheet.listen.code_sheet_modify_listener import CodeSheetModifyListener
     from libre_pythonista_lib.log.log_mixin import LogMixin
@@ -24,6 +26,7 @@ class CmdSheetsModified(CmdBase, LogMixin, CmdDocT):
         self._doc = doc
         self._unique_ids = set()
 
+    @override
     def execute(self) -> None:
         self.success = False
         try:
@@ -46,6 +49,7 @@ class CmdSheetsModified(CmdBase, LogMixin, CmdDocT):
             return
         self.success = True
 
+    @override
     def undo(self) -> None:
         if self.success:
             try:

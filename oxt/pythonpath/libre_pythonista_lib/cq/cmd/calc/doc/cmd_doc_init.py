@@ -4,6 +4,8 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcDoc
+    from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
+    from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.cmd_doc_t import CmdDocT
@@ -11,6 +13,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.doc.doc_globals import DocGlobals
     from oxt.pythonpath.libre_pythonista_lib.cq.query.doc.qry_doc_globals import QryDocGlobals
 else:
+    from libre_pythonista_lib.utils.custom_ext import override
     from libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.cq.cmd.calc.doc.cmd_doc_t import CmdDocT
@@ -36,6 +39,7 @@ class CmdDocInit(CmdBase, LogMixin, CmdDocT):
         qry = QryDocGlobals()
         return self._execute_qry(qry)
 
+    @override
     def execute(self) -> None:
         self.success = False
         doc_globals = self._get_globals()
@@ -47,5 +51,6 @@ class CmdDocInit(CmdBase, LogMixin, CmdDocT):
         self.log.debug("Successfully executed command.")
         self.success = True
 
+    @override
     def undo(self) -> None:
         self.log.debug("Undo not needed for this command.")

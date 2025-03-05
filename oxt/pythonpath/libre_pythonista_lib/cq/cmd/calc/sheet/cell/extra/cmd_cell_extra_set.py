@@ -5,6 +5,7 @@ from ooodev.utils.gen_util import NULL_OBJ
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcCell
+    from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.cmd_cell_t import CmdCellT
@@ -14,6 +15,7 @@ if TYPE_CHECKING:
     )
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.extra.cmd_cell_extra_del import CmdCellExtraDel
 else:
+    from libre_pythonista_lib.utils.custom_ext import override
     from libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.cmd_cell_t import CmdCellT
@@ -46,6 +48,7 @@ class CmdCellExtraSet(CmdBase, LogMixin, CmdCellT):
         qry = QryCellExtraValue(cell=self._cell, name=self._name)
         return self._execute_qry(qry)  # returns NULL_OBJ if not found
 
+    @override
     def execute(self) -> None:
         if self._current_value is self._null:
             self._current_value = self._get_current_value()
@@ -75,6 +78,7 @@ class CmdCellExtraSet(CmdBase, LogMixin, CmdCellT):
             except Exception:
                 self.log.exception("Error undoing cell Code")
 
+    @override
     def undo(self) -> None:
         if self.success:
             self._undo()

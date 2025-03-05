@@ -5,6 +5,7 @@ from ooodev.utils import gen_util
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcCell
+    from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_t import CmdT
@@ -17,6 +18,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.extra.cmd_cell_extra_set import CmdCellExtraSet
     from oxt.___lo_pip___.basic_config import BasicConfig
 else:
+    from libre_pythonista_lib.utils.custom_ext import override
     from libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.cq.cmd.cmd_t import CmdT
@@ -43,6 +45,7 @@ class CmdCodeName(CmdBase, LogMixin, CmdCellCtlT):
         self._current_code_name = self._ctl.ctl_code_name
         self._current_dict_code_name = self.cell.extra_data.get("code_name", "")
 
+    @override
     def execute(self) -> None:
         self.success = False
         self._state_changed = False
@@ -91,6 +94,7 @@ class CmdCodeName(CmdBase, LogMixin, CmdCellCtlT):
         self.cell.extra_data.code_name = self._current_dict_code_name
         self.log.debug("Successfully executed undo command.")
 
+    @override
     def undo(self) -> None:
         if self.success:
             self._undo()

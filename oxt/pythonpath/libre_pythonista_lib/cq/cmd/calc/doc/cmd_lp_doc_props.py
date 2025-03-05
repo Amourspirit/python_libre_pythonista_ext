@@ -6,6 +6,7 @@ from ooodev.utils.gen_util import NULL_OBJ
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcDoc
+    from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_cache_t import CmdCacheT
@@ -15,6 +16,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.const.cache_const import DOC_LP_DOC_PROP_DATA
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
 else:
+    from libre_pythonista_lib.utils.custom_ext import override
     from libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.cq.cmd.cmd_cache_t import CmdCacheT
@@ -58,6 +60,7 @@ class CmdLpDocProps(CmdBase, LogMixin, CmdCacheT):
         self._file_name = qry.file_name
         return self._execute_qry(qry)
 
+    @override
     def execute(self) -> None:
         if self._ensured is False:
             self._ensured = self._ensure_json_file()
@@ -81,6 +84,7 @@ class CmdLpDocProps(CmdBase, LogMixin, CmdCacheT):
         self.log.debug("Successfully executed command.")
         self.success = True
 
+    @override
     def undo(self) -> None:
         if self.success:
             self._undo()

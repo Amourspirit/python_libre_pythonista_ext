@@ -4,10 +4,12 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcDoc
+    from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.cmd_doc_t import CmdDocT
 else:
+    from libre_pythonista_lib.utils.custom_ext import override
     from libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.cq.cmd.calc.doc.cmd_doc_t import CmdDocT
@@ -21,6 +23,7 @@ class CmdCalculateAll(CmdBase, LogMixin, CmdDocT):
         LogMixin.__init__(self)
         self._doc = doc
 
+    @override
     def execute(self) -> None:
         self.success = False
         try:
@@ -31,5 +34,6 @@ class CmdCalculateAll(CmdBase, LogMixin, CmdDocT):
         self.log.debug("Successfully executed command.")
         self.success = True
 
+    @override
     def undo(self) -> None:
         self.log.debug("Undo not needed for this command.")

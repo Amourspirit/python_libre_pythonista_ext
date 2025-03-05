@@ -3,6 +3,7 @@ from typing import List, Type, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcDoc
+    from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from oxt.pythonpath.libre_pythonista_lib.doc.doc_globals import DocGlobals
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.listener.cmd_doc_event import CmdDocEvent
@@ -22,6 +23,7 @@ if TYPE_CHECKING:
     from pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.cmd_doc_init import CmdDocInit
     from oxt.pythonpath.libre_pythonista_lib.cq.query.doc.qry_doc_globals import QryDocGlobals
 else:
+    from libre_pythonista_lib.utils.custom_ext import override
     from libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from libre_pythonista_lib.doc.doc_globals import DocGlobals
     from libre_pythonista_lib.cq.cmd.calc.doc.listener.cmd_doc_event import CmdDocEvent
@@ -39,10 +41,9 @@ else:
 _KEY = "libre_pythonista_lib.init.init_doc.InitDoc"
 
 
-# Composite Command
 class CmdInitDoc(CmdBase, List[Type[CmdDocT]], LogMixin, CmdDocT):
     """
-    Composite command to initialize the document.
+    Batch Composite command to initialize the document. It is used to execute a series of commands that are necessary for initializing the document.
     """
 
     def __init__(self, doc: CalcDoc) -> None:
@@ -63,6 +64,7 @@ class CmdInitDoc(CmdBase, List[Type[CmdDocT]], LogMixin, CmdDocT):
         qry = QryDocGlobals()
         return self._execute_qry(qry)
 
+    @override
     def execute(self) -> None:
         """
         Executes a series of commands as part of a composite command.
@@ -86,6 +88,7 @@ class CmdInitDoc(CmdBase, List[Type[CmdDocT]], LogMixin, CmdDocT):
             self.success = True
             return
         self.success = False
+        self._success_cmds.clear()
         try:
             for cmd in self:
                 inst = cmd(self._doc)
@@ -98,7 +101,7 @@ class CmdInitDoc(CmdBase, List[Type[CmdDocT]], LogMixin, CmdDocT):
                     break
 
             if not self.success:
-                self.log.debug("Composite command failed.")
+                self.log.debug("Batch command failed.")
                 self._undo()
                 return
             doc_globals.mem_cache[_KEY] = "1"
@@ -113,11 +116,12 @@ class CmdInitDoc(CmdBase, List[Type[CmdDocT]], LogMixin, CmdDocT):
     def _undo(self) -> None:
         for cmd in reversed(self._success_cmds):
             cmd.undo()
-        self._success_cmds = []  # Clear executed commands
+        self._success_cmds.clear()
         self.success = False  # Reset success flag.
         doc_globals = DocGlobals.get_current()
         doc_globals.mem_cache[_KEY] = "0"
 
+    @override
     def undo(self) -> None:
         """
         Reverses the execution of all previously executed commands.

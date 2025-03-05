@@ -3,12 +3,14 @@ from typing import Any, List, Type, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcSheet
+    from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cmd_sheet_calc_formula import CmdSheetCalcFormula
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cmd_sheet_t import CmdSheetT
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.cache.calc.sheet.sheet_cache import get_sheet_cache
 else:
+    from libre_pythonista_lib.utils.custom_ext import override
     from libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from libre_pythonista_lib.cq.cmd.calc.sheet.cmd_sheet_calc_formula import CmdSheetCalcFormula
     from libre_pythonista_lib.log.log_mixin import LogMixin
@@ -20,17 +22,17 @@ else:
 _KEY = "libre_pythonista_lib.init.init_sheet.InitSheet"
 
 
-# Composite Command
 class CmdInitSheet(CmdBase, List[Type[CmdSheetT]], LogMixin, CmdSheetT):
     def __init__(self, sheet: CalcSheet) -> None:
         CmdBase.__init__(self)
         list.__init__(self)
         LogMixin.__init__(self)
-        self.executed_commands: List[CmdSheetT] = []
+        self._success_cmds: List[CmdSheetT] = []
         self._sheet = sheet
         self._cache = get_sheet_cache(self._sheet)
         self.append(CmdSheetCalcFormula)
 
+    @override
     def execute(self) -> None:
         """
         Executes a series of commands as part of a composite command.
@@ -54,13 +56,13 @@ class CmdInitSheet(CmdBase, List[Type[CmdSheetT]], LogMixin, CmdSheetT):
                 inst = cmd(self._sheet)
                 self._execute_cmd(inst)
                 if inst.success:  # Only add if command was successful
-                    self.executed_commands.append(inst)
+                    self._success_cmds.append(inst)
                 else:
                     self.log.debug("A command failed. Undoing previously executed commands.")
-                    self.undo()  # Undo all successfully executed commands.
-                    self.success = False  # Composite command failed.
+                    self._undo()  # Undo all successfully executed commands.
+                    self.success = False  # Batch command failed.
                     return
-            self.success = True  # Composite command succeeded.
+            self.success = True  # Batch command succeeded.
             self._cache[_KEY] = "1"
         except Exception as e:
             self.log.exception("An unexpected error occurred: %s", e)
@@ -70,6 +72,15 @@ class CmdInitSheet(CmdBase, List[Type[CmdSheetT]], LogMixin, CmdSheetT):
         if self.success:
             self.log.debug("Successfully executed command.")
 
+    def _undo(self) -> None:
+        for cmd in reversed(self._success_cmds):
+            self._execute_cmd_undo(cmd)
+        self._success_cmds.clear()  # Clear executed commands
+        self.success = False  # Reset success flag.
+
+        self._cache[_KEY] = "0"
+
+    @override
     def undo(self) -> None:
         """
         Reverses the execution of all previously executed commands.
@@ -82,13 +93,10 @@ class CmdInitSheet(CmdBase, List[Type[CmdSheetT]], LogMixin, CmdSheetT):
         Returns:
             None: This method does not return anything.
         """
-
-        for cmd in reversed(self.executed_commands):
-            cmd.undo()
-        self.executed_commands = []  # Clear executed commands
-        self.success = False  # Reset success flag.
-
-        self._cache[_KEY] = "0"
+        if self.success:
+            self._undo()
+        else:
+            self.log.debug("Undo not needed.")
 
     @property
     def sheet(self) -> CalcSheet:

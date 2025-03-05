@@ -5,6 +5,7 @@ from ooodev.utils.gen_util import NULL_OBJ
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcDoc
+    from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
     from oxt.pythonpath.libre_pythonista_lib.const.cache_const import DOC_CALC_PROPS, DOC_LP_DOC_PROP_DATA
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.cmd_lp_doc_props import CmdLpDocProps
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
@@ -14,6 +15,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
 else:
+    from libre_pythonista_lib.utils.custom_ext import override
     from libre_pythonista_lib.const.cache_const import DOC_CALC_PROPS, DOC_LP_DOC_PROP_DATA
     from libre_pythonista_lib.cq.cmd.calc.doc.cmd_lp_doc_props import CmdLpDocProps
     from libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
@@ -45,6 +47,7 @@ class CmdCalcProps(CmdBase, LogMixin, CmdCacheT):
         qry = QryCalcProps(self._doc)
         return self._execute_qry(qry)
 
+    @override
     def execute(self) -> None:
         self.success = False
         try:
@@ -59,6 +62,7 @@ class CmdCalcProps(CmdBase, LogMixin, CmdCacheT):
         self.log.debug("Successfully executed command.")
         self.success = True
 
+    @override
     def undo(self) -> None:
         if self.success:
             self._undo()

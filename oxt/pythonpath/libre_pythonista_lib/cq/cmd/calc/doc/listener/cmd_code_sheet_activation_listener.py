@@ -5,6 +5,7 @@ from ooodev.exceptions import ex as mEx  # noqa: N812
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcDoc, CalcSheetView
+    from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from oxt.pythonpath.libre_pythonista_lib.sheet.listen.code_sheet_activation_listener import (
         CodeSheetActivationListener,
@@ -13,6 +14,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.cmd_doc_t import CmdDocT
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
 else:
+    from libre_pythonista_lib.utils.custom_ext import override
     from libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from libre_pythonista_lib.sheet.listen.code_sheet_activation_listener import CodeSheetActivationListener
     from libre_pythonista_lib.log.log_mixin import LogMixin
@@ -48,6 +50,7 @@ class CmdCodeSheetActivation(CmdBase, LogMixin, CmdDocT):
             self.log.debug("Error getting view from document. %s", e)
             return None
 
+    @override
     def execute(self) -> None:
         self.success = False
         view = self._get_view()
@@ -65,6 +68,7 @@ class CmdCodeSheetActivation(CmdBase, LogMixin, CmdDocT):
         self.log.debug("Successfully executed command.")
         self.success = True
 
+    @override
     def undo(self) -> None:
         if self.success:
             view = self._get_view()
