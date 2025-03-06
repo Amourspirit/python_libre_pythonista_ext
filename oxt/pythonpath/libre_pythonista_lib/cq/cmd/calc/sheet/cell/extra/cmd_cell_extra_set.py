@@ -10,7 +10,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.cmd_cell_t import CmdCellT
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
-    from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.sheet.cell.extra.qry_cell_extra_value import (
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.extra.qry_cell_extra_value import (
         QryCellExtraValue,
     )
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.extra.cmd_cell_extra_del import CmdCellExtraDel
@@ -20,7 +20,7 @@ else:
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.cmd_cell_t import CmdCellT
     from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
-    from libre_pythonista_lib.cq.query.calc.sheet.cell.extra.qry_cell_extra_value import QryCellExtraValue
+    from libre_pythonista_lib.cq.qry.calc.sheet.cell.extra.qry_cell_extra_value import QryCellExtraValue
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.extra.cmd_cell_extra_del import CmdCellExtraDel
 
 # this class should be call in:

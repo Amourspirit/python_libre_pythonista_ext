@@ -15,17 +15,17 @@ def test_cmd_calc_props(loader, build_setup, mocker: MockerFixture) -> None:
         from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.cmd_calc_props import CmdCalcProps
         from oxt.pythonpath.libre_pythonista_lib.const.cache_const import DOC_CALC_PROPS, DOC_LP_DOC_PROP_DATA
         from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
-        from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.doc.qry_calc_props import QryCalcProps
+        from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_calc_props import QryCalcProps
         from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
-        from oxt.pythonpath.libre_pythonista_lib.cq.query.qry_handler_factory import QryHandlerFactory
+        from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
         from oxt.___lo_pip___.config import Config
     else:
         from libre_pythonista_lib.cq.cmd.calc.doc.cmd_calc_props import CmdCalcProps
         from libre_pythonista_lib.const.cache_const import DOC_CALC_PROPS, DOC_LP_DOC_PROP_DATA
         from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
-        from libre_pythonista_lib.cq.query.calc.doc.qry_calc_props import QryCalcProps
+        from libre_pythonista_lib.cq.qry.calc.doc.qry_calc_props import QryCalcProps
         from libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
-        from libre_pythonista_lib.cq.query.qry_handler_factory import QryHandlerFactory
+        from libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
         from libre_pythonista.config import Config
 
     doc = None

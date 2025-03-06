@@ -10,12 +10,12 @@ if __name__ == "__main__":
 
 def test_qry_location(build_setup, mocker: MockerFixture) -> None:
     if TYPE_CHECKING:
-        from oxt.pythonpath.libre_pythonista_lib.cq.query.doc.ext.qry__ext_location import QryExtLocation
-        from oxt.pythonpath.libre_pythonista_lib.cq.query.qry_handler import QryHandler
+        from oxt.pythonpath.libre_pythonista_lib.cq.qry.doc.ext.qry__ext_location import QryExtLocation
+        from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler import QryHandler
         from oxt.___lo_pip___.config import Config
     else:
-        from libre_pythonista_lib.cq.query.doc.ext.qry_ext_location import QryExtLocation
-        from libre_pythonista_lib.cq.query.qry_handler import QryHandler
+        from libre_pythonista_lib.cq.qry.doc.ext.qry_ext_location import QryExtLocation
+        from libre_pythonista_lib.cq.qry.qry_handler import QryHandler
         from libre_pythonista.config import Config
 
     # Test shared installation
@@ -42,10 +42,10 @@ def test_qry_location(build_setup, mocker: MockerFixture) -> None:
 
 def test_qry_location_kind(build_setup) -> None:
     if TYPE_CHECKING:
-        from oxt.pythonpath.libre_pythonista_lib.cq.query.doc.ext.qry__ext_location import QryExtLocation
+        from oxt.pythonpath.libre_pythonista_lib.cq.qry.doc.ext.qry__ext_location import QryExtLocation
         from oxt.pythonpath.libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
     else:
-        from libre_pythonista_lib.cq.query.doc.ext.qry_ext_location import QryExtLocation
+        from libre_pythonista_lib.cq.qry.doc.ext.qry_ext_location import QryExtLocation
         from libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
 
     qry = QryExtLocation()

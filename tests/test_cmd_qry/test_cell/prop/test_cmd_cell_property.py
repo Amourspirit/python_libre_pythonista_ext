@@ -16,18 +16,18 @@ def test_cmd_cell_prop(loader, build_setup) -> None:
         from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler import CmdHandler
         from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_cell_prop_set import CmdCellPropSet
         from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_cell_prop_del import CmdCellPropDel
-        from oxt.pythonpath.libre_pythonista_lib.cq.query.qry_handler import QryHandler
-        from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.sheet.cell.prop.qry_cell_has_prop import QryCellHasProp
-        from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.sheet.cell.prop.qry_cell_prop_value import (
+        from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler import QryHandler
+        from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_cell_has_prop import QryCellHasProp
+        from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_cell_prop_value import (
             QryCellPropValue,
         )
     else:
         from libre_pythonista_lib.cq.cmd.cmd_handler import CmdHandler
         from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_cell_prop_set import CmdCellPropSet
         from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_cell_prop_del import CmdCellPropDel
-        from libre_pythonista_lib.cq.query.qry_handler import QryHandler
-        from libre_pythonista_lib.cq.query.calc.sheet.cell.prop.qry_cell_has_prop import QryCellHasProp
-        from libre_pythonista_lib.cq.query.calc.sheet.cell.prop.qry_cell_prop_value import QryCellPropValue
+        from libre_pythonista_lib.cq.qry.qry_handler import QryHandler
+        from libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_cell_has_prop import QryCellHasProp
+        from libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_cell_prop_value import QryCellPropValue
 
     doc = None
     try:

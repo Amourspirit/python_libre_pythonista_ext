@@ -14,14 +14,14 @@ def test_cmd_pyc_rule(loader, build_setup) -> None:
     if TYPE_CHECKING:
         from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_pyc_rule import CmdPycRule
         from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler import CmdHandler
-        from oxt.pythonpath.libre_pythonista_lib.cq.query.qry_handler import QryHandler
-        from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.sheet.cell.prop.qry_pyc_rule import QryPycRule
+        from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler import QryHandler
+        from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_pyc_rule import QryPycRule
         from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_pyc_rule_del import CmdPycRuleDel
     else:
         from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_pyc_rule import CmdPycRule
         from libre_pythonista_lib.cq.cmd.cmd_handler import CmdHandler
-        from libre_pythonista_lib.cq.query.qry_handler import QryHandler
-        from libre_pythonista_lib.cq.query.calc.sheet.cell.prop.qry_pyc_rule import QryPycRule
+        from libre_pythonista_lib.cq.qry.qry_handler import QryHandler
+        from libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_pyc_rule import QryPycRule
         from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_pyc_rule_del import CmdPycRuleDel
 
     doc = None
@@ -153,10 +153,10 @@ def test_cmd_del_kind(build_setup, mocker: MockerFixture) -> None:
 def test_qry_kind(build_setup, mocker: MockerFixture) -> None:
     if TYPE_CHECKING:
         from oxt.pythonpath.libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
-        from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.sheet.cell.prop.qry_pyc_rule import QryPycRule
+        from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_pyc_rule import QryPycRule
     else:
         from libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
-        from libre_pythonista_lib.cq.query.calc.sheet.cell.prop.qry_pyc_rule import QryPycRule
+        from libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_pyc_rule import QryPycRule
 
     cell = mocker.MagicMock()
 

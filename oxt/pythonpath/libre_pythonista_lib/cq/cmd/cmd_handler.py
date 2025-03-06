@@ -1,6 +1,6 @@
 # region Imports
 from __future__ import annotations
-from typing import Any, Iterable, cast, TYPE_CHECKING
+from typing import Any, Iterable, cast, List, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from ooodev.utils.cache import MemCache
@@ -9,22 +9,22 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler_t import CmdHandlerT
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_t import CmdT
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_cache_t import CmdCacheT
-    from oxt.pythonpath.libre_pythonista_lib.cq.query.general.qry_cache import QryCache
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.general.qry_cache import QryCache
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
-    from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.sheet.cell.qry_cell_cache import QryCellCache
-    from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.sheet.qry_sheet_cache import QrySheetCache
-    from oxt.pythonpath.libre_pythonista_lib.cq.query.qry_handler import QryHandler
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_cache import QryCellCache
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.qry_sheet_cache import QrySheetCache
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler import QryHandler
 else:
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.cmd_cell_cache_t import CmdCellCacheT
     from libre_pythonista_lib.cq.cmd.calc.sheet.cmd_sheet_cache_t import CmdSheetCacheT
     from libre_pythonista_lib.cq.cmd.cmd_handler_t import CmdHandlerT
     from libre_pythonista_lib.cq.cmd.cmd_t import CmdT
     from libre_pythonista_lib.cq.cmd.cmd_cache_t import CmdCacheT
-    from libre_pythonista_lib.cq.query.general.qry_cache import QryCache
+    from libre_pythonista_lib.cq.qry.general.qry_cache import QryCache
     from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
-    from libre_pythonista_lib.cq.query.calc.sheet.cell.qry_cell_cache import QryCellCache
-    from libre_pythonista_lib.cq.query.calc.sheet.qry_sheet_cache import QrySheetCache
-    from libre_pythonista_lib.cq.query.qry_handler import QryHandler
+    from libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_cache import QryCellCache
+    from libre_pythonista_lib.cq.qry.calc.sheet.qry_sheet_cache import QrySheetCache
+    from libre_pythonista_lib.cq.qry.qry_handler import QryHandler
 
     MemCache = Any
 
@@ -34,8 +34,8 @@ else:
 class CmdHandler(CmdHandlerT):
     # region Handle methods
     def __init__(self) -> None:
-        self._undo_stack: list[CmdT] = []
-        self._redo_stack: list[CmdT] = []
+        self._undo_stack: List[CmdT] = []
+        self._redo_stack: List[CmdT] = []
 
     def handle(self, cmd: CmdT) -> None:  # noqa: ANN401
         if cmd.kind in (CalcCmdKind.SIMPLE, CalcCmdKind.SHEET, CalcCmdKind.CELL):

@@ -12,14 +12,11 @@ from .mixin.calc_cell_mixin import CalcCellMixin
 from .mixin.ctl_namer_mixin import CtlNamerMixin
 
 if TYPE_CHECKING:
-    from typing_extensions import override
+    from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
     from oxt.pythonpath.libre_pythonista_lib.res.res_resolver_mixin import ResResolverMixin
     from ....log.log_mixin import LogMixin
 else:
-
-    def override(f) -> object:  # noqa: ANN001
-        return f
-
+    from libre_pythonista_lib.utils.custom_ext import override
     from libre_pythonista_lib.res.res_resolver_mixin import ResResolverMixin
     from libre_pythonista_lib.log.log_mixin import LogMixin
 

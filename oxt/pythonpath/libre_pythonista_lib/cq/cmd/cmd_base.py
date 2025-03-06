@@ -5,14 +5,14 @@ from typing import cast, TYPE_CHECKING
 if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_t import CmdT
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler_t import CmdHandlerT
-    from oxt.pythonpath.libre_pythonista_lib.cq.query.qry_handler_t import QryHandlerT
-    from oxt.pythonpath.libre_pythonista_lib.cq.query.qry_t import QryT, TResult
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_t import QryHandlerT
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_t import QryT, TResult
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
 else:
     from libre_pythonista_lib.cq.cmd.cmd_t import CmdT
     from libre_pythonista_lib.cq.cmd.cmd_handler_t import CmdHandlerT
-    from libre_pythonista_lib.cq.query.qry_handler_t import QryHandlerT
-    from libre_pythonista_lib.cq.query.qry_t import QryT, TResult
+    from libre_pythonista_lib.cq.qry.qry_handler_t import QryHandlerT
+    from libre_pythonista_lib.cq.qry.qry_t import QryT, TResult
     from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
 
 
@@ -66,9 +66,9 @@ class CmdBase(ABC):
             return cast(QryHandlerT, self.__qry_handler)
 
         if TYPE_CHECKING:
-            from oxt.pythonpath.libre_pythonista_lib.cq.query.qry_handler_factory import QryHandlerFactory
+            from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
         else:
-            from libre_pythonista_lib.cq.query.qry_handler_factory import QryHandlerFactory
+            from libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
 
         self.__qry_handler = QryHandlerFactory.get_qry_handler()
         return cast(QryHandlerT, self.__qry_handler)

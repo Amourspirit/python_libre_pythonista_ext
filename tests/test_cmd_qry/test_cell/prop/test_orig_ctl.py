@@ -14,14 +14,14 @@ def test_cmd_orig_ctl(loader, build_setup) -> None:
     if TYPE_CHECKING:
         from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_orig_ctl import CmdOrigCtl
         from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler import CmdHandler
-        from oxt.pythonpath.libre_pythonista_lib.cq.query.qry_handler import QryHandler
-        from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.sheet.cell.prop.qry_orig_ctl import QryOrigCtl
+        from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler import QryHandler
+        from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_orig_ctl import QryOrigCtl
         from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_orig_ctl_del import CmdOrigCtlDel
     else:
         from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_orig_ctl import CmdOrigCtl
         from libre_pythonista_lib.cq.cmd.cmd_handler import CmdHandler
-        from libre_pythonista_lib.cq.query.qry_handler import QryHandler
-        from libre_pythonista_lib.cq.query.calc.sheet.cell.prop.qry_orig_ctl import QryOrigCtl
+        from libre_pythonista_lib.cq.qry.qry_handler import QryHandler
+        from libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_orig_ctl import QryOrigCtl
         from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_orig_ctl_del import CmdOrigCtlDel
 
     doc = None
@@ -153,10 +153,10 @@ def test_cmd_del_kind(build_setup, mocker: MockerFixture) -> None:
 def test_qry_kind(build_setup, mocker: MockerFixture) -> None:
     if TYPE_CHECKING:
         from oxt.pythonpath.libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
-        from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.sheet.cell.prop.qry_orig_ctl import QryOrigCtl
+        from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_orig_ctl import QryOrigCtl
     else:
         from libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
-        from libre_pythonista_lib.cq.query.calc.sheet.cell.prop.qry_orig_ctl import QryOrigCtl
+        from libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_orig_ctl import QryOrigCtl
 
     cell = mocker.MagicMock()
 

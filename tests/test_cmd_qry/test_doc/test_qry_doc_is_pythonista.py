@@ -11,11 +11,11 @@ def test_new_doc(loader, build_setup) -> None:
     from ooodev.calc import CalcDoc
 
     if TYPE_CHECKING:
-        from oxt.pythonpath.libre_pythonista_lib.cq.query.qry_handler import QryHandler
-        from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.doc.qry_is_doc_pythonista import QryIsDocPythonista
+        from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler import QryHandler
+        from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_is_doc_pythonista import QryIsDocPythonista
     else:
-        from libre_pythonista_lib.cq.query.qry_handler import QryHandler
-        from libre_pythonista_lib.cq.query.calc.doc.qry_is_doc_pythonista import QryIsDocPythonista
+        from libre_pythonista_lib.cq.qry.qry_handler import QryHandler
+        from libre_pythonista_lib.cq.qry.calc.doc.qry_is_doc_pythonista import QryIsDocPythonista
 
     doc = None
     try:
@@ -35,11 +35,11 @@ def test_existing_doc(loader, build_setup, copy_fix_calc) -> None:
     from ooodev.calc import CalcDoc
 
     if TYPE_CHECKING:
-        from oxt.pythonpath.libre_pythonista_lib.cq.query.qry_handler import QryHandler
-        from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.doc.qry_is_doc_pythonista import QryIsDocPythonista
+        from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler import QryHandler
+        from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_is_doc_pythonista import QryIsDocPythonista
     else:
-        from libre_pythonista_lib.cq.query.qry_handler import QryHandler
-        from libre_pythonista_lib.cq.query.calc.doc.qry_is_doc_pythonista import QryIsDocPythonista
+        from libre_pythonista_lib.cq.qry.qry_handler import QryHandler
+        from libre_pythonista_lib.cq.qry.calc.doc.qry_is_doc_pythonista import QryIsDocPythonista
 
     doc = None
     try:
@@ -60,11 +60,11 @@ def test_existing_lp_doc(loader, build_setup, copy_fix_calc) -> None:
     from ooodev.calc import CalcDoc
 
     if TYPE_CHECKING:
-        from oxt.pythonpath.libre_pythonista_lib.cq.query.qry_handler import QryHandler
-        from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.doc.qry_is_doc_pythonista import QryIsDocPythonista
+        from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler import QryHandler
+        from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_is_doc_pythonista import QryIsDocPythonista
     else:
-        from libre_pythonista_lib.cq.query.qry_handler import QryHandler
-        from libre_pythonista_lib.cq.query.calc.doc.qry_is_doc_pythonista import QryIsDocPythonista
+        from libre_pythonista_lib.cq.qry.qry_handler import QryHandler
+        from libre_pythonista_lib.cq.qry.calc.doc.qry_is_doc_pythonista import QryIsDocPythonista
 
     doc = None
     try:

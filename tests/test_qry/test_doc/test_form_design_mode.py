@@ -11,11 +11,11 @@ if __name__ == "__main__":
 
 def test_form_design_mode(loader, build_setup, mocker: MockerFixture) -> None:
     if TYPE_CHECKING:
-        from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.doc.qry_form_design_mode import QryFormDesignMode
-        from oxt.pythonpath.libre_pythonista_lib.cq.query.qry_handler import QryHandler
+        from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_form_design_mode import QryFormDesignMode
+        from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler import QryHandler
     else:
-        from libre_pythonista_lib.cq.query.calc.doc.qry_form_design_mode import QryFormDesignMode
-        from libre_pythonista_lib.cq.query.qry_handler import QryHandler
+        from libre_pythonista_lib.cq.qry.calc.doc.qry_form_design_mode import QryFormDesignMode
+        from libre_pythonista_lib.cq.qry.qry_handler import QryHandler
 
     doc = None
     try:
@@ -62,10 +62,10 @@ def test_form_design_mode(loader, build_setup, mocker: MockerFixture) -> None:
 
 def test_form_design_mode_kind(loader, build_setup) -> None:
     if TYPE_CHECKING:
-        from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.doc.qry_form_design_mode import QryFormDesignMode
+        from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_form_design_mode import QryFormDesignMode
         from oxt.pythonpath.libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
     else:
-        from libre_pythonista_lib.cq.query.calc.doc.qry_form_design_mode import QryFormDesignMode
+        from libre_pythonista_lib.cq.qry.calc.doc.qry_form_design_mode import QryFormDesignMode
         from libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
 
     doc = None

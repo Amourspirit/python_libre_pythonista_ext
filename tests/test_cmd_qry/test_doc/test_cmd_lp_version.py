@@ -13,18 +13,18 @@ def test_cmd_lp_version(loader, build_setup, mocker: MockerFixture) -> None:
     if TYPE_CHECKING:
         from oxt.___lo_pip___.basic_config import BasicConfig
         from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
-        from oxt.pythonpath.libre_pythonista_lib.cq.query.qry_handler_factory import QryHandlerFactory
+        from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
         from oxt.pythonpath.libre_pythonista_lib.cq.cmd.doc.cmd_lp_version import CmdLpVersion
-        from oxt.pythonpath.libre_pythonista_lib.cq.query.doc.ext.qry_ext_version import QryExtVersion
-        from oxt.pythonpath.libre_pythonista_lib.cq.query.doc.qry_lp_version import QryLpVersion
+        from oxt.pythonpath.libre_pythonista_lib.cq.qry.doc.ext.qry_ext_version import QryExtVersion
+        from oxt.pythonpath.libre_pythonista_lib.cq.qry.doc.qry_lp_version import QryLpVersion
         from oxt.pythonpath.libre_pythonista_lib.const import LP_EXT_VERSION
     else:
         from libre_pythonista.basic_config import BasicConfig
         from libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
-        from libre_pythonista_lib.cq.query.qry_handler_factory import QryHandlerFactory
+        from libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
         from libre_pythonista_lib.cq.cmd.doc.cmd_lp_version import CmdLpVersion
-        from libre_pythonista_lib.cq.query.doc.ext.qry_ext_version import QryExtVersion
-        from libre_pythonista_lib.cq.query.doc.qry_lp_version import QryLpVersion
+        from libre_pythonista_lib.cq.qry.doc.ext.qry_ext_version import QryExtVersion
+        from libre_pythonista_lib.cq.qry.doc.qry_lp_version import QryLpVersion
         from libre_pythonista_lib.const import LP_EXT_VERSION
 
     doc = None

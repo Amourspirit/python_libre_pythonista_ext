@@ -21,7 +21,7 @@ if TYPE_CHECKING:
     )
 
     from pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.cmd_doc_init import CmdDocInit
-    from oxt.pythonpath.libre_pythonista_lib.cq.query.doc.qry_doc_globals import QryDocGlobals
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.doc.qry_doc_globals import QryDocGlobals
 else:
     from libre_pythonista_lib.utils.custom_ext import override
     from libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
@@ -36,7 +36,7 @@ else:
     from libre_pythonista_lib.cq.cmd.cmd_t import CmdT
     from libre_pythonista_lib.cq.cmd.calc.doc.listener.cmd_form_design_mode_off import CmdFormDesignModeOff
     from libre_pythonista_lib.cq.cmd.calc.doc.cmd_doc_init import CmdDocInit
-    from libre_pythonista_lib.cq.query.doc.qry_doc_globals import QryDocGlobals
+    from libre_pythonista_lib.cq.qry.doc.qry_doc_globals import QryDocGlobals
 
 
 _KEY = "libre_pythonista_lib.init.init_doc.InitDoc"

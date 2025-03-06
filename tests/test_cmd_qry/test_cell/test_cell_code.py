@@ -14,19 +14,19 @@ def test_cell_code(loader, py_src_uri) -> None:
     from ooodev.utils.cache import MemCache
 
     if TYPE_CHECKING:
-        from oxt.pythonpath.libre_pythonista_lib.cq.query.qry_handler import QryHandler
+        from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler import QryHandler
         from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler import CmdHandler
         from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.cmd_cell_src_code import CmdCellSrcCode
-        from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.sheet.cell.qry_cell_src_code import QryCellSrcCode
-        from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.sheet.cell.qry_cell_cache import QryCellCache
+        from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_src_code import QryCellSrcCode
+        from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_cache import QryCellCache
 
     else:
-        from libre_pythonista_lib.cq.query.qry_handler import QryHandler
+        from libre_pythonista_lib.cq.qry.qry_handler import QryHandler
         from libre_pythonista_lib.cq.cmd.cmd_handler import CmdHandler
-        from libre_pythonista_lib.cq.query.calc.sheet.cell.qry_cell_src_code import QryCellSrcCode
+        from libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_src_code import QryCellSrcCode
         from libre_pythonista_lib.cq.cmd.calc.sheet.cell.cmd_cell_src_code import CmdCellSrcCode
-        from libre_pythonista_lib.cq.query.calc.sheet.cell.qry_cell_src_code import QryCellSrcCode
-        from libre_pythonista_lib.cq.query.calc.sheet.cell.qry_cell_cache import QryCellCache
+        from libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_src_code import QryCellSrcCode
+        from libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_cache import QryCellCache
 
     doc = None
     try:

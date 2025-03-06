@@ -14,14 +14,14 @@ def test_cmd_addr(loader, build_setup, mocker: MockerFixture) -> None:
         from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_addr import CmdAddr
         from oxt.pythonpath.libre_pythonista_lib.data_type.calc.sheet.cell.prop.addr import Addr
         from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler import CmdHandler
-        from oxt.pythonpath.libre_pythonista_lib.cq.query.qry_handler import QryHandler
-        from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.sheet.cell.prop.qry_addr import QryAddr
+        from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler import QryHandler
+        from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_addr import QryAddr
     else:
         from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_addr import CmdAddr
         from libre_pythonista_lib.data_type.calc.sheet.cell.prop.addr import Addr
         from libre_pythonista_lib.cq.cmd.cmd_handler import CmdHandler
-        from libre_pythonista_lib.cq.query.qry_handler import QryHandler
-        from libre_pythonista_lib.cq.query.calc.sheet.cell.prop.qry_addr import QryAddr
+        from libre_pythonista_lib.cq.qry.qry_handler import QryHandler
+        from libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_addr import QryAddr
 
     doc = None
     try:
@@ -115,14 +115,14 @@ def test_cmd_kind(build_setup, mocker: MockerFixture) -> None:
 def test_qry_kind(build_setup, mocker: MockerFixture) -> None:
     if TYPE_CHECKING:
         from oxt.pythonpath.libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
-        from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.sheet.cell.prop.qry_addr import QryAddr
+        from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_addr import QryAddr
     else:
         from libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
-        from libre_pythonista_lib.cq.query.calc.sheet.cell.prop.qry_addr import QryAddr
+        from libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_addr import QryAddr
 
-    # libre_pythonista_lib.cq.query.calc.sheet.cell.qry_cell_prop_value.QryCellPropValue
+    # libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_prop_value.QryCellPropValue
     _ = mocker.patch(
-        "libre_pythonista_lib.cq.query.calc.sheet.cell.prop.qry_cell_prop_value.QryCellPropValue.execute",
+        "libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_cell_prop_value.QryCellPropValue.execute",
         return_value=True,
     )
 

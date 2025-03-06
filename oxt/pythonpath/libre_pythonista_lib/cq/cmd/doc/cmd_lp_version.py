@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.doc.cmd_office_doc_t import CmdOfficeDocT
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.doc.cmd_doc_custom_prop import CmdDocCustomProp
-    from oxt.pythonpath.libre_pythonista_lib.cq.query.doc.qry_lp_version import QryLpVersion
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.doc.qry_lp_version import QryLpVersion
     from oxt.pythonpath.libre_pythonista_lib.const import LP_EXT_VERSION
 
 else:
@@ -21,7 +21,7 @@ else:
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.cq.cmd.doc.cmd_office_doc_t import CmdOfficeDocT
     from libre_pythonista_lib.cq.cmd.doc.cmd_doc_custom_prop import CmdDocCustomProp
-    from libre_pythonista_lib.cq.query.doc.qry_lp_version import QryLpVersion
+    from libre_pythonista_lib.cq.qry.doc.qry_lp_version import QryLpVersion
     from libre_pythonista_lib.const import LP_EXT_VERSION
 
 # tested in tests/test_cmd_qry/test_doc/test_cmd_lp_version.py

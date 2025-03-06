@@ -17,21 +17,21 @@ if TYPE_CHECKING:
     from com.sun.star.lang import EventObject
     from com.sun.star.sheet import SheetCell  # service
     from oxt.___lo_pip___.basic_config import BasicConfig as Config
-    from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.sheet.uno_cell.qry_cell_sheet_doc import QryCellSheetDoc
-    from oxt.pythonpath.libre_pythonista_lib.cq.query.qry_handler import QryHandler
-    from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.sheet.uno_cell.qry_cell_is_deleted import QryCellIsDeleted
-    from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.sheet.uno_cell.qry_cell_is_pyc_formula import (
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.uno_cell.qry_cell_sheet_doc import QryCellSheetDoc
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler import QryHandler
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.uno_cell.qry_cell_is_deleted import QryCellIsDeleted
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.uno_cell.qry_cell_is_pyc_formula import (
         QryCellIsPycFormula,
     )
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
-    from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.sheet.uno_cell.qry_cell_sheet_name import QryCellSheetName
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.uno_cell.qry_cell_sheet_name import QryCellSheetName
 else:
     from ___lo_pip___.basic_config import BasicConfig as Config
-    from libre_pythonista_lib.cq.query.qry_handler import QryHandler
-    from libre_pythonista_lib.cq.query.calc.sheet.uno_cell.qry_cell_sheet_doc import QryCellSheetDoc
-    from libre_pythonista_lib.cq.query.calc.sheet.uno_cell.qry_cell_is_deleted import QryCellIsDeleted
-    from libre_pythonista_lib.cq.query.calc.sheet.uno_cell.qry_cell_is_pyc_formula import QryCellIsPycFormula
-    from libre_pythonista_lib.cq.query.calc.sheet.uno_cell.qry_cell_sheet_name import QryCellSheetName
+    from libre_pythonista_lib.cq.qry.qry_handler import QryHandler
+    from libre_pythonista_lib.cq.qry.calc.sheet.uno_cell.qry_cell_sheet_doc import QryCellSheetDoc
+    from libre_pythonista_lib.cq.qry.calc.sheet.uno_cell.qry_cell_is_deleted import QryCellIsDeleted
+    from libre_pythonista_lib.cq.qry.calc.sheet.uno_cell.qry_cell_is_pyc_formula import QryCellIsPycFormula
+    from libre_pythonista_lib.cq.qry.calc.sheet.uno_cell.qry_cell_sheet_name import QryCellSheetName
     from libre_pythonista_lib.log.log_mixin import LogMixin
 
     def override(func):  # noqa: ANN001, ANN201

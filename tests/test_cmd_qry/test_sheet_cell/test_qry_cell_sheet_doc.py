@@ -12,13 +12,13 @@ def test_qry_cell_sheet_doc(loader, build_setup) -> None:
     from ooodev.calc import CalcDoc
 
     if TYPE_CHECKING:
-        from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.sheet.uno_cell.qry_cell_sheet_doc import QryCellSheetDoc
-        from oxt.pythonpath.libre_pythonista_lib.cq.query.qry_handler import QryHandler
+        from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.uno_cell.qry_cell_sheet_doc import QryCellSheetDoc
+        from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler import QryHandler
 
     else:
-        from libre_pythonista_lib.cq.query.calc.sheet.uno_cell.qry_cell_sheet_doc import QryCellSheetDoc
-        from libre_pythonista_lib.cq.query.qry_handler import QryHandler
-        from libre_pythonista_lib.cq.query.calc.sheet.cell.qry_cell_cache import QryCellCache
+        from libre_pythonista_lib.cq.qry.calc.sheet.uno_cell.qry_cell_sheet_doc import QryCellSheetDoc
+        from libre_pythonista_lib.cq.qry.qry_handler import QryHandler
+        from libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_cache import QryCellCache
 
     doc = None
     try:

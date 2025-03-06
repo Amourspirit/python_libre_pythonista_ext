@@ -11,8 +11,8 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_cache_t import CmdCacheT
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.cmd_lp_doc_json_file import CmdLpDocJsonFile
-    from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.doc.qry_lp_doc_json_file import QryLpDocJsonFile
-    from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.doc.qry_lp_doc_json_file import QryLpDocJsonFile
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_lp_doc_json_file import QryLpDocJsonFile
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_lp_doc_json_file import QryLpDocJsonFile
     from oxt.pythonpath.libre_pythonista_lib.const.cache_const import DOC_LP_DOC_PROP_DATA
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
 else:
@@ -21,8 +21,8 @@ else:
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.cq.cmd.cmd_cache_t import CmdCacheT
     from libre_pythonista_lib.cq.cmd.calc.doc.cmd_lp_doc_json_file import CmdLpDocJsonFile
-    from libre_pythonista_lib.cq.query.calc.doc.qry_lp_doc_json_file import QryLpDocJsonFile
-    from libre_pythonista_lib.cq.query.calc.doc.qry_lp_doc_json_file import QryLpDocJsonFile
+    from libre_pythonista_lib.cq.qry.calc.doc.qry_lp_doc_json_file import QryLpDocJsonFile
+    from libre_pythonista_lib.cq.qry.calc.doc.qry_lp_doc_json_file import QryLpDocJsonFile
     from libre_pythonista_lib.const.cache_const import DOC_LP_DOC_PROP_DATA
     from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
 

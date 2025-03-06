@@ -12,19 +12,19 @@ def test_cmd_lp_doc_json_file(loader, build_setup) -> None:
 
     if TYPE_CHECKING:
         from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.cmd_lp_doc_json_file import CmdLpDocJsonFile
-        from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.doc.qry_lp_doc_json_file import QryLpDocJsonFile
+        from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_lp_doc_json_file import QryLpDocJsonFile
         from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.cmd_lp_doc_json_file_del import CmdLpDocJsonFileDel
         from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
-        from oxt.pythonpath.libre_pythonista_lib.cq.query.qry_handler_factory import QryHandlerFactory
+        from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
         from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
         from oxt.___lo_pip___.basic_config import BasicConfig
     else:
         from libre_pythonista_lib.cq.cmd.calc.doc.cmd_lp_doc_json_file import CmdLpDocJsonFile
-        from libre_pythonista_lib.cq.query.calc.doc.qry_lp_doc_json_file import QryLpDocJsonFile
+        from libre_pythonista_lib.cq.qry.calc.doc.qry_lp_doc_json_file import QryLpDocJsonFile
         from libre_pythonista_lib.cq.cmd.calc.doc.cmd_lp_doc_json_file_del import CmdLpDocJsonFileDel
         from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
         from libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
-        from libre_pythonista_lib.cq.query.qry_handler_factory import QryHandlerFactory
+        from libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
         from libre_pythonista.basic_config import BasicConfig
 
     doc = None

@@ -14,23 +14,23 @@ def test_cmd_doc_event(loader, build_setup, mocker: MockerFixture) -> None:
     from ooodev.utils.cache import MemCache
 
     if TYPE_CHECKING:
-        from oxt.pythonpath.libre_pythonista_lib.cq.query.qry_handler import QryHandler
+        from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler import QryHandler
         from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler import CmdHandler
-        from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.sheet.qry_sheet_cache import QrySheetCache
-        from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.sheet.qry_sheet_calculation_event import (
+        from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.qry_sheet_cache import QrySheetCache
+        from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.qry_sheet_calculation_event import (
             QrySheetCalculationEvent,
         )
-        from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.sheet.qry_sheet_has_calculation_event import (
+        from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.qry_sheet_has_calculation_event import (
             QrySheetHasCalculationEvent,
         )
         from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cmd_sheet_calc_formula import CmdSheetCalcFormula
         from oxt.___lo_pip___.basic_config import BasicConfig
     else:
-        from libre_pythonista_lib.cq.query.qry_handler import QryHandler
+        from libre_pythonista_lib.cq.qry.qry_handler import QryHandler
         from libre_pythonista_lib.cq.cmd.cmd_handler import CmdHandler
-        from libre_pythonista_lib.cq.query.calc.sheet.qry_sheet_cache import QrySheetCache
-        from libre_pythonista_lib.cq.query.calc.sheet.qry_sheet_calculation_event import QrySheetCalculationEvent
-        from libre_pythonista_lib.cq.query.calc.sheet.qry_sheet_has_calculation_event import (
+        from libre_pythonista_lib.cq.qry.calc.sheet.qry_sheet_cache import QrySheetCache
+        from libre_pythonista_lib.cq.qry.calc.sheet.qry_sheet_calculation_event import QrySheetCalculationEvent
+        from libre_pythonista_lib.cq.qry.calc.sheet.qry_sheet_has_calculation_event import (
             QrySheetHasCalculationEvent,
         )
         from libre_pythonista_lib.cq.cmd.calc.sheet.cmd_sheet_calc_formula import CmdSheetCalcFormula

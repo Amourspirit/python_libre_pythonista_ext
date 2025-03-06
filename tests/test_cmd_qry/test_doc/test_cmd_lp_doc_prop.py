@@ -12,17 +12,17 @@ def test_cmd_lp_doc_prop(loader, build_setup) -> None:
 
     if TYPE_CHECKING:
         from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.cmd_lp_doc_props import CmdLpDocProps
-        from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.doc.qry_lp_doc_props import QryLpDocProps
-        from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.doc.qry_lp_doc_prop import QryLpDocProp
+        from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_lp_doc_props import QryLpDocProps
+        from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_lp_doc_prop import QryLpDocProp
         from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
-        from oxt.pythonpath.libre_pythonista_lib.cq.query.qry_handler_factory import QryHandlerFactory
+        from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
         from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.cmd_lp_doc_prop import CmdLpDocProp
     else:
         from libre_pythonista_lib.cq.cmd.calc.doc.cmd_lp_doc_props import CmdLpDocProps
-        from libre_pythonista_lib.cq.query.calc.doc.qry_lp_doc_props import QryLpDocProps
-        from libre_pythonista_lib.cq.query.calc.doc.qry_lp_doc_prop import QryLpDocProp
+        from libre_pythonista_lib.cq.qry.calc.doc.qry_lp_doc_props import QryLpDocProps
+        from libre_pythonista_lib.cq.qry.calc.doc.qry_lp_doc_prop import QryLpDocProp
         from libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
-        from libre_pythonista_lib.cq.query.qry_handler_factory import QryHandlerFactory
+        from libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
         from libre_pythonista_lib.cq.cmd.calc.doc.cmd_lp_doc_prop import CmdLpDocProp
 
     doc = None
@@ -79,10 +79,10 @@ def test_cmd_lp_doc_props_cache_keys(build_setup, mocker: MockerFixture) -> None
 
 def test_qry_lp_doc_props_cache_keys(build_setup, mocker: MockerFixture) -> None:
     if TYPE_CHECKING:
-        from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.doc.qry_lp_doc_props import QryLpDocProps
+        from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_lp_doc_props import QryLpDocProps
         from oxt.pythonpath.libre_pythonista_lib.const.cache_const import DOC_LP_DOC_PROP_DATA
     else:
-        from libre_pythonista_lib.cq.query.calc.doc.qry_lp_doc_props import QryLpDocProps
+        from libre_pythonista_lib.cq.qry.calc.doc.qry_lp_doc_props import QryLpDocProps
         from libre_pythonista_lib.const.cache_const import DOC_LP_DOC_PROP_DATA
 
     doc = mocker.Mock()

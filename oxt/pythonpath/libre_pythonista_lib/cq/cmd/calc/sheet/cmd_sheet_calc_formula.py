@@ -15,10 +15,10 @@ if TYPE_CHECKING:
         SHEET_HAS_CALCULATION_EVENT,
         SHEET_CALCULATION_EVENT,
     )
-    from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.sheet.qry_sheet_has_calculation_event import (
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.qry_sheet_has_calculation_event import (
         QrySheetHasCalculationEvent,
     )
-    from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.sheet.qry_sheet_calculation_event import (
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.qry_sheet_calculation_event import (
         QrySheetCalculationEvent,
     )
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
@@ -30,8 +30,8 @@ else:
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.cq.cmd.calc.sheet.cmd_sheet_cache_t import CmdSheetCacheT
     from libre_pythonista_lib.const.cache_const import SHEET_HAS_CALCULATION_EVENT, SHEET_CALCULATION_EVENT
-    from libre_pythonista_lib.cq.query.calc.sheet.qry_sheet_has_calculation_event import QrySheetHasCalculationEvent
-    from libre_pythonista_lib.cq.query.calc.sheet.qry_sheet_calculation_event import QrySheetCalculationEvent
+    from libre_pythonista_lib.cq.qry.calc.sheet.qry_sheet_has_calculation_event import QrySheetHasCalculationEvent
+    from libre_pythonista_lib.cq.qry.calc.sheet.qry_sheet_calculation_event import QrySheetCalculationEvent
     from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
 
 # Should be called with:

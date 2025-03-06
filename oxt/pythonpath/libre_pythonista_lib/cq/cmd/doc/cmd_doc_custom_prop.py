@@ -9,13 +9,13 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.doc.cmd_office_doc_t import CmdOfficeDocT
-    from oxt.pythonpath.libre_pythonista_lib.cq.query.doc.qry_doc_custom_prop import QryDocCustomProp
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.doc.qry_doc_custom_prop import QryDocCustomProp
 else:
     from libre_pythonista_lib.utils.custom_ext import override
     from libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.cq.cmd.doc.cmd_office_doc_t import CmdOfficeDocT
-    from libre_pythonista_lib.cq.query.doc.qry_doc_custom_prop import QryDocCustomProp
+    from libre_pythonista_lib.cq.qry.doc.qry_doc_custom_prop import QryDocCustomProp
 
 
 class CmdDocCustomProp(CmdBase, LogMixin, CmdOfficeDocT):

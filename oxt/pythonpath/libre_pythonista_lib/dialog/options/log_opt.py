@@ -28,8 +28,8 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.event.shared_event import SharedEvent
     from oxt.pythonpath.libre_pythonista_lib.const.event_const import LOG_OPTIONS_CHANGED
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
-    from oxt.pythonpath.libre_pythonista_lib.cq.query.qry_handler_factory import QryHandlerFactory
-    from oxt.pythonpath.libre_pythonista_lib.cq.query.calc.doc.qry_calc_props import QryCalcProps
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_calc_props import QryCalcProps
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.cmd_calc_props import CmdCalcProps
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
 else:
@@ -38,8 +38,8 @@ else:
     from libre_pythonista_lib.event.shared_event import SharedEvent
     from libre_pythonista_lib.const.event_const import LOG_OPTIONS_CHANGED
     from libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
-    from libre_pythonista_lib.cq.query.qry_handler_factory import QryHandlerFactory
-    from libre_pythonista_lib.cq.query.calc.doc.qry_calc_props import QryCalcProps
+    from libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
+    from libre_pythonista_lib.cq.qry.calc.doc.qry_calc_props import QryCalcProps
     from libre_pythonista_lib.cq.cmd.calc.doc.cmd_calc_props import CmdCalcProps
     from libre_pythonista_lib.log.log_mixin import LogMixin
 
