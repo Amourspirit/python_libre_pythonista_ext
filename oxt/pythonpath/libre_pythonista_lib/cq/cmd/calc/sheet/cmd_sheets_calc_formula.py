@@ -55,7 +55,7 @@ class CmdSheetsCalcFormula(CmdBase, LogMixin, CmdT):
     def _undo(self) -> None:
         try:
             for cmd in self._success_cmds:
-                cmd.undo()
+                self._execute_cmd_undo(cmd)
             self.log.debug("Successfully executed undo command")
         except Exception:
             self.log.exception("Error removing sheet calculate event")

@@ -85,7 +85,7 @@ class CmdCodeName(CmdBase, LogMixin, CmdCellCtlT):
 
     def _undo(self) -> None:
         for cmd in self._success_commands:
-            cmd.undo()
+            self._execute_cmd_undo(cmd)
         self._success_commands.clear()
         if not self._state_changed:
             self.log.debug("State has not changed. Undo not needed.")

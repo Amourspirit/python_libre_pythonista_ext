@@ -33,7 +33,7 @@ class CtlBuilder(List[CmdCellCtlT], LogMixin, ABC):
         self.ctl.cell = cell
         self._success = False
         self._success_cmds: List[CmdCellCtlT] = []
-        self._handler = CmdHandler()
+        self._cmd_handler = CmdHandler()
 
     def _append_base_commands(self) -> None:
         self.clear()
@@ -61,7 +61,7 @@ class CtlBuilder(List[CmdCellCtlT], LogMixin, ABC):
         self._success = False
         try:
             for cmd in self:
-                self._handler.handle(cmd)
+                self._cmd_handler.handle(cmd)
                 self._success = cmd.success
                 if self._success:  # Only add if command was successful
                     self._success_cmds.append(cmd)
@@ -83,7 +83,7 @@ class CtlBuilder(List[CmdCellCtlT], LogMixin, ABC):
 
     def _undo(self) -> None:
         for cmd in reversed(self._success_cmds):
-            cmd.undo()
+            self._cmd_handler.handle_undo(cmd)
         self._success_cmds = []  # Clear executed commands
         self._success = False  # Reset success flag.
 

@@ -81,7 +81,7 @@ class CmdModifyTriggerEvent(CmdBase, LogMixin, CmdCellCtlT):
             self.log.debug("State has not changed. Undo not needed.")
             return
         for cmd in reversed(self._success_cmds):
-            cmd.undo()
+            self._execute_cmd_undo(cmd)
         self._success_cmds.clear()
         self._ctl.ctl_rule_kind = self._current
         self.log.debug("Successfully executed undo command.")

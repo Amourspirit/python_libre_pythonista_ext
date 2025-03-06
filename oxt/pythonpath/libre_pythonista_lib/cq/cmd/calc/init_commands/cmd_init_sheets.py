@@ -77,7 +77,7 @@ class CmdInitSheets(CmdBase, List[Type[CmdDocT]], LogMixin, CmdDocT):
 
     def _undo(self) -> None:
         for cmd in reversed(self._success_commands):
-            cmd.undo()
+            self._execute_cmd_undo(cmd)
         self._success_commands = []  # Clear executed commands
         self.success = False  # Reset success flag.
         doc_globals = DocGlobals.get_current()
