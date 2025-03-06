@@ -13,23 +13,21 @@ from ooodev.loader import Lo
 from ooodev.utils.helper.dot_dict import DotDict
 
 if TYPE_CHECKING:
-    from typing_extensions import override
     from com.sun.star.sheet import Shape  # service
     from ooodev.calc.calc_cell import CalcCell
     from ooodev.loader.inst.lo_inst import LoInst
     from ooodev.calc.calc_form import CalcForm
+    from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
     from oxt.pythonpath.libre_pythonista_lib.ex.exceptions import CustomPropertyMissingError
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.___lo_pip___.basic_config import BasicConfig
     from oxt.pythonpath.libre_pythonista_lib.pyc.cell.ctl.mixin.ctl_namer_mixin import CtlNamerMixin
 else:
     from ___lo_pip___.basic_config import BasicConfig
+    from libre_pythonista_lib.utils.custom_ext import override
     from libre_pythonista_lib.ex.exceptions import CustomPropertyMissingError
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.pyc.cell.ctl.mixin.ctl_namer_mixin import CtlNamerMixin
-
-    def override(func):  # noqa: ANN001, ANN201
-        return func
 
 
 class CellControl(SheetControlBase, LogMixin, CtlNamerMixin):

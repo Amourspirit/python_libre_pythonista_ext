@@ -33,6 +33,10 @@ else:
 
 class CmdHandler(CmdHandlerT):
     # region Handle methods
+    def __init__(self) -> None:
+        self._undo_stack: list[CmdT] = []
+        self._redo_stack: list[CmdT] = []
+
     def handle(self, cmd: CmdT) -> None:  # noqa: ANN401
         if cmd.kind in (CalcCmdKind.SIMPLE, CalcCmdKind.SHEET, CalcCmdKind.CELL):
             self._handle_simple(cmd)
@@ -47,6 +51,9 @@ class CmdHandler(CmdHandlerT):
 
     def _handle_simple(self, cmd: CmdT) -> None:
         cmd.execute()
+        if cmd.success:
+            self._undo_stack.append(cmd)
+            self._redo_stack.clear()
 
     def _handle_simple_cache(self, cmd: CmdCacheT) -> None:  # noqa: ANN401
         cache_qry = QryCache()
@@ -56,6 +63,9 @@ class CmdHandler(CmdHandlerT):
 
         self._clear_cache(cache, cmd.cache_keys)
         cmd.execute()
+        if cmd.success:
+            self._undo_stack.append(cmd)
+            self._redo_stack.clear()
 
         # Executing some commands may call a query which will add the key back into the cache.
         # So we need to remove it again after the command is executed to reflect new values that the command executed.
@@ -69,6 +79,9 @@ class CmdHandler(CmdHandlerT):
 
         self._clear_cache(cache, cmd.cache_keys)
         cmd.execute()
+        if cmd.success:
+            self._undo_stack.append(cmd)
+            self._redo_stack.clear()
 
         # Executing some commands may call a query which will add the key back into the cache.
         # So we need to remove it again after the command is executed to reflect new values that the command executed.
@@ -81,6 +94,9 @@ class CmdHandler(CmdHandlerT):
             return
         self._clear_cache(cache, cmd.cache_keys)
         cmd.execute()
+        if cmd.success:
+            self._undo_stack.append(cmd)
+            self._redo_stack.clear()
 
         # Executing some commands may call a query which will add the key back into the cache.
         # So we need to remove it again after the command is executed to reflect new values that the command executed.
@@ -88,7 +104,7 @@ class CmdHandler(CmdHandlerT):
 
     # endregion Handle methods
 
-    # regin Undo methods
+    # region Undo methods
 
     def handle_undo(self, cmd: CmdT) -> None:  # noqa: ANN401
         if cmd.kind in (CalcCmdKind.SIMPLE, CalcCmdKind.SHEET, CalcCmdKind.CELL):
@@ -190,3 +206,21 @@ class CmdHandler(CmdHandlerT):
                 del cache[key]
 
     # endregion Cache methods
+
+    # region Undo/Redo stack methods
+
+    def undo(self) -> None:
+        """Undo the last command"""
+        if self._undo_stack:
+            cmd = self._undo_stack.pop()
+            self.handle_undo(cmd)
+            self._redo_stack.append(cmd)
+
+    def redo(self) -> None:
+        """Redo the last command"""
+        if self._redo_stack:
+            cmd = self._redo_stack.pop()
+            self.handle_redo(cmd)
+            self._undo_stack.append(cmd)
+
+    # endregion Undo/Redo stack methods
