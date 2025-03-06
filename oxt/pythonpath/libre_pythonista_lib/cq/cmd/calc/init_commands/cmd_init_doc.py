@@ -7,6 +7,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from oxt.pythonpath.libre_pythonista_lib.doc.doc_globals import DocGlobals
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.listener.cmd_doc_event import CmdDocEvent
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.cmd_lp_doc_json_file import CmdLpDocJsonFile
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.listener.cmd_code_sheet_activation_listener import (
         CmdCodeSheetActivation,
     )
@@ -14,12 +15,11 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.listener.cmd_sheet_activation import CmdSheetActivation
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.cmd_doc_t import CmdDocT
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_t import CmdT
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.listener.cmd_form_design_mode_off import (
         CmdFormDesignModeOff,
     )
-    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.cmd_register_dispatch_interceptor import (
-        CmdRegisterDispatchInterceptor,
-    )
+
     from pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.cmd_doc_init import CmdDocInit
     from oxt.pythonpath.libre_pythonista_lib.cq.query.doc.qry_doc_globals import QryDocGlobals
 else:
@@ -27,13 +27,14 @@ else:
     from libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from libre_pythonista_lib.doc.doc_globals import DocGlobals
     from libre_pythonista_lib.cq.cmd.calc.doc.listener.cmd_doc_event import CmdDocEvent
+    from libre_pythonista_lib.cq.cmd.calc.doc.cmd_lp_doc_json_file import CmdLpDocJsonFile
     from libre_pythonista_lib.cq.cmd.calc.doc.listener.cmd_code_sheet_activation_listener import CmdCodeSheetActivation
     from libre_pythonista_lib.cq.cmd.calc.doc.listener.cmd_sheet_modified import CmdSheetsModified
     from libre_pythonista_lib.cq.cmd.calc.doc.listener.cmd_sheet_activation import CmdSheetActivation
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.cq.cmd.calc.doc.cmd_doc_t import CmdDocT
+    from libre_pythonista_lib.cq.cmd.cmd_t import CmdT
     from libre_pythonista_lib.cq.cmd.calc.doc.listener.cmd_form_design_mode_off import CmdFormDesignModeOff
-    from libre_pythonista_lib.cq.cmd.calc.doc.cmd_register_dispatch_interceptor import CmdRegisterDispatchInterceptor
     from libre_pythonista_lib.cq.cmd.calc.doc.cmd_doc_init import CmdDocInit
     from libre_pythonista_lib.cq.query.doc.qry_doc_globals import QryDocGlobals
 
@@ -41,7 +42,7 @@ else:
 _KEY = "libre_pythonista_lib.init.init_doc.InitDoc"
 
 
-class CmdInitDoc(CmdBase, List[Type[CmdDocT]], LogMixin, CmdDocT):
+class CmdInitDoc(CmdBase, List[CmdT], LogMixin, CmdDocT):
     """
     Batch Composite command to initialize the document. It is used to execute a series of commands that are necessary for initializing the document.
     """
@@ -50,14 +51,14 @@ class CmdInitDoc(CmdBase, List[Type[CmdDocT]], LogMixin, CmdDocT):
         CmdBase.__init__(self)
         list.__init__(self)
         LogMixin.__init__(self)
-        self.append(CmdDocEvent)
-        self.append(CmdCodeSheetActivation)
-        self.append(CmdSheetsModified)
-        self.append(CmdSheetActivation)
-        self.append(CmdFormDesignModeOff)
-        self.append(CmdRegisterDispatchInterceptor)
-        self.append(CmdDocInit)  # must be last in the list
-        self._success_cmds: List[CmdDocT] = []
+        self.append(CmdDocEvent(doc=doc))
+        self.append(CmdCodeSheetActivation(doc=doc))
+        self.append(CmdSheetsModified(doc=doc))
+        self.append(CmdSheetActivation(doc=doc))
+        self.append(CmdFormDesignModeOff(doc=doc))
+        self.append(CmdLpDocJsonFile(doc=doc))
+        self.append(CmdDocInit(doc=doc))  # must be last in the list
+        self._success_cmds: List[CmdT] = []
         self._doc = doc
 
     def _get_globals(self) -> DocGlobals | None:
@@ -91,11 +92,10 @@ class CmdInitDoc(CmdBase, List[Type[CmdDocT]], LogMixin, CmdDocT):
         self._success_cmds.clear()
         try:
             for cmd in self:
-                inst = cmd(self._doc)
-                self._execute_cmd(inst)
-                self.success = inst.success
+                self._execute_cmd(cmd)
+                self.success = cmd.success
                 if self.success:  # Only add if command was successful
-                    self._success_cmds.append(inst)
+                    self._success_cmds.append(cmd)
                 else:
                     self.log.debug("A command failed. Undoing previously executed commands.")
                     break

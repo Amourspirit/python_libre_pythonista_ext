@@ -23,9 +23,12 @@ if TYPE_CHECKING:
     from ooodev.calc import CalcDoc
     from ooodev.events.args.event_args import EventArgs
     from ooodev.utils.helper.dot_dict import DotDict
+    from oxt.___lo_pip___.events.lo_events import LoEvents
+    from oxt.___lo_pip___.events.args.event_args import EventArgs
     from oxt.___lo_pip___.oxt_logger import OxtLogger
     from oxt.pythonpath.libre_pythonista_lib.event.shared_event import SharedEvent
     from oxt.pythonpath.libre_pythonista_lib.const.event_const import DOCUMENT_SAVING
+    from oxt.pythonpath.libre_pythonista_lib.doc.doc_globals import GET_CURRENT_EVENT
     from oxt.pythonpath.libre_pythonista_lib.cq.query.qry_handler_factory import QryHandlerFactory
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.doc.cmd_lp_version import CmdLpVersion
@@ -48,7 +51,10 @@ else:
         from ooodev.calc import CalcDoc
         from ooodev.events.args.event_args import EventArgs
         from ooodev.utils.helper.dot_dict import DotDict
+        from ___lo_pip___.events.lo_events import LoEvents
+        from ___lo_pip___.events.args.event_args import EventArgs
         from libre_pythonista_lib.const.event_const import DOCUMENT_SAVING
+        from libre_pythonista_lib.doc.doc_globals import GET_CURRENT_EVENT
         from libre_pythonista_lib.event.shared_event import SharedEvent
         from libre_pythonista_lib.cq.query.qry_handler_factory import QryHandlerFactory
         from libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
@@ -86,6 +92,12 @@ class SavingJob(XJob, unohelper.Base):
         self.document = None
         self._log = self._get_local_logger()
 
+        if _CONDITIONS_MET:
+            # subscribe to the DocGlobals.get_current event and set the uid for the current document.
+            self._fn_on_get_current = self._on_get_current
+            self._events = LoEvents()
+            self._events.on(GET_CURRENT_EVENT, self._fn_on_get_current)
+
     # endregion Init
 
     # region execute
@@ -96,7 +108,7 @@ class SavingJob(XJob, unohelper.Base):
             arg1 = Arguments[0]
 
             for struct in arg1.Value:
-                self._log.debug(f"Struct: {struct.Name}")
+                self._log.debug("Struct: %s", struct.Name)
                 if struct.Name == "Model":
                     self.document = struct.Value
                     self._log.debug("Document Found")
@@ -136,7 +148,7 @@ class SavingJob(XJob, unohelper.Base):
                             cmd_handler = CmdHandlerFactory.get_cmd_handler()
                             cmd_handler.handle(cmd_lp_version)
 
-                    except Exception as e:
+                    except Exception:
                         self._log.error("Error Setting Custom Properties", exc_info=True)
 
                     try:
@@ -150,21 +162,32 @@ class SavingJob(XJob, unohelper.Base):
                             cmd_handler = CmdHandlerFactory.get_cmd_handler()
                             cmd_handler.handle(cmd_props)
 
-                    except:
+                    except Exception:
                         self._log.error("Error Updating Extension Location", exc_info=True)
 
                     se = SharedEvent()
                     eargs = EventArgs(self)
                     eargs.event_data = DotDict(doc=doc)
                     se.trigger_event(DOCUMENT_SAVING, eargs)
+
+                    # no longer needs to listen for the DocGlobals.get_current event.
+                    self._events.remove(GET_CURRENT_EVENT, self._fn_on_get_current)
             else:
                 self._log.debug("Document UnLoading not a spreadsheet")
 
-        except Exception as e:
+        except Exception:
             self._log.error("Error getting current document", exc_info=True)
             return
 
     # endregion execute
+
+    # region Event Handlers
+
+    def _on_get_current(self, source: Any, event: EventArgs) -> None:  # noqa: ANN401
+        if self.document is not None:
+            event.event_data["uid"] = self.document.RuntimeUID
+
+    # endregion Event Handlers
 
     # region Logging
 

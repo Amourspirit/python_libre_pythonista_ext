@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Tuple, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from ooodev.proto.office_document_t import OfficeDocumentT
@@ -15,6 +15,12 @@ else:
 
 
 class CmdLpDocJsonFile(CmdDocJsonFile, CmdCacheT):
+    """
+    Ensures that the document json file exists for LibrePythonista configuration.
+
+    This class uses a cache key to ensure that the document json file is only created once.
+    """
+
     def __init__(self, doc: OfficeDocumentT) -> None:
         cfg = BasicConfig()
         file_name = f"{cfg.general_code_name}{cfg.calc_props_json_name}"

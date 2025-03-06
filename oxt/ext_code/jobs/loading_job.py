@@ -1,6 +1,6 @@
 # region imports
 from __future__ import unicode_literals, annotations
-from typing import Any, TYPE_CHECKING
+from typing import Any, Type, Tuple, TYPE_CHECKING
 
 import unohelper
 import contextlib
@@ -19,22 +19,16 @@ def _conditions_met() -> bool:
 
 if TYPE_CHECKING:
     # just for design time
-    _CONDITIONS_MET = True
-    try:
-        # python 3.12+
-        from typing import override  # type: ignore
-    except ImportError:
-        from typing_extensions import override
-    from ooodev.loader import Lo
-    from ooodev.calc import CalcDoc
+    from typing_extensions import override
     from ...___lo_pip___.oxt_logger import OxtLogger
 else:
-    override = lambda func: func  # noqa: E731
+
+    def override(func):  # noqa: ANN001, ANN201
+        return func
+
     _CONDITIONS_MET = _conditions_met()
     if _CONDITIONS_MET:
-        from ooodev.loader import Lo  # noqa: F401
-        from ooodev.calc import CalcDoc  # noqa: F401
-
+        pass
 # endregion imports
 
 
@@ -46,7 +40,7 @@ class LoadingJob(XJob, unohelper.Base):
     SERVICE_NAMES = ("com.sun.star.task.Job",)
 
     @classmethod
-    def get_imple(cls):
+    def get_imple(cls) -> Tuple[Type[LoadingJob], str, Tuple[str, ...]]:
         return (cls, cls.IMPLE_NAME, cls.SERVICE_NAMES)
 
     # region Init

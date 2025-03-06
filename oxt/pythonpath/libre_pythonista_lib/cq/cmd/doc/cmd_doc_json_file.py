@@ -25,7 +25,22 @@ else:
 
 
 class CmdDocJsonFile(CmdBase, LogMixin, CmdCacheT):
+    """
+    Ensures that the document json file exists.
+    This class is used to ensure that the document json file exists.
+
+    This class uses a cache key to ensure that the document json file is only created once.
+    """
+
     def __init__(self, doc: OfficeDocumentT, file_name: str, root_dir: str = "json", ext: str = "json") -> None:
+        """Constructor
+
+        Args:
+            doc (OfficeDocumentT): Document to create the json file for.
+            file_name (str): Name of the json file.
+            root_dir (str, optional): Root directory of the json file. Defaults to "json".
+            ext (str, optional): Extension of the json file. Defaults to "json".
+        """
         CmdBase.__init__(self)
         LogMixin.__init__(self)
         self.kind = CalcCmdKind.SIMPLE_CACHE
@@ -44,6 +59,7 @@ class CmdDocJsonFile(CmdBase, LogMixin, CmdCacheT):
 
     @override
     def execute(self) -> None:
+        """Executes the command."""
         self.success = False
         if self._current_state is NULL_OBJ:
             self._current_state = self._get_current_value()
@@ -77,6 +93,7 @@ class CmdDocJsonFile(CmdBase, LogMixin, CmdCacheT):
 
     @override
     def undo(self) -> None:
+        """Undoes the command."""
         if self.success:
             self._undo()
         else:

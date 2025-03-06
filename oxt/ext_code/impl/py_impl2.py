@@ -28,6 +28,7 @@ add_local_path_to_sys_path()
 if TYPE_CHECKING:
     _CONDITIONS_MET = True
     from com.sun.star.frame import Desktop
+    from ooodev.loader import Lo
     from ooodev.calc import CalcDoc
     from oxt.___lo_pip___.oxt_logger.oxt_logger import OxtLogger
     from oxt.___lo_pip___.debug.break_mgr import BreakMgr
@@ -38,6 +39,7 @@ else:
     _CONDITIONS_MET = _conditions_met()
 
     if _CONDITIONS_MET:
+        from ooodev.loader import Lo
         from ooodev.calc import CalcDoc
         from ___lo_pip___.debug.break_mgr import BreakMgr
         from libre_pythonista_lib.doc.doc_init import DocInit
@@ -89,15 +91,23 @@ class PyImpl2(unohelper.Base, XPy2):
             # Even then it is only an issue while the document is opening.
             # However that issue cause the popup dialog to be displayed one time for each formula.
             # Getting the document from this desktop solve this issue. Mainly because the controller is None when the document is not ready.
-            frame = self.desktop.getActiveFrame()
-            controller = frame.getController()
-            model = controller.getModel()
-            # self._logger.debug(f"pyc - Doc UID: {model.RuntimeUID}")
-            doc = CalcDoc.get_doc_from_component(model)
+            doc = cast(CalcDoc, Lo.current_doc)
+            if doc is None:
+                frame = self.desktop.getActiveFrame()
+                controller = frame.getController()
+                model = controller.getModel()
+                # self._logger.debug(f"pyc - Doc UID: {model.RuntimeUID}")
+                if model is None:
+                    self._log.debug("pyc - Model is None. Attempting to get doc from current document.")
+                    doc = CalcDoc.from_current_doc()
+                else:
+                    doc = CalcDoc.get_doc_from_component(model)
         except Exception:
             self._log.warning(
                 "pyc - Could not get current document. This usually happens when the document is not fully loaded."
             )
+            if self._log.is_debug:
+                self._log.exception("Error getting current document")
             return None
 
         try:

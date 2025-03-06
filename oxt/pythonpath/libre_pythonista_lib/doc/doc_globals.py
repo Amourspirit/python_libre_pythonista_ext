@@ -13,9 +13,16 @@ from ooodev.meta.class_property_readonly import ClassPropertyReadonly
 from ooodev.utils.cache import MemCache
 
 if TYPE_CHECKING:
+    from oxt.___lo_pip___.events.lo_events import LoEvents
+    from oxt.___lo_pip___.events.args.event_args import EventArgs
     from oxt.pythonpath.libre_pythonista_lib.const.event_const import DOC_GBL_DEL_INSTANCE
 else:
     from libre_pythonista_lib.const.event_const import DOC_GBL_DEL_INSTANCE
+    from ___lo_pip___.events.lo_events import LoEvents
+    from ___lo_pip___.events.args.event_args import EventArgs
+
+
+GET_CURRENT_EVENT = "libre_pythonista_lib.doc.doc_globals.DocGlobals.get_current"
 
 
 class _MetaGlobals(type):
@@ -181,6 +188,17 @@ class DocGlobals(EventsPartial, metaclass=_MetaGlobals):
         Returns:
             DocGlobals: The current DocGlobals instance.
         """
+        # sometimes the current document is not available.
+        # This is the case when executing some jobs such as ext_code.jobs.register_dispatch_job.RegisterDispatchJob.
+        # In this case, we raise and event and let the RegisterDispatchJob subscribe to it and get the uid from the event.
+
+        events = LoEvents()
+        eargs = EventArgs(DocGlobals)
+        eargs.event_data = {"uid": None}
+        events.trigger(GET_CURRENT_EVENT, eargs)
+        if eargs.event_data.get("uid"):
+            return DocGlobals(runtime_uid=eargs.event_data.get("uid"))
+
         doc_component = Lo.current_lo.desktop.get_current_component()
         uid = None
 
