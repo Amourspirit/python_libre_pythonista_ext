@@ -1,7 +1,6 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 import pytest
-from pytest_mock import MockerFixture
 
 if __name__ == "__main__":
     pytest.main([__file__])

@@ -8,7 +8,7 @@ else:
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl_base import CtlBase
 
 
-class CtlStr(CtlBase):
+class CtlFloat(CtlBase):
     # region Properties
 
     @property

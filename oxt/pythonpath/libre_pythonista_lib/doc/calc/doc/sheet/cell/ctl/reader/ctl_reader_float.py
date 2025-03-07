@@ -31,7 +31,7 @@ else:
     from libre_pythonista_lib.utils.custom_ext import override
 
 
-class CtlReaderStr(CtlReader):
+class CtlReaderFloat(CtlReader):
     @override
     def append_query(self) -> None:
         self.append(QryLblDefault(self.cell, self.ctl))
@@ -43,7 +43,7 @@ class CtlReaderStr(CtlReader):
     @override
     def read(self) -> Ctl:
         ctl = super().read()
-        ctl.control_kind = CtlKind.STRING
+        ctl.control_kind = CtlKind.FLOAT
         ctl.ctl_props = (
             CtlPropKind.CTL_SHAPE,
             CtlPropKind.CTL_ORIG,
