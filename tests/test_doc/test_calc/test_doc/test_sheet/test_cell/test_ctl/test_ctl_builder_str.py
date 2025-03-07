@@ -11,16 +11,18 @@ def test_ctl_builder_str(loader, build_setup) -> None:
     from ooodev.calc import CalcDoc
 
     if TYPE_CHECKING:
-        from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl_builder_str import CtlBuilderStr
-        from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl_reader_str import CtlReaderStr
+        from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.builder.ctl_builder_str import (
+            CtlBuilderStr,
+        )
+        from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.reader.ctl_reader_str import CtlReaderStr
         from oxt.pythonpath.libre_pythonista_lib.cell.props.key_maker import KeyMaker
-        from oxt.pythonpath.libre_pythonista_lib.cell.props.rule_name_kind import RuleNameKind
+        from oxt.pythonpath.libre_pythonista_lib.kind.rule_name_kind import RuleNameKind
         from oxt.___lo_pip___.basic_config import BasicConfig
     else:
-        from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl_builder_str import CtlBuilderStr
-        from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl_reader_str import CtlReaderStr
+        from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.builder.ctl_builder_str import CtlBuilderStr
+        from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.reader.ctl_reader_str import CtlReaderStr
         from libre_pythonista_lib.cell.props.key_maker import KeyMaker
-        from libre_pythonista_lib.cell.props.rule_name_kind import RuleNameKind
+        from libre_pythonista_lib.kind.rule_name_kind import RuleNameKind
         from libre_pythonista.basic_config import BasicConfig
 
     doc = None

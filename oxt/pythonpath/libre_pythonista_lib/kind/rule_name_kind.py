@@ -1,5 +1,9 @@
 from __future__ import annotations
 from enum import Enum
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from oxt.pythonpath.libre_pythonista_lib.kind.ctl_kind import CtlKind
 
 
 class RuleNameKind(Enum):
@@ -19,6 +23,26 @@ class RuleNameKind(Enum):
     CELL_DATA_TYPE_FLOAT = "cell_data_type_float"
     CELL_DATA_TYPE_PD_DF = "cell_data_type_pd_df"
     CELL_DATA_TYPE_PD_SERIES = "cell_data_type_pd_series"
+    UNKNOWN = "unknown"
 
     def __str__(self) -> str:
         return self.value
+
+    @staticmethod
+    def from_str(s: str) -> RuleNameKind:
+        """Converts a string to a RuleNameKind."""
+        for kind in RuleNameKind:
+            if kind.value == s:
+                return kind
+        return RuleNameKind.UNKNOWN
+
+    @staticmethod
+    def from_ctl_kind(ctl_kind: CtlKind) -> RuleNameKind:
+        """Converts a CtlKind to a RuleNameKind."""
+        if not TYPE_CHECKING:
+            from libre_pythonista_lib.kind.ctl_kind import CtlKind
+        s = str(ctl_kind)
+        for kind in RuleNameKind:
+            if kind.value == s:
+                return kind
+        return RuleNameKind.UNKNOWN

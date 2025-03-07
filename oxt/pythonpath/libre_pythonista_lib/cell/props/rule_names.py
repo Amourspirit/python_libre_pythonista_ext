@@ -5,11 +5,11 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from oxt.___lo_pip___.basic_config import BasicConfig
     from oxt.pythonpath.libre_pythonista_lib.meta.singleton import Singleton
-    from oxt.pythonpath.libre_pythonista_lib.cell.props.rule_name_kind import RuleNameKind
+    from oxt.pythonpath.libre_pythonista_lib.kind.rule_name_kind import RuleNameKind
 else:
     from ___lo_pip___.basic_config import BasicConfig
     from libre_pythonista_lib.meta.singleton import Singleton
-    from libre_pythonista_lib.cell.props.rule_name_kind import RuleNameKind
+    from libre_pythonista_lib.kind.rule_name_kind import RuleNameKind
 
 
 class RuleNames(metaclass=Singleton):

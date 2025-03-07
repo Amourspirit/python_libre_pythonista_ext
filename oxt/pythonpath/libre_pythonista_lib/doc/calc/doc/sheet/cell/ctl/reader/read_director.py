@@ -1,0 +1,47 @@
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from ooodev.calc import CalcCell
+    from oxt.pythonpath.libre_pythonista_lib.kind.ctl_kind import CtlKind
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.reader.ctl_reader_str import CtlReaderStr
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.reader.ctl_reader import CtlReader
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_ctl_kind import QryCtlKind
+else:
+    from libre_pythonista_lib.kind.ctl_kind import CtlKind
+    from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.reader.ctl_reader_str import CtlReaderStr
+    from libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_ctl_kind import QryCtlKind
+
+
+def _get_kind(calc_cell: CalcCell) -> CtlKind:
+    if TYPE_CHECKING:
+        from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
+    else:
+        from libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
+    qry = QryCtlKind(calc_cell)
+    handler = QryHandlerFactory.get_qry_handler()
+    ctl_kind = handler.handle(qry)
+    return ctl_kind
+
+
+def get_reader(calc_cell: CalcCell, kind: CtlKind | None = None) -> CtlReader:
+    """
+    Gets a reader for the given cell and control kind.
+
+    Args:
+        calc_cell (CalcCell): The cell to get the reader for.
+        kind (CtlKind, optional): The kind of control to get the reader for. Defaults to None.
+
+    Raises:
+        ValueError: If the kind is not valid.
+
+    Returns:
+        CtlReader: The reader for the given cell and control kind.
+    """
+    if kind is None:
+        kind = _get_kind(calc_cell)
+
+    if kind == CtlKind.STRING:
+        reader = CtlReaderStr(calc_cell)
+        return reader
+    raise ValueError("Invalid control kind")

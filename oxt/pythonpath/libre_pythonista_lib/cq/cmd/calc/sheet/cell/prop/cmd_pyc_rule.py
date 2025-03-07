@@ -5,6 +5,7 @@ from ooodev.utils.gen_util import NULL_OBJ
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcCell
+    from oxt.pythonpath.libre_pythonista_lib.kind.rule_name_kind import RuleNameKind
     from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from oxt.pythonpath.libre_pythonista_lib.cell.props.key_maker import KeyMaker
@@ -16,6 +17,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_pyc_rule import QryPycRule
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_key_maker import QryKeyMaker
 else:
+    from libre_pythonista_lib.kind.rule_name_kind import RuleNameKind
     from libre_pythonista_lib.utils.custom_ext import override
     from libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.cmd_cell_t import CmdCellT
@@ -30,12 +32,13 @@ else:
 class CmdPycRule(CmdBase, LogMixin, CmdCellT):
     """Sets the pyc rule of the cell such as ``cell_data_type_str``"""
 
-    def __init__(self, cell: CalcCell, name: str) -> None:
+    def __init__(self, cell: CalcCell, name: str | RuleNameKind) -> None:
         """Constructor
 
         Args:
             cell (CalcCell): Cell to set the pyc rule for.
-            name (str): Pyc Rule name to set such as ``cell_data_type_str``. Cannot be empty.
+            name (str, RuleNameKind): Pyc Rule name to set such as ``cell_data_type_str`` or ``RuleNameKind.CELL_DATA_TYPE_STR``.
+                Cannot be empty.
         """
         CmdBase.__init__(self)
         LogMixin.__init__(self)
@@ -45,10 +48,15 @@ class CmdPycRule(CmdBase, LogMixin, CmdCellT):
         self._current_state = cast(str, NULL_OBJ)
         self._state_changed = False
         self._errors = True
-        if not name:
+        rule_name = str(name)
+        if not rule_name:
             self.log.error("Error setting pyc rule: name is empty")
             return
-        self._state = name
+        if rule_name == RuleNameKind.UNKNOWN.value:
+            self.log.error("Error setting pyc rule: name is UNKNOWN")
+            return
+
+        self._state = rule_name
         self._errors = False
 
     def _get_state(self) -> str:
@@ -59,7 +67,7 @@ class CmdPycRule(CmdBase, LogMixin, CmdCellT):
         qry = QryKeyMaker()
         return self._execute_qry(qry)
 
-    def _get_current_state(self) -> str:
+    def _get_current_state(self) -> RuleNameKind:
         qry = QryPycRule(cell=self.cell)
         return self._execute_qry(qry)
 
@@ -71,7 +79,12 @@ class CmdPycRule(CmdBase, LogMixin, CmdCellT):
             return
 
         if self._current_state is NULL_OBJ:
-            self._current_state = self._get_current_state()
+            cs = self._get_current_state()
+            if cs == RuleNameKind.UNKNOWN:
+                self._current_state = None
+            else:
+                self._current_state = str(cs)
+
         if self._keys is NULL_OBJ:
             self._keys = self._get_keys()
 

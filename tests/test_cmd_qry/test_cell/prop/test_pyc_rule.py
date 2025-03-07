@@ -17,12 +17,14 @@ def test_cmd_pyc_rule(loader, build_setup) -> None:
         from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler import QryHandler
         from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_pyc_rule import QryPycRule
         from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_pyc_rule_del import CmdPycRuleDel
+        from oxt.pythonpath.libre_pythonista_lib.kind.rule_name_kind import RuleNameKind
     else:
         from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_pyc_rule import CmdPycRule
         from libre_pythonista_lib.cq.cmd.cmd_handler import CmdHandler
         from libre_pythonista_lib.cq.qry.qry_handler import QryHandler
         from libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_pyc_rule import QryPycRule
         from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_pyc_rule_del import CmdPycRuleDel
+        from libre_pythonista_lib.kind.rule_name_kind import RuleNameKind
 
     doc = None
     try:
@@ -39,7 +41,7 @@ def test_cmd_pyc_rule(loader, build_setup) -> None:
         assert not cmd.success
 
         # Test setting new pyc rule
-        test_name = "cell_data_type_str"
+        test_name = RuleNameKind.CELL_DATA_TYPE_STR
         cmd = CmdPycRule(cell=cell, name=test_name)
         cmd_handler.handle(cmd)
         assert cmd.success
@@ -61,7 +63,7 @@ def test_cmd_pyc_rule(loader, build_setup) -> None:
         cmd_handler.handle(cmd)
         assert cmd.success
         result = qry_handler.handle(qry)
-        assert result == new_name
+        assert str(result) == new_name
 
         # Test undo
         cmd.undo()
@@ -73,14 +75,14 @@ def test_cmd_pyc_rule(loader, build_setup) -> None:
         cmd_handler.handle(cmd)
         assert cmd.success
         result = qry_handler.handle(qry)
-        assert result == ""
+        assert result == RuleNameKind.UNKNOWN
 
         # Test deleting when cell does not have property
         cmd = CmdPycRuleDel(cell=cell)
         cmd_handler.handle(cmd)
         assert cmd.success
         result = qry_handler.handle(qry)
-        assert result == ""
+        assert result == RuleNameKind.UNKNOWN
 
     finally:
         if doc is not None:

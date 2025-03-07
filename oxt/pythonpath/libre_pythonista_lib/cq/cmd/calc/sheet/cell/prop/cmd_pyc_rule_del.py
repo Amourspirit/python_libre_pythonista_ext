@@ -47,7 +47,7 @@ class CmdPycRuleDel(CmdBase, LogMixin, CmdCellT):
 
     def _get_current_state(self) -> str:
         qry = QryPycRule(cell=self.cell)
-        return self._execute_qry(qry)
+        return str(self._execute_qry(qry))
 
     @override
     def execute(self) -> None:

@@ -7,7 +7,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from oxt.___lo_pip___.basic_config import BasicConfig
-    from oxt.pythonpath.libre_pythonista_lib.cell.props.rule_name_kind import RuleNameKind
+    from oxt.pythonpath.libre_pythonista_lib.kind.rule_name_kind import RuleNameKind
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.cmd_cell_ctl_t import CmdCellCtlT
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_orig_ctl import CmdOrigCtl
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_t import CmdT
@@ -17,7 +17,7 @@ else:
     from libre_pythonista_lib.utils.custom_ext import override
     from libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from ___lo_pip___.basic_config import BasicConfig
-    from libre_pythonista_lib.cell.props.rule_name_kind import RuleNameKind
+    from libre_pythonista_lib.kind.rule_name_kind import RuleNameKind
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.cmd_cell_ctl_t import CmdCellCtlT
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_orig_ctl import CmdOrigCtl
     from libre_pythonista_lib.cq.cmd.cmd_t import CmdT
