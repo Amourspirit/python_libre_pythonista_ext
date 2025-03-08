@@ -33,6 +33,7 @@ if TYPE_CHECKING:
     from oxt.___lo_pip___.oxt_logger.oxt_logger import OxtLogger
     from oxt.___lo_pip___.debug.break_mgr import BreakMgr
     from oxt.pythonpath.libre_pythonista_lib.doc.doc_init import DocInit
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.cell_item import CellItem
 
     break_mgr = BreakMgr()
 else:
@@ -43,6 +44,7 @@ else:
         from ooodev.calc import CalcDoc
         from ___lo_pip___.debug.break_mgr import BreakMgr
         from libre_pythonista_lib.doc.doc_init import DocInit
+        from libre_pythonista_lib.doc.calc.doc.sheet.cell.cell_item import CellItem
 
         # Initialize the breakpoint manager
         break_mgr = BreakMgr()
@@ -79,6 +81,11 @@ class PyImpl2(unohelper.Base, XPy2):
         if not _CONDITIONS_MET:
             self._log.error("pyc2 - Conditions not met")
             return None  # type: ignore
+        # if not TYPE_CHECKING:
+        #     try:
+        #         from libre_pythonista_lib.doc.calc.doc.sheet.cell.cell_item import CellItem
+        #     except Exception as e:
+        #         self._log.error(f"Error: {e}", exc_info=True)
         self._log.debug("pyc2 entered")
 
         break_mgr.check_breakpoint("librepythonista.PyImpl2.pyc")
@@ -116,6 +123,22 @@ class PyImpl2(unohelper.Base, XPy2):
             doc_init.ensure_sheet_init(doc.get_sheet(sheet_num - 1))
         except Exception as e:
             self._log.exception("Error Init Doc: %s", e)
+
+        try:
+            # from libre_pythonista_lib.doc.calc.doc.sheet.cell.cell_item import CellItem
+
+            sheet_idx = sheet_num - 1
+            sheet = doc.sheets[sheet_idx]
+            x_cell = sheet.component.getCellRangeByName(cell_address)
+            cell = sheet.get_cell(x_cell)
+            ci = CellItem(cell)
+            if ci.has_control():
+                self._log.debug("pyc2 - Cell has control")
+            else:
+                self._log.debug("pyc2 - Cell has no control, Creating Default.")
+                _ = ci.add_default_control()
+        except Exception as e:
+            self._log.exception("Error Init CellItem: %s", e)
 
         self._log.debug("pyc2 - Doc UID: %s", doc.runtime_uid)
         result = (("pyc2",),)

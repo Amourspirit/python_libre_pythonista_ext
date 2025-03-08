@@ -16,3 +16,11 @@ class CmdHandlerT(Protocol):
 
     def handle_redo(self, cmd: CmdT) -> None:  # noqa: ANN401
         ...
+
+    def undo(self) -> None:
+        """Undo the last command"""
+        ...
+
+    def redo(self) -> None:
+        """Redo the last command"""
+        ...

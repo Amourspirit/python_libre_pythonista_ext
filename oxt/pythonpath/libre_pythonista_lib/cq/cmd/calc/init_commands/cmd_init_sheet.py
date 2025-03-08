@@ -9,6 +9,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cmd_sheet_t import CmdSheetT
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.cache.calc.sheet.sheet_cache import get_sheet_cache
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cmd_sheet_ensure_forms import CmdSheetEnsureForms
 else:
     from libre_pythonista_lib.utils.custom_ext import override
     from libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
@@ -16,6 +17,7 @@ else:
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.cache.calc.sheet.sheet_cache import get_sheet_cache
     from libre_pythonista_lib.cq.cmd.calc.sheet.cmd_sheet_t import CmdSheetT
+    from libre_pythonista_lib.cq.cmd.calc.sheet.cmd_sheet_ensure_forms import CmdSheetEnsureForms
 
     CalcSheet = Any
 
@@ -31,6 +33,7 @@ class CmdInitSheet(CmdBase, List[Type[CmdSheetT]], LogMixin, CmdSheetT):
         self._sheet = sheet
         self._cache = get_sheet_cache(self._sheet)
         self.append(CmdSheetCalcFormula)
+        self.append(CmdSheetEnsureForms)
 
     @override
     def execute(self) -> None:

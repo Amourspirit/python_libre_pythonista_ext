@@ -14,7 +14,7 @@ else:
     from libre_pythonista_lib.cq.qry.qry_base import QryBase
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_t import QryCellT
-    from oxt.pythonpath.libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
+    from libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
 
 
 class QryCellExtraValue(QryBase, LogMixin, QryCellT[Any]):
@@ -49,8 +49,10 @@ class QryCellExtraValue(QryBase, LogMixin, QryCellT[Any]):
 
         try:
             return self._cell.extra_data.get(self._name, default=self._default)
-        except AttributeError as e:
-            self.log.debug("Error executing query, Missing Attribute. Default will be returned. Error: %s", e)
+        except AttributeError:
+            self.log.debug("Missing Attribute %s. Returning Default.", self._name)
+        except KeyError:
+            self.log.debug("Missing Key %s. Returning Default.", self._name)
         except Exception:
             self.log.exception("Error executing query")
         return self._default

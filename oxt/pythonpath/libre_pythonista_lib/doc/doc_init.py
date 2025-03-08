@@ -9,14 +9,14 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.event.shared_event import SharedEvent
     from oxt.pythonpath.libre_pythonista_lib.doc.doc_globals import DocGlobals
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
-    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler import CmdHandler
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.init_commands.cmd_init_doc import CmdInitDoc
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.init_commands.cmd_init_sheet import CmdInitSheet
 else:
     from libre_pythonista_lib.event.shared_event import SharedEvent
     from libre_pythonista_lib.doc.doc_globals import DocGlobals
     from libre_pythonista_lib.log.log_mixin import LogMixin
-    from libre_pythonista_lib.cq.cmd.cmd_handler import CmdHandler
+    from libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
     from libre_pythonista_lib.cq.cmd.calc.init_commands.cmd_init_doc import CmdInitDoc
     from libre_pythonista_lib.cq.cmd.calc.init_commands.cmd_init_sheet import CmdInitSheet
 
@@ -62,7 +62,7 @@ class DocInit(LogMixin, EventsPartial):
         key = "doc_init"
         try:
             if key not in self._cache:
-                handler = CmdHandler()
+                handler = CmdHandlerFactory.get_cmd_handler()
                 cmd = CmdInitDoc(self._doc)
                 handler.handle(cmd)
                 self._cache[key] = True
@@ -74,7 +74,7 @@ class DocInit(LogMixin, EventsPartial):
         key = f"init_sheet_{sheet.unique_id}"
         try:
             if key not in self._cache:
-                handler = CmdHandler()
+                handler = CmdHandlerFactory.get_cmd_handler()
                 cmd = CmdInitSheet(sheet)
                 handler.handle(cmd)
                 self._cache[key] = True
