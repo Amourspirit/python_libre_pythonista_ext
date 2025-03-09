@@ -19,6 +19,8 @@ else:
 
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_ctl_kind import QryCtlKind
 
+# tested in: tests/test_doc/test_calc/test_doc/test_sheet/test_cell/test_ctl/test_ctl_builder_str.py
+
 
 def _get_kind(calc_cell: CalcCell) -> CtlKind:
     if TYPE_CHECKING:
@@ -51,14 +53,6 @@ def _get_control_class(ctl_kind: CtlKind) -> Type[CtlReader] | None:
         CtlKind.FLOAT: CtlReaderFloat,
     }
     return control_map.get(ctl_kind)
-
-
-# @overload
-# def get_reader(calc_cell: CalcCell)-> CtlReader: ...
-
-
-# @overload
-# def get_reader(calc_cell: CalcCell, kind: CtlKind) -> CtlReader: ...
 
 
 @overload

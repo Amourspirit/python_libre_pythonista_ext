@@ -9,7 +9,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cmd_sheet_t import CmdSheetT
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.common.qry_form_name import QryFormName
-    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.qry_sheet_form import QrySheetForm
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.draw_page.form.qry_lp_form import QryLpForm
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
@@ -18,7 +18,7 @@ else:
     from libre_pythonista_lib.cq.cmd.calc.sheet.cmd_sheet_t import CmdSheetT
     from libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from libre_pythonista_lib.cq.qry.calc.common.qry_form_name import QryFormName
-    from libre_pythonista_lib.cq.qry.calc.sheet.qry_sheet_form import QrySheetForm
+    from libre_pythonista_lib.cq.qry.calc.sheet.draw_page.form.qry_lp_form import QryLpForm
     from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.utils.custom_ext import override
@@ -42,7 +42,7 @@ class CmdSheetEnsureForms(CmdBase, LogMixin, CmdSheetT):
         self._added_form_lp = False
 
     def _get_current_form(self) -> CalcForm | None:
-        qry = QrySheetForm(sheet=self._sheet)
+        qry = QryLpForm(sheet=self._sheet)
         return self._execute_qry(qry)
 
     def _get_form_name(self) -> str:

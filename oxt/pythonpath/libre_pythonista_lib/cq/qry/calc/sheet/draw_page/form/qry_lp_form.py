@@ -22,7 +22,7 @@ else:
 # tested in: tests/test_cmd/test_cmd_sheet_ensure_forms.py
 
 
-class QrySheetForm(QryBase, LogMixin, QrySheetT[CalcForm | None]):
+class QryLpForm(QryBase, LogMixin, QrySheetT[CalcForm | None]):
     def __init__(self, sheet: CalcSheet) -> None:
         QryBase.__init__(self)
         LogMixin.__init__(self)

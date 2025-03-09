@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 import pytest
 from pytest_mock import MockerFixture
 
@@ -9,6 +9,8 @@ if __name__ == "__main__":
 
 def test_ctl_builder_str(loader, build_setup) -> None:
     from ooodev.calc import CalcDoc
+    from ooodev.utils.color import StandardColor
+    from ooodev.units import SizePosMM100
 
     if TYPE_CHECKING:
         from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.builder.ctl_builder_str import (
@@ -68,15 +70,23 @@ def test_ctl_builder_str(loader, build_setup) -> None:
         assert ctl.cell == cell
         assert ctl.ctl_code_name == result.ctl_code_name
         assert ctl.addr == result.addr
+
         # end region CtlReader
 
         # region CtlReaderStr
+        assert ctl.ctl_bg_color == StandardColor.TEAL_LIGHT3
         assert ctl.ctl_rule_kind == RuleNameKind.CELL_DATA_TYPE_STR
         assert ctl.ctl_orig_rule_kind == RuleNameKind.CELL_DATA_TYPE_STR
         assert ctl.modify_trigger_event == RuleNameKind.CELL_DATA_TYPE_STR
         assert ctl.ctl_shape_name == result.ctl_shape_name
         assert ctl.ctl_code_name == result.ctl_code_name
         assert ctl.array_ability == result.array_ability
+
+        pos_size = cast(SizePosMM100, ctl.cell_pos_size)
+        assert pos_size.x >= 0
+        assert pos_size.y >= 0
+        assert pos_size.width > 0
+        assert pos_size.height > 0
         # end region CtlReaderStr
 
     finally:
