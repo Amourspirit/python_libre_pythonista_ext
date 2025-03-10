@@ -7,7 +7,7 @@ if __name__ == "__main__":
     pytest.main([__file__])
 
 
-def test_ctl_builder_str(loader, build_setup) -> None:
+def test_ctl_builder_str(loader, build_setup, mocker: MockerFixture) -> None:
     from ooodev.calc import CalcDoc
     from ooodev.utils.color import StandardColor
     from ooodev.units import SizePosMM100
@@ -20,19 +20,26 @@ def test_ctl_builder_str(loader, build_setup) -> None:
         from oxt.pythonpath.libre_pythonista_lib.cell.props.key_maker import KeyMaker
         from oxt.pythonpath.libre_pythonista_lib.kind.rule_name_kind import RuleNameKind
         from oxt.___lo_pip___.basic_config import BasicConfig
+        from oxt.___lo_pip___.config import Config
     else:
         from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.builder.ctl_builder_str import CtlBuilderStr
         from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.reader.ctl_reader_str import CtlReaderStr
         from libre_pythonista_lib.cell.props.key_maker import KeyMaker
         from libre_pythonista_lib.kind.rule_name_kind import RuleNameKind
         from libre_pythonista.basic_config import BasicConfig
+        from libre_pythonista.config import Config
 
     doc = None
     try:
+        mock_config = mocker.patch("libre_pythonista_lib.cq.qry.general.qry_is_shared_install.Config", Config)
+        _ = mocker.patch("libre_pythonista_lib.sheet.calculate.Config", new_callable=lambda: Config)
+        mocker.patch.object(mock_config, "is_shared_installed", False, create=True)
+
         config = BasicConfig()
         doc = CalcDoc.create_doc(loader=loader)
         sheet = doc.sheets[0]
         cell = sheet[0, 0]
+        # pythonpath.libre_pythonista_lib.cq.qry.general.qry_is_shared_install
 
         # Create command instance
         builder = CtlBuilderStr(cell=cell)

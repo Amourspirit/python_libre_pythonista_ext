@@ -9,6 +9,7 @@ if TYPE_CHECKING:
     )
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.cmd_orig_rule_name import CmdOrigRuleName
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.cmd_rule_name import CmdRuleName
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.create.cmd_str import CmdStr
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.label.cmd_lbl_default import CmdLblDefault
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.builder.ctl_builder import CtlBuilder
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl import Ctl
@@ -22,6 +23,7 @@ else:
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.cmd_modify_trigger_event import CmdModifyTriggerEvent
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.cmd_orig_rule_name import CmdOrigRuleName
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.cmd_rule_name import CmdRuleName
+    from libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.create.cmd_str import CmdStr
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.label.cmd_lbl_default import CmdLblDefault
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.builder.ctl_builder import CtlBuilder
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl import Ctl
@@ -40,6 +42,7 @@ class CtlBuilderStr(CtlBuilder):
         self.append(CmdOrigRuleName(cell=self.cell, ctl=self.ctl, kind=RuleNameKind.CELL_DATA_TYPE_STR))
         self.append(CmdArrayAbility(cell=self.cell, ctl=self.ctl, ability=False))
         self.append(CmdModifyTriggerEvent(cell=self.cell, ctl=self.ctl, kind=RuleNameKind.CELL_DATA_TYPE_STR))
+        self.append(CmdStr(cell=self.cell, ctl=self.ctl))
 
     @override
     def build(self) -> Ctl:
