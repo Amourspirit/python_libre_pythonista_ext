@@ -15,6 +15,8 @@ else:
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_cell_prop_value import QryCellPropValue
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_key_maker import QryKeyMaker
 
+# tested in: tests/test_cmd/test_cmd_py_src.py
+
 
 class QryCodeName(QryBase, QryCellT[str]):
     """Gets the code name of the cell such as ``id_l6fiSBIiNVcncf``"""

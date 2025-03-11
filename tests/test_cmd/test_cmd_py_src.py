@@ -13,12 +13,16 @@ def test_cmd_py_src_no_src(loader, build_setup) -> None:
     if TYPE_CHECKING:
         from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.code.cmd_cell_src_code import CmdCellSrcCode
         from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
+        from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
         from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source import PySource
+        from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_uri import QryCellUri
         from oxt.___lo_pip___.basic_config import BasicConfig as Config
     else:
         from libre_pythonista_lib.cq.cmd.calc.sheet.cell.code.cmd_cell_src_code import CmdCellSrcCode
         from libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
+        from libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
         from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source import PySource
+        from libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_uri import QryCellUri
         from libre_pythonista.basic_config import BasicConfig as Config
 
     doc = None
@@ -31,6 +35,7 @@ def test_cmd_py_src_no_src(loader, build_setup) -> None:
         cell = sheet[0, 0]
 
         cmd_handler = CmdHandlerFactory.get_cmd_handler()
+        qry_handler = QryHandlerFactory.get_qry_handler()
 
         if not cell.has_custom_property(code_prop_name):
             cell.set_custom_property(code_prop_name, "code1_id")
@@ -39,14 +44,18 @@ def test_cmd_py_src_no_src(loader, build_setup) -> None:
         code_id = cell.get_custom_property(code_prop_name)
         uri = f"{root_uri}/{sheet.unique_id}/{code_id}.py"
 
-        cmd = CmdCellSrcCode(code=code, uri=uri, cell=cell)
+        qry_cell_uri = QryCellUri(cell=cell)
+        qry_cell_uri_result = qry_handler.handle(qry_cell_uri)
+        assert qry_cell_uri_result == uri
+
+        cmd = CmdCellSrcCode(uri=uri, code=code, cell=cell)
         cmd_handler.handle(cmd)
         assert cmd.success
         py_src = PySource(uri=uri, cell=cell.cell_obj)
         assert py_src.exists()
         assert py_src.source_code == code
 
-        cmd.undo()
+        cmd_handler.undo()
         assert py_src.exists() is False
         assert py_src.source_code == ""
     finally:
@@ -58,12 +67,16 @@ def test_cmd_py_src_has_src(loader, build_setup) -> None:
     if TYPE_CHECKING:
         from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.code.cmd_cell_src_code import CmdCellSrcCode
         from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
+        from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
         from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source import PySource
+        from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_uri import QryCellUri
         from oxt.___lo_pip___.basic_config import BasicConfig as Config
     else:
         from libre_pythonista_lib.cq.cmd.calc.sheet.cell.code.cmd_cell_src_code import CmdCellSrcCode
         from libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
+        from libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
         from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source import PySource
+        from libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_uri import QryCellUri
         from libre_pythonista.basic_config import BasicConfig as Config
 
     doc = None
@@ -75,13 +88,17 @@ def test_cmd_py_src_has_src(loader, build_setup) -> None:
         sheet = doc.sheets[0]
         cell = sheet[0, 0]
         cmd_handler = CmdHandlerFactory.get_cmd_handler()
+        qry_handler = QryHandlerFactory.get_qry_handler()
 
         if not cell.has_custom_property(code_prop_name):
             cell.set_custom_property(code_prop_name, "code1_id")
 
-        root_uri = f"vnd.sun.star.tdoc:/{doc.runtime_uid}/{cfg.lp_code_dir}"
-        code_id = cell.get_custom_property(code_prop_name)
-        uri = f"{root_uri}/{sheet.unique_id}/{code_id}.py"
+        # root_uri = f"vnd.sun.star.tdoc:/{doc.runtime_uid}/{cfg.lp_code_dir}"
+        # code_id = cell.get_custom_property(code_prop_name)
+        # uri = f"{root_uri}/{sheet.unique_id}/{code_id}.py"
+
+        qry_cell_uri = QryCellUri(cell=cell)
+        uri = qry_handler.handle(qry_cell_uri)
 
         cmd = CmdCellSrcCode(code=code, uri=uri, cell=cell)
         cmd_handler.handle(cmd)
@@ -100,7 +117,7 @@ def test_cmd_py_src_has_src(loader, build_setup) -> None:
         assert py_src.exists()
         assert py_src.source_code == code2
 
-        cmd.undo()
+        cmd_handler.undo()
         assert py_src.exists() is True
         assert py_src.source_code == code
     finally:

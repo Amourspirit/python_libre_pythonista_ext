@@ -65,7 +65,6 @@ class CmdCellSrcCode(CmdBase, LogMixin, CmdCellCacheT):
             py_code.source_code = self._code
         except Exception:
             self.log.exception("Error setting cell Code")
-            self._undo()
             return
         self.log.debug("Successfully executed command.")
         self.success = True
