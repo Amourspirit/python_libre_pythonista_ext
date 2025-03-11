@@ -11,14 +11,14 @@ if __name__ == "__main__":
 
 def test_cmd_py_src_no_src(loader, build_setup) -> None:
     if TYPE_CHECKING:
-        from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.cmd_cell_src_code import CmdCellSrcCode
-        from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler import CmdHandler
-        from oxt.pythonpath.libre_pythonista_lib.pyc.code.py_source import PySource
+        from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.code.cmd_cell_src_code import CmdCellSrcCode
+        from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
+        from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source import PySource
         from oxt.___lo_pip___.basic_config import BasicConfig as Config
     else:
-        from libre_pythonista_lib.cq.cmd.calc.sheet.cell.cmd_cell_src_code import CmdCellSrcCode
-        from libre_pythonista_lib.cq.cmd.cmd_handler import CmdHandler
-        from libre_pythonista_lib.pyc.code.py_source import PySource
+        from libre_pythonista_lib.cq.cmd.calc.sheet.cell.code.cmd_cell_src_code import CmdCellSrcCode
+        from libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
+        from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source import PySource
         from libre_pythonista.basic_config import BasicConfig as Config
 
     doc = None
@@ -29,7 +29,8 @@ def test_cmd_py_src_no_src(loader, build_setup) -> None:
         code_prop_name = cfg.cell_cp_codename
         sheet = doc.sheets[0]
         cell = sheet[0, 0]
-        cmd_handler = CmdHandler()
+
+        cmd_handler = CmdHandlerFactory.get_cmd_handler()
 
         if not cell.has_custom_property(code_prop_name):
             cell.set_custom_property(code_prop_name, "code1_id")
@@ -55,14 +56,14 @@ def test_cmd_py_src_no_src(loader, build_setup) -> None:
 
 def test_cmd_py_src_has_src(loader, build_setup) -> None:
     if TYPE_CHECKING:
-        from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.cmd_cell_src_code import CmdCellSrcCode
-        from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler import CmdHandler
-        from oxt.pythonpath.libre_pythonista_lib.pyc.code.py_source import PySource
+        from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.code.cmd_cell_src_code import CmdCellSrcCode
+        from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
+        from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source import PySource
         from oxt.___lo_pip___.basic_config import BasicConfig as Config
     else:
-        from libre_pythonista_lib.cq.cmd.calc.sheet.cell.cmd_cell_src_code import CmdCellSrcCode
-        from libre_pythonista_lib.cq.cmd.cmd_handler import CmdHandler
-        from libre_pythonista_lib.pyc.code.py_source import PySource
+        from libre_pythonista_lib.cq.cmd.calc.sheet.cell.code.cmd_cell_src_code import CmdCellSrcCode
+        from libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
+        from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source import PySource
         from libre_pythonista.basic_config import BasicConfig as Config
 
     doc = None
@@ -73,7 +74,7 @@ def test_cmd_py_src_has_src(loader, build_setup) -> None:
         code_prop_name = cfg.cell_cp_codename
         sheet = doc.sheets[0]
         cell = sheet[0, 0]
-        cmd_handler = CmdHandler()
+        cmd_handler = CmdHandlerFactory.get_cmd_handler()
 
         if not cell.has_custom_property(code_prop_name):
             cell.set_custom_property(code_prop_name, "code1_id")

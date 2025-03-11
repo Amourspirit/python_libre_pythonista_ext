@@ -18,7 +18,7 @@ from ooodev.utils.data_type.cell_obj import CellObj
 # from .cell_code_storage import CellCodeStorage
 
 if TYPE_CHECKING:
-    from .....___lo_pip___.basic_config import BasicConfig as Config
+    from oxt.___lo_pip___.basic_config import BasicConfig as Config
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
 else:
     from ___lo_pip___.basic_config import BasicConfig as Config

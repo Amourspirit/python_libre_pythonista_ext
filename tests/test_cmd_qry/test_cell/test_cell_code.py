@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from typing import cast, TYPE_CHECKING
 import pytest
-from pytest_mock import MockerFixture
-
 
 if __name__ == "__main__":
     pytest.main([__file__])
@@ -14,18 +12,17 @@ def test_cell_code(loader, py_src_uri) -> None:
     from ooodev.utils.cache import MemCache
 
     if TYPE_CHECKING:
-        from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler import QryHandler
-        from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler import CmdHandler
-        from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.cmd_cell_src_code import CmdCellSrcCode
-        from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_src_code import QryCellSrcCode
+        from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
+        from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
+        from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.code.cmd_cell_src_code import CmdCellSrcCode
+        from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.code.qry_cell_src_code import QryCellSrcCode
         from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_cache import QryCellCache
 
     else:
-        from libre_pythonista_lib.cq.qry.qry_handler import QryHandler
-        from libre_pythonista_lib.cq.cmd.cmd_handler import CmdHandler
-        from libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_src_code import QryCellSrcCode
-        from libre_pythonista_lib.cq.cmd.calc.sheet.cell.cmd_cell_src_code import CmdCellSrcCode
-        from libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_src_code import QryCellSrcCode
+        from libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
+        from libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
+        from libre_pythonista_lib.cq.cmd.calc.sheet.cell.code.cmd_cell_src_code import CmdCellSrcCode
+        from libre_pythonista_lib.cq.qry.calc.sheet.cell.code.qry_cell_src_code import QryCellSrcCode
         from libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_cache import QryCellCache
 
     doc = None
@@ -34,8 +31,8 @@ def test_cell_code(loader, py_src_uri) -> None:
         sheet = doc.sheets[0]
         cell = sheet[0, 0]
         uri = py_src_uri(cell)
-        cmd_handler = CmdHandler()
-        qry_handler = QryHandler()
+        cmd_handler = CmdHandlerFactory.get_cmd_handler()
+        qry_handler = QryHandlerFactory.get_qry_handler()
 
         qry_cache = QryCellCache(cell=cell)
         cache = cast(MemCache, qry_handler.handle(qry_cache))

@@ -6,25 +6,25 @@ from ooodev.calc import CalcCell
 
 if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_base import QryBase
-    from oxt.pythonpath.libre_pythonista_lib.pyc.code.py_source import PySrcProvider
-    from oxt.pythonpath.libre_pythonista_lib.pyc.code.py_source import PySource
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source import PySrcProvider
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source import PySource
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_cache_t import QryCellCacheT
-    from oxt.pythonpath.libre_pythonista_lib.const.cache_const import CELL_SRC_CODE_EXIST
+    from oxt.pythonpath.libre_pythonista_lib.const.cache_const import CELL_SRC_CODE
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
 else:
     from libre_pythonista_lib.cq.qry.qry_base import QryBase
-    from libre_pythonista_lib.pyc.code.py_source import PySource
+    from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source import PySource
     from libre_pythonista_lib.log.log_mixin import LogMixin
-    from libre_pythonista_lib.const.cache_const import CELL_SRC_CODE_EXIST
+    from libre_pythonista_lib.const.cache_const import CELL_SRC_CODE
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_cache_t import QryCellCacheT
     from libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
 
     PySrcProvider = Any
 
 
-class QryCellSrcCodeExist(QryBase, LogMixin, QryCellCacheT[bool]):
-    """Checks if the source code exists for a cell"""
+class QryCellSrcCode(QryBase, LogMixin, QryCellCacheT[str | None]):
+    """Gets the source code for a cell"""
 
     def __init__(self, uri: str, cell: CalcCell, src_provider: PySrcProvider | None = None) -> None:
         """Constructor
@@ -41,20 +41,21 @@ class QryCellSrcCodeExist(QryBase, LogMixin, QryCellCacheT[bool]):
         self._cell = cell
         self._src_provider = src_provider
 
-    def execute(self) -> bool:
+    def execute(self) -> str | None:
         """
-        Executes the query and gets if the source code exists.
+        Executes the query to get the script URL.
+        The url will start with ``vnd.sun.star.script:``
 
         Returns:
-            bool: True if the source code exists, False otherwise.
+            str | None: The script URL if successful, otherwise None.
         """
 
         try:
             py_code = PySource(uri=self._uri, cell=self.cell.cell_obj, src_provider=self._src_provider)
-            return py_code.exists()
+            return py_code.source_code
         except Exception:
             self.log.exception("Error executing query")
-        return False
+        return None
 
     @property
     def cell(self) -> CalcCell:
@@ -63,4 +64,4 @@ class QryCellSrcCodeExist(QryBase, LogMixin, QryCellCacheT[bool]):
     @property
     def cache_key(self) -> str:
         """Gets the cache key."""
-        return CELL_SRC_CODE_EXIST
+        return CELL_SRC_CODE

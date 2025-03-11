@@ -9,9 +9,9 @@ if __name__ == "__main__":
 
 def test_url_info(build_setup) -> None:
     if TYPE_CHECKING:
-        from oxt.pythonpath.libre_pythonista_lib.pyc.code.py_source import UrlInfo
+        from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source import UrlInfo
     else:
-        from libre_pythonista_lib.pyc.code.py_source import UrlInfo
+        from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source import UrlInfo
     root_url = "vnd.sun.star.tdoc:/1/random_dir"
     sheet_unique_id = "rr34jlkj53"
     code_id = "reu44340ttr"
@@ -33,11 +33,11 @@ def test_py_src(build_setup, loader) -> None:
     from ooodev.calc import CalcDoc
 
     if TYPE_CHECKING:
-        from oxt.pythonpath.libre_pythonista_lib.pyc.code.py_source import PySource
-        from oxt.pythonpath.libre_pythonista_lib.pyc.code.py_source import UrlInfo
+        from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source import PySource
+        from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source import UrlInfo
     else:
-        from libre_pythonista_lib.pyc.code.py_source import PySource
-        from libre_pythonista_lib.pyc.code.py_source import UrlInfo
+        from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source import PySource
+        from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source import UrlInfo
     doc = None
     try:
         doc = CalcDoc.create_doc(loader=loader)
