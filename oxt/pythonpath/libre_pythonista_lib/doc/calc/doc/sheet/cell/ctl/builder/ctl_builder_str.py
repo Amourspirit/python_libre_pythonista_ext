@@ -12,9 +12,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.create.cmd_str import CmdStr
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.label.cmd_lbl_default import CmdLblDefault
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.builder.ctl_builder import CtlBuilder
-    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl import Ctl
-    from oxt.pythonpath.libre_pythonista_lib.kind.ctl_kind import CtlKind
-    from oxt.pythonpath.libre_pythonista_lib.kind.ctl_prop_kind import CtlPropKind
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.style.cmd_style_text_align import CmdStyleTextAlign
     from oxt.pythonpath.libre_pythonista_lib.kind.rule_name_kind import RuleNameKind
     from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
 else:
@@ -25,10 +23,8 @@ else:
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.cmd_rule_name import CmdRuleName
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.create.cmd_str import CmdStr
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.label.cmd_lbl_default import CmdLblDefault
+    from libre_pythonista_lib.cq.cmd.calc.sheet.cell.style.cmd_style_text_align import CmdStyleTextAlign
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.builder.ctl_builder import CtlBuilder
-    from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl import Ctl
-    from libre_pythonista_lib.kind.ctl_kind import CtlKind
-    from libre_pythonista_lib.kind.ctl_prop_kind import CtlPropKind
     from libre_pythonista_lib.kind.rule_name_kind import RuleNameKind
     from libre_pythonista_lib.utils.custom_ext import override
 
@@ -43,15 +39,4 @@ class CtlBuilderStr(CtlBuilder):
         self.append(CmdArrayAbility(cell=self.cell, ctl=self.ctl, ability=False))
         self.append(CmdModifyTriggerEvent(cell=self.cell, ctl=self.ctl, kind=RuleNameKind.CELL_DATA_TYPE_STR))
         self.append(CmdStr(cell=self.cell, ctl=self.ctl))
-
-    @override
-    def build(self) -> Ctl:
-        ctl = super().build()
-        ctl.control_kind = CtlKind.STRING
-        ctl.ctl_props = (
-            CtlPropKind.CTL_SHAPE,
-            CtlPropKind.CTL_ORIG,
-            CtlPropKind.PYC_RULE,
-            CtlPropKind.MODIFY_TRIGGER_EVENT,
-        )
-        return ctl
+        self.append(CmdStyleTextAlign(cell=self.cell))

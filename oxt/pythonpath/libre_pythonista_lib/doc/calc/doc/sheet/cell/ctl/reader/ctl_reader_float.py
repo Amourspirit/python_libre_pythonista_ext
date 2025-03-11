@@ -31,8 +31,8 @@ else:
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.ctl.qry_ctl_orig_rule_name import QryCtlOrigRuleName
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.ctl.qry_ctl_rule_name import QryCtlRuleName
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.ctl.qry_ctl_shape_name import QryCtlShapeName
-    from libre_pythonista_lib.cq.qry.calc.sheet.cell.ctl.qry_lp_shape import QryLpShape
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.ctl.qry_ctl_style_bg_default import QryCtlStyleBgDefault
+    from libre_pythonista_lib.cq.qry.calc.sheet.cell.ctl.qry_lp_shape import QryLpShape
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.reader.ctl_reader import CtlReader
     from libre_pythonista_lib.kind.ctl_kind import CtlKind
     from libre_pythonista_lib.kind.ctl_prop_kind import CtlPropKind

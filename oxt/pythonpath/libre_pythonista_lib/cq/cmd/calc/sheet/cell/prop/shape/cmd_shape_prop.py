@@ -77,7 +77,7 @@ class CmdShapeProp(CmdBase, LogMixin, CmdCellCtlT):
             if hasattr(self._shape, k):
                 results[k] = getattr(self._shape, k)
             else:
-                self.log.warning("When getting original properties. Property not found: %s", k)
+                self.log.debug("When getting original properties. Property not found: %s", k)
         return results
 
     def _set_props(self, props: dict) -> None:
@@ -86,7 +86,7 @@ class CmdShapeProp(CmdBase, LogMixin, CmdCellCtlT):
                 setattr(self._shape, k, v)
                 self.log.debug("Set property: %s", k)
             else:
-                self.log.warning("When setting properties. Property not found: %s", k)
+                self.log.debug("When setting properties. Property not found: %s", k)
 
     @override
     def execute(self) -> None:

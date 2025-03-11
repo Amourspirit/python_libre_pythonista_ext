@@ -14,10 +14,10 @@ else:
     from libre_pythonista_lib.utils.custom_ext import override
 
 
-class CmdStr(CmdSimple):
+class CmdFloat(CmdSimple):
     @override
     def _set_control_props(self) -> None:
-        self._ctl.control_kind = CtlKind.STRING
+        self._ctl.control_kind = CtlKind.FLOAT
 
         self._ctl.ctl_props = (
             CtlPropKind.CTL_SHAPE,

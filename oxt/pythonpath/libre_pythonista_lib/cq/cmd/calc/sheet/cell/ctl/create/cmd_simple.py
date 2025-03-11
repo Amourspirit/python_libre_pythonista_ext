@@ -41,7 +41,6 @@ class CmdSimple(CmdBase, LogMixin, CmdCellCtlT):
         CmdBase.__init__(self)
         LogMixin.__init__(self)
         self._ctl = ctl
-        self._errors = self._validate()
 
     def _validate(self) -> bool:
         """Validates the ctl"""
@@ -53,9 +52,13 @@ class CmdSimple(CmdBase, LogMixin, CmdCellCtlT):
 
         for attrib in required_attributes:
             if not attrib in ctl_dict:
-                self.log.error("Error setting code name: %s is missing", attrib)
+                self.log.error("Validation error. %s attribute is missing.", attrib)
                 return False
         return True
+
+    def _set_control_props(self) -> None:
+        """Sets the control properties"""
+        pass
 
     def _set_ctl_script(self, ctl: FormCtlBase) -> None:
         """Sets the location of the control"""
@@ -98,12 +101,13 @@ class CmdSimple(CmdBase, LogMixin, CmdCellCtlT):
     @override
     def execute(self) -> None:
         self.success = False
-        if self._errors:
-            self.log.error("Errors occurred during initialization. Unable to execute command.")
+        if not self._validate():
+            self.log.error("Validation error occurred. Unable to execute command.")
             return
         self._state_changed = False
         try:
             self._insert_control()
+            self._set_control_props()
             self._state_changed = True
         except Exception:
             self.log.exception("Error inserting control")
