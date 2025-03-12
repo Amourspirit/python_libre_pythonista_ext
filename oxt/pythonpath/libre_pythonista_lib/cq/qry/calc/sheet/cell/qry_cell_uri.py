@@ -23,7 +23,7 @@ class QryCellUri(QryBase, LogMixin, QryCellT[str]):
     """
     Gets the URI for a cell.
 
-    In format of ``vnd.sun.star.tdoc:/1/librepythonista/sheet_unique_id_bla_bla/code_name_bla_bal.py``
+    In format of ``vnd.sun.star.tdoc:/1/librepythonista/sheet_unique_id_bla_bla/code_name_bla_bla.py``
     """
 
     def __init__(self, cell: CalcCell) -> None:

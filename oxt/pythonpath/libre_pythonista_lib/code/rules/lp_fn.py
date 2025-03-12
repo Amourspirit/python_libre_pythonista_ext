@@ -70,7 +70,12 @@ class LpFn:
             return self._result is not None
 
     def get_value(self) -> DotDict:
-        """Get the list of versions. In this case it will be a single version, unless vstr is invalid in which case it will be an empty list."""
+        """
+        Retrieves a value from the module's dictionary.
+
+        Returns:
+            DotDict: A DotDict object containing the value associated with the module's Last item in the dictionary.
+        """
         if self._result is None:
             return DotDict(data=None)
         return self._result

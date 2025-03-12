@@ -2,28 +2,33 @@ from __future__ import annotations
 from typing import List, TYPE_CHECKING
 import ast
 import types
-import re
-from .underscore import Underscore
-
-# from .regex_last_line import RegexLastLine
-from .assign import Assign
-from .expr import Expr
-from .lp_fn_plot_expr import LpFnPlotExpr
-from .lp_fn_plot_assign import LpFnPlotAssign
-from .code_empty import CodeEmpty
-from .lp_fn_expr import LpFnExpr
-from .lp_fn_assign import LpFnAssign
 
 
 if TYPE_CHECKING:
-    from .code_rule_t import CodeRuleT
-    from .....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
-    from .....___lo_pip___.debug.break_mgr import BreakMgr
+    from oxt.___lo_pip___.debug.break_mgr import BreakMgr
+    from oxt.___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from oxt.pythonpath.libre_pythonista_lib.code.rules.assign import Assign
+    from oxt.pythonpath.libre_pythonista_lib.code.rules.code_empty import CodeEmpty
+    from oxt.pythonpath.libre_pythonista_lib.code.rules.code_rule_t import CodeRuleT
+    from oxt.pythonpath.libre_pythonista_lib.code.rules.expr import Expr
+    from oxt.pythonpath.libre_pythonista_lib.code.rules.lp_fn_assign import LpFnAssign
+    from oxt.pythonpath.libre_pythonista_lib.code.rules.lp_fn_expr import LpFnExpr
+    from oxt.pythonpath.libre_pythonista_lib.code.rules.lp_fn_plot_assign import LpFnPlotAssign
+    from oxt.pythonpath.libre_pythonista_lib.code.rules.lp_fn_plot_expr import LpFnPlotExpr
+    from oxt.pythonpath.libre_pythonista_lib.code.rules.underscore import Underscore
 
     break_mgr = BreakMgr()
 else:
-    from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
     from ___lo_pip___.debug.break_mgr import BreakMgr
+    from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from libre_pythonista_lib.code.rules.assign import Assign
+    from libre_pythonista_lib.code.rules.code_empty import CodeEmpty
+    from libre_pythonista_lib.code.rules.expr import Expr
+    from libre_pythonista_lib.code.rules.lp_fn_assign import LpFnAssign
+    from libre_pythonista_lib.code.rules.lp_fn_expr import LpFnExpr
+    from libre_pythonista_lib.code.rules.lp_fn_plot_assign import LpFnPlotAssign
+    from libre_pythonista_lib.code.rules.lp_fn_plot_expr import LpFnPlotExpr
+    from libre_pythonista_lib.code.rules.underscore import Underscore
 
     break_mgr = BreakMgr()
     break_mgr.add_breakpoint("libre_pythonista_lib.code.rules.code_rules.get_matched_rule")

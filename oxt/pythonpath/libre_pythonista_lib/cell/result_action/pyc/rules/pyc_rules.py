@@ -50,12 +50,12 @@ class PycRules(LogMixin, SingletonBase):
             return
         LogMixin.__init__(self)
         with self.log.indent(True):
-            self.log.debug("%s.__init__() Initializing.", self.__class__.__name__)
+            self.log.debug("__init__() Initializing.")
         self._rules: List[Type[PycRuleT]] = []
         self._register_known_rules()
         self._default_rule = RuleNone
         with self.log.indent(True):
-            self.log.debug("%s.__init__() Initialized.", self.__class__.__name__)
+            self.log.debug("__init__() Initialized.")
         self._is_init = True
 
     def __len__(self) -> int:

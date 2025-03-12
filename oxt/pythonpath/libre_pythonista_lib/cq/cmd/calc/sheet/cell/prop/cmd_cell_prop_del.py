@@ -19,17 +19,18 @@ else:
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.cmd_cell_t import CmdCellT
     from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
 
-# this class should be call in:
-# libre_pythonista_lib.cq.cmd.calc.sheet.cmd_handler_sheet_cache.CmdHandlerSheetCache
-
-# this class should be called with:
-# pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.cmd_handler_cell_cache.CmdHandlerCellCache
-
 
 class CmdCellPropDel(CmdBase, LogMixin, CmdCellT):
     """Deletes a custom property of a cell"""
 
-    def __init__(self, cell: CalcCell, name: str) -> None:  # noqa: ANN401
+    def __init__(self, cell: CalcCell, name: str) -> None:
+        """
+        Initialize command to delete a cell's custom property.
+
+        Args:
+            cell: The CalcCell to modify
+            name: Name of the custom property to delete
+        """
         CmdBase.__init__(self)
         LogMixin.__init__(self)
         self.kind = CalcCmdKind.CELL
@@ -39,11 +40,21 @@ class CmdCellPropDel(CmdBase, LogMixin, CmdCellT):
         self._current_value = NULL_OBJ
 
     def _get_current_value(self) -> Any:  # noqa: ANN401
+        """
+        Gets current value of the property before deletion.
+
+        Returns:
+            Current property value or NULL_OBJ if not found
+        """
         qry = QryCellPropValue(cell=self._cell, name=self._name)
         return self._execute_qry(qry)  # returns NULL_OBJ if not found
 
     @override
     def execute(self) -> None:
+        """
+        Executes the command to delete the property.
+        Stores current value for undo capability.
+        """
         if self._current_value is NULL_OBJ:
             self._current_value = self._get_current_value()
 
@@ -51,13 +62,16 @@ class CmdCellPropDel(CmdBase, LogMixin, CmdCellT):
         try:
             self._cell.remove_custom_property(self._name)
         except Exception:
-            self.log.exception("Error setting cell Code")
+            self.log.exception("Error removing custom property")
             self._undo()
             return
         self.log.debug("Successfully executed command.")
         self.success = True
 
     def _undo(self) -> None:
+        """
+        Internal method to restore the property to its previous state.
+        """
         if self._current_value is NULL_OBJ:
             try:
                 if self._cell.has_custom_property(self._name):
@@ -74,6 +88,9 @@ class CmdCellPropDel(CmdBase, LogMixin, CmdCellT):
 
     @override
     def undo(self) -> None:
+        """
+        Public method to undo the command if it was successful.
+        """
         if self.success:
             self._undo()
         else:
@@ -81,4 +98,10 @@ class CmdCellPropDel(CmdBase, LogMixin, CmdCellT):
 
     @property
     def cell(self) -> CalcCell:
+        """
+        Gets the cell being modified.
+
+        Returns:
+            CalcCell: The cell instance
+        """
         return self._cell

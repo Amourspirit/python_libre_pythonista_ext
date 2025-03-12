@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, cast, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING
 
 from ooodev.utils.gen_util import NULL_OBJ
 
@@ -45,8 +45,7 @@ class CmdCellPropSet(CmdBase, LogMixin, CmdCellT):
         try:
             self._cell.set_custom_property(self._name, self._value)
         except Exception:
-            self.log.exception("Error setting cell Code")
-            self._undo()
+            self.log.exception("Error setting custom property %s", self._name)
             return
         self.log.debug("Successfully executed command.")
         self.success = True

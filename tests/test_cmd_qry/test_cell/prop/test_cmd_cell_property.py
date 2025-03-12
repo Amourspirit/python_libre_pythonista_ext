@@ -10,9 +10,9 @@ if __name__ == "__main__":
 
 def test_cmd_cell_prop(loader, build_setup) -> None:
     from ooodev.calc import CalcDoc
-    from ooodev.utils.gen_util import NULL_OBJ
 
     if TYPE_CHECKING:
+        from oxt.pythonpath.libre_pythonista_lib.utils.null import NULL
         from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler import CmdHandler
         from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_cell_prop_set import CmdCellPropSet
         from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_cell_prop_del import CmdCellPropDel
@@ -22,6 +22,7 @@ def test_cmd_cell_prop(loader, build_setup) -> None:
             QryCellPropValue,
         )
     else:
+        from libre_pythonista_lib.utils.null import NULL
         from libre_pythonista_lib.cq.cmd.cmd_handler import CmdHandler
         from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_cell_prop_set import CmdCellPropSet
         from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_cell_prop_del import CmdCellPropDel
@@ -45,7 +46,7 @@ def test_cmd_cell_prop(loader, build_setup) -> None:
 
         qry_prop_value = QryCellPropValue(cell=cell, name=prop_name)
         result = qry_handler.handle(qry_prop_value)
-        assert result is NULL_OBJ
+        assert result is NULL
 
         qry_prop_value = QryCellPropValue(cell=cell, name=prop_name, default=None)
         result = qry_handler.handle(qry_prop_value)
@@ -62,7 +63,7 @@ def test_cmd_cell_prop(loader, build_setup) -> None:
 
         qry_prop_value = QryCellPropValue(cell=cell, name=prop_name)
         result = qry_handler.handle(qry_prop_value)
-        assert result is NULL_OBJ
+        assert result is NULL
 
     finally:
         if not doc is None:

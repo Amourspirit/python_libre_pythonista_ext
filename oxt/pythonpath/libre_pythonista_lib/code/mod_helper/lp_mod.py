@@ -28,6 +28,7 @@ if TYPE_CHECKING:
     from com.sun.star.sheet import SheetCellRange
     from com.sun.star.sheet import SheetCell
     from ...log.log_inst import LogInst
+    from oxt.___lo_pip___.oxt_logger.oxt_logger import OxtLogger
 
     CURRENT_CELL_OBJ: CellObj
 else:
@@ -65,7 +66,7 @@ def _set_last_lp_result(result: Any, **kwargs) -> Any:  # noqa: ANN003, ANN401
     return LAST_LP_RESULT.data
 
 
-def _handle_cell_only(addr: str, log: LogInst, **kwargs) -> Any:  # noqa: ANN003, ANN401
+def _handle_cell_only(addr: str, log: OxtLogger, **kwargs) -> Any:  # noqa: ANN003, ANN401
     global CURRENT_CELL_OBJ
     log.debug("_handle_cell_only() Entered")
     log.debug("lp - Cell Name: %s", addr)
@@ -86,7 +87,7 @@ def _handle_cell_only(addr: str, log: LogInst, **kwargs) -> Any:  # noqa: ANN003
     return _set_last_lp_result(cell.value)
 
 
-def _handle_sheet_cell(addr: str, log: LogInst, **kwargs) -> Any:  # noqa: ANN003, ANN401
+def _handle_sheet_cell(addr: str, log: OxtLogger, **kwargs) -> Any:  # noqa: ANN003, ANN401
     log.debug("_handle_sheet_cell() Entered")
     log.debug("lp - Cell Name: %s", addr)
     doc = cast(CalcDoc, Lo.current_doc)
@@ -108,7 +109,7 @@ def _handle_sheet_cell(addr: str, log: LogInst, **kwargs) -> Any:  # noqa: ANN00
     return _set_last_lp_result(cell.value)
 
 
-def _handle_range_only(addr: str, log: LogInst, **kwargs) -> Any:  # noqa: ANN003, ANN401
+def _handle_range_only(addr: str, log: OxtLogger, **kwargs) -> Any:  # noqa: ANN003, ANN401
     global CURRENT_CELL_OBJ
     log.debug("_handle_range_only() Entered")
     log.debug("lp - Cell Name: %s", addr)
@@ -138,7 +139,7 @@ def _handle_range_only(addr: str, log: LogInst, **kwargs) -> Any:  # noqa: ANN00
     return _set_last_lp_result(df, headers=pdo.has_headers, range_obj=addr_rng)
 
 
-def _handle_sheet_range_only(addr: str, log: LogInst, **kwargs) -> Any:  # noqa: ANN003, ANN401
+def _handle_sheet_range_only(addr: str, log: OxtLogger, **kwargs) -> Any:  # noqa: ANN003, ANN401
     log.debug("_handle_sheet_range_only() Entered")
     log.debug("lp - Cell Name: %s", addr)
     collapse = False
@@ -172,7 +173,7 @@ def _handle_sheet_range_only(addr: str, log: LogInst, **kwargs) -> Any:  # noqa:
     return _set_last_lp_result(df, headers=pdo.has_headers, range_obj=addr_rng)
 
 
-def _handle_named_range_only(addr: str, log: LogInst, **kwargs) -> Any:  # noqa: ANN003, ANN401
+def _handle_named_range_only(addr: str, log: OxtLogger, **kwargs) -> Any:  # noqa: ANN003, ANN401
     log.debug("_handle_named_range_only() Entered")
     global CURRENT_CELL_OBJ
     log.debug("lp - Cell Name: %s", addr)
@@ -212,7 +213,7 @@ def _handle_named_range_only(addr: str, log: LogInst, **kwargs) -> Any:  # noqa:
         return _handle_sheet_cell(rng_addr, log, **kwargs)
 
 
-def _handle_sheet_named_range_only(addr: str, log: LogInst, **kwargs) -> Any:  # noqa: ANN003, ANN401
+def _handle_sheet_named_range_only(addr: str, log: OxtLogger, **kwargs) -> Any:  # noqa: ANN003, ANN401
     log.debug("_handle_sheet_named_range_only() Entered")
     log.debug("lp - Cell Name: %s", addr)
     doc = cast(CalcDoc, Lo.current_doc)
