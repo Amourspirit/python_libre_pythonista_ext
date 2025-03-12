@@ -3,39 +3,44 @@ from typing import Any, List, TYPE_CHECKING, Type
 from ooodev.calc import CalcCell
 from ooodev.utils.helper.dot_dict import DotDict
 
-from .rule_base import RuleBase
-from .rule_empty import RuleEmpty
-from .rule_error import RuleError
-from .rule_float import RuleFloat
-from .rule_int import RuleInt
-from .rule_none import RuleNone
-from .rule_pd_df import RulePdDf
-from .rule_pd_df_headers import RulePdDfHeaders
-from .rule_pd_ds import RulePdDs
-from .rule_str import RuleStr
-from .rule_tbl_data import RuleTblData
-from .rule_mat_plot_figure import RuleMatPlotFigure
-from .....utils.singleton_base import SingletonBase
 
 if TYPE_CHECKING:
-    from .pyc_rule_t import PycRuleT
-    from .......___lo_pip___.config import Config
-    from .......___lo_pip___.oxt_logger import OxtLogger
+    from oxt.pythonpath.libre_pythonista_lib.cell.result_action.pyc.rules.pyc_rule_t import PycRuleT
+    from oxt.pythonpath.libre_pythonista_lib.cell.result_action.pyc.rules.rule_base import RuleBase
+    from oxt.pythonpath.libre_pythonista_lib.cell.result_action.pyc.rules.rule_empty import RuleEmpty
+    from oxt.pythonpath.libre_pythonista_lib.cell.result_action.pyc.rules.rule_error import RuleError
+    from oxt.pythonpath.libre_pythonista_lib.cell.result_action.pyc.rules.rule_float import RuleFloat
+    from oxt.pythonpath.libre_pythonista_lib.cell.result_action.pyc.rules.rule_int import RuleInt
+    from oxt.pythonpath.libre_pythonista_lib.cell.result_action.pyc.rules.rule_mat_plot_figure import RuleMatPlotFigure
+    from oxt.pythonpath.libre_pythonista_lib.cell.result_action.pyc.rules.rule_none import RuleNone
+    from oxt.pythonpath.libre_pythonista_lib.cell.result_action.pyc.rules.rule_pd_df import RulePdDf
+    from oxt.pythonpath.libre_pythonista_lib.cell.result_action.pyc.rules.rule_pd_df_headers import RulePdDfHeaders
+    from oxt.pythonpath.libre_pythonista_lib.cell.result_action.pyc.rules.rule_pd_ds import RulePdDs
+    from oxt.pythonpath.libre_pythonista_lib.cell.result_action.pyc.rules.rule_str import RuleStr
+    from oxt.pythonpath.libre_pythonista_lib.cell.result_action.pyc.rules.rule_tbl_data import RuleTblData
+    from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
+    from oxt.pythonpath.libre_pythonista_lib.utils.singleton_base import SingletonBase
 else:
-    from ___lo_pip___.config import Config
-    from ___lo_pip___.oxt_logger import OxtLogger
+    from libre_pythonista_lib.cell.result_action.pyc.rules.rule_base import RuleBase
+    from libre_pythonista_lib.cell.result_action.pyc.rules.rule_empty import RuleEmpty
+    from libre_pythonista_lib.cell.result_action.pyc.rules.rule_error import RuleError
+    from libre_pythonista_lib.cell.result_action.pyc.rules.rule_float import RuleFloat
+    from libre_pythonista_lib.cell.result_action.pyc.rules.rule_int import RuleInt
+    from libre_pythonista_lib.cell.result_action.pyc.rules.rule_mat_plot_figure import RuleMatPlotFigure
+    from libre_pythonista_lib.cell.result_action.pyc.rules.rule_none import RuleNone
+    from libre_pythonista_lib.cell.result_action.pyc.rules.rule_pd_df import RulePdDf
+    from libre_pythonista_lib.cell.result_action.pyc.rules.rule_pd_df_headers import RulePdDfHeaders
+    from libre_pythonista_lib.cell.result_action.pyc.rules.rule_pd_ds import RulePdDs
+    from libre_pythonista_lib.cell.result_action.pyc.rules.rule_str import RuleStr
+    from libre_pythonista_lib.cell.result_action.pyc.rules.rule_tbl_data import RuleTblData
+    from libre_pythonista_lib.log.log_mixin import LogMixin
+    from libre_pythonista_lib.utils.singleton_base import SingletonBase
+
+    PycRuleT = Any
 
 
-class PycRules(SingletonBase):
+class PycRules(LogMixin, SingletonBase):
     """Singleton Class. Manages rules for Versions"""
-
-    # _instance = None
-
-    # def __new__(cls) -> PycRules:
-    #     if cls._instance is None:
-    #         cls._instance = super().__new__(cls)
-    #         cls._instance._is_init = False
-    #     return cls._instance
 
     def __init__(self) -> None:
         """
@@ -43,14 +48,14 @@ class PycRules(SingletonBase):
         """
         if getattr(self, "_is_init", False):
             return
-        self._log = OxtLogger(log_name=self.__class__.__name__)
-        with self._log.indent(True):
-            self._log.debug("%s.__init__() Initializing.", self.__class__.__name__)
+        LogMixin.__init__(self)
+        with self.log.indent(True):
+            self.log.debug("%s.__init__() Initializing.", self.__class__.__name__)
         self._rules: List[Type[PycRuleT]] = []
         self._register_known_rules()
         self._default_rule = RuleNone
-        with self._log.indent(True):
-            self._log.debug("%s.__init__() Initialized.", self.__class__.__name__)
+        with self.log.indent(True):
+            self.log.debug("%s.__init__() Initialized.", self.__class__.__name__)
         self._is_init = True
 
     def __len__(self) -> int:
@@ -80,11 +85,11 @@ class PycRules(SingletonBase):
         Args:
             rule (PycRuleT): Rule to register
         """
-        with self._log.indent(True):
+        with self.log.indent(True):
             if rule in self._rules:
-                self._log.debug("add_rule() Rule %s already registered.", rule)
+                self.log.debug("add_rule() Rule %s already registered.", rule)
                 return
-            self._log.debug("add_rule() Rule %s registered.", rule)
+            self.log.debug("add_rule() Rule %s registered.", rule)
             self._reg_rule(rule=rule)
 
     def add_rule_at(self, index: int, rule: Type[PycRuleT]) -> None:
@@ -95,11 +100,11 @@ class PycRules(SingletonBase):
             index (int): Index to insert rule
             rule (PycRuleT): Rule to register
         """
-        with self._log.indent(True):
+        with self.log.indent(True):
             if rule in self._rules:
-                self._log.debug("add_rule_at() Rule %s already registered.", rule)
+                self.log.debug("add_rule_at() Rule %s already registered.", rule)
                 return
-            self._log.debug("add_rule_at() Rule %s registered at index %i.", rule, index)
+            self.log.debug("add_rule_at() Rule %s registered at index %i.", rule, index)
             self._rules.insert(index, rule)
 
     def remove_rule(self, rule: Type[PycRuleT]) -> None:
@@ -112,10 +117,10 @@ class PycRules(SingletonBase):
         Raises:
             ValueError: If an error occurs
         """
-        with self._log.indent(True):
+        with self.log.indent(True):
             try:
                 self._rules.remove(rule)
-                self._log.debug("remove_rule_at() Rule %s removed.", rule)
+                self.log.debug("remove_rule_at() Rule %s removed.", rule)
             except ValueError as e:
                 msg = f"{self.__class__.__name__}.unregister_rule() Unable to unregister rule."
                 raise ValueError(msg) from e
@@ -130,13 +135,13 @@ class PycRules(SingletonBase):
         Raises:
             ValueError: If an error occurs
         """
-        with self._log.indent(True):
+        with self.log.indent(True):
             try:
                 del self._rules[index]
-                self._log.debug("remove_rule_at() Rule at index %i removed.", index)
+                self.log.debug("remove_rule_at() Rule at index %i removed.", index)
             except IndexError as e:
                 msg = f"{self.__class__.__name__}.unregister_rule() Unable to unregister rule."
-                self._log.error(msg, exc_info=True)
+                self.log.error(msg, exc_info=True)
                 raise ValueError(msg) from e
 
     def _reg_rule(self, rule: Type[PycRuleT]) -> None:
@@ -169,25 +174,25 @@ class PycRules(SingletonBase):
         Returns:
             List[PycRuleT]: Matched rule. Defaults to ``default_rule`` value.
         """
-        with self._log.indent(True):
-            is_db = self._log.is_debug
+        with self.log.indent(True):
+            is_db = self.log.is_debug
             if is_db:
-                self._log.debug("get_matched_rule() cell: %s. Data Type %s", cell.cell_obj, type(data).__name__)
+                self.log.debug("get_matched_rule() cell: %s. Data Type %s", cell.cell_obj, type(data).__name__)
             result = None
             for rule in self._rules:
                 inst = rule(cell, data)
                 if inst.get_is_match():
                     if is_db:
-                        self._log.debug("get_matched_rule() Rule %s matched.", inst)
+                        self.log.debug("get_matched_rule() Rule %s matched.", inst)
                     result = inst
                     break
             if result is not None:
                 return result
             if self._default_rule is not None:
-                self._log.warning("get_matched_rule() No rule matched. Using default rule.")
+                self.log.warning("get_matched_rule() No rule matched. Using default rule.")
                 return self._default_rule(cell, data)
             # this should never happen LastDict is always a match
-            self._log.warning("get_matched_rule() No rule matched.")
+            self.log.warning("get_matched_rule() No rule matched.")
             return None
 
     def find_rule(self, cell: CalcCell) -> PycRuleT | None:
@@ -200,7 +205,7 @@ class PycRules(SingletonBase):
         Returns:
             PycRuleT: Rule if found. The returned instance will have no data.
         """
-        with self._log.indent(True):
+        with self.log.indent(True):
             key = RuleBase.get_rule_name_key()
             if not cell.has_custom_property(key):
                 return None
@@ -209,10 +214,10 @@ class PycRules(SingletonBase):
             for rule in self._rules:
                 inst = rule(cell, None)
                 if inst.name == rule_name:
-                    self._log.debug("find_rule() Rule %s found.", inst)
+                    self.log.debug("find_rule() Rule %s found.", inst)
                     return inst
             # this should never happen LastDict is always a match
-            self._log.warning("find_rule() No rule found.")
+            self.log.warning("find_rule() No rule found.")
             return None
 
     # endregion Methods

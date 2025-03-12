@@ -490,7 +490,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "ooo-dev-tools", specifier = ">=0.52.3" },
+    { name = "ooo-dev-tools", specifier = ">=0.52.4" },
     { name = "oooenv", specifier = ">=0.2.4" },
     { name = "sortedcontainers", specifier = ">=2.4.0" },
     { name = "toml", specifier = ">=0.10.2" },
@@ -798,15 +798,15 @@ wheels = [
 
 [[package]]
 name = "ooo-dev-tools"
-version = "0.52.3"
+version = "0.52.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "ooouno" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/c1/70/1a2958a6c82de0f04aeeff3bc8bb7c5af96d8fca087d8c8784d29901ef88/ooo_dev_tools-0.52.3.tar.gz", hash = "sha256:25de4bcfce4a964d054153bfba2fac5665f88ae6b988dac5a83d549b54d9285e", size = 2592775 }
+sdist = { url = "https://files.pythonhosted.org/packages/d5/f3/552449d3743e395b2d9509cc08489279d6081b26ec1057bd188c234addc6/ooo_dev_tools-0.52.4.tar.gz", hash = "sha256:64ced612b047ea2f1789e2f106296301b0148c923e04c4a44f27757b550b9d67", size = 2593498 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/d8/14/a401048fd6dfd5240e081907d15b3e488529aba160447b0cede36123a161/ooo_dev_tools-0.52.3-py3-none-any.whl", hash = "sha256:0e069ab9e5d826a19ad36e37714763c422b4e0ad9429d6894909422baee02cef", size = 4257709 },
+    { url = "https://files.pythonhosted.org/packages/71/d7/a24f5b909af050a2819130813a1ac0982ab268aa1b925607f48f47f477a9/ooo_dev_tools-0.52.4-py3-none-any.whl", hash = "sha256:bd04b9e7b040d809cd7d8b6ccf30fdc07f7674844cf438a84decd197851887c1", size = 4258397 },
 ]
 
 [[package]]

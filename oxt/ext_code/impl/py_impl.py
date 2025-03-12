@@ -185,7 +185,7 @@ class PyImpl(unohelper.Base, XPy):
                 lp_cell = LplCell(cell)
                 if lp_cell.has_code_name_prop:
                     self._log.debug(
-                        "pyc - py %s cell already has code. May be a row or column as been inserted.", cell.cell_obj
+                        "pyc - py %s cell already has code. Maybe a row or column as been inserted.", cell.cell_obj
                     )
                     # If the cell is move this is not the place to update the cell properties.
                     # If done here only the current cell would be updated.

@@ -12,7 +12,7 @@ else:
 
 
 def _get_cell_cache_key(cell: CalcCell) -> str:
-    return f"cell_{hash(cell.cell_obj)}"
+    return f"cell_{cell.unique_id}"
 
 
 def get_cell_cache(cell: CalcCell) -> MemCache:
