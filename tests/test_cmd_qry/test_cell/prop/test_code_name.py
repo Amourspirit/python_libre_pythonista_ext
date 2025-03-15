@@ -7,20 +7,20 @@ if __name__ == "__main__":
     pytest.main([__file__])
 
 
-def test_cmd_code_name(loader, build_setup, mocker: MockerFixture) -> None:
+def test_cmd_code_name(loader, build_setup) -> None:
     from ooodev.calc import CalcDoc
 
     if TYPE_CHECKING:
         from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_code_name import CmdCodeName
-        from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler import CmdHandler
         from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_code_name import QryCodeName
-        from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler import QryHandler
+        from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
+        from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
         from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_code_name_del import CmdCodeNameDel
     else:
         from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_code_name import CmdCodeName
-        from libre_pythonista_lib.cq.cmd.cmd_handler import CmdHandler
+        from libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
+        from libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
         from libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_code_name import QryCodeName
-        from libre_pythonista_lib.cq.qry.qry_handler import QryHandler
         from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_code_name_del import CmdCodeNameDel
 
     doc = None
@@ -28,46 +28,29 @@ def test_cmd_code_name(loader, build_setup, mocker: MockerFixture) -> None:
         doc = CalcDoc.create_doc(loader=loader)
         sheet = doc.sheets[0]
         cell = sheet[0, 0]
-        qry_handler = QryHandler()
-        cmd_handler = CmdHandler()
+        qry_handler = QryHandlerFactory.get_qry_handler()
+        cmd_handler = CmdHandlerFactory.get_cmd_handler()
         qry = QryCodeName(cell=cell)
 
         assert qry_handler.handle(qry) == ""
 
-        # Test empty name (should fail)
-        cmd = CmdCodeName(cell=cell, name="")
-        cmd_handler.handle(cmd)
-        assert not cmd.success
-
-        # Test setting new code name
-        test_name = "id_test123"
-        cmd = CmdCodeName(cell=cell, name=test_name)
+        cmd = CmdCodeName(cell=cell)
         cmd_handler.handle(cmd)
         assert cmd.success
 
         # Verify the code name was set
-        result = qry_handler.handle(qry)
-        assert result == test_name
-
-        # Test setting same code name (should succeed but not change anything)
-        cmd = CmdCodeName(cell=cell, name=test_name)
-        cmd_handler.handle(cmd)
-        assert cmd.success
-        result = qry_handler.handle(qry)
-        assert result == test_name
-
-        # Test changing to different code name and then undoing
-        new_name = "id_newtest456"
-        cmd = CmdCodeName(cell=cell, name=new_name)
-        cmd_handler.handle(cmd)
-        assert cmd.success
-        result = qry_handler.handle(qry)
-        assert result == new_name
+        code_id = qry_handler.handle(qry)
+        assert code_id
 
         # Test undo
-        cmd.undo()
+        cmd_handler.undo()
         result = qry_handler.handle(qry)
-        assert result == test_name
+        assert result == ""
+
+        # Test redo
+        cmd_handler.redo()
+        result = qry_handler.handle(qry)
+        assert result == code_id
 
         # Test deleting the code name
         cmd = CmdCodeNameDel(cell=cell)
@@ -108,7 +91,7 @@ def test_cmd_code_name_error_handling(loader, build_setup, mocker: MockerFixture
             side_effect=Exception("Test exception"),
         )
 
-        cmd = CmdCodeName(cell=cell, name="id_test_name")
+        cmd = CmdCodeName(cell=cell)
         cmd.execute()
         assert not cmd.success
 
@@ -127,9 +110,7 @@ def test_cmd_kind(build_setup, mocker: MockerFixture) -> None:
 
     cell = mocker.MagicMock()
 
-    mocker.patch.object(CmdCodeName, "_get_current_state", return_value="")
-
-    cmd = CmdCodeName(cell=cell, name="id_test_name")
+    cmd = CmdCodeName(cell=cell)
     assert cmd.kind == CalcCmdKind.CELL
 
     cmd.kind = CalcCmdKind.SHEET

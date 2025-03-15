@@ -17,8 +17,6 @@ else:
     from libre_pythonista_lib.log.log_mixin import LogMixin
 
 
-# this class should be call in:
-# libre_pythonista_lib.cq.qry.calc.sheet.qry_handler_sheet_cache.QryHandlerSheetCache
 class QryFormDesignMode(QryBase, LogMixin, QryDocT[bool | None]):
     def __init__(self, doc: CalcDoc) -> None:
         QryBase.__init__(self)

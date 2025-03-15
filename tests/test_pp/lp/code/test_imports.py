@@ -7,7 +7,9 @@ if __name__ == "__main__":
     pytest.main([__file__])
 
 
-def test_import_py_module(build_setup, mocker: MockerFixture) -> None:  # noqa: ANN001
+def test_import_py_module(loader, build_setup, mocker: MockerFixture) -> None:  # noqa: ANN001
+    from ooodev.calc import CalcDoc
+
     _ = mocker.patch("libre_pythonista_lib.code.rules.lp_fn_obj.LogInst")
     _ = mocker.patch("libre_pythonista_lib.code.rules.lp_fn_plot_expr.LogInst")
     _ = mocker.patch("libre_pythonista_lib.code.rules.lp_fn_plot_assign.LogInst")
@@ -15,19 +17,20 @@ def test_import_py_module(build_setup, mocker: MockerFixture) -> None:  # noqa: 
     _ = mocker.patch("libre_pythonista_lib.code.rules.lp_fn.LogInst")
     _ = mocker.patch("libre_pythonista_lib.code.rules.lp_fn_assign.LogInst")
     _ = mocker.patch("libre_pythonista_lib.code.rules.lp_fn_expr.LogInst")
-
-    # _ = mocker.patch("libre_pythonista_lib.code.rules.code_rules.LogInst")
-    _ = mocker.patch("libre_pythonista_lib.code.rules.code_rules.OxtLogger")
     _ = mocker.patch("libre_pythonista_lib.code.rules.code_rules.BreakMgr")
-
-    _ = mocker.patch("libre_pythonista_lib.code.py_module.OxtLogger")
     _ = mocker.patch("libre_pythonista_lib.code.py_module.BreakMgr")
     _ = mocker.patch("libre_pythonista_lib.code.py_module.LibrePythonistaLog")
 
     if TYPE_CHECKING:
-        from .....build.pythonpath.libre_pythonista_lib.code.py_module import PyModule
+        from oxt.pythonpath.libre_pythonista_lib.code.py_module import PyModule
     else:
         from libre_pythonista_lib.code.py_module import PyModule
 
-    inst = PyModule()
-    assert inst is not None
+    doc = None
+    try:
+        doc = CalcDoc.create_doc(loader=loader)
+        inst = PyModule()
+        assert inst is not None
+    finally:
+        if doc is not None:
+            doc.close(True)

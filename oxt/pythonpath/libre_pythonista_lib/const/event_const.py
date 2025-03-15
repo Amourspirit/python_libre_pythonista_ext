@@ -39,3 +39,5 @@ CONTROL_INSERTED_CELL_IMG_LINKED = "control_inserted_cell_img_linked"
 # endregion cell.ctl shared events
 
 DOC_GBL_DEL_INSTANCE = "doc_gbl_del_instance"
+
+GLB_MODULE_SET_GBL_VAR = "glb_module_set_gbl_var"

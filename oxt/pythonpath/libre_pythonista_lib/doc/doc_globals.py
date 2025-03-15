@@ -177,10 +177,13 @@ class DocGlobals(EventsPartial, metaclass=_MetaGlobals):
         return cls._IS_PYTEST_RUNNING
 
     @staticmethod
-    def get_current() -> DocGlobals:
+    def get_current(uid: str | None = None) -> DocGlobals:
         """
         Get the current DocGlobals instance.
         The instance is derived from the current LibreOffice document.
+
+        Args:
+            uid (str | None, optional): The runtime unique id of the LibreOffice document. Defaults to None.
 
         Raises:
             ValueError: If there is no current document.
@@ -191,6 +194,11 @@ class DocGlobals(EventsPartial, metaclass=_MetaGlobals):
         # sometimes the current document is not available.
         # This is the case when executing some jobs such as ext_code.jobs.register_dispatch_job.RegisterDispatchJob.
         # In this case, we raise and event and let the RegisterDispatchJob subscribe to it and get the uid from the event.
+        if uid == "":
+            uid = None
+
+        if uid is not None:
+            return DocGlobals(runtime_uid=uid)
 
         events = LoEvents()
         eargs = EventArgs(DocGlobals)
@@ -200,7 +208,6 @@ class DocGlobals(EventsPartial, metaclass=_MetaGlobals):
             return DocGlobals(runtime_uid=eargs.event_data.get("uid"))
 
         doc_component = Lo.current_lo.desktop.get_current_component()
-        uid = None
 
         # If a document has been closed and focus has not been set to another document
         # then the current document will be None.

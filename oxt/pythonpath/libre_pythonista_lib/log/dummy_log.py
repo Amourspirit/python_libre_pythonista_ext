@@ -124,21 +124,21 @@ class DummyLogger:
     @property
     def is_debug(self) -> bool:
         """Check if is debug"""
-        return False
+        return True
 
     @property
     def is_info(self) -> bool:
         """Check if is info"""
-        return False
+        return True
 
     @property
     def is_warning(self) -> bool:
         """Check if is warning"""
-        return False
+        return True
 
     @property
     def is_error(self) -> bool:
         """Check if is error"""
-        return False
+        return True
 
     # endregion Properties

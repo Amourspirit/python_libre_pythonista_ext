@@ -13,16 +13,18 @@ from com.sun.star.sheet import XActivationEventListener
 from ooodev.events.args.event_args import EventArgs
 from ooodev.utils.helper.dot_dict import DotDict
 
-from ...const.event_const import SHEET_ACTIVATION
-from ...event.shared_event import SharedEvent
 
 if TYPE_CHECKING:
     from com.sun.star.lang import EventObject
     from com.sun.star.sheet import ActivationEvent
+    from oxt.pythonpath.libre_pythonista_lib.const.event_const import SHEET_ACTIVATION
     from oxt.pythonpath.libre_pythonista_lib.doc.doc_globals import DocGlobals
+    from oxt.pythonpath.libre_pythonista_lib.event.shared_event import SharedEvent
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
 else:
+    from libre_pythonista_lib.const.event_const import SHEET_ACTIVATION
     from libre_pythonista_lib.doc.doc_globals import DocGlobals
+    from libre_pythonista_lib.event.shared_event import SharedEvent
     from libre_pythonista_lib.log.log_mixin import LogMixin
 
 # is added when document view is complete.

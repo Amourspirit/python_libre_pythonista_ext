@@ -4,5 +4,5 @@ from ooodev.utils.helper.dot_dict import DotDict
 
 
 class Ctl(DotDict[Any]):
-    def __init__(self) -> None:
-        DotDict.__init__(self, missing_attr_val=None)
+    def __init__(self, **kwargs: Any) -> None:  # noqa: ANN401
+        DotDict.__init__(self, missing_attr_val=None, **kwargs)

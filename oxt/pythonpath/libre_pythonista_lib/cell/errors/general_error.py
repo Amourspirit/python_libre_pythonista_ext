@@ -7,7 +7,7 @@ class GeneralError:
 
     # all other errs should inherit from this class
 
-    def __init__(self, error: Any = None) -> None:
+    def __init__(self, error: Any = None) -> None:  # noqa: ANN401
         self._error = error
 
     def __repr__(self) -> str:
@@ -17,5 +17,5 @@ class GeneralError:
         return 1000
 
     @property
-    def error(self) -> Any:
+    def error(self) -> Any:  # noqa: ANN401
         return self._error

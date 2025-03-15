@@ -12,7 +12,11 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.code.qry_cell_src_code import QryCellSrcCode
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.cmd_cell_cache_t import CmdCellCacheT
-    from oxt.pythonpath.libre_pythonista_lib.const.cache_const import CELL_SRC_CODE, CELL_SRC_CODE_EXIST
+    from oxt.pythonpath.libre_pythonista_lib.const.cache_const import (
+        CELL_SRC_CODE,
+        CELL_SRC_CODE_EXIST,
+        CELL_PY_SOURCE,
+    )
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.code.qry_cell_src_code_exist import (
         QryCellSrcCodeExist,
@@ -24,13 +28,13 @@ else:
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.code.qry_cell_src_code import QryCellSrcCode
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.cmd_cell_cache_t import CmdCellCacheT
-    from libre_pythonista_lib.const.cache_const import CELL_SRC_CODE, CELL_SRC_CODE_EXIST
+    from libre_pythonista_lib.const.cache_const import CELL_SRC_CODE, CELL_SRC_CODE_EXIST, CELL_PY_SOURCE
     from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.code.qry_cell_src_code_exist import QryCellSrcCodeExist
 
 
 class CmdCellSrcCode(CmdBase, LogMixin, CmdCellCacheT):
-    """Add OnCalculate event to sheet"""
+    """Add source code to cell"""
 
     def __init__(self, uri: str, cell: CalcCell, code: str, src_provider: PySrcProvider | None = None) -> None:
         CmdBase.__init__(self)
@@ -97,4 +101,4 @@ class CmdCellSrcCode(CmdBase, LogMixin, CmdCellCacheT):
 
     @property
     def cache_keys(self) -> Tuple[str, ...]:
-        return (CELL_SRC_CODE, CELL_SRC_CODE_EXIST)
+        return (CELL_SRC_CODE, CELL_SRC_CODE_EXIST, CELL_PY_SOURCE)

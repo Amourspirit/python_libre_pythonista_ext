@@ -17,6 +17,7 @@ if TYPE_CHECKING:
 else:
     from libre_pythonista_lib.utils.custom_ext import override
     from libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
+    from libre_pythonista_lib.cell.props.key_maker import KeyMaker
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.cmd_cell_t import CmdCellT
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_cell_prop_del import CmdCellPropDel
     from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
@@ -38,7 +39,7 @@ class CmdCodeNameDel(CmdBase, LogMixin, CmdCellT):
         LogMixin.__init__(self)
         self.kind = CalcCmdKind.CELL
         self._cell = cell
-        self._keys = cast("KeyMaker", NULL_OBJ)
+        self._keys = cast(KeyMaker, None)
         self._current_state = cast(str, NULL_OBJ)
 
     def _get_keys(self) -> KeyMaker:
@@ -53,7 +54,7 @@ class CmdCodeNameDel(CmdBase, LogMixin, CmdCellT):
     def execute(self) -> None:
         if self._current_state is NULL_OBJ:
             self._current_state = self._get_current_state()
-        if self._keys is NULL_OBJ:
+        if not isinstance(self._keys, KeyMaker):
             self._keys = self._get_keys()
 
         self.success = False
@@ -77,12 +78,17 @@ class CmdCodeNameDel(CmdBase, LogMixin, CmdCellT):
                 self.log.debug("No Current State. Unable to undo.")
                 return
 
-            if TYPE_CHECKING:
-                from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_code_name import CmdCodeName
-            else:
-                from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_code_name import CmdCodeName
+            if not isinstance(self._keys, KeyMaker):
+                self._keys = self._get_keys()
 
-            cmd = CmdCodeName(cell=self.cell, name=self._current_state)
+            if TYPE_CHECKING:
+                from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_cell_prop_set import (
+                    CmdCellPropSet,
+                )
+            else:
+                from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_cell_prop_set import CmdCellPropSet
+
+            cmd = CmdCellPropSet(cell=self.cell, name=self._keys.cell_code_name, value=self._current_state)
             self._execute_cmd(cmd)
             if cmd.success:
                 self.log.debug("Successfully executed undo command.")

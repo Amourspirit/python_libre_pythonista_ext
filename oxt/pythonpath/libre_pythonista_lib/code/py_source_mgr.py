@@ -9,30 +9,33 @@ from ooodev.events.args.event_args import EventArgs
 from ooodev.events.lo_events import LoEvents
 from ooodev.events.partial.events_partial import EventsPartial
 from ooodev.io.sfa import Sfa
-from ooodev.utils import gen_util as gUtil
+from ooodev.utils import gen_util as gUtil  # noqa: N812
 from ooodev.utils.data_type.cell_obj import CellObj
 from ooodev.utils.helper.dot_dict import DotDict
 from ooodev.utils.string.str_list import StrList
 
-from ..event.shared_event import SharedEvent
-from ..log.log_inst import LogInst
-from ..utils.gen_util import GenUtil
-
-# from libre_pythonista.oxt_logger.oxt_logger import OxtLogger
-from .py_module import PyModule
-from .cell_cache import CellCache
-from ..cell.props.key_maker import KeyMaker
-from ..const.event_const import GBL_DOC_CLOSING
-
-# from .cell_code_storage import CellCodeStorage
 
 if TYPE_CHECKING:
     from ooodev.utils.type_var import EventCallback
-    from ....___lo_pip___.config import Config
-    from ....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from oxt.___lo_pip___.config import Config
+    from oxt.___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from oxt.pythonpath.libre_pythonista_lib.cell.props.key_maker import KeyMaker
+    from oxt.pythonpath.libre_pythonista_lib.code.cell_cache import CellCache
+    from oxt.pythonpath.libre_pythonista_lib.code.py_module import PyModule
+    from oxt.pythonpath.libre_pythonista_lib.const.event_const import GBL_DOC_CLOSING
+    from oxt.pythonpath.libre_pythonista_lib.event.shared_event import SharedEvent
+    from oxt.pythonpath.libre_pythonista_lib.log.log_inst import LogInst
+    from oxt.pythonpath.libre_pythonista_lib.utils.gen_util import GenUtil
 else:
-    from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
     from ___lo_pip___.config import Config
+    from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from libre_pythonista_lib.cell.props.key_maker import KeyMaker
+    from libre_pythonista_lib.code.cell_cache import CellCache
+    from libre_pythonista_lib.code.py_module import PyModule
+    from libre_pythonista_lib.const.event_const import GBL_DOC_CLOSING
+    from libre_pythonista_lib.event.shared_event import SharedEvent
+    from libre_pythonista_lib.log.log_inst import LogInst
+    from libre_pythonista_lib.utils.gen_util import GenUtil
 
 # _MOD_DIR = "librepythonista"
 
@@ -141,7 +144,7 @@ class PySource:
     def is_error(self) -> bool:
         key = "error"
         if key in self._dd_data:
-            return self._dd_data.error
+            return self._dd_data.error  # type: ignore
         return False
 
     @property
@@ -216,7 +219,7 @@ class PySourceManager(EventsPartial):
                 continue
 
             cells = cc.code_cells[sheet.sheet_index]
-            for cell in cells.keys():
+            for cell in cells:
                 calc_cell = sheet[cell]
                 if not calc_cell.has_custom_property(code_prop_name):
                     continue

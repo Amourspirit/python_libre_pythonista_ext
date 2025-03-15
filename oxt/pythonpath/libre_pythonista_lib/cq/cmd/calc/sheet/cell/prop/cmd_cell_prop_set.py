@@ -5,6 +5,7 @@ from ooodev.utils.gen_util import NULL_OBJ
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcCell
+    from oxt.pythonpath.libre_pythonista_lib.utils.null import NULL
     from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_cell_prop_value import QryCellPropValue
@@ -12,6 +13,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.cmd_cell_t import CmdCellT
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
 else:
+    from libre_pythonista_lib.utils.null import NULL
     from libre_pythonista_lib.utils.custom_ext import override
     from libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_cell_prop_value import QryCellPropValue
@@ -33,7 +35,7 @@ class CmdCellPropSet(CmdBase, LogMixin, CmdCellT):
         self._current_value = NULL_OBJ
 
     def _get_current_value(self) -> Any:  # noqa: ANN401
-        qry = QryCellPropValue(cell=self._cell, name=self._name)
+        qry = QryCellPropValue(cell=self._cell, name=self._name, default=NULL)
         return self._execute_qry(qry)  # returns NULL_OBJ if not found
 
     @override
@@ -53,7 +55,11 @@ class CmdCellPropSet(CmdBase, LogMixin, CmdCellT):
     def _undo(self) -> None:
         if self._current_value is not NULL_OBJ:
             try:
-                self._cell.set_custom_property(self._name, self._current_value)
+                if self._current_value is NULL:
+                    if self._cell.has_custom_property(self._name):
+                        self._cell.remove_custom_property(self._name)
+                else:
+                    self._cell.set_custom_property(self._name, self._current_value)
                 self.log.debug("Successfully executed undo command.")
             except Exception:
                 self.log.exception("Error undoing cell Code")

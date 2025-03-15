@@ -6,7 +6,6 @@ import types
 
 if TYPE_CHECKING:
     from oxt.___lo_pip___.debug.break_mgr import BreakMgr
-    from oxt.___lo_pip___.oxt_logger.oxt_logger import OxtLogger
     from oxt.pythonpath.libre_pythonista_lib.code.rules.assign import Assign
     from oxt.pythonpath.libre_pythonista_lib.code.rules.code_empty import CodeEmpty
     from oxt.pythonpath.libre_pythonista_lib.code.rules.code_rule_t import CodeRuleT
@@ -16,11 +15,11 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.code.rules.lp_fn_plot_assign import LpFnPlotAssign
     from oxt.pythonpath.libre_pythonista_lib.code.rules.lp_fn_plot_expr import LpFnPlotExpr
     from oxt.pythonpath.libre_pythonista_lib.code.rules.underscore import Underscore
+    from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
 
     break_mgr = BreakMgr()
 else:
     from ___lo_pip___.debug.break_mgr import BreakMgr
-    from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
     from libre_pythonista_lib.code.rules.assign import Assign
     from libre_pythonista_lib.code.rules.code_empty import CodeEmpty
     from libre_pythonista_lib.code.rules.expr import Expr
@@ -29,12 +28,13 @@ else:
     from libre_pythonista_lib.code.rules.lp_fn_plot_assign import LpFnPlotAssign
     from libre_pythonista_lib.code.rules.lp_fn_plot_expr import LpFnPlotExpr
     from libre_pythonista_lib.code.rules.underscore import Underscore
+    from libre_pythonista_lib.log.log_mixin import LogMixin
 
     break_mgr = BreakMgr()
     break_mgr.add_breakpoint("libre_pythonista_lib.code.rules.code_rules.get_matched_rule")
 
 
-class CodeRules:
+class CodeRules(LogMixin):
     """Manages rules for Versions"""
 
     def __init__(self, auto_register: bool = True) -> None:
@@ -44,7 +44,7 @@ class CodeRules:
         Args:
             auto_register (bool, optional): Determines if know rules are automatically registered. Defaults to True.
         """
-        self._log = OxtLogger(log_name=self.__class__.__name__)
+        LogMixin.__init__(self)
         self._rules: List[CodeRuleT] = []
         if auto_register:
             self._register_known_rules()
@@ -76,11 +76,11 @@ class CodeRules:
         Args:
             rule (CodeRuleT): Rule to register
         """
-        with self._log.indent(True):
+        with self.log.indent(True):
             if rule in self._rules:
-                self._log.debug("CodeRules - add_rule() Rule Already added: %s", rule)
+                self.log.debug("CodeRules - add_rule() Rule Already added: %s", rule)
                 return
-            self._log.debug("CodeRules - add_rule() Adding Rule %s", rule)
+            self.log.debug("CodeRules - add_rule() Adding Rule %s", rule)
             self._reg_rule(rule=rule)
 
     def add_rule_at(self, index: int, rule: CodeRuleT) -> None:
@@ -91,11 +91,11 @@ class CodeRules:
             index (int): Index to insert rule
             rule (CodeRuleT): Rule to register
         """
-        with self._log.indent(True):
+        with self.log.indent(True):
             if rule in self._rules:
-                self._log.debug("CodeRules - add_rule_at() Rule Already added: %s", rule)
+                self.log.debug("CodeRules - add_rule_at() Rule Already added: %s", rule)
                 return
-            self._log.debug("CodeRules - add_rule_at() Inserting : %s at index: %i", rule, index)
+            self.log.debug("CodeRules - add_rule_at() Inserting : %s at index: %i", rule, index)
             self._rules.insert(index, rule)
 
     def remove_rule(self, rule: CodeRuleT) -> None:
@@ -108,13 +108,13 @@ class CodeRules:
         Raises:
             ValueError: If an error occurs
         """
-        with self._log.indent(True):
+        with self.log.indent(True):
             try:
                 self._rules.remove(rule)
-                self._log.debug("CodeRules - remove_rule() Removed rule: %s", rule)
+                self.log.debug("CodeRules - remove_rule() Removed rule: %s", rule)
             except ValueError as e:
                 msg = f"{self.__class__.__name__}.unregister_rule() Unable to unregister rule."
-                self._log.error(msg)
+                self.log.error(msg)
                 raise ValueError(msg) from e
 
     def remove_rule_at(self, index: int) -> None:
@@ -127,13 +127,13 @@ class CodeRules:
         Raises:
             ValueError: If an error occurs
         """
-        with self._log.indent(True):
+        with self.log.indent(True):
             try:
                 del self._rules[index]
-                self._log.debug("CodeRules - remove_rule() Removed rule at index: %i", index)
+                self.log.debug("CodeRules - remove_rule() Removed rule at index: %i", index)
             except IndexError as e:
                 msg = f"{self.__class__.__name__}.unregister_rule() Unable to unregister rule."
-                self._log.error(msg)
+                self.log.error(msg)
                 raise ValueError(msg) from e
 
     def _reg_rule(self, rule: CodeRuleT) -> None:
@@ -162,12 +162,12 @@ class CodeRules:
             List[CodeRuleT]: List of matched rules
         """
         break_mgr.check_breakpoint("libre_pythonista_lib.code.rules.code_rules.get_matched_rule")
-        with self._log.indent(True):
+        with self.log.indent(True):
             found_rule = None
             for rule in self._rules:
                 rule.set_values(mod, code, ast_mod)
                 if rule.get_is_match():
-                    self._log.debug("CodeRules - get_matched_rule() found match rule: %s", rule)
+                    self.log.debug("CodeRules - get_matched_rule() found match rule: %s", rule)
                     found_rule = rule
                     break
                 rule.reset()

@@ -13,6 +13,8 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
+    from oxt.pythonpath.libre_pythonista_lib.kind.ctl_kind import CtlKind
+    from oxt.pythonpath.libre_pythonista_lib.kind.ctl_prop_kind import CtlPropKind
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.cmd_cell_ctl_t import CmdCellCtlT
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl import Ctl
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.shape.cmd_shape_prop import CmdShapeProp
@@ -23,6 +25,8 @@ else:
     from libre_pythonista_lib.utils.custom_ext import override
     from libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from libre_pythonista_lib.log.log_mixin import LogMixin
+    from libre_pythonista_lib.kind.ctl_kind import CtlKind
+    from libre_pythonista_lib.kind.ctl_prop_kind import CtlPropKind
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.cmd_cell_ctl_t import CmdCellCtlT
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl import Ctl
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.shape.cmd_shape_prop import CmdShapeProp
@@ -56,9 +60,16 @@ class CmdSimple(CmdBase, LogMixin, CmdCellCtlT):
                 return False
         return True
 
+    def _set_control_kind(self) -> None:
+        self._ctl.control_kind = CtlKind.SIMPLE_CTL
+
     def _set_control_props(self) -> None:
-        """Sets the control properties"""
-        pass
+        self._ctl.ctl_props = (
+            CtlPropKind.CTL_SHAPE,
+            CtlPropKind.CTL_ORIG,
+            CtlPropKind.PYC_RULE,
+            CtlPropKind.MODIFY_TRIGGER_EVENT,
+        )
 
     def _set_ctl_script(self, ctl: FormCtlBase) -> None:
         """Sets the location of the control"""
@@ -107,6 +118,7 @@ class CmdSimple(CmdBase, LogMixin, CmdCellCtlT):
         self._state_changed = False
         try:
             self._insert_control()
+            self._set_control_kind()
             self._set_control_props()
             self._state_changed = True
         except Exception:

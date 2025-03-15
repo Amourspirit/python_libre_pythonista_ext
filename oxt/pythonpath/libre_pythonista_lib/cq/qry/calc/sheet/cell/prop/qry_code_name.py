@@ -19,7 +19,7 @@ else:
 
 
 class QryCodeName(QryBase, QryCellT[str]):
-    """Gets the code name of the cell such as ``id_l6fiSBIiNVcncf``"""
+    """Gets the code name of the cell such as ``id_l6fiSBIiNVcncf`` or empty string if not exists."""
 
     def __init__(self, cell: CalcCell) -> None:
         QryBase.__init__(self)

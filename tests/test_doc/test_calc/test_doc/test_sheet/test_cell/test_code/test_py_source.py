@@ -56,6 +56,7 @@ def test_py_src(build_setup, loader) -> None:
         assert py_src.col == 0
         assert py_src.row == 0
         assert py_src.sheet_idx == 0
+        assert py_src.uri_info.unique_id == sheet_unique_id
 
         src_code = "print('World')"
         py_src.source_code = src_code

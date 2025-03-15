@@ -6,14 +6,14 @@ if __name__ == "__main__":
     pytest.main([__file__])
 
 if TYPE_CHECKING:
-    from .....build.pythonpath.libre_pythonista_lib.code.py_module import PyModule
+    from oxt.pythonpath.libre_pythonista_lib.code.py_module import PyModule
 
 
 def test_lp_cell(py_mod: PyModule) -> None:
     from ooodev.utils.helper.dot_dict import DotDict
 
     if TYPE_CHECKING:
-        from .....build.pythonpath.libre_pythonista_lib.code.rules.lp_fn_assign import LpFnAssign
+        from oxt.pythonpath.libre_pythonista_lib.code.rules.lp_fn_assign import LpFnAssign
     else:
         from libre_pythonista_lib.code.rules.lp_fn_assign import LpFnAssign
 
@@ -44,7 +44,7 @@ def test_lp_range(py_mod: PyModule) -> None:
     from ooodev.utils.helper.dot_dict import DotDict
 
     if TYPE_CHECKING:
-        from .....build.pythonpath.libre_pythonista_lib.code.rules.lp_fn_assign import LpFnAssign
+        from oxt.pythonpath.libre_pythonista_lib.code.rules.lp_fn_assign import LpFnAssign
     else:
         from libre_pythonista_lib.code.rules.lp_fn_assign import LpFnAssign
 
@@ -75,7 +75,7 @@ def test_lp_range_headers(py_mod: PyModule) -> None:
     from ooodev.utils.helper.dot_dict import DotDict
 
     if TYPE_CHECKING:
-        from .....build.pythonpath.libre_pythonista_lib.code.rules.lp_fn_assign import LpFnAssign
+        from oxt.pythonpath.libre_pythonista_lib.code.rules.lp_fn_assign import LpFnAssign
     else:
         from libre_pythonista_lib.code.rules.lp_fn_assign import LpFnAssign
 
@@ -120,7 +120,7 @@ def test_lp_df(py_mod: PyModule, import_available) -> None:  # noqa: ANN001
     import pandas as pd
 
     if TYPE_CHECKING:
-        from .....build.pythonpath.libre_pythonista_lib.code.rules.lp_fn_assign import LpFnAssign
+        from oxt.pythonpath.libre_pythonista_lib.code.rules.lp_fn_assign import LpFnAssign
     else:
         from libre_pythonista_lib.code.rules.lp_fn_assign import LpFnAssign
 

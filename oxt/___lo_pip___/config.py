@@ -854,7 +854,7 @@ class Config(metaclass=Singleton):
         """
         Gets the custom property code name for cells.
 
-        The value for this property can be set in pyproject.toml (tool.libre_pythonista.config)
+        The value for this property is generated in the build process.
         """
         return self._basic_config.cell_cp_codename
 
