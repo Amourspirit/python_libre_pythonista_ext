@@ -33,6 +33,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.general.cmd_batch import CmdBatch
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_is_deleted import QryCellIsDeleted
     from oxt.pythonpath.libre_pythonista_lib.code.py_module_state import PyModuleState
+    from oxt.pythonpath.libre_pythonista_lib.code.py_module_t import PyModuleT
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.const import (
         PYTHON_BEFORE_ADD_SRC_CODE,
         PYTHON_AFTER_ADD_SRC_CODE,
@@ -65,6 +66,7 @@ else:
     from libre_pythonista_lib.cq.qry.calc.doc.qry_lp_cells import QryLpCells
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_is_deleted import QryCellIsDeleted
     from libre_pythonista_lib.code.py_module_state import PyModuleState
+    from libre_pythonista_lib.code.py_module_t import PyModuleT
     from libre_pythonista_lib.doc.calc.const import (
         PYTHON_BEFORE_ADD_SRC_CODE,
         PYTHON_AFTER_ADD_SRC_CODE,
@@ -92,19 +94,23 @@ class PySourceManager(LogMixin):
     All public facing methods are in the format of (col, row) for cell address because this is how it normally is in Calc.
     """
 
-    def __new__(cls, doc: CalcDoc, src_provider: PySrcProvider | None = None) -> PySourceManager:
+    def __new__(cls, doc: CalcDoc, mod: PyModuleT, src_provider: PySrcProvider | None = None) -> PySourceManager:
         gbl_cache = DocGlobals.get_current(doc.runtime_uid)
-        if _KEY in gbl_cache.mem_cache:
-            return gbl_cache.mem_cache[_KEY]
+        mod_id = id(mod)
+        key = f"{_KEY}_{mod_id}"
+        if src_provider is not None:
+            key = f"{key}_{id(src_provider)}"
+        if key in gbl_cache.mem_cache:
+            return gbl_cache.mem_cache[key]
 
         inst = super().__new__(cls)
         inst._is_init = False
 
-        gbl_cache.mem_cache[_KEY] = inst
+        gbl_cache.mem_cache[key] = inst
         return inst
 
     # region Init
-    def __init__(self, doc: CalcDoc, src_provider: PySrcProvider | None = None) -> None:
+    def __init__(self, doc: CalcDoc, mod: PyModuleT, src_provider: PySrcProvider | None = None) -> None:
         if getattr(self, "_is_init", False):
             return
         LogMixin.__init__(self)
@@ -114,15 +120,12 @@ class PySourceManager(LogMixin):
         self._shared_event = SharedEvent(doc)
         self._qry_handler = QryHandlerFactory.get_qry_handler()
         self._cmd_handler = CmdHandlerFactory.get_cmd_handler()
-        self._state = PyModuleState()
+        self._state_history = PyModuleState(mod)
 
         self.log.debug("Init")
         self._sfa = Sfa()
 
         self._root_uri = self._qry_root_uri()
-        # if not self._sfa.exists(self._root_uri):
-        #     self._sfa.inst.create_folder(self._root_uri)
-        # self._mod = PyModule()
         self._data = self._get_sources()
         self._se = SharedEvent(doc)
         self._se.trigger_event("PySourceManagerCreated", EventArgs(self))
@@ -150,6 +153,10 @@ class PySourceManager(LogMixin):
 
     def _qry_cell_uri(self, cell: CalcCell) -> str:
         qry = QryCellUri(cell=cell)
+        return self._qry_handler.handle(qry)
+
+    def _qry_py_source(self, uri: str, cell: CalcCell) -> PySource:
+        qry = QryCellPySource(uri=uri, cell=cell, src_provider=self._src_provider)
         return self._qry_handler.handle(qry)
 
     def is_src_folder_exists(self) -> bool:
@@ -185,7 +192,7 @@ class PySourceManager(LogMixin):
                     continue
                 if not self._sfa.exists(uri):
                     continue
-                sources.append(PySource(uri=uri, cell=cell, src_provider=self._src_provider))
+                sources.append(self._qry_py_source(uri=uri, cell=calc_cell))
 
             sources.sort()
             result = SortedDict()
@@ -403,9 +410,10 @@ class PySourceManager(LogMixin):
         sheet = self._doc.sheets[sheet_idx]
         calc_cell = sheet[cell_obj]
 
-        py_source_qry = QryCellPySource(uri=uri, cell=calc_cell, src_provider=self._src_provider)
-        py_source_obj = self._qry_handler.handle(py_source_qry)
-        py_src = py_source_obj.copy()
+        py_src = self._qry_py_source(uri=uri, cell=calc_cell)
+        # do not make a copy, at least without clearing the cache. It would be a different version then the cached version
+        # py_src = py_source_obj.copy()
+        # py_src = py_source_obj
 
         self._data[code_cell] = py_src
         index = self.get_index(cell_obj)
@@ -563,7 +571,7 @@ class PySourceManager(LogMixin):
             name (str): Variable name.
             value (Any): Variable value.
         """
-        self._state.set_global_var(name, value)
+        self._state_history.set_global_var(name, value)
 
     def get_index(self, cell: CellObj) -> int:
         """
@@ -628,7 +636,7 @@ class PySourceManager(LogMixin):
         self.set_global_var("CURRENT_CELL_ID", py_src.uri_info.unique_id)
         self.set_global_var("CURRENT_CELL_OBJ", cell_obj)
 
-        result = self._state.update_with_result(calc_cell, py_src.source_code)
+        result = self._state_history.update_with_result(calc_cell, py_src.source_code)
         result.py_src = py_src
         py_src.dd_data = result
 
@@ -647,7 +655,7 @@ class PySourceManager(LogMixin):
         Triggers ``BeforeSourceUpdate`` and ``AfterSourceUpdate`` events.
         """
         self.log.debug("update_all() Entered.")
-        self._state.reset_module()
+        self._state_history.reset_module()
         for key in self._data:
             co = CellObj.from_idx(col_idx=key[2], row_idx=key[1], sheet_idx=key[0])
             py_src = self[co]
@@ -712,7 +720,7 @@ class PySourceManager(LogMixin):
         else:
             self.log.debug("update_from_index(%i). Is not last index. Resetting module to py_src dict.", index)
             calc_cell = self.convert_cell_obj_to_calc_cell(co)
-            self._state.reset_to_cell(calc_cell)
+            self._state_history.rollback_to_state(calc_cell)
         for i in range(index, length):
             key = keys[i]  # tuple in row, col format
             cell_obj = CellObj.from_idx(col_idx=key[2], row_idx=key[1], sheet_idx=key[0])
@@ -725,5 +733,13 @@ class PySourceManager(LogMixin):
     @property
     def sfa(self) -> Sfa:
         return self._sfa
+
+    @property
+    def state_history(self) -> PyModuleState:
+        return self._state_history
+
+    @property
+    def src_provider(self) -> PySrcProvider | None:
+        return self._src_provider
 
     # endregion Properties

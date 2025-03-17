@@ -14,26 +14,24 @@ if TYPE_CHECKING:
     from oxt.___lo_pip___.debug.break_mgr import BreakMgr
     from oxt.pythonpath.libre_pythonista_lib.cell.errors.general_error import GeneralError
     from oxt.pythonpath.libre_pythonista_lib.code.mod_helper.lplog import LpLog as LibrePythonistaLog
+    from oxt.pythonpath.libre_pythonista_lib.code.py_module_t import PyModuleT
     from oxt.pythonpath.libre_pythonista_lib.code.rules.code_rules import CodeRules
-    from oxt.pythonpath.libre_pythonista_lib.doc.doc_globals import DocGlobals
-    from oxt.pythonpath.libre_pythonista_lib.utils import str_util
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
+    from oxt.pythonpath.libre_pythonista_lib.utils import str_util
 
     break_mgr = BreakMgr()
 else:
     from ___lo_pip___.debug.break_mgr import BreakMgr
     from libre_pythonista_lib.cell.errors.general_error import GeneralError
     from libre_pythonista_lib.code.mod_helper.lplog import LpLog as LibrePythonistaLog
+    from libre_pythonista_lib.code.py_module_t import PyModuleT
     from libre_pythonista_lib.code.rules.code_rules import CodeRules
-    from libre_pythonista_lib.doc.doc_globals import DocGlobals
-    from libre_pythonista_lib.utils import str_util
     from libre_pythonista_lib.log.log_mixin import LogMixin
+    from libre_pythonista_lib.utils import str_util
 
     break_mgr = BreakMgr()
     # break_mgr.add_breakpoint("libre_pythonista_lib.code.py_module.init")
     break_mgr.add_breakpoint("libre_pythonista_lib.code.py_module.execute_code")
-
-_KEY = "pythonpath.libre_pythonista_lib.code.py_module.PyModule"
 
 
 def is_pytest_running() -> bool:
@@ -95,21 +93,8 @@ def get_module_init_code() -> str:
     return "\n".join(lines)
 
 
-class PyModule(LogMixin):
-    def __new__(cls) -> PyModule:
-        gbl_cache = DocGlobals.get_current()
-        if _KEY in gbl_cache.mem_cache:
-            return gbl_cache.mem_cache[_KEY]
-
-        inst = super().__new__(cls)
-        inst._is_init = False
-
-        gbl_cache.mem_cache[_KEY] = inst
-        return inst
-
+class PyModule(LogMixin, PyModuleT):
     def __init__(self) -> None:
-        if getattr(self, "_is_init", False):
-            return
         LogMixin.__init__(self)
         break_mgr.check_breakpoint("libre_pythonista_lib.code.py_module.init")
         self._is_py_test_running = is_pytest_running()
@@ -141,6 +126,10 @@ class PyModule(LogMixin):
         except Exception:
             self.log.exception("Error initializing module")
             raise
+
+    def copy_dict(self) -> Dict[str, Any]:
+        """Returns a copy of the module dictionary."""
+        return self.mod.__dict__.copy()
 
     def _execute_init_code(self, code_snippet: str, globals: dict | None = None) -> Any:  # noqa: ANN401
         """
@@ -262,15 +251,6 @@ class PyModule(LogMixin):
             # traceback.print_exc()
             return None
 
-    def reset_module(self) -> None:
-        with self.log.indent(True):
-            self.log.debug("reset_module()")
-        self.mod.__dict__.clear()
-        self.mod.__dict__.update(self._init_dict)
-        self._current_ast_mod = None
-        with self.log.indent(True):
-            self.log.debug("reset_module() done.")
-
     def update_with_result(self, code: str = "") -> DotDict[Any]:
         """
         Appends code to current module and returns the last variable in the module.
@@ -284,15 +264,14 @@ class PyModule(LogMixin):
         Note:
             If there is an error the result will be a DotDict with ``data=GeneralError(e)`` and ``error=True`` the error.
         """
-        with self.log.indent(True):
-            self.log.debug("update_with_result() Entered.")
-        try:
-            code = str_util.remove_comments(code)
-            code = str_util.clean_string(code)
-            # self._log.debug(f"Cleaned code. \n{code}")
-        except Exception:
-            self.log.exception("Error cleaning code: %s", code)
-            raise
+        self.log.debug("update_with_result() Entered.")
+        # try:
+        #     code = str_util.remove_comments(code)
+        #     code = str_util.clean_string(code)
+        #     # self._log.debug(f"Cleaned code. \n{code}")
+        # except Exception:
+        #     self.log.exception("Error cleaning code: %s", code)
+        #     raise
 
         result = None
         self._current_match_rule = None  # used for testing
@@ -316,26 +295,25 @@ class PyModule(LogMixin):
             return result
         # other exceptions can be caught and new error classes can be created.
         except Exception as e:
-            with self.log.indent(True):
+            try:
+                # result will be assigned to the py_source.value Other rules for the cell will handle this.
+                result = DotDict(data=GeneralError(e), error=True)
                 try:
-                    # result will be assigned to the py_source.value Other rules for the cell will handle this.
-                    result = DotDict(data=GeneralError(e), error=True)
-                    try:
-                        lp_log_inst = LibrePythonistaLog()
-                        ps_log = lp_log_inst.log
-                        if lp_log_inst.log_extra_info:
-                            ps_log.error("Error updating module.\n%s\n", code, exc_info=True)
-                        else:
-                            ps_log.error("%s", e)
-                    except Exception as e:
-                        self.log.error("LibrePythonistaLog error", exc_info=True)
-                    if self.log.is_debug:
-                        self.log.warning("Error updating module. Result set to %s.\n%s\n", result, code, exc_info=True)
+                    lp_log_inst = LibrePythonistaLog()
+                    ps_log = lp_log_inst.log
+                    if lp_log_inst.log_extra_info:
+                        ps_log.error("Error updating module.\n%s\n", code, exc_info=True)
                     else:
-                        self.log.warning("Error updating module. Result set to %s.\n", result, exc_info=True)
-                except Exception:
-                    self.log.exception("update_with_result() Error updating module.\n%s\n", code)
-                    raise
+                        ps_log.error("%s", e)
+                except Exception as e:
+                    self.log.error("LibrePythonistaLog error", exc_info=True)
+                if self.log.is_debug:
+                    self.log.warning("Error updating module. Result set to %s.\n%s\n", result, code, exc_info=True)
+                else:
+                    self.log.warning("Error updating module. Result set to %s.\n", result, exc_info=True)
+            except Exception:
+                self.log.exception("update_with_result() Error updating module.\n%s\n", code)
+                raise
         return result
 
     def set_global_var(self, var_name: str, value: Any) -> None:  # noqa: ANN401
@@ -346,11 +324,10 @@ class PyModule(LogMixin):
             var_name (str): The name of the variable
             value (Any): The value of the variable
         """
-        if self.log.is_debug:
-            with self.log.indent(True):
-                self.log.debug("set_global_var(%s, %s)", var_name, value)
+        self.log.debug("set_global_var(%s, %s)", var_name, value)
         if var_name == "CURRENT_CELL_OBJ":
             self.mod.__dict__["lp_mod"].CURRENT_CELL_OBJ = value
+            self.mod.__dict__[var_name] = value
             return
         self.mod.__dict__[var_name] = value
         self.mod.__dict__["_"] = value
@@ -367,8 +344,7 @@ class PyModule(LogMixin):
             Any: If there is code the last variable in the module if any; Otherwise, None.
         """
 
-        with self.log.indent(True):
-            self.log.debug("reset_to_dict()")
+        self.log.debug("reset_to_dict()")
         self.mod.__dict__.clear()
         self.mod.__dict__.update(mod_dict)
         self._current_ast_mod = None
@@ -383,6 +359,14 @@ class PyModule(LogMixin):
         rule = self._cr.get_matched_rule(self.mod, code, self._current_ast_mod)
         result = rule.get_value()
         rule.reset()
-        with self.log.indent(True):
-            self.log.debug("reset_to_dict() done.")
+        self.log.debug("reset_to_dict() done.")
         return result
+
+    def reset_module(self) -> None:
+        """Reset the module to its initial state."""
+        self.log.debug("reset_module()")
+        self.mod.__dict__.clear()
+        self.mod.__dict__.update(self._init_dict)
+        self._current_ast_mod = None
+        with self.log.indent(True):
+            self.log.debug("reset_module() done.")
