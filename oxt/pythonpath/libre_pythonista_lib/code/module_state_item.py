@@ -13,3 +13,70 @@ class ModuleStateItem:
         self.mod_dict = mod_dict
         self.runtime_uid = runtime_uid
         self.dd_data = DotDict(data=self.mod_dict.get("_"), cell_obj=cell_obj.copy(), runtime_uid=runtime_uid)
+
+    def __lt__(self, other: object) -> bool:
+        """
+        Enables sorting ModuleStateItem objects by cell_obj.
+
+        Args:
+            other (Any): Object to compare with
+
+        Returns:
+            bool: True if self is less than other, False otherwise
+        """
+        if isinstance(other, ModuleStateItem):
+            return self.cell_obj < other.cell_obj
+        return NotImplemented
+
+    def __gt__(self, other: object) -> bool:
+        """
+        Enables sorting ModuleStateItem objects by cell_obj.
+
+        Args:
+            other (Any): Object to compare with
+
+        Returns:
+            bool: True if self is greater than other, False otherwise
+        """
+        if isinstance(other, ModuleStateItem):
+            return self.cell_obj > other.cell_obj
+        return NotImplemented
+
+    def __le__(self, other: object) -> bool:
+        """
+        Enables sorting ModuleStateItem objects by cell_obj.
+
+        Args:
+            other (Any): Object to compare with
+
+        Returns:
+            bool: True if self is less than or equal to other, False otherwise
+        """
+        if isinstance(other, ModuleStateItem):
+            return self.cell_obj <= other.cell_obj
+        return NotImplemented
+
+    def __ge__(self, other: object) -> bool:
+        """
+        Enables sorting ModuleStateItem objects by cell_obj.
+
+        Args:
+            other (Any): Object to compare with
+
+        Returns:
+            bool: True if self is greater than or equal to other, False otherwise
+        """
+        if isinstance(other, ModuleStateItem):
+            return self.cell_obj >= other.cell_obj
+        return NotImplemented
+
+    def __repr__(self) -> str:
+        return f"<ModuleStateItem({self.cell_obj})>"
+
+    def __str__(self) -> str:
+        return f"<ModuleStateItem({self.cell_obj})>"
+
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, ModuleStateItem):
+            return self.cell_obj == other.cell_obj
+        return NotImplemented

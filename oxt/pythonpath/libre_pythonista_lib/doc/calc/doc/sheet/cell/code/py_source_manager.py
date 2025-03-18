@@ -34,6 +34,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.general.cmd_batch import CmdBatch
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_is_deleted import QryCellIsDeleted
     from oxt.pythonpath.libre_pythonista_lib.code.py_module_state import PyModuleState
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.state.qry_module_state import QryModuleState
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.state.qry_module_state_last_item import (
         QryModuleStateLastItem,
     )
@@ -71,6 +72,7 @@ else:
     from libre_pythonista_lib.cq.qry.calc.doc.qry_lp_cells import QryLpCells
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_is_deleted import QryCellIsDeleted
     from libre_pythonista_lib.code.py_module_state import PyModuleState
+    from libre_pythonista_lib.cq.qry.calc.sheet.cell.state.qry_module_state import QryModuleState
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.state.qry_module_state_last_item import QryModuleStateLastItem
     from libre_pythonista_lib.code.py_module_t import PyModuleT
     from libre_pythonista_lib.doc.calc.const import (
@@ -165,8 +167,14 @@ class PySourceManager(LogMixin):
         qry = QryCellPySource(uri=uri, cell=cell, src_provider=self._src_provider)
         return self._qry_handler.handle(qry)
 
-    def _qry_last_module_state_item(self) -> ModuleStateItem | None:
+    def qry_last_module_state_item(self) -> ModuleStateItem | None:
+        """Returns the last module state item or None if empty."""
         qry = QryModuleStateLastItem(mod=self._state_history.mod)
+        return self._qry_handler.handle(qry)
+
+    def qry_module_state_item(self, cell: CalcCell) -> ModuleStateItem | None:
+        """Returns the last module state item or None if empty."""
+        qry = QryModuleState(cell=cell, mod=self.mod)
         return self._qry_handler.handle(qry)
 
     def is_src_folder_exists(self) -> bool:
@@ -662,7 +670,6 @@ class PySourceManager(LogMixin):
 
         result = self._state_history.update_with_result(calc_cell, py_src.source_code)
         result.py_src = py_src
-        py_src.dd_data = result
 
         eargs = EventArgs.from_args(cargs)
         eargs.event_data["result"] = result

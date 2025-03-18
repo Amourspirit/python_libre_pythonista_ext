@@ -28,13 +28,27 @@ def py_source_manager(loader, build_setup) -> Any:
 def test_add_source(py_source_manager: PySourceManager) -> None:
     from ooodev.utils.data_type.cell_obj import CellObj
 
+    if TYPE_CHECKING:
+        from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
+        from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.state.qry_module_state_last_item import (
+            QryModuleStateLastItem,
+        )
+    else:
+        from libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
+        from libre_pythonista_lib.cq.qry.calc.sheet.cell.state.qry_module_state_last_item import QryModuleStateLastItem
+
     # Test adding source code to a cell
+    qry_handler = QryHandlerFactory.get_qry_handler()
     code = "x = 42\nprint(x)"
     cell_obj = CellObj.from_idx(col_idx=0, row_idx=0, sheet_idx=0)
 
     py_source_manager.add_source(code, cell_obj)
-    py_src = py_source_manager[cell_obj]
-    assert py_src.dd_data.data is None
+    # py_src = py_source_manager[cell_obj]
+    qry = QryModuleStateLastItem(py_source_manager.mod)
+    state = qry_handler.handle(qry)
+    assert state is not None
+    assert state.cell_obj == cell_obj
+    assert state.dd_data.data is None
 
     # Verify source was added
     assert cell_obj in py_source_manager
@@ -44,12 +58,22 @@ def test_add_source(py_source_manager: PySourceManager) -> None:
 def test_update_source(py_source_manager: PySourceManager) -> None:
     from ooodev.utils.data_type.cell_obj import CellObj
 
+    if TYPE_CHECKING:
+        from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.state.qry_module_state_last_item import (
+            QryModuleStateLastItem,
+        )
+    else:
+        from libre_pythonista_lib.cq.qry.calc.sheet.cell.state.qry_module_state_last_item import QryModuleStateLastItem
+
     # First add source
     initial_code = "x = 42"
     cell_obj = CellObj.from_idx(col_idx=0, row_idx=0, sheet_idx=0)
     py_source_manager.add_source(initial_code, cell_obj)
     py_src = py_source_manager[cell_obj]
-    assert py_src.dd_data.data == 42
+    state = py_source_manager.qry_last_module_state_item()
+    assert state is not None
+    assert state.cell_obj == cell_obj
+    assert state.dd_data.data == 42
 
     # Update the source
     updated_code = "x = 100"
@@ -57,34 +81,30 @@ def test_update_source(py_source_manager: PySourceManager) -> None:
 
     # Verify source was updated
     assert py_source_manager[cell_obj].source_code == updated_code
-    assert py_src.dd_data.data == 100
+    state = py_source_manager.qry_last_module_state_item()
+    assert state is not None
+    assert state.cell_obj == cell_obj
+    assert state.dd_data.data == 100
 
     cell_obj2 = CellObj.from_idx(col_idx=1, row_idx=0, sheet_idx=0)
     code = "y = 10\nz = x + y"
     py_source_manager.add_source(code, cell_obj2)
-
-    assert py_source_manager[cell_obj2].dd_data.data == 110
-    assert py_source_manager[cell_obj].dd_data.data == 100
+    state2 = py_source_manager.qry_last_module_state_item()
+    assert state2 is not None
+    assert state2.dd_data.data == 110
 
 
 def test_path_loc(py_source_manager: PySourceManager) -> None:
     from ooodev.loader import Lo
     from ooodev.utils.data_type.cell_obj import CellObj
 
-    if TYPE_CHECKING:
-        from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
-        from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.state.qry_module_state_last_item import (
-            QryModuleStateLastItem,
-        )
-    else:
+    if not TYPE_CHECKING:
         from ooodev.calc import CalcDoc  # type: ignore
-        from libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
-        from libre_pythonista_lib.cq.qry.calc.sheet.cell.state.qry_module_state_last_item import QryModuleStateLastItem
 
     doc = cast(CalcDoc, Lo.current_doc)
     cell_obj = CellObj.from_idx(col_idx=0, row_idx=0, sheet_idx=0)
-
-    qry_handler = QryHandlerFactory.get_qry_handler()
+    sheet = doc.sheets[0]
+    cell = sheet[cell_obj]
 
     code = """
 from pathlib import Path
@@ -93,15 +113,19 @@ str(Path.cwd())
 
     py_source_manager.add_source(code, cell_obj)
 
-    qry_last = QryModuleStateLastItem(mod=py_source_manager.mod)
-    state = qry_handler.handle(qry_last)
-    assert state is not None
+    state_last = py_source_manager.qry_last_module_state_item()
+    assert state_last is not None
 
     data = (
-        state.dd_data.data
+        state_last.dd_data.data
     )  # something like '/home/paul/Documents/Projects/Python/LibreOffice/python_libre_pythonista_ext'
     assert isinstance(data, str)
     assert data != ""
+
+    state = py_source_manager.qry_module_state_item(cell)
+    assert state is not None
+    assert state == state_last
+    assert state.dd_data.data == data
 
 
 def test_lo_current_cell_obj(py_source_manager: PySourceManager) -> None:
@@ -116,9 +140,13 @@ def test_lo_current_cell_obj(py_source_manager: PySourceManager) -> None:
     # First add source
     initial_code = "x = 42"
     cell_obj = CellObj.from_idx(col_idx=0, row_idx=1, sheet_idx=0)
+    cell = sheet[cell_obj]
     py_source_manager.add_source(initial_code, cell_obj)
     py_src = py_source_manager[cell_obj]
-    assert py_src.dd_data.data == 42
+    state = py_source_manager.qry_module_state_item(cell)
+    assert state is not None
+    assert state.cell_obj == cell_obj
+    assert state.dd_data.data == 42
 
     # Update the source
     updated_code = "x = 100"
@@ -126,14 +154,16 @@ def test_lo_current_cell_obj(py_source_manager: PySourceManager) -> None:
 
     # Verify source was updated
     assert py_source_manager[cell_obj].source_code == updated_code
-    assert py_src.dd_data.data == 100
+    state = py_source_manager.qry_module_state_item(cell)
+    assert state is not None
+    assert state.dd_data.data == 100
 
     cell_obj2 = CellObj.from_idx(col_idx=1, row_idx=1, sheet_idx=0)
     code = "y = 10\nz = x + y"
     py_source_manager.add_source(code, cell_obj2)
-
-    assert py_source_manager[cell_obj2].dd_data.data == 110
-    assert py_source_manager[cell_obj].dd_data.data == 100
+    state2 = py_source_manager.qry_last_module_state_item()
+    assert state2 is not None
+    assert state2.dd_data.data == 110
 
     cell_obj3 = CellObj.from_idx(col_idx=3, row_idx=1, sheet_idx=0)
     code = """
@@ -143,7 +173,9 @@ cell = sheet["A1"]
 cell.value
 """
     py_source_manager.add_source(code, cell_obj3)
-    assert py_source_manager[cell_obj3].dd_data.data == 10
+    state3 = py_source_manager.qry_last_module_state_item()
+    assert state3 is not None
+    assert state3.dd_data.data == 10
 
 
 def test_remove_source(py_source_manager: PySourceManager) -> None:
@@ -169,11 +201,17 @@ def test_get_module_source_code(py_source_manager: PySourceManager) -> None:
     cell2 = CellObj.from_idx(col_idx=1, row_idx=0, sheet_idx=0)
 
     py_source_manager.add_source("x = 42", cell1)
-    py_src1 = py_source_manager[cell1]
-    assert py_src1.dd_data.data == 42
+    state1 = py_source_manager.qry_last_module_state_item()
+    assert state1 is not None
+    assert state1.cell_obj == cell1
+    assert state1.dd_data.data == 42
+
     py_source_manager.add_source("y = x + 10", cell2)
     py_src2 = py_source_manager[cell2]
-    assert py_src2.dd_data.data == 52
+    state2 = py_source_manager.qry_last_module_state_item()
+    assert state2 is not None
+    assert state2.cell_obj == cell2
+    assert state2.dd_data.data == 52
 
     # Get complete module source
     source_code = py_source_manager.get_module_source_code()

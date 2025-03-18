@@ -4,9 +4,7 @@ from dataclasses import dataclass
 from typing import Any, TYPE_CHECKING
 
 from ooodev.utils.data_type.cell_obj import CellObj
-from ooodev.utils.helper.dot_dict import DotDict
 
-# from .cell_code_storage import CellCodeStorage
 
 if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
@@ -126,13 +124,10 @@ class PySource(LogMixin):
         self._src_provider = src_provider
         self._uri = uri
         self._cell_obj = cell
-        # pth = Path(uri)
-        # self._name = pth.stem
         self._row = cell.row - 1
         self._col = cell.col_obj.index
         self._sheet_idx = cell.sheet_idx
         self._uri_info = None
-        self._dd_data = DotDict(data=None, py_src=self)
 
     def __lt__(self, other: object) -> bool:
         """
@@ -252,11 +247,3 @@ class PySource(LogMixin):
         if self._uri_info is None:
             self._uri_info = UrlInfo.from_url(self._uri)
         return self._uri_info
-
-    @property
-    def dd_data(self) -> DotDict:
-        return self._dd_data
-
-    @dd_data.setter
-    def dd_data(self, value: DotDict) -> None:
-        self._dd_data = value
