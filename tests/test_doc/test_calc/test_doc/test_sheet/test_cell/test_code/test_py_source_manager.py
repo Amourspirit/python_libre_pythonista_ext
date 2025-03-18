@@ -72,19 +72,17 @@ def test_path_loc(py_source_manager: PySourceManager) -> None:
     from ooodev.utils.data_type.cell_obj import CellObj
 
     if TYPE_CHECKING:
-        from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.code.qry_cell_py_source import QryCellPySource
-        from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_uri import QryCellUri
         from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
+        from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.state.qry_module_state_last_item import (
+            QryModuleStateLastItem,
+        )
     else:
         from ooodev.calc import CalcDoc  # type: ignore
-        from libre_pythonista_lib.cq.qry.calc.sheet.cell.code.qry_cell_py_source import QryCellPySource
         from libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
-        from libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_uri import QryCellUri
+        from libre_pythonista_lib.cq.qry.calc.sheet.cell.state.qry_module_state_last_item import QryModuleStateLastItem
 
     doc = cast(CalcDoc, Lo.current_doc)
-    sheet = doc.get_active_sheet()
     cell_obj = CellObj.from_idx(col_idx=0, row_idx=0, sheet_idx=0)
-    cell = sheet[cell_obj]
 
     qry_handler = QryHandlerFactory.get_qry_handler()
 
@@ -95,13 +93,12 @@ str(Path.cwd())
 
     py_source_manager.add_source(code, cell_obj)
 
-    qry_uri = QryCellUri(cell)
-    uri = qry_handler.handle(qry_uri)
-    qry_py_src = QryCellPySource(uri=uri, cell=cell, src_provider=py_source_manager.src_provider)
-    py_src = qry_handler.handle(qry_py_src)
+    qry_last = QryModuleStateLastItem(mod=py_source_manager.mod)
+    state = qry_handler.handle(qry_last)
+    assert state is not None
 
     data = (
-        py_src.dd_data.data
+        state.dd_data.data
     )  # something like '/home/paul/Documents/Projects/Python/LibreOffice/python_libre_pythonista_ext'
     assert isinstance(data, str)
     assert data != ""

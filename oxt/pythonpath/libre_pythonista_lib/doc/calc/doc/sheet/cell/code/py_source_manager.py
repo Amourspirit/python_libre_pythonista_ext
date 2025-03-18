@@ -17,6 +17,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source import PySource, PySrcProvider
     from oxt.pythonpath.libre_pythonista_lib.event.shared_event import SharedEvent
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
+    from oxt.pythonpath.libre_pythonista_lib.code.module_state_item import ModuleStateItem
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_uri import QryCellUri
@@ -33,6 +34,9 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.general.cmd_batch import CmdBatch
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_is_deleted import QryCellIsDeleted
     from oxt.pythonpath.libre_pythonista_lib.code.py_module_state import PyModuleState
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.state.qry_module_state_last_item import (
+        QryModuleStateLastItem,
+    )
     from oxt.pythonpath.libre_pythonista_lib.code.py_module_t import PyModuleT
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.const import (
         PYTHON_BEFORE_ADD_SRC_CODE,
@@ -50,6 +54,7 @@ else:
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source import PySource
     from libre_pythonista_lib.event.shared_event import SharedEvent
     from libre_pythonista_lib.log.log_mixin import LogMixin
+    from libre_pythonista_lib.code.module_state_item import ModuleStateItem
     from libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
     from libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_uri import QryCellUri
@@ -66,6 +71,7 @@ else:
     from libre_pythonista_lib.cq.qry.calc.doc.qry_lp_cells import QryLpCells
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_is_deleted import QryCellIsDeleted
     from libre_pythonista_lib.code.py_module_state import PyModuleState
+    from libre_pythonista_lib.cq.qry.calc.sheet.cell.state.qry_module_state_last_item import QryModuleStateLastItem
     from libre_pythonista_lib.code.py_module_t import PyModuleT
     from libre_pythonista_lib.doc.calc.const import (
         PYTHON_BEFORE_ADD_SRC_CODE,
@@ -157,6 +163,10 @@ class PySourceManager(LogMixin):
 
     def _qry_py_source(self, uri: str, cell: CalcCell) -> PySource:
         qry = QryCellPySource(uri=uri, cell=cell, src_provider=self._src_provider)
+        return self._qry_handler.handle(qry)
+
+    def _qry_last_module_state_item(self) -> ModuleStateItem | None:
+        qry = QryModuleStateLastItem(mod=self._state_history.mod)
         return self._qry_handler.handle(qry)
 
     def is_src_folder_exists(self) -> bool:
@@ -306,7 +316,15 @@ class PySourceManager(LogMixin):
 
     # endregion Dunder Methods
     def _is_last_index(self, index: int) -> bool:
+        """Checks if index is the last index."""
         return index == len(self) - 1
+
+    def get_last_item(self) -> PySource | None:
+        """Returns the last item in the source manager or None if empty."""
+        # get the last item in self._data
+        if len(self) == 0:
+            return None
+        return self[list(self._data.keys())[-1]]
 
     def convert_cell_obj_to_tuple(self, cell: CellObj) -> Tuple[int, int, int]:
         """
@@ -357,7 +375,7 @@ class PySourceManager(LogMixin):
 
         Args:
             code (str): Source code
-            cell (Tuple[int, int]): Cell address in column and row.
+            cell_obj (CellObj): Cell object.
 
         Raises:
             Exception: If cell already exists in current data.
@@ -411,9 +429,6 @@ class PySourceManager(LogMixin):
         calc_cell = sheet[cell_obj]
 
         py_src = self._qry_py_source(uri=uri, cell=calc_cell)
-        # do not make a copy, at least without clearing the cache. It would be a different version then the cached version
-        # py_src = py_source_obj.copy()
-        # py_src = py_source_obj
 
         self._data[code_cell] = py_src
         index = self.get_index(cell_obj)
@@ -496,7 +511,7 @@ class PySourceManager(LogMixin):
         - Updates the module to reflect the changes.
 
         Args:
-            cell (Tuple[int, int]): Cell address in row and column.
+            cell_obj (CellObj): Cell object.
         """
         # when removing even if this was the last cell, the module should be reset.
         # It is possible that the cell that is being removed contained code that modified a previous cell.
@@ -527,13 +542,15 @@ class PySourceManager(LogMixin):
 
         cmd_del = CmdCodeNameDel(cell=calc_cell)
         self._cmd_handler.handle(cmd_del)
+        if not cmd_del.success:
+            # not critical if fail.
+            self.log.debug("remove_source() - Failed to delete code name.")
 
         self.log.debug("remove_source() Calling update_all()")
         self.update_all()
 
         eargs = EventArgs.from_args(cargs)
         self._shared_event.trigger_event(PYTHON_AFTER_REMOVE_SOURCE_CODE, eargs)
-        # see: pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.cell_cache.CellCache.on_python_src_code_removed()
         # triggers are in col row format
         self._shared_event.trigger_event(f"{PYTHON_AFTER_REMOVE_SOURCE_CODE}_{col}_{row}", eargs)
         self.log.debug("remove_source() Leaving.")
@@ -562,6 +579,13 @@ class PySourceManager(LogMixin):
         else:
             self.log.error("remove_source_by_calc_cell() - Failed to execute command.")
             return
+
+    def remove_last(self) -> None:
+        """Removes the last item in the source manager."""
+        if len(self) == 0:
+            return
+        cell_obj = self.convert_tuple_to_cell_obj(list(self._data.keys())[-1])
+        self.remove_source(cell_obj)
 
     def set_global_var(self, name: str, value: Any) -> None:  # noqa: ANN401
         """
@@ -741,5 +765,9 @@ class PySourceManager(LogMixin):
     @property
     def src_provider(self) -> PySrcProvider | None:
         return self._src_provider
+
+    @property
+    def mod(self) -> PyModuleT:
+        return self._state_history.mod
 
     # endregion Properties

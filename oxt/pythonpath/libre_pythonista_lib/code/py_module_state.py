@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, Dict, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING
 from collections import OrderedDict
 
 from ooodev.calc import CalcCell
@@ -10,11 +10,13 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.event.shared_event import SharedEvent
     from oxt.pythonpath.libre_pythonista_lib.code.py_module_t import PyModuleT
+    from oxt.pythonpath.libre_pythonista_lib.code.module_state_item import ModuleStateItem
 else:
     from libre_pythonista_lib.doc.doc_globals import DocGlobals
     from libre_pythonista_lib.code.py_module_t import PyModuleT
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.event.shared_event import SharedEvent
+    from libre_pythonista_lib.code.module_state_item import ModuleStateItem
 
 _KEY = "libre_pythonista_lib.code.py_module_state.PyModuleState"
 
@@ -44,6 +46,7 @@ class PyModuleState(LogMixin):
 
         inst = super().__new__(cls)
         inst._is_init = False
+        inst.runtime_uid = gbl_cache.runtime_uid
 
         gbl_cache.mem_cache[key] = inst
         return inst
@@ -61,7 +64,8 @@ class PyModuleState(LogMixin):
         self.log.debug("Init")
         self._shared_event = SharedEvent()
         self._py_mod = mod
-        self._state_history: OrderedDict[str, Dict[str, Any]] = OrderedDict()
+        self.runtime_uid: str
+        self._state_history: OrderedDict[str, ModuleStateItem] = OrderedDict()
         self._max_history_size = 250  # Configurable maximum history size.
         self._is_init = True
 
@@ -69,11 +73,11 @@ class PyModuleState(LogMixin):
         """Returns True if the state history is not empty."""
         return len(self._state_history) > 0
 
-    def __getitem__(self, cell: CalcCell) -> Dict[str, Any]:
+    def __getitem__(self, cell: CalcCell) -> ModuleStateItem:
         """Gets state history for a cell using dictionary syntax."""
         return self._state_history[cell.unique_id]
 
-    def __setitem__(self, cell: CalcCell, value: Dict[str, Any]) -> None:
+    def __setitem__(self, cell: CalcCell, value: ModuleStateItem) -> None:
         """Sets state history for a cell using dictionary syntax."""
         self._state_history[cell.unique_id] = value
 
@@ -115,8 +119,12 @@ class PyModuleState(LogMixin):
             DotDict containing the execution result
         """
         result = self._py_mod.update_with_result(code)
+        state_item = ModuleStateItem(
+            cell_obj=cell.cell_obj, mod_dict=self._py_mod.copy_dict(), runtime_uid=self.runtime_uid
+        )
+        state_item.dd_data.update(result)
         state_key = cell.unique_id
-        self._state_history[state_key] = self._py_mod.copy_dict()
+        self._state_history[state_key] = state_item
         popped = []
         while len(self._state_history) > self._max_history_size:
             popped.append(self._state_history.popitem(last=False))
@@ -153,8 +161,8 @@ class PyModuleState(LogMixin):
         if not cell in self:
             self.log.debug("Cell %s not found in state.", cell.cell_obj)
             return None
-        mod_dict = self[cell]
-        result = self._py_mod.reset_to_dict(mod_dict, code)
+        state_item = self[cell]
+        result = self._py_mod.reset_to_dict(state_item.mod_dict.copy(), code)
         self._remove_state_history_by_cell(cell)
         return result
 
@@ -173,10 +181,18 @@ class PyModuleState(LogMixin):
             self.log.debug("State key '%s' not found in history", state_key)
             return False
 
-        mod_dict = self[cell]
-        _ = self._py_mod.reset_to_dict(mod_dict)
+        state_item = self[cell]
+        _ = self._py_mod.reset_to_dict(state_item.mod_dict.copy())
         self._remove_state_history_by_cell(cell)
         return True
+
+    def get_last_item(self) -> ModuleStateItem | None:
+        """Returns the last item in the state history or None if empty."""
+        # See: cq.qry.calc.sheet.cell.state.qry_module_state_last_item.QryModuleStateLastItem
+        if not self._state_history:
+            return None
+        last_key = list(self._state_history.keys())[-1]
+        return self._state_history[last_key]
 
     @property
     def mod(self) -> PyModuleT:

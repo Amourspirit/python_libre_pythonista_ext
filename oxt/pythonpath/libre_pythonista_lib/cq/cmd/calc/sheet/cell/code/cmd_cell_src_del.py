@@ -3,11 +3,7 @@ from typing import cast, Tuple, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcCell
-    from oxt.pythonpath.libre_pythonista_lib.const.cache_const import (
-        CELL_SRC_CODE,
-        CELL_SRC_CODE_EXIST,
-        CELL_PY_SOURCE,
-    )
+    from oxt.pythonpath.libre_pythonista_lib.const.cache_const import CELL_SRC_CODE, CELL_SRC_CODE_EXIST
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.cmd_cell_cache_t import CmdCellCacheT
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.code.qry_cell_src_code_exist import (
@@ -23,7 +19,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
     from oxt.pythonpath.libre_pythonista_lib.utils.null import NULL
 else:
-    from libre_pythonista_lib.const.cache_const import CELL_SRC_CODE, CELL_SRC_CODE_EXIST, CELL_PY_SOURCE
+    from libre_pythonista_lib.const.cache_const import CELL_SRC_CODE, CELL_SRC_CODE_EXIST
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.cmd_cell_cache_t import CmdCellCacheT
     from libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.code.qry_cell_py_source import QryCellPySource
@@ -168,7 +164,7 @@ class CmdCellSrcDel(CmdBase, LogMixin, CmdCellCacheT):
 
     @property
     def cache_keys(self) -> Tuple[str, ...]:
-        return (CELL_SRC_CODE, CELL_SRC_CODE_EXIST, CELL_PY_SOURCE)
+        return (CELL_SRC_CODE, CELL_SRC_CODE_EXIST)
 
     @property
     def uri(self) -> str:
