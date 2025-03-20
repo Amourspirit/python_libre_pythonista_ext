@@ -12,13 +12,13 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.kind.ctl_kind import CtlKind
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.builder.ctl_builder import CtlBuilder
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.builder.ctl_builder_str import CtlBuilderStr
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.builder.ctl_builder_int import CtlBuilderInt
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.builder.ctl_builder_float import (
         CtlBuilderFloat,
     )
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.builder.ctl_builder import CtlBuilder
 else:
     from libre_pythonista_lib.kind.ctl_kind import CtlKind
-    from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.builder.ctl_builder_str import CtlBuilderStr
 
 # tested in: tests/test_doc/test_calc/test_doc/test_sheet/test_cell/test_ctl/test_ctl_builder_str.py
 
@@ -36,17 +36,21 @@ def _get_control_class(ctl_kind: CtlKind) -> Type[CtlBuilder] | None:
     # Import controls here to avoid circular imports
     if not TYPE_CHECKING:
         from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.builder.ctl_builder_str import CtlBuilderStr
+        from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.builder.ctl_builder_int import CtlBuilderInt
         from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.builder.ctl_builder_float import CtlBuilderFloat
 
     control_map = {
         CtlKind.STRING: CtlBuilderStr,
         CtlKind.FLOAT: CtlBuilderFloat,
+        CtlKind.INTEGER: CtlBuilderInt,
     }
     return control_map.get(ctl_kind)
 
 
 @overload
 def get_builder(calc_cell: CalcCell, ctl_kind: Literal[CtlKind.STRING]) -> CtlBuilderStr: ...
+@overload
+def get_builder(calc_cell: CalcCell, ctl_kind: Literal[CtlKind.INTEGER]) -> CtlBuilderInt: ...
 @overload
 def get_builder(calc_cell: CalcCell, ctl_kind: Literal[CtlKind.FLOAT]) -> CtlBuilderFloat: ...
 @overload

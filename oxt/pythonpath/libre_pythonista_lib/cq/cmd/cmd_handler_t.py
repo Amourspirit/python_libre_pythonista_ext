@@ -24,3 +24,11 @@ class CmdHandlerT(Protocol):
     def redo(self) -> None:
         """Redo the last command"""
         ...
+
+    def undo_all(self) -> None:
+        """Undo all commands"""
+        ...
+
+    def redo_all(self) -> None:
+        """Redo all commands"""
+        ...

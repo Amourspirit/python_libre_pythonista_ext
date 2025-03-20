@@ -415,7 +415,7 @@ class PySourceManager(LogMixin):
             return
         code = cargs.event_data.get("code", code)
 
-        cmd_code_name = CmdCodeName(cell=cell)
+        cmd_code_name = CmdCodeName(cell=cell, overwrite_existing=False)
         self._cmd_handler.handle(cmd_code_name)
         if not cmd_code_name.success:
             self.log.error("add_source() - Failed to set code name.")

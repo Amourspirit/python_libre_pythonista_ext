@@ -37,7 +37,7 @@ class CtlBuilder(List[CmdCellCtlT], LogMixin, ABC):
 
     def _append_base_commands(self) -> None:
         self.clear()
-        self.append(CmdCodeName(self.cell, self.ctl))
+        self.append(CmdCodeName(self.cell, self.ctl, overwrite_existing=False))
         self.append(CmdAddr(self.cell, self.ctl))
         self.append_commands()
 

@@ -11,6 +11,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.kind.ctl_kind import CtlKind
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.reader.ctl_reader import CtlReader
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.reader.ctl_reader_str import CtlReaderStr
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.reader.ctl_reader_int import CtlReaderInt
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.reader.ctl_reader_float import CtlReaderFloat
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.reader.ctl_reader import CtlReader
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_ctl_kind import QryCtlKind
@@ -46,10 +47,12 @@ def _get_control_class(ctl_kind: CtlKind) -> Type[CtlReader] | None:
     # Import controls here to avoid circular imports
     if not TYPE_CHECKING:
         from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.reader.ctl_reader_str import CtlReaderStr
+        from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.reader.ctl_reader_int import CtlReaderInt
         from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.reader.ctl_reader_float import CtlReaderFloat
 
     control_map = {
         CtlKind.STRING: CtlReaderStr,
+        CtlKind.INTEGER: CtlReaderInt,
         CtlKind.FLOAT: CtlReaderFloat,
     }
     return control_map.get(ctl_kind)
@@ -59,6 +62,8 @@ def _get_control_class(ctl_kind: CtlKind) -> Type[CtlReader] | None:
 def get_reader(calc_cell: CalcCell) -> CtlReaderStr: ...
 @overload
 def get_reader(calc_cell: CalcCell, kind: Literal[CtlKind.STRING]) -> CtlReaderStr: ...
+@overload
+def get_reader(calc_cell: CalcCell, kind: Literal[CtlKind.INTEGER]) -> CtlReaderInt: ...
 @overload
 def get_reader(calc_cell: CalcCell, kind: Literal[CtlKind.FLOAT]) -> CtlReaderFloat: ...
 @overload

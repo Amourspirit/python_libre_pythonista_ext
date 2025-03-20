@@ -1,5 +1,6 @@
 from __future__ import annotations
 from typing import Any, TYPE_CHECKING
+
 from ooodev.calc import CalcCell
 from ooodev.utils.helper.dot_dict import DotDict
 from ....props.key_maker import KeyMaker
@@ -11,7 +12,7 @@ else:
 
 
 class RuleBase:
-    def __init__(self, cell: CalcCell, data: DotDict) -> None:
+    def __init__(self, cell: CalcCell, data: DotDict[Any]) -> None:
         self._cell = cell
         self._dd_data = data
         self.cfg = Config()
@@ -73,11 +74,11 @@ class RuleBase:
         return self._get_name()
 
     @property
-    def data(self) -> DotDict:
+    def data(self) -> DotDict[Any]:
         return self._dd_data
 
     @data.setter
-    def data(self, value: DotDict) -> None:
+    def data(self, value: DotDict[Any]) -> None:
         self._dd_data = value
 
     @staticmethod

@@ -8,6 +8,22 @@ class ConstructorSingleton(type):
 
     Only keyword arguments are supported.
     Keyword arguments must be hashable.
+
+    May need to add a code block to class in order to satisfy type checker when no args are passed.
+
+    .. code-block:: python
+
+        if TYPE_CHECKING:
+            # just for singleton because there are no **kwargs by default.
+            @overload
+            def __new__(cls) -> MyClass: ...
+
+            @overload
+            def __new__(cls, **kwargs: Any) -> MyClass:
+
+            def __new__(cls, **kwargs: Any) -> MyClass:
+                pass
+
     """
 
     _instances = {}

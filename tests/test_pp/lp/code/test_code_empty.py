@@ -19,4 +19,4 @@ def test_code_empty(py_mod: PyModule, mocker: MockerFixture) -> None:
     result = py_mod.update_with_result("")
     assert isinstance(py_mod._current_match_rule, CodeEmpty)
     assert result is not None
-    assert result.data is None
+    assert not result.data

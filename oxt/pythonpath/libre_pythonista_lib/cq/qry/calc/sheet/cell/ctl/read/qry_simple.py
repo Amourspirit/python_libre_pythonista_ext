@@ -10,6 +10,8 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_shape import QryShape as QryShapeName
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.ctl.qry_lp_shape import QryLpShape
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_t import QryCellT
+    from oxt.pythonpath.libre_pythonista_lib.kind.ctl_kind import CtlKind
+    from oxt.pythonpath.libre_pythonista_lib.kind.ctl_prop_kind import CtlPropKind
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_base import QryBase
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl import Ctl
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
@@ -18,6 +20,8 @@ else:
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_shape import QryShape as QryShapeName
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.ctl.qry_lp_shape import QryLpShape
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_t import QryCellT
+    from libre_pythonista_lib.kind.ctl_kind import CtlKind
+    from libre_pythonista_lib.kind.ctl_prop_kind import CtlPropKind
     from libre_pythonista_lib.cq.qry.qry_base import QryBase
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl import Ctl
     from libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
@@ -49,6 +53,24 @@ class QrySimple(QryBase, LogMixin, QryCellT[Any]):
         qry_shape = QryLpShape(cell=self.cell)
         return self._execute_qry(qry_shape)
 
+    def _set_control_props(self) -> None:
+        """Sets the control properties"""
+        if self._ctl is None:
+            self.log.debug("_set_control_props() No control found. Returning.")
+            return
+        self._ctl.ctl_props = (
+            CtlPropKind.CTL_SHAPE,
+            CtlPropKind.CTL_ORIG,
+            CtlPropKind.PYC_RULE,
+            CtlPropKind.MODIFY_TRIGGER_EVENT,
+        )
+
+    def _set_control_kind(self) -> None:
+        if self._ctl is None:
+            self.log.debug("_set_control_kind() No control found. Returning.")
+            return
+        self._ctl.control_kind = CtlKind.SIMPLE_CTL
+
     def execute(self) -> Any:  # noqa: ANN401
         """ "
         Executes the query and get the control if it exists.
@@ -78,6 +100,8 @@ class QrySimple(QryBase, LogMixin, QryCellT[Any]):
                 self._ctl.control = factory_ctl
                 if not self._ctl.cell:
                     self._ctl.cell = self.cell
+            self._set_control_kind()
+            self._set_control_props()
             return factory_ctl
         except NoSuchElementException:
             self.log.warning("NoSuchElementException error from FormControlFactory Control not found.")

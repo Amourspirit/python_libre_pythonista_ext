@@ -33,7 +33,7 @@ if TYPE_CHECKING:
     from oxt.___lo_pip___.oxt_logger.oxt_logger import OxtLogger
     from oxt.___lo_pip___.debug.break_mgr import BreakMgr
     from oxt.pythonpath.libre_pythonista_lib.doc.doc_init import DocInit
-    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.cell_item import CellItem
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.cell_item_facade import CellItemFacade
 
     break_mgr = BreakMgr()
 else:
@@ -44,7 +44,7 @@ else:
         from ooodev.calc import CalcDoc
         from ___lo_pip___.debug.break_mgr import BreakMgr
         from libre_pythonista_lib.doc.doc_init import DocInit
-        from libre_pythonista_lib.doc.calc.doc.sheet.cell.cell_item import CellItem
+        from libre_pythonista_lib.doc.calc.doc.sheet.cell.cell_item_facade import CellItemFacade
 
         # Initialize the breakpoint manager
         break_mgr = BreakMgr()
@@ -89,7 +89,7 @@ class PyImpl2(unohelper.Base, XPy2):
         self._log.debug("pyc2 entered")
 
         break_mgr.check_breakpoint("librepythonista.PyImpl2.pyc")
-
+        value = None
         try:
             # CalcDoc.from_current_doc() should not be used here.
             # It will return the previous active document if this document is not yet ready.
@@ -131,17 +131,20 @@ class PyImpl2(unohelper.Base, XPy2):
             sheet = doc.sheets[sheet_idx]
             x_cell = sheet.component.getCellRangeByName(cell_address)
             cell = sheet.get_cell(x_cell)
-            ci = CellItem(cell)
+            ci = CellItemFacade(cell)
             if ci.has_control():
                 self._log.debug("pyc2 - Cell has control")
             else:
                 self._log.debug("pyc2 - Cell has no control, Creating Default.")
-                _ = ci.add_default_control()
+                value = ci.add_default_control()
+                self._log.debug(
+                    "pyc2 - Cell has no control, Created Default with value type: %s", type(value).__name__
+                )
         except Exception as e:
             self._log.exception("Error Init CellItem: %s", e)
 
         self._log.debug("pyc2 - Doc UID: %s", doc.runtime_uid)
-        result = (("pyc2",),)
+        result = ((value,),)
         self._log.debug("pyc2 - Done")
         return result
 

@@ -34,9 +34,9 @@ class CtlBuilderFloat(CtlBuilder):
     def append_commands(self) -> None:
         self.append(CmdLblDefault(cell=self.cell, ctl=self.ctl))
         self.append(CmdCtlShapeName(self.cell, self.ctl))
-        self.append(CmdRuleName(cell=self.cell, ctl=self.ctl, kind=RuleNameKind.CELL_DATA_TYPE_STR))
-        self.append(CmdOrigRuleName(cell=self.cell, ctl=self.ctl, kind=RuleNameKind.CELL_DATA_TYPE_STR))
+        self.append(CmdRuleName(cell=self.cell, ctl=self.ctl, kind=RuleNameKind.CELL_DATA_TYPE_FLOAT))
+        self.append(CmdOrigRuleName(cell=self.cell, ctl=self.ctl, kind=RuleNameKind.CELL_DATA_TYPE_FLOAT))
         self.append(CmdArrayAbility(cell=self.cell, ctl=self.ctl, ability=False))
-        self.append(CmdModifyTriggerEvent(cell=self.cell, ctl=self.ctl, kind=RuleNameKind.CELL_DATA_TYPE_STR))
+        self.append(CmdModifyTriggerEvent(cell=self.cell, ctl=self.ctl, kind=RuleNameKind.CELL_DATA_TYPE_FLOAT))
         self.append(CmdFloat(self.cell, self.ctl))
         self.append(CmdStyleTextAlign(cell=self.cell))

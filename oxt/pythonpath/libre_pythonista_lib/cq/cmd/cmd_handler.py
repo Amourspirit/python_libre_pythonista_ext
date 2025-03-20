@@ -208,19 +208,40 @@ class CmdHandler(CmdHandlerT):
     # endregion Cache methods
 
     # region Undo/Redo stack methods
-
     def undo(self) -> None:
         """Undo the last command"""
-        if self._undo_stack:
-            cmd = self._undo_stack.pop()
-            self.handle_undo(cmd)
-            self._redo_stack.append(cmd)
+        if not self._undo_stack:
+            return
+        cmd = self._undo_stack.pop()
+        self.handle_undo(cmd)
+        self._redo_stack.append(cmd)
 
     def redo(self) -> None:
         """Redo the last command"""
-        if self._redo_stack:
-            cmd = self._redo_stack.pop()
+        if not self._redo_stack:
+            return
+        cmd = self._redo_stack.pop()
+        self.handle_redo(cmd)
+        self._undo_stack.append(cmd)
+
+    def undo_all(self) -> None:
+        """Undo all commands"""
+        if not self._undo_stack:
+            return
+        for cmd in reversed(self._undo_stack):
+            # cmd = self._undo_stack.pop()
+            self.handle_undo(cmd)
+            self._redo_stack.append(cmd)
+        self._undo_stack.clear()
+
+    def redo_all(self) -> None:
+        """Redo all commands"""
+        if not self._redo_stack:
+            return
+        for cmd in self._redo_stack:
+            # cmd = self._redo_stack.pop()
             self.handle_redo(cmd)
             self._undo_stack.append(cmd)
+        self._redo_stack.clear()
 
     # endregion Undo/Redo stack methods

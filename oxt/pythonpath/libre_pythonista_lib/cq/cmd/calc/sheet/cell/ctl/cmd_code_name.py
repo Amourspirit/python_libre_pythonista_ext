@@ -28,10 +28,19 @@ else:
 class CmdCodeName(CmdBase, LogMixin, CmdCellCtlT):
     """Sets the code name of the control"""
 
-    def __init__(self, cell: CalcCell, ctl: Ctl) -> None:
+    def __init__(self, cell: CalcCell, ctl: Ctl, overwrite_existing: bool = False) -> None:
+        """
+        Initialize the command to set a control's code name.
+
+        Args:
+            cell (CalcCell): The cell containing the control
+            ctl (Ctl): The control to set the code name for
+            overwrite_existing (bool, optional): If True, allows overwriting existing code names. Defaults to False.
+        """
         CmdBase.__init__(self)
         LogMixin.__init__(self)
         self._ctl = ctl
+        self._overwrite_existing = overwrite_existing
         self._success_commands: List[CmdT] = []
         if not self._ctl.cell:
             self._ctl.cell = cell
@@ -45,7 +54,12 @@ class CmdCodeName(CmdBase, LogMixin, CmdCellCtlT):
             self._current_code_name = None
 
     def _validate(self) -> bool:
-        """Validates the ctl"""
+        """
+        Validates that the control has required attributes.
+
+        Returns:
+            bool: True if validation passes, False otherwise
+        """
         required_attributes = {"cell", "ctl_code_name"}
 
         # make a copy of the ctl dictionary because will always return True
@@ -59,11 +73,15 @@ class CmdCodeName(CmdBase, LogMixin, CmdCellCtlT):
 
     @override
     def execute(self) -> None:
+        """
+        Executes the command to set the control's code name.
+        Sets success flag to True if successful, False otherwise.
+        """
         self.success = False
         self._state_changed = False
         self._success_commands.clear()
         try:
-            cmd_prop_code_name = CmdPropCodeName(cell=self.cell)
+            cmd_prop_code_name = CmdPropCodeName(cell=self.cell, overwrite_existing=self._overwrite_existing)
             self._execute_cmd(cmd_prop_code_name)
             code_name = cmd_prop_code_name.get_gen_code_name()
 
@@ -83,6 +101,10 @@ class CmdCodeName(CmdBase, LogMixin, CmdCellCtlT):
         self.success = True
 
     def _undo(self) -> None:
+        """
+        Internal method to undo the command's changes.
+        Restores the control's previous code name state.
+        """
         for cmd in self._success_commands:
             self._execute_cmd_undo(cmd)
         self._success_commands.clear()
@@ -93,6 +115,9 @@ class CmdCodeName(CmdBase, LogMixin, CmdCellCtlT):
 
     @override
     def undo(self) -> None:
+        """
+        Public method to undo the command if it was successful.
+        """
         if self.success:
             self._undo()
         else:
@@ -100,4 +125,10 @@ class CmdCodeName(CmdBase, LogMixin, CmdCellCtlT):
 
     @property
     def cell(self) -> CalcCell:
+        """
+        Gets the cell associated with the control.
+
+        Returns:
+            CalcCell: The cell containing the control
+        """
         return self._ctl.cell

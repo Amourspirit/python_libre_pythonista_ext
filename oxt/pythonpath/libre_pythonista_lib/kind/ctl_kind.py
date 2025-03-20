@@ -5,6 +5,9 @@ from enum import Enum
 if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.kind.rule_name_kind import RuleNameKind
 
+# see Also: cq.qry.calc.common.map.qry_ctl_kind_from_rule_name_kind.QryCtlKindFromRuleNameKind
+# see Also: cq.qry.calc.common.map.qry_rule_name_kind_from_ctl_kind.QryRuleNameKindFromCtlKind
+
 
 class CtlKind(Enum):
     """
@@ -13,19 +16,19 @@ class CtlKind(Enum):
 
     # pylint: disable=invalid-name
     # pylint: disable=bad-whitespace
-    UNKNOWN = (0, "unknown")
-    ERROR = (1, "cell_data_type_error")
-    NONE = (2, "cell_data_type_none")
+    DATA_FRAME = (8, "cell_data_type_pd_df")
+    DATA_TABLE = (10, "cell_data_type_tbl_data")
     EMPTY = (3, "cell_data_type_empty")
+    ERROR = (1, "cell_data_type_error")
+    FLOAT = (6, "cell_data_type_float")
+    IMAGE = (11, "cell_data_type_cell_img")
+    INTEGER = (7, "cell_data_type_int")
+    MAT_PLT_FIGURE = (12, "cell_data_type_mp_figure")
+    NONE = (2, "cell_data_type_none")
+    SERIES = (9, "cell_data_type_pd_series")
     SIMPLE_CTL = (4, "cell_data_type_simple_ctl")
     STRING = (5, "cell_data_type_str")
-    FLOAT = (6, "cell_data_type_float")
-    INTEGER = (7, "cell_data_type_int")
-    DATA_FRAME = (8, "cell_data_type_pd_df")
-    SERIES = (9, "cell_data_type_pd_series")
-    DATA_TABLE = (10, "cell_data_type_tbl_data")
-    IMAGE = (11, "cell_data_type_cell_img")
-    MAT_PLT_FIGURE = (12, "cell_data_type_mp_figure")
+    UNKNOWN = (0, "unknown")
 
     def __str__(self) -> str:
         return self.value[1]

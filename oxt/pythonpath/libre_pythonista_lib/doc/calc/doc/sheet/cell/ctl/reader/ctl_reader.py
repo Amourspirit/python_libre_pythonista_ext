@@ -12,6 +12,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.ctl.qry_code_name import QryCodeName
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.ctl.qry_addr import QryAddr
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.ctl.qry_array_ability import QryArrayAbility
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.ctl.qry_ctl_kind import QryCtlKind
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl import Ctl
 else:
     from libre_pythonista_lib.log.log_mixin import LogMixin
@@ -20,6 +21,7 @@ else:
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.ctl.qry_code_name import QryCodeName
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.ctl.qry_addr import QryAddr
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.ctl.qry_array_ability import QryArrayAbility
+    from libre_pythonista_lib.cq.qry.calc.sheet.cell.ctl.qry_ctl_kind import QryCtlKind
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl import Ctl
 
 
@@ -37,6 +39,7 @@ class CtlReader(List[QryT], LogMixin, ABC):
         self.append(QryCodeName(self.cell, self.ctl))
         self.append(QryAddr(self.cell, self.ctl))
         self.append(QryArrayAbility(cell=self.cell, ctl=self.ctl))
+        self.append(QryCtlKind(cell=self.cell, ctl=self.ctl))
         self.append_query()
 
     @abstractmethod

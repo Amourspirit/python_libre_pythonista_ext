@@ -28,7 +28,7 @@ else:
 
 
 class CmdCtlShapeName(CmdBase, LogMixin, CmdCellCtlT):
-    """Sets Control Shape name such as ``SHAPE_libre_pythonista_ctl_cell_id_l6fiSBIiNVcncf``"""
+    """Sets Control Shape name such as ``SHAPE_id_l6fiSBIiNVcncf``"""
 
     def __init__(self, cell: CalcCell, ctl: Ctl) -> None:
         CmdBase.__init__(self)
@@ -58,7 +58,8 @@ class CmdCtlShapeName(CmdBase, LogMixin, CmdCellCtlT):
             self.log.error("Error setting cell address: ctl_code_name is empty")
             return
         try:
-            control_shape_name = f"SHAPE_{self._config.general_code_name}_ctl_cell_{self._ctl.ctl_code_name}"
+            # control_shape_name = f"SHAPE_{self._config.general_code_name}_ctl_cell_{self._ctl.ctl_code_name}"
+            control_shape_name = f"SHAPE_{self._ctl.ctl_code_name}"
 
             if self._current_state and control_shape_name == self._current_state:
                 self.log.debug("State is already set.")

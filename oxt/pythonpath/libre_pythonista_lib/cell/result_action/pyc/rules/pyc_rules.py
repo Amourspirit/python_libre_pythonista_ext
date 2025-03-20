@@ -161,7 +161,7 @@ class PycRules(LogMixin, SingletonBase):
         self._reg_rule(rule=RuleError)
         self._reg_rule(rule=RuleNone)
 
-    def get_matched_rule(self, cell: CalcCell, data: DotDict) -> PycRuleT | None:
+    def get_matched_rule(self, cell: CalcCell, data: DotDict[Any]) -> PycRuleT | None:
         """
         Get matched rules.
 

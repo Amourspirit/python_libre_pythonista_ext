@@ -33,17 +33,19 @@ else:
 class CmdCodeName(CmdBase, LogMixin, CmdCellT):
     """Sets the code name of the cell such as ``id_l6fiSBIiNVcncf``"""
 
-    def __init__(self, cell: CalcCell) -> None:
+    def __init__(self, cell: CalcCell, overwrite_existing: bool = False) -> None:
         """
         Initialize the command with a cell.
 
         Args:
             cell: The CalcCell instance to set the code name for
+            overwrite_existing: Whether to overwrite the existing code name. Defaults to False.
         """
         CmdBase.__init__(self)
         LogMixin.__init__(self)
         self.kind = CalcCmdKind.CELL
         self._cell = cell
+        self._overwrite_existing = overwrite_existing
         self._success_commands: List[CmdT] = []
         self._current_code_name = None
         self._code_name = None
@@ -58,10 +60,18 @@ class CmdCodeName(CmdBase, LogMixin, CmdCellT):
             A string in format "id_" followed by 14 random alphanumeric characters
         """
         if self._code_name is None:
-            self._code_name = "id_" + gen_util.Util.generate_random_alpha_numeric(14)
+            if not self._overwrite_existing:
+                if self._current_code_name is None:
+                    self._current_code_name = self._qry_code_name()
+                if self._current_code_name:
+                    self._code_name = self._current_code_name
+
+            if not self._code_name:
+                self._code_name = "id_" + gen_util.Util.generate_random_alpha_numeric(14)
+
         return self._code_name
 
-    def _get_code_name(self) -> str:
+    def _qry_code_name(self) -> str:
         """
         Get the current code name using QryCodeName query.
 
@@ -81,6 +91,18 @@ class CmdCodeName(CmdBase, LogMixin, CmdCellT):
         qry = QryKeyMaker()
         return self._execute_qry(qry)
 
+    def _cmd_cell_extra_set_code_name(self) -> CmdCellExtraSet:
+        """
+        Create a CmdCellExtraSet command to set the code name in extra data.
+
+        Returns:
+            CmdCellExtraSet instance
+        """
+        code_name = self.get_gen_code_name()
+        cmd = CmdCellExtraSet(cell=self.cell, name="code_name", value=code_name)
+        self._execute_cmd(cmd)
+        return cmd
+
     @override
     def execute(self) -> None:
         """
@@ -92,7 +114,15 @@ class CmdCodeName(CmdBase, LogMixin, CmdCellT):
         self._success_commands.clear()
         try:
             if self._current_code_name is None:
-                self._current_code_name = self._get_code_name()
+                self._current_code_name = self._qry_code_name()
+
+            if self._current_code_name and not self._overwrite_existing:
+                self.log.debug("State is already set.")
+                if not self._cmd_cell_extra_set_code_name().success:
+                    self.log.error("Error setting cell extra data")
+                    return
+                self.success = True
+                return
 
             if not isinstance(self._keys, KeyMaker):
                 self._keys = self._get_keys()
@@ -107,8 +137,7 @@ class CmdCodeName(CmdBase, LogMixin, CmdCellT):
                 self.log.error("Error setting cell code name")
                 return
 
-            cmd_cell_extra_set = CmdCellExtraSet(cell=self.cell, name="code_name", value=code_name)
-            self._execute_cmd(cmd_cell_extra_set)
+            cmd_cell_extra_set = self._cmd_cell_extra_set_code_name()
             if cmd_cell_extra_set.success:
                 self._success_commands.append(cmd_cell_extra_set)
             else:

@@ -30,6 +30,33 @@ class CtlBase(LogMixin, CalcCellMixin):
         """Checks if the control supports the given property."""
         return self._ctl.supports_prop(prop)
 
+    def get_shape_name(self) -> str | None:
+        """
+        Gets the control shape name.
+
+        For controls that do not have a shape name, this method will return None.
+
+        Returns:
+            str | None: The control shape name or None if not found.
+        """
+        return self.ctl.ctl_shape_name
+
+    def __eq__(self, other: object) -> bool:
+        """
+        Compares the control kind of this object with another object.
+
+        Equality is determined by comparing the control kind of the two objects.
+
+        Args:
+            other (object): The object to compare with.
+
+        Returns:
+            bool: True if the control kind of this object is equal to the control kind of the other object, False otherwise.
+        """
+        if isinstance(other, CtlBase):
+            return self.control_kind == other.control_kind
+        return False
+
     # region Properties
     @property
     def ctl(self) -> Ctl:

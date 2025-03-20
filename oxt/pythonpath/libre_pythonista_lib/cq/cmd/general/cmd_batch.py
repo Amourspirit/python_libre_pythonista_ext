@@ -71,12 +71,9 @@ class CmdBatch(CmdBase, List[CmdT], LogMixin, CmdT):
             self.log.debug("Successfully executed command.")
 
     def _undo(self) -> None:
-        if not self._success_cmds:
-            self.log.debug("No commands to undo.")
-            return
         for cmd in reversed(self._success_cmds):
             self._execute_cmd_undo(cmd)
-            self._success_cmds.clear()
+        self._success_cmds.clear()
         self.success = False  # Reset success flag.
 
     def undo(self) -> None:
