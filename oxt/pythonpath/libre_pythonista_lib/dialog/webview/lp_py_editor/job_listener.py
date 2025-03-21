@@ -5,7 +5,7 @@ import unohelper
 
 if TYPE_CHECKING:
     from com.sun.star.task import XAsyncJob
-    from ......___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from oxt.___lo_pip___.oxt_logger.oxt_logger import OxtLogger
 else:
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger  # noqa: F401
 

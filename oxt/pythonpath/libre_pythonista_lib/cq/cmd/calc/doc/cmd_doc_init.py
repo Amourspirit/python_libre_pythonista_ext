@@ -36,7 +36,7 @@ class CmdDocInit(CmdBase, LogMixin, CmdDocT):
         self._doc = doc
 
     def _get_globals(self) -> DocGlobals | None:
-        qry = QryDocGlobals()
+        qry = QryDocGlobals(self._doc.runtime_uid)
         return self._execute_qry(qry)
 
     @override

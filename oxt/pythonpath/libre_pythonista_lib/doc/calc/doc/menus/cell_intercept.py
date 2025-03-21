@@ -18,10 +18,12 @@ from ooodev.gui.menu.context.action_trigger_container import ActionTriggerContai
 
 if TYPE_CHECKING:
     from com.sun.star.table import CellAddress
-    from oxt.pythonpath.libre_pythonista_lib.cell.props.key_maker import KeyMaker
-    from oxt.pythonpath.libre_pythonista_lib.cell.state.ctl_state import CtlState
-    from oxt.pythonpath.libre_pythonista_lib.cell.state.state_kind import StateKind
-    from oxt.pythonpath.libre_pythonista_lib.dispatch.cell_dispatch_state import CellDispatchState
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_array_ability import QryArrayAbility
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_has_code_name import QryHasCodeName
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_t import QryHandlerT
+    from oxt.pythonpath.libre_pythonista_lib.dispatch.cell_dispatch_state2 import CellDispatchState2
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.state.state_kind import StateKind
     from oxt.pythonpath.libre_pythonista_lib.log.log_inst import LogInst
     from oxt.pythonpath.libre_pythonista_lib.res.res_resolver import ResResolver
     from oxt.pythonpath.libre_pythonista_lib.const import (
@@ -31,10 +33,11 @@ if TYPE_CHECKING:
         DISPATCH_CELL_SELECT_RECALC,
     )
 else:
-    from libre_pythonista_lib.cell.props.key_maker import KeyMaker
-    from libre_pythonista_lib.cell.state.ctl_state import CtlState
-    from libre_pythonista_lib.cell.state.state_kind import StateKind
-    from libre_pythonista_lib.dispatch.cell_dispatch_state import CellDispatchState
+    from libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_array_ability import QryArrayAbility
+    from libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_has_code_name import QryHasCodeName
+    from libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
+    from libre_pythonista_lib.dispatch.cell_dispatch_state2 import CellDispatchState2
+    from libre_pythonista_lib.doc.calc.doc.sheet.cell.state.state_kind import StateKind
     from libre_pythonista_lib.log.log_inst import LogInst
     from libre_pythonista_lib.res.res_resolver import ResResolver
     from libre_pythonista_lib.const import (
@@ -44,7 +47,13 @@ else:
         DISPATCH_CELL_SELECT_RECALC,
     )
 
+    QryHandlerT = Any
+
 # endregion Imports
+
+
+def _get_qry_handler() -> QryHandlerT:
+    return QryHandlerFactory.get_qry_handler()
 
 
 def on_menu_intercept(
@@ -93,13 +102,17 @@ def on_menu_intercept(
             if selection.getImplementationName() == "ScCellObj":
                 # current selection is a cell.
 
-                key_maker = KeyMaker()  # singleton
+                qry_handler = _get_qry_handler()
+
                 addr = cast("CellAddress", selection.getCellAddress())
                 doc = CalcDoc.from_current_doc()
                 sheet = doc.get_active_sheet()
                 cell_obj = doc.range_converter.get_cell_obj_from_addr(addr)
                 cell = sheet[cell_obj]
-                if not cell.has_custom_property("libre_pythonista_codename"):
+                qry_has_code_name = QryHasCodeName(cell=cell)
+                has_code_name = qry_handler.handle(qry_has_code_name)
+
+                if not has_code_name:
                     if log is not None:
                         with log.indent(True):
                             log.debug("Cell %s does not have libre_pythonista_codename custom property.", cell_obj)
@@ -111,12 +124,15 @@ def on_menu_intercept(
                 # A custom dispatch interceptor will be used to handle the command.
                 try:
                     log_debug("Getting Resource for mnuEditCode")
+                    qry_array_ability = QryArrayAbility(cell=cell)
+                    has_array_ability = bool(qry_handler.handle(qry_array_ability))
+
                     items = ActionTriggerContainer()
                     rr = ResResolver()
                     edit_mnu = rr.resolve_string("mnuEditCode")
                     del_mnu = rr.resolve_string("mnuDeletePyCell")
                     menu_main_sub = ResResolver().resolve_string("mnuMainSub")  # Pythoninsta
-                    cps = CellDispatchState(cell=cell)
+                    cps = CellDispatchState2(cell=cell)
                     item = None
                     if cps.is_dispatch_enabled(DISPATCH_CODE_EDIT_MB):
                         log_debug("CellDispatchState.is_dispatch_enabled(DISPATCH_CODE_EDIT_MB) is True")
@@ -144,10 +160,10 @@ def on_menu_intercept(
                     # is this a DataFrame or similar?
                     dp_cmd = cps.get_rule_dispatch_cmd()
                     log_debug("Rule Dispatch Command: %s", dp_cmd)
-                    if dp_cmd and cell.get_custom_property(key_maker.cell_array_ability_key, False):
+                    if dp_cmd and has_array_ability:
+                        state = cps.get_state()
                         log_debug("Cell has array ability.")
                         items.append(ActionTriggerSep())  # type: ignore
-                        state = CtlState(cell).get_state()
                         if state == StateKind.ARRAY:
                             log_debug("State is ARRAY")
                             py_obj = rr.resolve_string("mnuViewPyObj")  # Python Object
@@ -220,7 +236,7 @@ def _mi_plot_figure(container: Any, fl: Tuple[str, str], event: Any) -> bool:  #
             edit_mnu = rr.resolve_string("mnuEditCode")
             del_mnu = rr.resolve_string("mnuDeletePyCell")
             menu_main_sub = ResResolver().resolve_string("mnuMainSub")  # Pythoninsta
-            cps = CellDispatchState(cell=cell)
+            cps = CellDispatchState2(cell=cell)
             item = None
             if cps.is_dispatch_enabled(DISPATCH_CODE_EDIT_MB):
                 items.append(

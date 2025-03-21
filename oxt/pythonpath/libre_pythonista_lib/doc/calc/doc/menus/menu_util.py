@@ -11,8 +11,6 @@ from ooodev.loader import Lo
 
 if TYPE_CHECKING:
     from oxt.___lo_pip___.oxt_logger.oxt_logger import OxtLogger
-else:
-    from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
 
 
 def get_url_from_command(cmd: str) -> URL:

@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Tuple, TYPE_CHECKING
+from typing import Tuple, TYPE_CHECKING, Set
 
 
 if TYPE_CHECKING:
@@ -10,6 +10,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl import Ctl
     from oxt.pythonpath.libre_pythonista_lib.kind.ctl_kind import CtlKind
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.options.feature_kind import FeatureKind
 else:
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.mixin.calc_cell_mixin import CalcCellMixin
     from libre_pythonista_lib.kind.ctl_kind import CtlKind
@@ -17,6 +18,7 @@ else:
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl import Ctl
     from libre_pythonista_lib.kind.ctl_kind import CtlKind
+    from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.options.feature_kind import FeatureKind
 
 
 class CtlBase(LogMixin, CalcCellMixin):
@@ -26,9 +28,17 @@ class CtlBase(LogMixin, CalcCellMixin):
         self._ctl = ctl
         self.__ctl_kind = None
 
-    def supports_prop(self, prop: CtlPropKind) -> bool:
+    def get_supports_prop(self, prop: CtlPropKind) -> bool:
         """Checks if the control supports the given property."""
-        return self._ctl.supports_prop(prop)
+        if not self.ctl_props:
+            return False
+        return prop in self.ctl_props
+
+    def get_supports_feature(self, feature: FeatureKind) -> bool:
+        """Checks if the feature is supported."""
+        if not self.supported_features:
+            return False
+        return feature in self.supported_features
 
     def get_shape_name(self) -> str | None:
         """
@@ -75,6 +85,10 @@ class CtlBase(LogMixin, CalcCellMixin):
     def ctl_props(self) -> Tuple[CtlPropKind, ...]:
         """Gets the control properties."""
         return self.ctl.ctl_props
+
+    @property
+    def supported_features(self) -> Set[FeatureKind]:
+        return self.ctl.supported_features
 
     @property
     def code_name(self) -> str:

@@ -8,7 +8,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.cmd_doc_t import CmdDocT
-    from oxt.pythonpath.libre_pythonista_lib.menus.cell_reg_interceptor import (
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.menus.cell_reg_interceptor import (
         register_interceptor,
         unregister_interceptor,
     )
@@ -21,7 +21,10 @@ else:
     from libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.cq.cmd.calc.doc.cmd_doc_t import CmdDocT
-    from libre_pythonista_lib.menus.cell_reg_interceptor import register_interceptor, unregister_interceptor
+    from libre_pythonista_lib.doc.calc.doc.menus.cell_reg_interceptor import (
+        register_interceptor,
+        unregister_interceptor,
+    )
     from libre_pythonista_lib.dispatch.calc_sheet_cell_dispatch_provider import CalcSheetCellDispatchProvider
 
 

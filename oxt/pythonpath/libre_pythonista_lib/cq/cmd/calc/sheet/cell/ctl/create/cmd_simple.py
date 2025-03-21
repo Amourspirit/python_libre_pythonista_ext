@@ -109,6 +109,9 @@ class CmdSimple(CmdBase, LogMixin, CmdCellCtlT):
         self._set_ctl_script(btn)
         self._set_shape_props(cast(Shape, shape))
 
+    def _on_executing(self, ctl: Ctl) -> None:
+        pass
+
     @override
     def execute(self) -> None:
         self.success = False
@@ -118,6 +121,8 @@ class CmdSimple(CmdBase, LogMixin, CmdCellCtlT):
         self._state_changed = False
         try:
             self._insert_control()
+            if self._ctl is not None:
+                self._on_executing(self._ctl)
             self._set_control_kind()
             self._set_control_props()
             self._state_changed = True

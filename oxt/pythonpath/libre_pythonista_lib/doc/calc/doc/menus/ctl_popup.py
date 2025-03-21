@@ -14,16 +14,18 @@ from ooodev.gui.menu.popup.popup_creator import PopupCreator
 if TYPE_CHECKING:
     from com.sun.star.awt import MenuEvent
     from ooodev.events.args.event_args import EventArgs
-    from oxt.___lo_pip___.config import Config
     from oxt.___lo_pip___.oxt_logger.oxt_logger import OxtLogger
-    from oxt.pythonpath.libre_pythonista_lib.cell.lpl_cell import LplCell
-    from oxt.pythonpath.libre_pythonista_lib.cell.props.key_maker import KeyMaker
-    from oxt.pythonpath.libre_pythonista_lib.cell.state.ctl_state import CtlState
-    from oxt.pythonpath.libre_pythonista_lib.cell.state.state_kind import StateKind
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_array_ability import QryArrayAbility
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_t import QryHandlerT
     from oxt.pythonpath.libre_pythonista_lib.dialog.webview.lp_py_editor.job_listener import JobListener
-    from oxt.pythonpath.libre_pythonista_lib.dispatch.cell_dispatch_state import CellDispatchState
+    from oxt.pythonpath.libre_pythonista_lib.dispatch.cell_dispatch_state2 import CellDispatchState2
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.menus import menu_util as mu
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.cell_item_facade import CellItemFacade
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.options.feature_kind import FeatureKind
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.state.state_kind import StateKind
+    from oxt.pythonpath.libre_pythonista_lib.kind.ctl_kind import CtlKind
     from oxt.pythonpath.libre_pythonista_lib.log.log_inst import LogInst
-    from oxt.pythonpath.libre_pythonista_lib.menus import menu_util as mu
     from oxt.pythonpath.libre_pythonista_lib.res.res_resolver import ResResolver
     from oxt.pythonpath.libre_pythonista_lib.const import (
         CS_CMD_START,
@@ -42,17 +44,18 @@ if TYPE_CHECKING:
         PATH_DATA_TBL_CARD,
     )
 else:
-    from ___lo_pip___.config import Config
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
-    from libre_pythonista_lib.cell.lpl_cell import LplCell
-    from libre_pythonista_lib.cell.props.key_maker import KeyMaker
-    from libre_pythonista_lib.cell.state.ctl_state import CtlState
-    from libre_pythonista_lib.cell.state.state_kind import StateKind
+    from libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_array_ability import QryArrayAbility
+    from libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
     from libre_pythonista_lib.dialog.webview.lp_py_editor.job_listener import JobListener
-    from libre_pythonista_lib.dispatch.cell_dispatch_state import CellDispatchState
+    from libre_pythonista_lib.dispatch.cell_dispatch_state2 import CellDispatchState2
+    from libre_pythonista_lib.doc.calc.doc.menus import menu_util as mu
+    from libre_pythonista_lib.doc.calc.doc.sheet.cell.cell_item_facade import CellItemFacade
+    from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.options.feature_kind import FeatureKind
+    from libre_pythonista_lib.doc.calc.doc.sheet.cell.state.state_kind import StateKind
+    from libre_pythonista_lib.kind.ctl_kind import CtlKind
     from libre_pythonista_lib.log.log_inst import LogInst
     from libre_pythonista_lib.res.res_resolver import ResResolver
-    from pythonpath.libre_pythonista_lib.menus import menu_util as mu
     from libre_pythonista_lib.const import (
         CS_CMD_START,
         DISPATCH_CODE_EDIT,
@@ -70,7 +73,13 @@ else:
         PATH_DATA_TBL_CARD,
     )
 
+    QryHandlerT = Any
+
 # endregion Imports
+
+
+def _get_qry_handler() -> QryHandlerT:
+    return QryHandlerFactory.get_qry_handler()
 
 
 def on_menu_select(src: Any, event: EventArgs, menu: PopupMenu) -> None:  # noqa: ANN401
@@ -157,20 +166,17 @@ class CtlPopup:
             self._log.debug("Init")
         self._cell = cell
         self._res = ResResolver()
-        self._config = Config()
         self._sheet_name = self._cell.calc_sheet.name
-        self._key_maker = KeyMaker()
-        self._ctl_state = CtlState(self._cell)
-        self._cps = CellDispatchState(cell=self._cell)
-        self._lpl_cell = LplCell(self._cell)
+        self._cps = CellDispatchState2(cell=self._cell)
+        self._facade = CellItemFacade(self._cell)
+
+    def _qry_array_ability(self) -> bool | None:
+        qry = QryArrayAbility(cell=self._cell)
+        return _get_qry_handler().handle(qry)
 
     def _get_state_menu(self) -> list:
-        # key = self._key_maker.ctl_state_key
-        # if not self._cell.has_custom_property(key):
-        #     return []
-        # state = self._cell.get_custom_property(key)
         with self._log.indent(True):
-            state = self._ctl_state.get_state()
+            state = self._cps.get_state()
             cmd = self._cps.get_rule_dispatch_cmd()
             if not cmd:
                 self._log.error("CtlPopup - _get_state_menu() No dispatch command found.")
@@ -240,16 +246,21 @@ class CtlPopup:
             {"text": sel_name, "command": sel_url, "enabled": True},
             {"text": recalc_name, "command": sel_recalc_url, "enabled": True},
         ]
-        if self._lpl_cell.get_control_supports_feature("update_ctl"):
+        ctl = self._facade.get_control()
+        if ctl is None:
+            self._log.error("No control found.")
+            return new_menu
+
+        if ctl.get_supports_feature(FeatureKind.UPDATE_CTL):
             new_menu.extend(self._get_refresh_menu())
-        if not self._cps.is_protected() and self._lpl_cell.has_array_ability:
-            # if self._cell.get_custom_property(self._key_maker.cell_array_ability_key, False):
+        if not self._cps.is_protected() and self._qry_array_ability():
             state_menu = self._get_state_menu()
             if state_menu:
                 new_menu.extend(state_menu)
-        if self._lpl_cell.is_dataframe:
+        kind = self._facade.get_control_kind()
+        if kind == CtlKind.DATA_FRAME:
             new_menu.extend(self._get_card_df_menu())
-        if self._lpl_cell.is_table_data:
+        if kind == CtlKind.DATA_TABLE:
             new_menu.extend(self._get_card_tbl_data_menu())
         return new_menu
 

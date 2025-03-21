@@ -54,6 +54,8 @@ else:
 
     StateRuleT = Any
 
+# tested in: tests/test_doc/test_calc/test_doc/test_sheet/test_cell/test_cell_item_facade.py
+
 
 class CellItemFacade(LogMixin):
     def __init__(self, cell: CalcCell) -> None:

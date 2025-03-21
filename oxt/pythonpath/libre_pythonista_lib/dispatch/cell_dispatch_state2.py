@@ -4,9 +4,13 @@ from typing import TYPE_CHECKING
 from ooodev.calc import CalcCell
 
 if TYPE_CHECKING:
-    from oxt.pythonpath.libre_pythonista_lib.cell.props.key_maker import KeyMaker
-    from oxt.pythonpath.libre_pythonista_lib.cell.state.state_kind import StateKind
-    from oxt.pythonpath.libre_pythonista_lib.cell.state.ctl_state import CtlState
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_state import CmdState
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_ctl_kind import QryCtlKind
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_state import QryState
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.state.state_kind import StateKind
+    from oxt.pythonpath.libre_pythonista_lib.kind.ctl_kind import CtlKind
     from oxt.pythonpath.libre_pythonista_lib.const import (
         DISPATCH_CODE_EDIT,
         DISPATCH_CODE_EDIT_MB,
@@ -16,9 +20,13 @@ if TYPE_CHECKING:
         DISPATCH_CODE_DEL,
     )
 else:
-    from libre_pythonista_lib.cell.props.key_maker import KeyMaker
-    from libre_pythonista_lib.cell.state.state_kind import StateKind
-    from libre_pythonista_lib.cell.state.ctl_state import CtlState
+    from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_state import CmdState
+    from libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
+    from libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_ctl_kind import QryCtlKind
+    from libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_state import QryState
+    from libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
+    from libre_pythonista_lib.doc.calc.doc.sheet.cell.state.state_kind import StateKind
+    from libre_pythonista_lib.kind.ctl_kind import CtlKind
     from libre_pythonista_lib.const import (
         DISPATCH_CODE_EDIT,
         DISPATCH_CODE_EDIT_MB,
@@ -29,14 +37,13 @@ else:
     )
 
 
-class CellDispatchState:
+class CellDispatchState2:
     """Class to get the dispatch state of a cell."""
 
     def __init__(self, cell: CalcCell) -> None:
         self._cell = cell
-        self._ctl_state = CtlState(cell)
-        self._cache = {}
-        self._key_maker = KeyMaker()
+        self._qry_handler = QryHandlerFactory.get_qry_handler()
+        self._cmd_handler = CmdHandlerFactory.get_cmd_handler()
         self._dispatch_allowed = {
             DISPATCH_CODE_EDIT,
             DISPATCH_CODE_EDIT_MB,
@@ -66,6 +73,10 @@ class CellDispatchState:
             return False
         return self.cell_locked
 
+    def _qry_ctl_kind(self) -> CtlKind:
+        qry = QryCtlKind(self._cell)
+        return self._qry_handler.handle(qry)
+
     def get_rule_dispatch_cmd(self) -> str:
         """
         Gets the dispatch command that matches the current pyc rule.
@@ -73,16 +84,12 @@ class CellDispatchState:
         Returns:
             str: The dispatch command.
         """
-
-        rules = self._key_maker.rule_names
-        rule = self._cell.get_custom_property(self._key_maker.pyc_rule_key, "")
-        if not rule:
-            return ""
-        if rule == rules.cell_data_type_pd_df:
+        ctl_kind = self._qry_ctl_kind()
+        if ctl_kind == CtlKind.DATA_FRAME:
             return DISPATCH_DF_STATE
-        if rule == rules.cell_data_type_pd_series:
+        if ctl_kind == CtlKind.SERIES:
             return DISPATCH_DS_STATE
-        if rule == rules.cell_data_type_tbl_data:
+        if ctl_kind == CtlKind.DATA_TABLE:
             return DISPATCH_DATA_TBL_STATE
         return ""
 
@@ -93,7 +100,10 @@ class CellDispatchState:
         Returns:
             StateKind: The state.
         """
-        return self._ctl_state.get_state()
+        qry = QryState(self._cell)
+        state = self._qry_handler.handle(qry)
+
+        return state
 
     def set_state(self, value: StateKind) -> None:
         """
@@ -102,21 +112,18 @@ class CellDispatchState:
         Args:
             value (StateKind): The state.
         """
-        self._ctl_state.set_state(value)
+        cmd = CmdState(self._cell, value)
+        self._cmd_handler.handle(cmd)
+        if not cmd.success:
+            raise Exception("Failed to set state.")
 
     # region Properties
     @property
     def sheet_locked(self) -> bool:
-        key = "sheet_locked"
-        if key not in self._cache:
-            self._cache[key] = self._cell.calc_sheet.is_sheet_protected()
-        return self._cache[key]
+        return self._cell.calc_sheet.is_sheet_protected()
 
     @property
     def cell_locked(self) -> bool:
-        key = "cell_locked"
-        if key not in self._cache:
-            self._cache[key] = self._cell.cell_protection.is_locked
-        return self._cache[key]
+        return self._cell.cell_protection.is_locked
 
     # endregion Properties
