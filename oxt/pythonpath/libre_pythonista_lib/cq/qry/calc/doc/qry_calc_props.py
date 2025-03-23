@@ -12,6 +12,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.doc_props.calc_props2 import CalcProps2
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
+    from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
 else:
     from libre_pythonista_lib.const.cache_const import DOC_CALC_PROPS
     from libre_pythonista_lib.cq.qry.calc.doc.qry_lp_doc_props import QryLpDocProps
@@ -19,13 +20,14 @@ else:
     from libre_pythonista_lib.cq.qry.qry_cache_t import QryCacheT
     from libre_pythonista_lib.doc_props.calc_props2 import CalcProps2
     from libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
+    from libre_pythonista_lib.utils.result import Result
     from libre_pythonista_lib.log.log_mixin import LogMixin
 
 
 # tested in tests/test_cmd_qry/test_doc/test_cmd_calc_props.py
 
 
-class QryCalcProps(QryBase, LogMixin, QryCacheT[CalcProps2]):
+class QryCalcProps(QryBase, LogMixin, QryCacheT[Result[CalcProps2, None] | Result[None, Exception]]):
     """Gets the calc properties"""
 
     def __init__(self, doc: CalcDoc) -> None:
@@ -36,23 +38,26 @@ class QryCalcProps(QryBase, LogMixin, QryCacheT[CalcProps2]):
 
     def _get_data(self) -> dict | None:
         qry = QryLpDocProps(self._doc)
-        return self._execute_qry(qry)
+        result = self._execute_qry(qry)
+        if Result.is_success(result):
+            return result.data
+        return None
 
-    def execute(self) -> CalcProps2:
+    def execute(self) -> Result[CalcProps2, None] | Result[None, Exception]:
         """
         Executes the query and gets the calc properties.
 
         Returns:
-            CalcProps2: The calc properties if successful, otherwise an empty CalcProps2 instance.
+            Result: Success with calc properties or Failure with Exception
         """
-        data = self._get_data()
-        if data is None:
-            return CalcProps2()
         try:
-            return CalcProps2.from_dict(data)
-        except Exception:
-            self.log.exception("Error executing query")
-        return CalcProps2()
+            data = self._get_data()
+            if data is None:
+                return Result.success(CalcProps2())
+            cp = CalcProps2.from_dict(data)
+            return Result.success(cp)
+        except Exception as e:
+            return Result.failure(e)
 
     @property
     def cache_key(self) -> str:

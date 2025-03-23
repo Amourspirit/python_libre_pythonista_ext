@@ -1,1 +1,1 @@
-import uno
+import uno  # noqa # type: ignore

@@ -12,6 +12,7 @@ from ooodev.utils.helper.dot_dict import DotDict
 
 if TYPE_CHECKING:
     from oxt.___lo_pip___.debug.break_mgr import BreakMgr
+    from oxt.pythonpath.libre_pythonista_lib.doc.doc_globals import DocGlobals
     from oxt.pythonpath.libre_pythonista_lib.cell.errors.general_error import GeneralError
     from oxt.pythonpath.libre_pythonista_lib.code.mod_helper.lplog import LpLog as LibrePythonistaLog
     from oxt.pythonpath.libre_pythonista_lib.code.py_module_t import PyModuleT
@@ -22,6 +23,7 @@ if TYPE_CHECKING:
     break_mgr = BreakMgr()
 else:
     from ___lo_pip___.debug.break_mgr import BreakMgr
+    from libre_pythonista_lib.doc.doc_globals import DocGlobals
     from libre_pythonista_lib.cell.errors.general_error import GeneralError
     from libre_pythonista_lib.code.mod_helper.lplog import LpLog as LibrePythonistaLog
     from libre_pythonista_lib.code.py_module_t import PyModuleT
@@ -32,6 +34,8 @@ else:
     break_mgr = BreakMgr()
     # break_mgr.add_breakpoint("libre_pythonista_lib.code.py_module.init")
     break_mgr.add_breakpoint("libre_pythonista_lib.code.py_module.execute_code")
+
+_KEY = "libre_pythonista_lib.code.py_module.PyModule"
 
 
 def is_pytest_running() -> bool:
@@ -94,7 +98,24 @@ def get_module_init_code() -> str:
 
 
 class PyModule(LogMixin, PyModuleT):
+    """
+    Singleton Class. Manages the state and execution of Python code within a LibreOffice document.
+    """
+
+    def __new__(cls) -> PyModule:
+        gbl_cache = DocGlobals.get_current()
+        if _KEY in gbl_cache.mem_cache:
+            return gbl_cache.mem_cache[_KEY]
+
+        inst = super().__new__(cls)
+        inst._is_init = False
+
+        gbl_cache.mem_cache[_KEY] = inst
+        return inst
+
     def __init__(self) -> None:
+        if getattr(self, "_is_init", False):
+            return
         LogMixin.__init__(self)
         break_mgr.check_breakpoint("libre_pythonista_lib.code.py_module.init")
         self._is_py_test_running = is_pytest_running()

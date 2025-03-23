@@ -13,42 +13,42 @@ from ooodev.utils.helper.dot_dict import DotDict
 
 
 if TYPE_CHECKING:
-    from typing_extensions import override
+    from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
     from com.sun.star.lang import EventObject
     from com.sun.star.sheet import SheetCell  # service
     from oxt.___lo_pip___.basic_config import BasicConfig as Config
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.listen.code_cell_listeners import (
+        CodeCellListeners,
+    )
+    from oxt.pythonpath.libre_pythonista_lib.mixin.listener.trigger_state_mixin import TriggerStateMixin
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.uno_cell.qry_cell_sheet_doc import QryCellSheetDoc
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler import QryHandler
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.uno_cell.qry_cell_is_deleted import QryCellIsDeleted
-    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.uno_cell.qry_cell_is_pyc_formula import (
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.uno_cell.formula.qry_cell_is_pyc_formula import (
         QryCellIsPycFormula,
     )
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.uno_cell.qry_cell_sheet_name import QryCellSheetName
 else:
+    from libre_pythonista_lib.utils.custom_ext import override
     from ___lo_pip___.basic_config import BasicConfig as Config
     from libre_pythonista_lib.cq.qry.qry_handler import QryHandler
     from libre_pythonista_lib.cq.qry.calc.sheet.uno_cell.qry_cell_sheet_doc import QryCellSheetDoc
     from libre_pythonista_lib.cq.qry.calc.sheet.uno_cell.qry_cell_is_deleted import QryCellIsDeleted
-    from libre_pythonista_lib.cq.qry.calc.sheet.uno_cell.qry_cell_is_pyc_formula import QryCellIsPycFormula
+    from libre_pythonista_lib.cq.qry.calc.sheet.uno_cell.formula.qry_cell_is_pyc_formula import QryCellIsPycFormula
     from libre_pythonista_lib.cq.qry.calc.sheet.uno_cell.qry_cell_sheet_name import QryCellSheetName
     from libre_pythonista_lib.log.log_mixin import LogMixin
-
-    def override(func):  # noqa: ANN001, ANN201
-        return func
-
-# This listener is used by CellMgr.
-# When source code is added to CellMgr is will add this listener to the cell.
+    from libre_pythonista_lib.mixin.listener.trigger_state_mixin import TriggerStateMixin
 
 
-class CodeCellListener2(XModifyListener, LogMixin, EventsPartial, unohelper.Base):
+class CodeCellListener(XModifyListener, LogMixin, TriggerStateMixin, EventsPartial, unohelper.Base):
     """
     Code Cell Listener
 
     .. versionadded:: 0.10.0
     """
 
-    def __init__(self, absolute_name: str, code_name: str, cell_obj: CellObj) -> None:
+    def __init__(self, absolute_name: str, code_name: str, cell_obj: CellObj, listeners: CodeCellListeners) -> None:
         """
         Constructor
 
@@ -60,6 +60,7 @@ class CodeCellListener2(XModifyListener, LogMixin, EventsPartial, unohelper.Base
         """
         XModifyListener.__init__(self)
         LogMixin.__init__(self)
+        TriggerStateMixin.__init__(self)
         EventsPartial.__init__(self)
         unohelper.Base.__init__(self)
         self.log.debug("Init")
@@ -79,6 +80,10 @@ class CodeCellListener2(XModifyListener, LogMixin, EventsPartial, unohelper.Base
     @override
     def modified(self, aEvent: EventObject) -> None:  # noqa: N803
         try:
+            if not self.is_trigger():
+                self.log.debug("modified() Trigger events is False. Returning.")
+                return
+
             qry_cell_deleted = QryCellIsDeleted(cell=aEvent.Source)  # type: ignore
             is_cell_deleted = self._qry_handler.handle(qry_cell_deleted)
 

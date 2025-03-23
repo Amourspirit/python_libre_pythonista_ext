@@ -1,15 +1,16 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 import contextlib
-import uno
 from ooodev.utils.data_type.cell_obj import CellObj
 from com.sun.star.uno import RuntimeException
 
-from ..ex import CellDeletedError
-from ..const import FORMULA_PYC
-
 if TYPE_CHECKING:
     from com.sun.star.sheet import SheetCell  # service
+    from oxt.pythonpath.libre_pythonista_lib.ex.exceptions import CellDeletedError
+    from oxt.pythonpath.libre_pythonista_lib.const import FORMULA_PYC
+else:
+    from libre_pythonista_lib.ex.exceptions import CellDeletedError
+    from libre_pythonista_lib.const import FORMULA_PYC
 
 
 class CellInfo:

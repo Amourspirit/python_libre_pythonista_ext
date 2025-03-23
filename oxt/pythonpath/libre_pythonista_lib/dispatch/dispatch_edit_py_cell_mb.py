@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Dict, Tuple, TYPE_CHECKING
+from typing import Any, Dict, Tuple, TYPE_CHECKING, Callable
 from threading import Thread
 
 try:
@@ -8,7 +8,6 @@ try:
 except ImportError:
     from typing_extensions import override
 
-import uno
 import unohelper
 from com.sun.star.frame import XDispatch
 from com.sun.star.beans import PropertyValue
@@ -19,56 +18,75 @@ from ooodev.loader import Lo
 from ooodev.calc import CalcDoc, CalcCell
 from ooodev.events.partial.events_partial import EventsPartial
 
-from ..dialog.py.dialog_mb import DialogMb
-from ..code.cell_cache import CellCache
-from ..cell.cell_mgr import CellMgr
 from ..code.py_source_mgr import PyInstance
-from ..event.shared_event import SharedEvent
-from ..log.log_inst import LogInst
-from ..cell.code_edit.cell_code_edit import CellCodeEdit
 
 if TYPE_CHECKING:
     from com.sun.star.frame import XStatusListener
-    from ....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from oxt.___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler_t import CmdHandlerT
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_t import QryHandlerT
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
+    from oxt.pythonpath.libre_pythonista_lib.dialog.py.dialog_mb import DialogMb
+    from oxt.pythonpath.libre_pythonista_lib.event.shared_event import SharedEvent
+    from oxt.pythonpath.libre_pythonista_lib.log.log_inst import LogInst
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.cell_code_edit import CellCodeEdit
 else:
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
+    from libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
+    from libre_pythonista_lib.dialog.py.dialog_mb import DialogMb
+    from libre_pythonista_lib.event.shared_event import SharedEvent
+    from libre_pythonista_lib.log.log_inst import LogInst
+    from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.cell_code_edit import CellCodeEdit
+
+    CmdHandlerT = Any
+    QryHandlerT = Any
 
 _THREADS_DICT = {}
 _ACTIVE_WINDOWS = {}
 
 
-def thread_wrapper(inst_id: str, cell: CalcCell, url: URL, original_func):
+def _get_qry_handler() -> QryHandlerT:
+    return QryHandlerFactory.get_qry_handler()
+
+
+def _get_cmd_handler() -> CmdHandlerT:
+    return CmdHandlerFactory.get_cmd_handler()
+
+
+def thread_wrapper(
+    inst_id: str, cell: CalcCell, url: URL, original_func: Callable[[str, CalcCell, URL], None]
+) -> None:
     """
     Wrapper function to execute the original thread function and remove the thread from the dictionary upon completion.
     """
     global _THREADS_DICT, _ACTIVE_WINDOWS
     log = LogInst()
     with log.indent(True):
-        log.debug(f"thread_wrapper inst_id: {inst_id}")
+        log.debug("thread_wrapper inst_id: %s", inst_id)
     try:
         original_func(inst_id, cell, url)
     finally:
         with log.indent(True):
-            log.debug(f"thread_wrapper finally inst_id: {inst_id}")
+            log.debug("thread_wrapper finally inst_id: %s", inst_id)
         # Remove the thread from the dictionary
         del _THREADS_DICT[inst_id]
         if inst_id in _ACTIVE_WINDOWS:
             del _ACTIVE_WINDOWS[inst_id]
 
 
-def dispatch_in_thread(inst_id: str, cell: CalcCell, url: URL):
+def dispatch_in_thread(inst_id: str, cell: CalcCell, url: URL) -> None:
     """
     Handle the button action event.
     """
     global _ACTIVE_WINDOWS
     log = LogInst()
     with log.indent(True):
-        log.debug(f"dispatch_in_thread inst_id: {inst_id}")
+        log.debug("dispatch_in_thread inst_id: %s", inst_id)
     if inst_id in _ACTIVE_WINDOWS:
         with log.indent(True):
-            log.debug(
-                f"dispatch_in_thread inst_id: {inst_id} is in active windows. Deleting it."
-            )
+            log.debug("dispatch_in_thread inst_id: %s is in active windows. Deleting it.", inst_id)
         del _ACTIVE_WINDOWS[inst_id]
     with log.indent(True):
         log.debug("dispatch_in_thread creating DispatchWorker")
@@ -81,7 +99,7 @@ def dispatch_in_thread(inst_id: str, cell: CalcCell, url: URL):
 
 
 class DispatchEditPyCellMb(XDispatch, EventsPartial, unohelper.Base):
-    def __init__(self, sheet: str, cell: str, in_thread: bool):
+    def __init__(self, sheet: str, cell: str, in_thread: bool) -> None:
         XDispatch.__init__(self)
         EventsPartial.__init__(self)
         unohelper.Base.__init__(self)
@@ -90,7 +108,7 @@ class DispatchEditPyCellMb(XDispatch, EventsPartial, unohelper.Base):
         self._in_thread = in_thread
         self._log = OxtLogger(log_name=self.__class__.__name__)
         self.add_event_observers(SharedEvent().event_observer)
-        self._log.debug(f"init: sheet={sheet}, cell={cell}")
+        self._log.debug("init: sheet=%s, cell=%s", sheet, cell)
         self._status_listeners: Dict[str, XStatusListener] = {}
 
     @override
@@ -103,9 +121,9 @@ class DispatchEditPyCellMb(XDispatch, EventsPartial, unohelper.Base):
         Note: Notifications can't be guaranteed! This will be a part of interface XNotifyingDispatch.
         """
         with self._log.indent(True):
-            self._log.debug(f"addStatusListener(): url={URL.Main}")
+            self._log.debug("addStatusListener(): url=%s", URL.Main)
             if URL.Complete in self._status_listeners:
-                self._log.debug(f"addStatusListener(): url={URL.Main} already exists.")
+                self._log.debug("addStatusListener(): url=%s already exists.", URL.Main)
             else:
                 # setting IsEnable=False here does not disable the dispatch command
                 # State=True may cause the menu items to be displayed as checked.
@@ -142,16 +160,12 @@ class DispatchEditPyCellMb(XDispatch, EventsPartial, unohelper.Base):
 
             if self._inst_id in _ACTIVE_WINDOWS:
                 with self._log.indent(True):
-                    self._log.debug(
-                        f"Thread with inst_id '{self._inst_id}' is already running. Setting Focus"
-                    )
+                    self._log.debug("Thread with inst_id '%s' is already running. Setting Focus", self._inst_id)
                 _ACTIVE_WINDOWS[self._inst_id].set_focus()
                 return
             if self._inst_id not in _THREADS_DICT:
                 # Wrap the original function
-                target_func = lambda: thread_wrapper(
-                    self._inst_id, cell, URL, dispatch_in_thread
-                )
+                target_func = lambda: thread_wrapper(self._inst_id, cell, URL, dispatch_in_thread)
                 t = Thread(target=target_func, daemon=True)
 
                 # Add the thread to the dictionary
@@ -160,24 +174,16 @@ class DispatchEditPyCellMb(XDispatch, EventsPartial, unohelper.Base):
                 t.start()
                 if self._in_thread:
                     with self._log.indent(True):
-                        self._log.debug(
-                            f"Thread with inst_id '{self._inst_id}' is running. Waiting for join."
-                        )
+                        self._log.debug("Thread with inst_id '%s' is running. Waiting for join.", self._inst_id)
                     t.join()
                     with self._log.indent(True):
-                        self._log.debug(
-                            f"Thread with inst_id '{self._inst_id}' has joined."
-                        )
+                        self._log.debug("Thread with inst_id '%s' has joined.", self._inst_id)
                 else:
                     with self._log.indent(True):
-                        self._log.debug(
-                            f"Thread with inst_id '{self._inst_id}' is running. Did not wait for join."
-                        )
+                        self._log.debug("Thread with inst_id '%s' is running. Did not wait for join.", self._inst_id)
             else:
                 with self._log.indent(True):
-                    self._log.debug(
-                        f"Thread with inst_id '{self._inst_id}' is already running."
-                    )
+                    self._log.debug("Thread with inst_id '%s' is already running.", self._inst_id)
 
         except Exception:
             with self._log.indent(True):
@@ -190,15 +196,13 @@ class DispatchEditPyCellMb(XDispatch, EventsPartial, unohelper.Base):
         Un-registers a listener from a control.
         """
         with self._log.indent(True):
-            self._log.debug(f"removeStatusListener(): url={URL.Main}")
+            self._log.debug("removeStatusListener(): url=%s", URL.Main)
             if URL.Complete in self._status_listeners:
                 del self._status_listeners[URL.Complete]
 
 
 class DispatchCellCodeEdit(CellCodeEdit):
-    def __init__(
-        self, inst_id: str, cell: CalcCell, url_str: str = "", src_code: str = ""
-    ):
+    def __init__(self, inst_id: str, cell: CalcCell, url_str: str = "", src_code: str = "") -> None:
         CellCodeEdit.__init__(self, inst_id, cell, url_str, src_code)
 
     @override
@@ -211,9 +215,7 @@ class DispatchCellCodeEdit(CellCodeEdit):
         )
 
 
-def edit_code(
-    inst_id: str, calc_cell: CalcCell, log: OxtLogger, src_code: str = ""
-) -> bool:
+def edit_code(inst_id: str, calc_cell: CalcCell, log: OxtLogger, src_code: str = "") -> bool:
     global _ACTIVE_WINDOWS
     cell_obj = calc_cell.cell_obj
     py_inst = PyInstance(calc_cell.calc_doc)  # singleton

@@ -1,8 +1,7 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING
 import pytest
 from pytest_mock import MockerFixture
-from ooodev.utils.gen_util import NULL_OBJ
 
 if __name__ == "__main__":
     pytest.main([__file__])
@@ -18,6 +17,7 @@ def test_cmd_calc_props(loader, build_setup, mocker: MockerFixture) -> None:
         from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_calc_props import QryCalcProps
         from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
         from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
+        from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
         from oxt.___lo_pip___.config import Config
     else:
         from libre_pythonista_lib.cq.cmd.calc.doc.cmd_calc_props import CmdCalcProps
@@ -26,13 +26,14 @@ def test_cmd_calc_props(loader, build_setup, mocker: MockerFixture) -> None:
         from libre_pythonista_lib.cq.qry.calc.doc.qry_calc_props import QryCalcProps
         from libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
         from libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
+        from libre_pythonista_lib.utils.result import Result
         from libre_pythonista.config import Config
 
     doc = None
     try:
-        doc = CalcDoc.create_doc(loader=loader)
-
         log_fmt = "%(asctime)s - %(levelname)s - %(name)s: %(message)s"
+
+        doc = CalcDoc.create_doc(loader=loader)
 
         mock_config = mocker.MagicMock(spec=Config)
         mock_config.is_shared_installed = True
@@ -47,15 +48,16 @@ def test_cmd_calc_props(loader, build_setup, mocker: MockerFixture) -> None:
         # Create initial properties
         qry = QryCalcProps(doc)
         initial_props = qry_handler.handle(qry)
+        assert Result.is_success(initial_props)
         # changing initial_props properties here also changes in the cache
         # because it is a reference to the same object
-        assert initial_props.log_to_console is False
-        assert initial_props.log_format == log_fmt
+        assert initial_props.data.log_to_console is False
+        assert initial_props.data.log_format == log_fmt
 
         # Create command
-        cmd = CmdCalcProps(doc=doc, props=initial_props)
+        cmd = CmdCalcProps(doc=doc, props=initial_props.data)
 
-        initial_props.log_to_console = True
+        initial_props.data.log_to_console = True
         # Test initial state
         assert cmd.kind == CalcCmdKind.SIMPLE_CACHE
         assert cmd.cache_keys == (DOC_CALC_PROPS, DOC_LP_DOC_PROP_DATA)
@@ -66,12 +68,14 @@ def test_cmd_calc_props(loader, build_setup, mocker: MockerFixture) -> None:
         assert cmd.success
 
         new_props = qry_handler.handle(qry)
-        assert new_props.log_to_console is True
+        assert Result.is_success(new_props)
+        assert new_props.data.log_to_console is True
 
         # Test undo
         cmd_handler.handle_undo(cmd)
         original_props = qry_handler.handle(qry)
-        assert original_props.log_to_console is False
+        assert Result.is_success(original_props)
+        assert original_props.data.log_to_console is False
 
     finally:
         if doc is not None:

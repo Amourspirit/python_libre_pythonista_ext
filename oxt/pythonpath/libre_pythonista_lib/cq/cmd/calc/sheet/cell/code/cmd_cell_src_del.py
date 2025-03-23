@@ -13,7 +13,6 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_is_deleted import QryCellIsDeleted
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_uri import QryCellUri
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source import PySource
-    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source import PySrcProvider
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
@@ -42,7 +41,6 @@ class CmdCellSrcDel(CmdBase, LogMixin, CmdCellCacheT):
 
     Args:
         cell (CalcCell): The cell containing the source code to delete
-        src_provider (PySrcProvider | None): Optional source provider for the cell
 
     Properties:
         cell (CalcCell): The target cell
@@ -50,14 +48,13 @@ class CmdCellSrcDel(CmdBase, LogMixin, CmdCellCacheT):
         uri (str): URI identifier for the cell
     """
 
-    def __init__(self, cell: CalcCell, src_provider: PySrcProvider | None = None) -> None:
+    def __init__(self, cell: CalcCell) -> None:
         CmdBase.__init__(self)
         LogMixin.__init__(self)
         self.kind = CalcCmdKind.CELL_CACHE
         self._cell = cell
         self._uri = None
         self._cell_deleted = None
-        self._src_provider = src_provider
         self._current_py_src = cast(PySource, None)
         self._current_exist = None
         self._current_src = ""
@@ -75,12 +72,12 @@ class CmdCellSrcDel(CmdBase, LogMixin, CmdCellCacheT):
 
     def _qry_py_src(self) -> PySource:
         """Get the Python source associated with the cell."""
-        qry = QryCellPySource(uri=self.uri, cell=self.cell, src_provider=self._src_provider)
+        qry = QryCellPySource(uri=self.uri, cell=self.cell)
         return self._execute_qry(qry)
 
     def _get_src_code_exist(self) -> bool:
         """Check if source code exists for the cell."""
-        qry = QryCellSrcCodeExist(uri=self.uri, cell=self.cell, src_provider=self._src_provider)
+        qry = QryCellSrcCodeExist(uri=self.uri, cell=self.cell)
         return self._execute_qry(qry)
 
     @override
@@ -136,7 +133,7 @@ class CmdCellSrcDel(CmdBase, LogMixin, CmdCellCacheT):
                 self.log.debug("Cell is deleted. Nothing to undo.")
                 return
             if self._current_exist:
-                py_code = PySource(uri=self.uri, cell=self.cell.cell_obj, src_provider=self._src_provider)
+                py_code = PySource(uri=self.uri, cell=self.cell.cell_obj)
                 py_code.source_code = self._current_src
 
             if self._cell_code_name:

@@ -13,8 +13,10 @@ from ooodev.utils.string.str_list import StrList
 
 
 if TYPE_CHECKING:
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_t import QryHandlerT
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler_t import CmdHandlerT
     from oxt.pythonpath.libre_pythonista_lib.doc.doc_globals import DocGlobals
-    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source import PySource, PySrcProvider
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source import PySource
     from oxt.pythonpath.libre_pythonista_lib.event.shared_event import SharedEvent
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.code.module_state_item import ModuleStateItem
@@ -31,7 +33,6 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.code.cmd_cell_src_del import CmdCellSrcDel
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.index_cell_props import IndexCellProps
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_lp_cells import QryLpCells
-    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.general.cmd_batch import CmdBatch
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_is_deleted import QryCellIsDeleted
     from oxt.pythonpath.libre_pythonista_lib.code.py_module_state import PyModuleState
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.state.qry_module_state import QryModuleState
@@ -67,7 +68,6 @@ else:
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_code_name import CmdCodeName
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_code_name_del import CmdCodeNameDel
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.code.cmd_cell_src_del import CmdCellSrcDel
-    from libre_pythonista_lib.cq.cmd.general.cmd_batch import CmdBatch
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.index_cell_props import IndexCellProps
     from libre_pythonista_lib.cq.qry.calc.doc.qry_lp_cells import QryLpCells
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_is_deleted import QryCellIsDeleted
@@ -86,8 +86,8 @@ else:
         PYTHON_BEFORE_SOURCE_UPDATE,
     )
 
-    PySrcProvider = Any
-
+    QryHandlerT = Any
+    CmdHandlerT = Any
 
 _KEY = "libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source_manager.PySourceManager"
 
@@ -102,12 +102,10 @@ class PySourceManager(LogMixin):
     All public facing methods are in the format of (col, row) for cell address because this is how it normally is in Calc.
     """
 
-    def __new__(cls, doc: CalcDoc, mod: PyModuleT, src_provider: PySrcProvider | None = None) -> PySourceManager:
+    def __new__(cls, doc: CalcDoc, mod: PyModuleT) -> PySourceManager:
         gbl_cache = DocGlobals.get_current(doc.runtime_uid)
         mod_id = id(mod)
         key = f"{_KEY}_{mod_id}"
-        if src_provider is not None:
-            key = f"{key}_{id(src_provider)}"
         if key in gbl_cache.mem_cache:
             return gbl_cache.mem_cache[key]
 
@@ -118,13 +116,12 @@ class PySourceManager(LogMixin):
         return inst
 
     # region Init
-    def __init__(self, doc: CalcDoc, mod: PyModuleT, src_provider: PySrcProvider | None = None) -> None:
+    def __init__(self, doc: CalcDoc, mod: PyModuleT) -> None:
         if getattr(self, "_is_init", False):
             return
         LogMixin.__init__(self)
         # don't use CalcDoc.from_current_doc() because there many be multiple documents opened already.
         self._doc = doc
-        self._src_provider = src_provider
         self._shared_event = SharedEvent(doc)
         self._qry_handler = QryHandlerFactory.get_qry_handler()
         self._cmd_handler = CmdHandlerFactory.get_cmd_handler()
@@ -164,7 +161,7 @@ class PySourceManager(LogMixin):
         return self._qry_handler.handle(qry)
 
     def _qry_py_source(self, uri: str, cell: CalcCell) -> PySource:
-        qry = QryCellPySource(uri=uri, cell=cell, src_provider=self._src_provider)
+        qry = QryCellPySource(uri=uri, cell=cell)
         return self._qry_handler.handle(qry)
 
     def qry_last_module_state_item(self) -> ModuleStateItem | None:
@@ -426,7 +423,7 @@ class PySourceManager(LogMixin):
             self.log.error("add_source() - Failed to get URI.")
             return
 
-        cmd_src_code = CmdCellSrcCode(uri=uri, cell=cell, code=code, src_provider=self._src_provider)
+        cmd_src_code = CmdCellSrcCode(uri=uri, cell=cell, code=code)
 
         self._cmd_handler.handle(cmd_src_code)
         if not cmd_src_code.success:
@@ -514,7 +511,7 @@ class PySourceManager(LogMixin):
         Removes Source for the cell.
 
         - Deletes the source code.
-        - Removes cell from CellCache.
+        - Removes cell from PySourceManager instance.
         - Removes the custom property from the cell.
         - Updates the module to reflect the changes.
 
@@ -565,8 +562,13 @@ class PySourceManager(LogMixin):
 
     def remove_source_by_calc_cell(self, cell: CalcCell) -> None:
         """
-        Removes Source for the cell. This method can used when the cell is being deleted.
-        If the cell is not deleted then this method just call ``remove_source()``.
+        Removes Source for the cell. This method can used when the cell has been deleted.
+        If the cell is not deleted then this method just calls ``remove_source()``.
+
+        - Deletes the source code.
+        - Removes cell from CellCache.
+        - Removes the custom property from the cell.
+        - Updates the module to reflect the changes.
 
         Args:
             cell (CalcCell): CalcCell object.
@@ -580,16 +582,15 @@ class PySourceManager(LogMixin):
         if not is_deleted:
             self.remove_source(cell.cell_obj)
 
-        cmd_del = CmdCellSrcDel(cell=cell, src_provider=self._src_provider)
+        cmd_del = CmdCellSrcDel(cell=cell)
         self._cmd_handler.handle(cmd_del)
         if cmd_del.success:
             self.log.debug("remove_source_by_calc_cell() - Successfully executed command.")
         else:
             self.log.error("remove_source_by_calc_cell() - Failed to execute command.")
-            return
 
     def remove_last(self) -> None:
-        """Removes the last item in the source manager."""
+        """Removes the source for the last item in the source manager."""
         if len(self) == 0:
             return
         cell_obj = self.convert_tuple_to_cell_obj(list(self._data.keys())[-1])
@@ -770,11 +771,19 @@ class PySourceManager(LogMixin):
         return self._state_history
 
     @property
-    def src_provider(self) -> PySrcProvider | None:
-        return self._src_provider
-
-    @property
     def mod(self) -> PyModuleT:
         return self._state_history.mod
+
+    @property
+    def doc(self) -> CalcDoc:
+        return self._doc
+
+    @property
+    def cmd_handler(self) -> CmdHandlerT:
+        return self._cmd_handler
+
+    @property
+    def qry_handler(self) -> QryHandlerT:
+        return self._qry_handler
 
     # endregion Properties

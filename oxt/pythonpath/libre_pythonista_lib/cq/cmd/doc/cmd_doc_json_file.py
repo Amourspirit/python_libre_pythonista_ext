@@ -6,19 +6,21 @@ from ooodev.utils.gen_util import NULL_OBJ
 
 if TYPE_CHECKING:
     from ooodev.proto.office_document_t import OfficeDocumentT
-    from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
-    from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_cache_t import CmdCacheT
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.doc.qry_doc_json_file import QryDocJsonFile
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
+    from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
+    from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
+    from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
 else:
-    from libre_pythonista_lib.utils.custom_ext import override
     from libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
-    from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.cq.cmd.cmd_cache_t import CmdCacheT
     from libre_pythonista_lib.cq.qry.doc.qry_doc_json_file import QryDocJsonFile
     from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
+    from libre_pythonista_lib.log.log_mixin import LogMixin
+    from libre_pythonista_lib.utils.custom_ext import override
+    from libre_pythonista_lib.utils.result import Result
 
 
 # tested in tests/test_cmd/test_cmd_lp_doc_json_file.py
@@ -55,7 +57,10 @@ class CmdDocJsonFile(CmdBase, LogMixin, CmdCacheT):
 
     def _get_current_value(self) -> DocJsonFile | None:
         qry = QryDocJsonFile(doc=self.doc, file_name=self.file_name, root_dir=self.root_dir, ext=self.ext)
-        return self._execute_qry(qry)
+        result = self._execute_qry(qry)
+        if Result.is_success(result):
+            return result.data
+        return None
 
     @override
     def execute(self) -> None:

@@ -1,15 +1,13 @@
 from __future__ import annotations
 from typing import Any, cast, List, TYPE_CHECKING
-import uno
 from com.sun.star.sheet import CellFlags
 
 from ooodev.calc import CalcCell
-from ooodev.utils.helper.dot_dict import DotDict
+from ooodev.events.args.event_args import EventArgs
+from ooodev.events.partial.events_partial import EventsPartial
 from ooodev.utils.data_type.range_obj import RangeObj
 from ooodev.utils.data_type.range_values import RangeValues
-from ooodev.events.args.event_args import EventArgs
 from ooodev.utils.helper.dot_dict import DotDict
-from ooodev.events.partial.events_partial import EventsPartial
 
 from ...code.py_source_mgr import PyInstance
 from ...code.py_source_mgr import PySource

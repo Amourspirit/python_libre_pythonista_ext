@@ -6,19 +6,21 @@ from ooodev.utils.gen_util import NULL_OBJ
 
 if TYPE_CHECKING:
     from ooodev.proto.office_document_t import OfficeDocumentT
-    from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
-    from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_cache_t import CmdCacheT
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.doc.qry_doc_json_file import QryDocJsonFile
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
+    from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
+    from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
+    from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
 else:
-    from libre_pythonista_lib.utils.custom_ext import override
     from libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
-    from libre_pythonista_lib.log.log_mixin import LogMixin
-    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_cache_t import CmdCacheT
     from libre_pythonista_lib.cq.qry.doc.qry_doc_json_file import QryDocJsonFile
     from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
+    from libre_pythonista_lib.log.log_mixin import LogMixin
+    from libre_pythonista_lib.utils.custom_ext import override
+    from libre_pythonista_lib.utils.result import Result
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_cache_t import CmdCacheT
 
 
 class CmdDocJsonFileDel(CmdBase, LogMixin, CmdCacheT):
@@ -38,7 +40,10 @@ class CmdDocJsonFileDel(CmdBase, LogMixin, CmdCacheT):
 
     def _get_current_state(self) -> DocJsonFile | None:
         qry = QryDocJsonFile(doc=self.doc, file_name=self.file_name, ext=self.ext)
-        return self._execute_qry(qry)
+        result = self._execute_qry(qry)
+        if Result.is_success(result):
+            return result.data
+        return None
 
     def _get_current_value(self, js: DocJsonFile) -> Any:  # noqa: ANN401
         return js.read_json(self.name)
@@ -67,11 +72,12 @@ class CmdDocJsonFileDel(CmdBase, LogMixin, CmdCacheT):
 
     def _undo(self) -> None:
         try:
-            if self._current_state is None:
+            if not self._current_state:
                 self.log.debug("Current state is None. Unable to undo.")
                 return
             djf = DocJsonFile(doc=self.doc, root_dir=self.root_dir)
             djf.write_json(file_name=self.name, data=self._current_value)
+            self._current_state = cast(DocJsonFile | None, NULL_OBJ)
         except Exception as e:
             self.log.exception("Error undoing command. Error: %s", e)
             return

@@ -32,6 +32,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_calc_props import QryCalcProps
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.cmd_calc_props import CmdCalcProps
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
+    from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
 else:
     from ___lo_pip___.config import Config
     from ___lo_pip___.lo_util.resource_resolver import ResourceResolver
@@ -42,6 +43,7 @@ else:
     from libre_pythonista_lib.cq.qry.calc.doc.qry_calc_props import QryCalcProps
     from libre_pythonista_lib.cq.cmd.calc.doc.cmd_calc_props import CmdCalcProps
     from libre_pythonista_lib.log.log_mixin import LogMixin
+    from libre_pythonista_lib.utils.result import Result
 
     CalcDoc = Any
 
@@ -61,7 +63,11 @@ class LogOpt(LogMixin):
         self._qry_handler = QryHandlerFactory.get_qry_handler()
         self._rr = ResourceResolver(ctx=self._doc.lo_inst.get_context())
         qry_props = QryCalcProps(doc=self._doc)
-        self._calc_props = self._qry_handler.handle(qry_props).copy()
+        qry_props_result = self._qry_handler.handle(qry_props)
+        if Result.is_success(qry_props_result):
+            self._calc_props = qry_props_result.data.copy()
+        else:
+            raise qry_props_result.error
 
         self._border_kind = BorderKind.BORDER_SIMPLE
         if self._platform == SysInfo.PlatformEnum.MAC:

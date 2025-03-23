@@ -7,7 +7,6 @@ if TYPE_CHECKING:
     from ooodev.calc import CalcCell
     from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
-    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source import PySrcProvider
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source import PySource
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.code.qry_cell_src_code import QryCellSrcCode
@@ -32,23 +31,22 @@ else:
 class CmdCellSrcCode(CmdBase, LogMixin, CmdCellCacheT):
     """Add source code to cell"""
 
-    def __init__(self, uri: str, cell: CalcCell, code: str, src_provider: PySrcProvider | None = None) -> None:
+    def __init__(self, uri: str, cell: CalcCell, code: str) -> None:
         CmdBase.__init__(self)
         LogMixin.__init__(self)
         self.kind = CalcCmdKind.CELL_CACHE
         self._uri = uri
         self._cell = cell
         self._code = code
-        self._src_provider = src_provider
         self._current_src = cast(str | None, NULL_OBJ)
         self._current_exist = cast(bool, NULL_OBJ)
 
     def _get_current_src_code(self) -> str | None:
-        qry = QryCellSrcCode(uri=self._uri, cell=self.cell, src_provider=self._src_provider)
+        qry = QryCellSrcCode(uri=self._uri, cell=self.cell)
         return self._execute_qry(qry)
 
     def _get_src_code_exist(self) -> bool:
-        qry = QryCellSrcCodeExist(uri=self._uri, cell=self.cell, src_provider=self._src_provider)
+        qry = QryCellSrcCodeExist(uri=self._uri, cell=self.cell)
         return self._execute_qry(qry)
 
     @override
@@ -61,7 +59,7 @@ class CmdCellSrcCode(CmdBase, LogMixin, CmdCellCacheT):
 
         self.success = False
         try:
-            py_code = PySource(uri=self._uri, cell=self.cell.cell_obj, src_provider=self._src_provider)
+            py_code = PySource(uri=self._uri, cell=self.cell.cell_obj)
             py_code.source_code = self._code
         except Exception:
             self.log.exception("Error setting cell Code")
@@ -71,7 +69,7 @@ class CmdCellSrcCode(CmdBase, LogMixin, CmdCellCacheT):
 
     def _undo(self) -> None:
         try:
-            py_code = PySource(uri=self._uri, cell=self.cell.cell_obj, src_provider=self._src_provider)
+            py_code = PySource(uri=self._uri, cell=self.cell.cell_obj)
             if self._current_exist:
                 if self._current_src is None:
                     self.log.error("Failed to undo. Current source code is None.")

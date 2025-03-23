@@ -29,35 +29,56 @@ else:
 class CmdAddr(CmdBase, LogMixin, CmdCellT):
     """Sets the address of the cell such as ``sheet_index=0&cell_addr=A1``"""
 
-    def __init__(self, cell: CalcCell, addr: str | Addr) -> None:
+    def __init__(self, cell: CalcCell, addr: str | Addr | None = None) -> None:
+        """
+        Initialize the command to set a cell's address.
+
+        Args:
+            cell (CalcCell): The cell to set the address for
+            addr (str | Addr | None, optional): The address to set. If None, gets current address. Defaults to None.
+        """
         CmdBase.__init__(self)
         LogMixin.__init__(self)
         self._cell = cell
         self._keys = cast("KeyMaker", NULL_OBJ)
         self._current_state = cast(str, NULL_OBJ)
         self._errors = True
-        try:
-            self._state = Addr(str(addr))
-        except Exception as err:
-            self.log.error("Error setting cell address: %s", err)
-            return
+        if not addr:
+            self._state = self._get_addr()
+        else:
+            try:
+                self._state = Addr(str(addr))
+            except Exception as err:
+                self.log.error("Error setting cell address: %s", err)
+                return
         self._errors = False
         self._state_changed = False
 
+    def _get_addr(self) -> Addr:
+        """Gets the current cell address"""
+        addr = f"sheet_index={self.cell.calc_sheet.sheet_index}&cell_addr={self.cell.cell_obj}"
+        return Addr(addr)
+
     def _get_state(self) -> Addr:
-        # use method to make possible to mock for testing
+        """Gets the target address state"""
         return self._state
 
     def _get_keys(self) -> KeyMaker:
+        """Gets the KeyMaker instance for property keys"""
         qry = QryKeyMaker()
         return self._execute_qry(qry)
 
     def _get_current_state(self) -> str:
+        """Gets the current address state of the cell"""
         qry = QryAddr(cell=self.cell)
         return self._execute_qry(qry)
 
     @override
     def execute(self) -> None:
+        """
+        Executes the command to set the cell address.
+        Sets success to True if address is set successfully.
+        """
         self.success = False
         if self._errors:
             self.log.error("Errors occurred during initialization. Unable to execute command.")
@@ -85,6 +106,7 @@ class CmdAddr(CmdBase, LogMixin, CmdCellT):
         self.success = True
 
     def _undo(self) -> None:
+        """Internal method to undo the address change"""
         try:
             if not self._state_changed:
                 self.log.debug("State is already set. Undo not needed.")
@@ -110,6 +132,10 @@ class CmdAddr(CmdBase, LogMixin, CmdCellT):
 
     @override
     def undo(self) -> None:
+        """
+        Public method to undo the address change.
+        Only undoes if the command was successful.
+        """
         if self.success:
             self._undo()
         else:
@@ -117,4 +143,5 @@ class CmdAddr(CmdBase, LogMixin, CmdCellT):
 
     @property
     def cell(self) -> CalcCell:
+        """Gets the cell being modified"""
         return self._cell

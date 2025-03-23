@@ -1,0 +1,118 @@
+from typing import TypeVar, Union, Generic, Iterator, TypeGuard, Tuple, Union, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from typing_extensions import TypeIs
+else:
+    TypeIs = TypeGuard
+
+T = TypeVar("T")
+E = TypeVar("E", bound=Union[BaseException, None])  # Can be None or BaseException
+T_Success = TypeVar("T_Success")
+E_Failure = TypeVar("E_Failure", bound=Union[BaseException, None])
+
+
+class Result(Generic[T, E]):
+    """
+    A generic Result type that can represent either a successful operation with data
+    or a failure with an error.
+
+    Type Parameters:
+        T: The type of the success value
+        E: The type of the error value, must be BaseException or None
+
+    Examples:
+        >>> result = Result.success(10)
+        >>> if Result.is_success(result):
+        >>>     print(result.data)  # Outputs: 10
+        >>> else:
+        >>>     print(result.error)
+
+        >>> result = Result.failure(ValueError("Invalid input"))
+        >>> data, error = result.unpack()
+        >>> print(error)  # Outputs: Invalid input
+    """
+
+    def __init__(self, data: T, error: E) -> None:
+        """
+        Initialize a Result instance.
+
+        Args:
+            data: The success value
+            error: The error value
+        """
+        self.data: T = data
+        self.error: E = error
+
+    def __iter__(self) -> Iterator[Union[T, E]]:
+        """
+        Make Result instance iterable.
+
+        Returns:
+            Iterator yielding data and error values
+        """
+        return iter((self.data, self.error))
+
+    def unpack(self) -> Tuple[T, E]:
+        """
+        Unpack the Result into a tuple of (data, error).
+
+        Returns:
+            A tuple containing the data and error values
+        """
+        return (self.data, self.error)
+
+    @staticmethod
+    def success(data: T_Success) -> "Result[T_Success, None]":
+        """
+        Create a successful Result with the given data.
+
+        Args:
+            data: The success value
+
+        Returns:
+            A Result instance representing success
+        """
+        return Result(data, None)
+
+    @staticmethod
+    def failure(error: E_Failure) -> "Result[None, E_Failure]":
+        """
+        Create a failure Result with the given error.
+
+        Args:
+            error: The error value
+
+        Returns:
+            A Result instance representing failure
+        """
+        return Result(None, error)
+
+    @staticmethod
+    def is_success(
+        obj: Union["Result[T_Success, None]", "Result[None, E_Failure]"],
+    ) -> TypeIs["Result[T_Success, None]"]:
+        """
+        Type guard to check if a Result instance represents success.
+
+        Args:
+            obj: The Result instance to check
+
+        Returns:
+            True if the Result represents success, False otherwise
+        """
+        return isinstance(obj, Result) and obj.error is None
+
+    @staticmethod
+    def is_failure(
+        obj: Union["Result[T_Success, None]", "Result[None, E_Failure]"],
+    ) -> TypeIs["Result[None, E_Failure]"]:
+        """
+        Type guard to check if a Result instance represents failure.
+
+        Args:
+            obj: The Result instance to check
+
+        Returns:
+            True if the Result represents failure, False otherwise
+        """
+        return isinstance(obj, Result) and obj.error is not None

@@ -9,13 +9,13 @@ if __name__ == "__main__":
 
 def test_cell_is_pyc_formula(build_setup, mocker: MockerFixture) -> None:
     if TYPE_CHECKING:
-        from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.uno_cell.qry_cell_is_pyc_formula import (
+        from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.uno_cell.formula.qry_cell_is_pyc_formula import (
             QryCellIsPycFormula,
         )
         from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler import QryHandler
         from oxt.pythonpath.libre_pythonista_lib.const import FORMULA_PYC
     else:
-        from libre_pythonista_lib.cq.qry.calc.sheet.uno_cell.qry_cell_is_pyc_formula import QryCellIsPycFormula
+        from libre_pythonista_lib.cq.qry.calc.sheet.uno_cell.formula.qry_cell_is_pyc_formula import QryCellIsPycFormula
         from libre_pythonista_lib.cq.qry.qry_handler import QryHandler
         from libre_pythonista_lib.const import FORMULA_PYC
 
@@ -53,12 +53,12 @@ def test_cell_is_pyc_formula(build_setup, mocker: MockerFixture) -> None:
 
 def test_cell_is_pyc_formula_properties(build_setup, mocker: MockerFixture) -> None:
     if TYPE_CHECKING:
-        from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.uno_cell.qry_cell_is_pyc_formula import (
+        from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.uno_cell.formula.qry_cell_is_pyc_formula import (
             QryCellIsPycFormula,
         )
         from oxt.pythonpath.libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
     else:
-        from libre_pythonista_lib.cq.qry.calc.sheet.uno_cell.qry_cell_is_pyc_formula import QryCellIsPycFormula
+        from libre_pythonista_lib.cq.qry.calc.sheet.uno_cell.formula.qry_cell_is_pyc_formula import QryCellIsPycFormula
         from libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
 
     # Mock SheetCell

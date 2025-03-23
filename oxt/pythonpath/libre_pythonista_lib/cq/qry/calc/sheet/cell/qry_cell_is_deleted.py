@@ -26,7 +26,6 @@ class QryCellIsDeleted(QryBase, QryCellT[bool]):
         Args:
             uri (str): URI of the source code.
             cell (CalcCell): Cell to query.
-            src_provider (PySrcProvider, optional): Source provider. Defaults to None.
         """
         QryBase.__init__(self)
         self._cell = cell

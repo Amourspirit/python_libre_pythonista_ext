@@ -14,6 +14,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.doc_props.calc_props2 import CalcProps2
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
+    from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
 else:
     from libre_pythonista_lib.utils.custom_ext import override
     from libre_pythonista_lib.const.cache_const import DOC_CALC_PROPS, DOC_LP_DOC_PROP_DATA
@@ -24,6 +25,7 @@ else:
     from libre_pythonista_lib.doc_props.calc_props2 import CalcProps2
     from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
     from libre_pythonista_lib.log.log_mixin import LogMixin
+    from libre_pythonista_lib.utils.result import Result
 
 # tested in tests/test_cmd_qry/test_doc/test_cmd_calc_props.py
 
@@ -45,7 +47,10 @@ class CmdCalcProps(CmdBase, LogMixin, CmdCacheT):
 
     def _get_current_props(self) -> CalcProps2:
         qry = QryCalcProps(self._doc)
-        return self._execute_qry(qry)
+        result = self._execute_qry(qry)
+        if Result.is_success(result):
+            return result.data
+        raise result.error
 
     @override
     def execute(self) -> None:

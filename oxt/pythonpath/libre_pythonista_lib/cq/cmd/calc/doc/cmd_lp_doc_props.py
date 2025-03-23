@@ -15,6 +15,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_lp_doc_json_file import QryLpDocJsonFile
     from oxt.pythonpath.libre_pythonista_lib.const.cache_const import DOC_LP_DOC_PROP_DATA
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
+    from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
 else:
     from libre_pythonista_lib.utils.custom_ext import override
     from libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
@@ -25,6 +26,7 @@ else:
     from libre_pythonista_lib.cq.qry.calc.doc.qry_lp_doc_json_file import QryLpDocJsonFile
     from libre_pythonista_lib.const.cache_const import DOC_LP_DOC_PROP_DATA
     from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
+    from libre_pythonista_lib.utils.result import Result
 
 # tested in tests/test_cmd_qry/test_doc/test_cmd_lp_doc_prop.py
 
@@ -50,7 +52,7 @@ class CmdLpDocProps(CmdBase, LogMixin, CmdCacheT):
     def _ensure_json_file(self) -> bool:
         qry = QryLpDocJsonFile(self._doc)
         result = self._execute_qry(qry)
-        if result is None:
+        if Result.is_failure(result):
             cmd = CmdLpDocJsonFile(self._doc)
             self._execute_cmd(cmd)
         return True
@@ -58,7 +60,10 @@ class CmdLpDocProps(CmdBase, LogMixin, CmdCacheT):
     def _get_json_file(self) -> DocJsonFile | None:
         qry = QryLpDocJsonFile(self._doc)
         self._file_name = qry.file_name
-        return self._execute_qry(qry)
+        result = self._execute_qry(qry)
+        if Result.is_success(result):
+            return result.data
+        return None
 
     @override
     def execute(self) -> None:

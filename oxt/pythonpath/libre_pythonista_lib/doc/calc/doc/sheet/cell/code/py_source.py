@@ -114,13 +114,11 @@ class PySource(LogMixin):
     Args:
         uri (str): URI to the source code file in the document
         cell (CellObj): Cell object that the source code is associated with
-        src_provider (PySrcProvider | None): Provider for source code storage operations. Defaults to SfaProvider if None
     """
 
-    def __init__(self, uri: str, cell: CellObj, src_provider: PySrcProvider | None = None) -> None:
+    def __init__(self, uri: str, cell: CellObj) -> None:
         LogMixin.__init__(self)
-        if src_provider is None:
-            src_provider = SfaProvider(uri)
+        src_provider = SfaProvider(uri)
         self._src_provider = src_provider
         self._uri = uri
         self._cell_obj = cell
@@ -148,7 +146,7 @@ class PySource(LogMixin):
 
     def __copy__(self) -> PySource:
         """Creates a shallow copy of this PySource instance."""
-        return PySource(self._uri, self._cell_obj, self._src_provider)
+        return PySource(self._uri, self._cell_obj)
 
     def _get_source(self) -> str:
         """

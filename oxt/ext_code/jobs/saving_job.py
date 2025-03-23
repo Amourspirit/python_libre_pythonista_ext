@@ -23,23 +23,24 @@ if TYPE_CHECKING:
     from ooodev.calc import CalcDoc
     from ooodev.events.args.event_args import EventArgs
     from ooodev.utils.helper.dot_dict import DotDict
-    from oxt.___lo_pip___.events.lo_events import LoEvents
     from oxt.___lo_pip___.events.args.event_args import EventArgs
+    from oxt.___lo_pip___.events.lo_events import LoEvents
     from oxt.___lo_pip___.oxt_logger import OxtLogger
-    from oxt.pythonpath.libre_pythonista_lib.event.shared_event import SharedEvent
     from oxt.pythonpath.libre_pythonista_lib.const.event_const import DOCUMENT_SAVING
-    from oxt.pythonpath.libre_pythonista_lib.doc.doc_globals import GET_CURRENT_EVENT
-    from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.cmd_lp_doc_props import CmdLpDocProps
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.doc.cmd_lp_version import CmdLpVersion
-    from oxt.pythonpath.libre_pythonista_lib.cq.qry.general.qry_is_import2_available import QryIsImport2Available
-    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_is_doc_pythonista import QryIsDocPythonista
-    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_doc_init import QryDocInit
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_calc_props import QryCalcProps
-    from oxt.pythonpath.libre_pythonista_lib.cq.qry.doc.qry_lp_version import QryLpVersion
-    from oxt.pythonpath.libre_pythonista_lib.cq.qry.doc.ext.qry_ext_version import QryExtVersion
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_doc_init import QryDocInit
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_is_doc_pythonista import QryIsDocPythonista
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.doc.ext.qry_ext_location import QryExtLocation
-    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.cmd_lp_doc_props import CmdLpDocProps
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.doc.ext.qry_ext_version import QryExtVersion
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.doc.qry_lp_version import QryLpVersion
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.general.qry_is_import2_available import QryIsImport2Available
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
+    from oxt.pythonpath.libre_pythonista_lib.doc.doc_globals import GET_CURRENT_EVENT
+    from oxt.pythonpath.libre_pythonista_lib.event.shared_event import SharedEvent
+    from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
 
 else:
 
@@ -51,24 +52,23 @@ else:
         from ooodev.calc import CalcDoc
         from ooodev.events.args.event_args import EventArgs
         from ooodev.utils.helper.dot_dict import DotDict
-        from ___lo_pip___.events.lo_events import LoEvents
         from ___lo_pip___.events.args.event_args import EventArgs
+        from ___lo_pip___.events.lo_events import LoEvents
         from libre_pythonista_lib.const.event_const import DOCUMENT_SAVING
+        from libre_pythonista_lib.cq.cmd.calc.doc.cmd_lp_doc_props import CmdLpDocProps
+        from libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
+        from libre_pythonista_lib.cq.cmd.doc.cmd_lp_version import CmdLpVersion
+        from libre_pythonista_lib.cq.qry.calc.doc.qry_calc_props import QryCalcProps
+        from libre_pythonista_lib.cq.qry.calc.doc.qry_doc_init import QryDocInit
+        from libre_pythonista_lib.cq.qry.calc.doc.qry_is_doc_pythonista import QryIsDocPythonista
+        from libre_pythonista_lib.cq.qry.doc.ext.qry_ext_location import QryExtLocation
+        from libre_pythonista_lib.cq.qry.doc.ext.qry_ext_version import QryExtVersion
+        from libre_pythonista_lib.cq.qry.doc.qry_lp_version import QryLpVersion
+        from libre_pythonista_lib.cq.qry.general.qry_is_import2_available import QryIsImport2Available
+        from libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
         from libre_pythonista_lib.doc.doc_globals import GET_CURRENT_EVENT
         from libre_pythonista_lib.event.shared_event import SharedEvent
-        from libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
-        from libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
-
-        # from libre_pythonista_lib.state.calc_state_mgr import CalcStateMgr
-        from libre_pythonista_lib.cq.cmd.doc.cmd_lp_version import CmdLpVersion
-        from libre_pythonista_lib.cq.qry.general.qry_is_import2_available import QryIsImport2Available
-        from libre_pythonista_lib.cq.qry.calc.doc.qry_is_doc_pythonista import QryIsDocPythonista
-        from libre_pythonista_lib.cq.qry.calc.doc.qry_doc_init import QryDocInit
-        from libre_pythonista_lib.cq.qry.calc.doc.qry_calc_props import QryCalcProps
-        from libre_pythonista_lib.cq.qry.doc.qry_lp_version import QryLpVersion
-        from libre_pythonista_lib.cq.qry.doc.ext.qry_ext_version import QryExtVersion
-        from libre_pythonista_lib.cq.qry.doc.ext.qry_ext_location import QryExtLocation
-        from libre_pythonista_lib.cq.cmd.calc.doc.cmd_lp_doc_props import CmdLpDocProps
+        from libre_pythonista_lib.utils.result import Result
 # endregion imports
 
 
@@ -155,7 +155,11 @@ class SavingJob(XJob, unohelper.Base):
                         qry_ext_location = QryExtLocation()
                         ext_location = qry_handler.handle(qry_ext_location)
                         qry_props = QryCalcProps(doc)
-                        props = qry_handler.handle(qry_props)
+                        props_result = qry_handler.handle(qry_props)
+                        if Result.is_failure(props_result):
+                            self._log.error("Error getting calc properties. Error: %s", props_result.error)
+                            return
+                        props = props_result.data
                         props.doc_ext_location = ext_location
                         if props.is_modified:
                             cmd_props = CmdLpDocProps(doc=doc, props=props.to_dict())

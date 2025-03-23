@@ -17,6 +17,7 @@ def test_cmd_lp_doc_json_file(loader, build_setup) -> None:
         from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
         from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
         from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
+        from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
         from oxt.___lo_pip___.basic_config import BasicConfig
     else:
         from libre_pythonista_lib.cq.cmd.calc.doc.cmd_lp_doc_json_file import CmdLpDocJsonFile
@@ -25,6 +26,7 @@ def test_cmd_lp_doc_json_file(loader, build_setup) -> None:
         from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
         from libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
         from libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
+        from libre_pythonista_lib.utils.result import Result
         from libre_pythonista.basic_config import BasicConfig
 
     doc = None
@@ -52,30 +54,30 @@ def test_cmd_lp_doc_json_file(loader, build_setup) -> None:
 
         # not cached ver
         result = qry_handler.handle(qry)
-        assert result is None
+        assert Result.is_failure(result)
 
         cmd_handler.handle(cmd)
         assert cmd.success
 
         # not cached ver
         result = qry_handler.handle(qry)
-        assert result is not None
+        assert Result.is_success(result)
 
         # cached ver
         result = qry_handler.handle(qry)
-        assert result is not None
+        assert Result.is_success(result)
 
         cmd_del = CmdLpDocJsonFileDel(doc)
         cmd_handler.handle(cmd_del)
         assert cmd_del.success
 
         result = qry_handler.handle(qry)
-        assert result is None
+        assert Result.is_failure(result)
 
         cmd_handler.handle_undo(cmd_del)
 
         result = qry_handler.handle(qry)
-        assert result is not None
+        assert Result.is_success(result)
 
     finally:
         if doc is not None:
