@@ -96,11 +96,6 @@ class CellItemFacade(LogMixin):
             return result.data
         raise result.error
 
-    def has_control(self) -> bool:
-        """Checks if the cell has a control attached"""
-        ctl_kind = self.get_control_kind()
-        return ctl_kind != CtlKind.UNKNOWN
-
     def get_control_kind(self) -> CtlKind:
         """Gets the kind of control attached to the cell"""
         qry = QryCtlKind(self._cell)
@@ -164,6 +159,25 @@ class CellItemFacade(LogMixin):
         if state is None:
             return None
         return self._state_rules.get_matched_rule(self._cell, state.dd_data)
+
+    def is_control(self) -> bool:
+        """Checks if the cell has a control attached"""
+        ctl_kind = self.get_control_kind()
+        return ctl_kind != CtlKind.UNKNOWN
+
+    def is_source_cell(self) -> bool:
+        """Checks if the cell is a source cell"""
+        return self.cell.cell_obj in self._py_src_mgr
+
+    def get_value(self) -> Any:  # noqa: ANN401
+        """Gets the value of the cell"""
+        state = self._qry_module_state()
+        if state is None:
+            return None
+        return state.dd_data.get("data")
+
+    def __repr__(self) -> str:
+        return f"<{self.__class__.__name__}({self._cell.cell_obj})>"
 
     @property
     def uri(self) -> str:

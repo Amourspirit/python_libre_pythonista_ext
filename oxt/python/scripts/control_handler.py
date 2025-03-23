@@ -11,13 +11,13 @@ if TYPE_CHECKING:
     from com.sun.star.awt import ActionEvent
     from com.sun.star.drawing import ControlShape  # service
 
-    from ...pythonpath.libre_pythonista_lib.log.log_inst import LogInst
-    from ...pythonpath.libre_pythonista_lib.menus.ctl_popup import CtlPopup
+    from oxt.pythonpath.libre_pythonista_lib.log.log_inst import LogInst
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.menus.ctl_popup import CtlPopup
 
     XSCRIPTCONTEXT: XScriptContext
 else:
     from libre_pythonista_lib.log.log_inst import LogInst
-    from libre_pythonista_lib.menus.ctl_popup import CtlPopup
+    from libre_pythonista_lib.doc.calc.doc.menus.ctl_popup import CtlPopup
 
 
 def on_btn_action_preformed(*args: Any) -> None:  # noqa: ANN401

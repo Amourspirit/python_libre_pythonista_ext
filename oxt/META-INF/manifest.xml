@@ -18,7 +18,7 @@
     <manifest:file-entry manifest:media-type="application/vnd.sun.star.uno-component;type=Python" manifest:full-path="ext_code/impl/dispatch/main_handler.py" />
     <manifest:file-entry manifest:media-type="application/vnd.sun.star.uno-component;type=Python" manifest:full-path="ext_code/impl/doc_window_factory_impl.py" />
     <manifest:file-entry manifest:media-type="application/vnd.sun.star.uno-component;type=Python" manifest:full-path="ext_code/impl/py_impl.py" />
-    <manifest:file-entry manifest:media-type="application/vnd.sun.star.uno-component;type=Python" manifest:full-path="ext_code/impl/py_impl2.py" />
+    <!-- <manifest:file-entry manifest:media-type="application/vnd.sun.star.uno-component;type=Python" manifest:full-path="ext_code/impl/py_impl2.py" /> -->
     <manifest:file-entry manifest:media-type="application/vnd.sun.star.uno-component;type=Python" manifest:full-path="ext_code/impl/python_editor.py" />
     <manifest:file-entry manifest:media-type="application/vnd.sun.star.uno-component;type=Python" manifest:full-path="ext_code/impl/python_impl.py" />
     <manifest:file-entry manifest:media-type="application/vnd.sun.star.uno-component;type=Python" manifest:full-path="ext_code/jobs/async_jobs/html_py_editor.py" />

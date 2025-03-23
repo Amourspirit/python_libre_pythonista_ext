@@ -27,7 +27,7 @@ def test_cell_item_facade(loader, build_setup, mocker: MockerFixture) -> None:
         facade = CellItemFacade(cell)
 
         # Test initial state
-        assert not facade.has_control()
+        assert not facade.is_control()
         assert facade.get_control_kind() == CtlKind.UNKNOWN
         matched_rule = facade.get_matched_rule()
         assert matched_rule is None
@@ -35,7 +35,7 @@ def test_cell_item_facade(loader, build_setup, mocker: MockerFixture) -> None:
         # Test adding default control
         result = facade.add_default_control()
         assert result == ""  # Initially empty string
-        assert facade.has_control()
+        assert facade.is_control()
         assert facade.get_control_kind() == CtlKind.STRING
 
         # Test updating code to float
