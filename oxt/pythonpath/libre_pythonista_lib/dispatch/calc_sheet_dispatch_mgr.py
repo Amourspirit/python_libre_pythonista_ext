@@ -93,11 +93,11 @@ class CalcSheetDispatchMgr:
                     raise
             else:
                 try:
-                    from .dispatch_edit_py_cell_mb import (
-                        DispatchEditPyCellMb as DispatchEditPyCell,
+                    from .dispatch_edit_py_cell_mb2 import (
+                        DispatchEditPyCellMb2 as DispatchEditPyCell,
                     )
                 except ImportError:
-                    log.exception("DispatchEditPyCellMb import error")
+                    log.exception("DispatchEditPyCellMb2 import error")
                     raise
 
             try:
@@ -121,7 +121,7 @@ class CalcSheetDispatchMgr:
                     if is_experiential:
                         log.debug("CalcSheetDispatchMgr.dispatch: dispatching DispatchEditPyCellWv")
                     else:
-                        log.debug("CalcSheetDispatchMgr.dispatch: dispatching DispatchEditPyCellMb")
+                        log.debug("CalcSheetDispatchMgr.dispatch: dispatching DispatchEditPyCellMb2")
                 result = DispatchEditPyCell(sheet=args["sheet"], cell=args["cell"], in_thread=in_thread)
                 result.dispatch(URL, Arguments)
 

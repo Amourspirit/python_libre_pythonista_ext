@@ -89,11 +89,11 @@ class CalcSheetHandlerMgr:
                     raise
             else:
                 try:
-                    from .dispatch_edit_py_cell_mb import (
-                        DispatchEditPyCellMb as DispatchEditPyCell,
+                    from .dispatch_edit_py_cell_mb2 import (
+                        DispatchEditPyCellMb2 as DispatchEditPyCell,
                     )
                 except ImportError:
-                    log.exception("DispatchEditPyCellMb import error")
+                    log.exception("DispatchEditPyCellMb2 import error")
                     raise
 
             try:
@@ -117,7 +117,7 @@ class CalcSheetHandlerMgr:
                     if is_experiential:
                         log.debug("DispatchProviderInterceptor.queryDispatch: returning DispatchEditPyCellWv")
                     else:
-                        log.debug("DispatchProviderInterceptor.queryDispatch: returning DispatchEditPyCellMb")
+                        log.debug("DispatchProviderInterceptor.queryDispatch: returning DispatchEditPyCellMb2")
                 result = DispatchEditPyCell(sheet=args["sheet"], cell=args["cell"], in_thread=in_thread)
 
                 eargs = EventArgs.from_args(cargs)
