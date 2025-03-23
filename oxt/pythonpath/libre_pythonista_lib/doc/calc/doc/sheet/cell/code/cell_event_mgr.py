@@ -14,7 +14,6 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.formula.qry_cell_is_pyc_formula import (
         QryCellIsPycFormula,
     )
-    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_code_name import QryCodeName
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.cell_item_facade import CellItemFacade
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.listen.code_cell_listeners import (
         CodeCellListeners,
@@ -26,7 +25,6 @@ else:
     from libre_pythonista_lib.doc.doc_globals import DocGlobals
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_addr import CmdAddr
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.formula.qry_cell_is_pyc_formula import QryCellIsPycFormula
-    from libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_code_name import QryCodeName
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.cell_item_facade import CellItemFacade
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.listen.code_cell_listeners import CodeCellListeners
 
@@ -71,10 +69,6 @@ class CellEventMgr(LogMixin):
 
     def _qry_is_pyc_formula(self, calc_cell: CalcCell) -> bool:
         qry = QryCellIsPycFormula(cell=calc_cell)
-        return self._src_mgr.qry_handler.handle(qry)
-
-    def _qry_code_name(self, calc_cell: CalcCell) -> str:
-        qry = QryCodeName(cell=calc_cell)
         return self._src_mgr.qry_handler.handle(qry)
 
     def _remove_cell(self, calc_cell: CalcCell) -> None:

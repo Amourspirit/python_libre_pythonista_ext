@@ -43,7 +43,7 @@ class CmdAddr(CmdBase, LogMixin, CmdCellT):
         self._keys = cast("KeyMaker", NULL_OBJ)
         self._current_state = cast(str, NULL_OBJ)
         self._errors = True
-        if not addr:
+        if addr is None:
             self._state = self._get_addr()
         else:
             try:

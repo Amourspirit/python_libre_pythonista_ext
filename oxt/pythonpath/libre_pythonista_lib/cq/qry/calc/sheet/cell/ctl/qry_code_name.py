@@ -11,15 +11,17 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_code_name import (
         QryCodeName as QryPropCodeName,
     )
+    from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
 else:
     from libre_pythonista_lib.cq.qry.qry_base import QryBase
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_t import QryCellT
     from libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl import Ctl
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_code_name import QryCodeName as QryPropCodeName
+    from libre_pythonista_lib.utils.result import Result
 
 
-class QryCodeName(QryBase, QryCellT[str]):
+class QryCodeName(QryBase, QryCellT[Result[str, None] | Result[None, Exception]]):
     """Gets the code name of the control"""
 
     def __init__(self, cell: CalcCell, ctl: Ctl | None = None) -> None:
@@ -34,21 +36,23 @@ class QryCodeName(QryBase, QryCellT[str]):
         self._cell = cell
         self._ctl = ctl
 
-    def execute(self) -> str:
+    def execute(self) -> Result[str, None] | Result[None, Exception]:
         """
         Executes the query to get code name
 
         Returns:
-            str: The code name
+            Result: Success with code name or Failure with Exception
         """
         qry_code_name = QryPropCodeName(cell=self.cell)
-        value = self._execute_qry(qry_code_name)
+        qry_result = self._execute_qry(qry_code_name)
+        if Result.is_failure(qry_result):
+            return qry_result
 
         if self._ctl is not None:
-            self._ctl.ctl_code_name = value
+            self._ctl.ctl_code_name = qry_result.data
             if not self._ctl.cell:
                 self._ctl.cell = self.cell
-        return value
+        return qry_result
 
     @property
     def cell(self) -> CalcCell:

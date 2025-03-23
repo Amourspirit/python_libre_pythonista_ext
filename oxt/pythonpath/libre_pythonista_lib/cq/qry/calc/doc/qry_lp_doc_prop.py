@@ -8,11 +8,13 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_base import QryBase
     from pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_lp_doc_props import QryLpDocProps
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_doc_t import QryDocT
+    from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
 
 else:
     from libre_pythonista_lib.cq.qry.qry_base import QryBase
     from libre_pythonista_lib.cq.qry.calc.doc.qry_lp_doc_props import QryLpDocProps
     from libre_pythonista_lib.cq.qry.calc.doc.qry_doc_t import QryDocT
+    from libre_pythonista_lib.utils.result import Result
 
 # tested in tests/test_cmd_qry/test_doc/test_cmd_lp_doc_prop.py
 
@@ -26,7 +28,10 @@ class QryLpDocProp(QryBase, QryDocT[Any]):
 
     def _get_data(self) -> dict | None:
         qry = QryLpDocProps(self._doc)
-        return self._execute_qry(qry)
+        result = self._execute_qry(qry)
+        if Result.is_success(result):
+            return result.data
+        return None
 
     def execute(self) -> Any:  # noqa: ANN401
         data = self._get_data()

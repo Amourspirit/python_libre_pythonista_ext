@@ -25,6 +25,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.state_rules.state_rules import StateRules
     from oxt.pythonpath.libre_pythonista_lib.kind.ctl_kind import CtlKind
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
+    from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
 else:
     from libre_pythonista_lib.code.module_state_item import ModuleStateItem
     from libre_pythonista_lib.code.py_module import PyModule
@@ -40,6 +41,7 @@ else:
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.state_rules.state_rules import StateRules
     from libre_pythonista_lib.kind.ctl_kind import CtlKind
     from libre_pythonista_lib.log.log_mixin import LogMixin
+    from libre_pythonista_lib.utils.result import Result
 
     StateRuleT = Any
     QryHandlerT = Any
@@ -67,7 +69,7 @@ class CellItemFacade(LogMixin):
         self._cell = cell
         self._state_rules = StateRules()
         self._py_mod = PyModule()
-        self._uri = self._get_uri()
+        self._uri = None
         self._py_src_mgr = PySourceManager(doc=self._cell.calc_doc, mod=self._py_mod)
 
     def _ensure_code_name(self) -> None:
@@ -80,13 +82,19 @@ class CellItemFacade(LogMixin):
     def _qry_module_state(self) -> ModuleStateItem | None:
         """Queries the current module state for the cell"""
         qry = QryModuleState(cell=self._cell, mod=self._py_mod)
-        return self.qry_handler.handle(qry)
+        result = self.qry_handler.handle(qry)
+        if Result.is_success(result):
+            return result.data
+        return None
 
     def _get_uri(self) -> str:
         """Gets the URI for the cell, ensuring it has a code name first"""
         self._ensure_code_name()
         qry = QryCellUri(self._cell)
-        return self.qry_handler.handle(qry)
+        result = self.qry_handler.handle(qry)
+        if Result.is_success(result):
+            return result.data
+        raise result.error
 
     def has_control(self) -> bool:
         """Checks if the cell has a control attached"""
@@ -160,6 +168,8 @@ class CellItemFacade(LogMixin):
     @property
     def uri(self) -> str:
         """Gets the cell's URI"""
+        if self._uri is None:
+            self._uri = self._get_uri()
         return self._uri
 
     @property

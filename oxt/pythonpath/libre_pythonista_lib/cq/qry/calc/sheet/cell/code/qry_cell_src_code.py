@@ -5,58 +5,65 @@ from typing import Any, TYPE_CHECKING
 from ooodev.calc import CalcCell
 
 if TYPE_CHECKING:
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_t import QryCellT
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_uri import QryCellUri
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_base import QryBase
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source import PySource
-    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_cache_t import QryCellCacheT
-    from oxt.pythonpath.libre_pythonista_lib.const.cache_const import CELL_SRC_CODE
-    from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
+    from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
+    from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
 else:
+    from libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_t import QryCellT
+    from libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_uri import QryCellUri
     from libre_pythonista_lib.cq.qry.qry_base import QryBase
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source import PySource
-    from libre_pythonista_lib.log.log_mixin import LogMixin
-    from libre_pythonista_lib.const.cache_const import CELL_SRC_CODE
-    from libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_cache_t import QryCellCacheT
     from libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
+    from libre_pythonista_lib.log.log_mixin import LogMixin
+    from libre_pythonista_lib.utils.result import Result
 
 
-class QryCellSrcCode(QryBase, LogMixin, QryCellCacheT[str | None]):
+class QryCellSrcCode(QryBase, LogMixin, QryCellT[Result[str, None] | Result[None, Exception]]):
     """Gets the source code for a cell"""
 
-    def __init__(self, uri: str, cell: CalcCell) -> None:
+    def __init__(self, cell: CalcCell, uri: str = "") -> None:
         """Constructor
 
         Args:
-            uri (str): URI of the source code.
+            uri (str, optional): URI of the source code.
+                if not provided then it will be queried. Defaults to "".
             cell (CalcCell): Cell to query.
         """
         QryBase.__init__(self)
         LogMixin.__init__(self)
-        self.kind = CalcQryKind.CELL_CACHE
+        self.kind = CalcQryKind.CELL
         self._uri = uri
         self._cell = cell
 
-    def execute(self) -> str | None:
+    def _qry_cell_uri(self) -> str:
+        """Get the URI identifier for the cell."""
+        qry = QryCellUri(cell=self.cell)
+        result = self._execute_qry(qry)
+        if Result.is_success(result):
+            return result.data
+        raise result.error
+
+    def execute(self) -> Result[str, None] | Result[None, Exception]:
         """
-        Executes the query to get the script URL.
-        The url will start with ``vnd.sun.star.script:``
+        Executes the query to get the cell source code.
 
         Returns:
-            str | None: The script URL if successful, otherwise None.
+            Result: Success with source code or Failure with Exception
         """
 
         try:
+            if not self._uri:
+                self._uri = self._qry_cell_uri()
             py_code = PySource(uri=self._uri, cell=self.cell.cell_obj)
-            return py_code.source_code
+            return Result.success(py_code.source_code)
         except Exception:
             self.log.exception("Error executing query")
-        return None
+        return Result.failure(Exception("Source code not found"))
 
     @property
     def cell(self) -> CalcCell:
         return self._cell
-
-    @property
-    def cache_key(self) -> str:
-        """Gets the cache key."""
-        return CELL_SRC_CODE

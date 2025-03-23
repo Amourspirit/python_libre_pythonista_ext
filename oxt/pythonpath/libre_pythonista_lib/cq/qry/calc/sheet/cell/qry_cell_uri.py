@@ -9,17 +9,19 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.doc.qry_lp_root_uri import QryLpRootUri
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_code_name import QryCodeName
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
+    from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
 else:
     from libre_pythonista_lib.cq.qry.qry_base import QryBase
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_t import QryCellT
     from libre_pythonista_lib.cq.qry.doc.qry_lp_root_uri import QryLpRootUri
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_code_name import QryCodeName
     from libre_pythonista_lib.log.log_mixin import LogMixin
+    from libre_pythonista_lib.utils.result import Result
 
 # tested in: tests/test_cmd/test_cmd_py_src.py
 
 
-class QryCellUri(QryBase, LogMixin, QryCellT[str]):
+class QryCellUri(QryBase, LogMixin, QryCellT[Result[str, None] | Result[None, Exception]]):
     """
     Gets the URI for a cell.
 
@@ -38,34 +40,33 @@ class QryCellUri(QryBase, LogMixin, QryCellT[str]):
 
     def _get_code_name(self) -> str:
         qry = QryCodeName(cell=self._cell)
-        return self._execute_qry(qry)
+        result = self._execute_qry(qry)
+        if Result.is_success(result):
+            return result.data
+        raise result.error
 
     def _get_root_uri(self) -> str:
         qry = QryLpRootUri(doc=self._cell.calc_sheet.calc_doc)
         return self._execute_qry(qry)
 
-    def execute(self) -> str:
+    def execute(self) -> Result[str, None] | Result[None, Exception]:
         """
         Executes the query to get the URI for a cell.
 
         In format of ``vnd.sun.star.tdoc:/1/librepythonista/sheet_unique_id_bla_bla/code_name_bla_bal.py``
 
         Returns:
-            str: The URI for a cell.
+            Result: Success with URI or Failure with Exception
         """
+        try:
+            code_name = self._get_code_name()
 
-        code_name = self._get_code_name()
-        if not code_name:
-            self.log.error("Code name not found. Returning empty string.")
-            return ""
+            root_uri = self._get_root_uri()
 
-        root_uri = self._get_root_uri()
-        if not root_uri:
-            self.log.error("Root URI not found. Returning empty string.")
-            return ""
-
-        uri = f"{root_uri}/{self._cell.calc_sheet.unique_id}/{code_name}.py"
-        return uri
+            uri = f"{root_uri}/{self._cell.calc_sheet.unique_id}/{code_name}.py"
+            return Result.success(uri)
+        except Exception as e:
+            return Result.failure(e)
 
     @property
     def cell(self) -> CalcCell:

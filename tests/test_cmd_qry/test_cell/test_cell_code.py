@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import cast, TYPE_CHECKING
+from typing import TYPE_CHECKING
 import pytest
 
 if __name__ == "__main__":
@@ -16,14 +16,14 @@ def test_cell_code(loader, py_src_uri) -> None:
         from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
         from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.code.cmd_cell_src_code import CmdCellSrcCode
         from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.code.qry_cell_src_code import QryCellSrcCode
-        from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_cache import QryCellCache
+        from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
 
     else:
         from libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
         from libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
         from libre_pythonista_lib.cq.cmd.calc.sheet.cell.code.cmd_cell_src_code import CmdCellSrcCode
         from libre_pythonista_lib.cq.qry.calc.sheet.cell.code.qry_cell_src_code import QryCellSrcCode
-        from libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_cache import QryCellCache
+        from libre_pythonista_lib.utils.result import Result
 
     doc = None
     try:
@@ -34,18 +34,10 @@ def test_cell_code(loader, py_src_uri) -> None:
         cmd_handler = CmdHandlerFactory.get_cmd_handler()
         qry_handler = QryHandlerFactory.get_qry_handler()
 
-        qry_cache = QryCellCache(cell=cell)
-        cache = cast(MemCache, qry_handler.handle(qry_cache))
-
-        qry = QryCellSrcCode(uri=uri, cell=cell)
+        qry = QryCellSrcCode(cell=cell, uri=uri)
         result = qry_handler.handle(qry)
-        assert result == ""
-        assert cache.hits == 0
-
-        # check cached
-        result = qry_handler.handle(qry)
-        assert result == ""
-        assert cache.hits == 1
+        assert Result.is_success(result)
+        assert result.data == ""
 
         code = "print('Hello World')"
         cmd = CmdCellSrcCode(uri=uri, cell=cell, code=code)
@@ -53,10 +45,8 @@ def test_cell_code(loader, py_src_uri) -> None:
         assert cmd.success
 
         result = qry_handler.handle(qry)
-        assert result == code
-
-        result2 = qry_handler.handle(qry)
-        assert result2 == result
+        assert Result.is_success(result)
+        assert result.data == code
 
     finally:
         if not doc is None:

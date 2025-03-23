@@ -17,6 +17,7 @@ def test_cmd_py_src_no_src(loader, build_setup) -> None:
         from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source import PySource
         from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_uri import QryCellUri
         from oxt.___lo_pip___.basic_config import BasicConfig as Config
+        from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
     else:
         from libre_pythonista_lib.cq.cmd.calc.sheet.cell.code.cmd_cell_src_code import CmdCellSrcCode
         from libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
@@ -24,6 +25,7 @@ def test_cmd_py_src_no_src(loader, build_setup) -> None:
         from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source import PySource
         from libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_uri import QryCellUri
         from libre_pythonista.basic_config import BasicConfig as Config
+        from libre_pythonista_lib.utils.result import Result
 
     doc = None
     try:
@@ -46,7 +48,9 @@ def test_cmd_py_src_no_src(loader, build_setup) -> None:
 
         qry_cell_uri = QryCellUri(cell=cell)
         qry_cell_uri_result = qry_handler.handle(qry_cell_uri)
-        assert qry_cell_uri_result == uri
+        assert Result.is_success(qry_cell_uri_result)
+
+        assert qry_cell_uri_result.data == uri
 
         cmd = CmdCellSrcCode(uri=uri, code=code, cell=cell)
         cmd_handler.handle(cmd)
@@ -71,6 +75,7 @@ def test_cmd_py_src_has_src(loader, build_setup) -> None:
         from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source import PySource
         from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_uri import QryCellUri
         from oxt.___lo_pip___.basic_config import BasicConfig as Config
+        from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
     else:
         from libre_pythonista_lib.cq.cmd.calc.sheet.cell.code.cmd_cell_src_code import CmdCellSrcCode
         from libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
@@ -78,6 +83,7 @@ def test_cmd_py_src_has_src(loader, build_setup) -> None:
         from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source import PySource
         from libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_uri import QryCellUri
         from libre_pythonista.basic_config import BasicConfig as Config
+        from libre_pythonista_lib.utils.result import Result
 
     doc = None
     try:
@@ -97,8 +103,12 @@ def test_cmd_py_src_has_src(loader, build_setup) -> None:
         # code_id = cell.get_custom_property(code_prop_name)
         # uri = f"{root_uri}/{sheet.unique_id}/{code_id}.py"
 
+        uri = ""
         qry_cell_uri = QryCellUri(cell=cell)
-        uri = qry_handler.handle(qry_cell_uri)
+        qry_result = qry_handler.handle(qry_cell_uri)
+
+        assert Result.is_success(qry_result)
+        uri = qry_result.data
 
         cmd = CmdCellSrcCode(code=code, uri=uri, cell=cell)
         cmd_handler.handle(cmd)

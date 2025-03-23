@@ -48,7 +48,7 @@ def test_py_src(build_setup, loader) -> None:
         code_id = "reu44340ttr"
         uri = f"{root_url}/{sheet_unique_id}/{code_id}.py"
         info = UrlInfo.from_url(uri)
-        py_src = PySource(uri=info.url, cell=co, src_provider=None)
+        py_src = PySource(uri=info.url, cell=co)
         assert py_src.exists() is False
         py_src.source_code = src_code
         assert py_src.exists()

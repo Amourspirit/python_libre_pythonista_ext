@@ -30,11 +30,13 @@ def test_add_source(py_source_manager: PySourceManager) -> None:
 
     if TYPE_CHECKING:
         from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
+        from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
         from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.state.qry_module_state_last_item import (
             QryModuleStateLastItem,
         )
     else:
         from libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
+        from libre_pythonista_lib.utils.result import Result
         from libre_pythonista_lib.cq.qry.calc.sheet.cell.state.qry_module_state_last_item import QryModuleStateLastItem
 
     # Test adding source code to a cell
@@ -46,9 +48,9 @@ def test_add_source(py_source_manager: PySourceManager) -> None:
     # py_src = py_source_manager[cell_obj]
     qry = QryModuleStateLastItem(py_source_manager.mod)
     state = qry_handler.handle(qry)
-    assert state is not None
-    assert state.cell_obj == cell_obj
-    assert state.dd_data.data is None
+    assert Result.is_success(state)
+    assert state.data.cell_obj == cell_obj
+    assert state.data.dd_data.data is None
 
     # Verify source was added
     assert cell_obj in py_source_manager
@@ -69,7 +71,6 @@ def test_update_source(py_source_manager: PySourceManager) -> None:
     initial_code = "x = 42"
     cell_obj = CellObj.from_idx(col_idx=0, row_idx=0, sheet_idx=0)
     py_source_manager.add_source(initial_code, cell_obj)
-    py_src = py_source_manager[cell_obj]
     state = py_source_manager.qry_last_module_state_item()
     assert state is not None
     assert state.cell_obj == cell_obj
@@ -258,9 +259,6 @@ def test_singleton_behavior(loader, build_setup) -> None:
         assert cell_obj in manager2
         assert manager2[cell_obj].source_code == "x = 42"
 
-        # Create a new instance with different module
-        manager3 = PySourceManager(doc=doc, mod=PyModule())
-        assert manager1 is not manager3
     finally:
         if doc is not None:
             doc.close(True)

@@ -11,8 +11,9 @@ if TYPE_CHECKING:
         QryCellIsArrayFormula,
     )
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.formula.qry_cell_is_formula import QryCellIsFormula
-    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.state.cmd_update_array_formula import (
-        CmdUpdateArrayFormula,
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.formula.cmd_set_formula import CmdSetFormula
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.formula.cmd_set_array_formula import (
+        CmdSetArrayFormula,
     )
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
@@ -22,7 +23,8 @@ else:
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.formula.qry_cell_is_array_formula import QryCellIsArrayFormula
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_is_pyc_array_formula import QryCellIsPycArrayFormula
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.formula.qry_cell_is_formula import QryCellIsFormula
-    from libre_pythonista_lib.cq.cmd.calc.sheet.cell.state.cmd_update_array_formula import CmdUpdateArrayFormula
+    from libre_pythonista_lib.cq.cmd.calc.sheet.cell.formula.cmd_set_formula import CmdSetFormula
+    from libre_pythonista_lib.cq.cmd.calc.sheet.cell.formula.cmd_set_array_formula import CmdSetArrayFormula
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.utils.custom_ext import override
 
@@ -44,7 +46,17 @@ class CmdToggleFormula(CmdBase, LogMixin, CmdCellT):
         CmdBase.__init__(self)
         LogMixin.__init__(self)
         self._cell = cell
+        self._cmd: CmdBase | None = None
         self._formula_state = 0  # 0: unknown, 1: normal formula, 2: array formula
+
+    def _get_cmd(self, cell: CalcCell) -> CmdBase:
+        """Get the appropriate command based on the current formula state."""
+        if self._formula_state == 1:
+            return CmdSetArrayFormula(cell=cell)
+        elif self._formula_state == 2:
+            return CmdSetFormula(cell=cell)
+        else:
+            raise ValueError("Unknown formula state")
 
     def _qry_is_formula(self) -> bool:
         """Check if the cell contains a formula."""
@@ -55,43 +67,6 @@ class CmdToggleFormula(CmdBase, LogMixin, CmdCellT):
         """Check if the cell contains an array formula."""
         qry = QryCellIsArrayFormula(cell=self.cell)
         return self._execute_qry(qry)
-
-    def _get_formula(self) -> str:
-        """
-        Get the cell's formula string without array formula braces.
-
-        Returns:
-            The formula string without surrounding braces
-        """
-        formula = self.cell.component.getFormula()
-        return formula.lstrip("{").rstrip("}")
-
-    def _formula_to_array(self) -> bool:
-        """
-        Convert a normal formula to an array formula.
-
-        Returns:
-            True if conversion successful, False otherwise
-        """
-        cmd = CmdUpdateArrayFormula(cell=self.cell)
-        self._execute_cmd(cmd)
-        return cmd.success
-
-    def _array_to_formula(self) -> bool:
-        """
-        Convert an array formula to a normal formula.
-
-        Returns:
-            True if conversion successful, False otherwise
-        """
-        try:
-            self.log.debug("Converting to array formula")
-            formula = self._get_formula()
-            self.cell.component.setFormula(formula)
-            return True
-        except Exception as e:
-            self.log.exception("Error converting array formula to formula: %s", e)
-        return False
 
     @override
     def execute(self) -> None:
@@ -115,10 +90,11 @@ class CmdToggleFormula(CmdBase, LogMixin, CmdCellT):
             self._formula_state = 2
 
         try:
-            if self._formula_state == 1:
-                if not self._formula_to_array():
-                    return
-            elif self._formula_state == 2 and not self._array_to_formula():
+            if self._cmd is None:
+                self._cmd = self._get_cmd(self.cell)
+            self._execute_cmd(self._cmd)
+            if not self._cmd.success:
+                self.log.error("Failed to execute command for cell %s.", self.cell.cell_obj)
                 return
         except Exception:
             self.log.exception("Error setting cell address")
@@ -132,13 +108,12 @@ class CmdToggleFormula(CmdBase, LogMixin, CmdCellT):
         Reverts the formula to its previous state.
         """
         try:
-            if self._formula_state == 0:
-                self.log.debug("No formula state for cell %s. Nothing to undo.", self.cell.cell_obj)
+            if self._cmd is None:
+                self.log.debug("No Current State. Unable to undo.")
                 return
-            if self._formula_state == 1:
-                _ = self._array_to_formula()
-            elif self._formula_state == 2:
-                _ = self._formula_to_array()
+            self._execute_cmd_undo(self._cmd)
+            self._cmd = None
+            self.success = False
             self._formula_state = 0
             self.log.debug("Successfully executed undo command for cell %s.", self.cell.cell_obj)
         except Exception:

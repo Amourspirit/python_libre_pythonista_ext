@@ -1,9 +1,5 @@
 from __future__ import annotations
-
-
 from typing import TYPE_CHECKING
-from ooodev.exceptions import ex as mEx  # noqa: N812
-
 
 from ooodev.utils.props import Props
 
@@ -19,8 +15,6 @@ else:
     from libre_pythonista_lib.log.log_mixin import LogMixin
 
 
-# this class should be call in:
-# libre_pythonista_lib.cq.qry.calc.sheet.qry_handler_sheet_cache.QryHandlerSheetCache
 class QryIsDocNew(QryBase, LogMixin, QryDocT[bool | None]):
     def __init__(self, doc: CalcDoc) -> None:
         QryBase.__init__(self)

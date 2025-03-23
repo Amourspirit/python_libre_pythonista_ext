@@ -12,6 +12,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_lp_doc_props import QryLpDocProps
     from pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.cmd_lp_doc_props import CmdLpDocProps
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.cmd_doc_t import CmdDocT
+    from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
 else:
     from libre_pythonista_lib.utils.custom_ext import override
     from libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
@@ -21,6 +22,7 @@ else:
     from libre_pythonista_lib.cq.qry.calc.doc.qry_lp_doc_props import QryLpDocProps
     from libre_pythonista_lib.cq.cmd.calc.doc.cmd_lp_doc_props import CmdLpDocProps
     from libre_pythonista_lib.cq.cmd.calc.doc.cmd_doc_t import CmdDocT
+    from libre_pythonista_lib.utils.result import Result
 
 # tested in tests/test_cmd_qry/test_doc/test_cmd_lp_doc_prop.py
 
@@ -52,9 +54,8 @@ class CmdLpDocProp(CmdBase, LogMixin, CmdDocT):
         self.success = False
         try:
             qry = QryLpDocProps(self._doc)
-            results = self._execute_qry(qry)
-            if results is None:
-                results = {}
+            qry_result = self._execute_qry(qry)
+            results = qry_result.data if Result.is_success(qry_result) else {}
             results[self._name] = self._value
             cmd = CmdLpDocProps(self._doc, results)
             self._execute_cmd(cmd)

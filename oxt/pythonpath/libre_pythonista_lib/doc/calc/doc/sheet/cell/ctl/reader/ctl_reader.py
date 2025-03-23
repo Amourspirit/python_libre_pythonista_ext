@@ -50,8 +50,8 @@ class CtlReader(List[QryT], LogMixin, ABC):
     def _execute(self) -> None:
         self._success = False
         try:
-            for cmd in self:
-                _ = self._handler.handle(cmd)
+            for qry in self:
+                _ = self._handler.handle(qry)
         except Exception as e:
             self.log.exception("An unexpected error occurred: %s", e)
             return

@@ -13,6 +13,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_code_name import QryCodeName
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.uno_cell.qry_cell_is_deleted import QryCellIsDeleted
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
+    from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
 else:
     from libre_pythonista_lib.doc.doc_globals import DocGlobals
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.listen.code_cell_listener import CodeCellListener
@@ -20,6 +21,7 @@ else:
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_code_name import QryCodeName
     from libre_pythonista_lib.cq.qry.calc.sheet.uno_cell.qry_cell_is_deleted import QryCellIsDeleted
     from libre_pythonista_lib.log.log_mixin import LogMixin
+    from libre_pythonista_lib.utils.result import Result
 
 
 _KEY = "libre_pythonista_lib.doc.calc.doc.sheet.cell.listen.code_cell_listeners.CodeCellListeners"
@@ -178,7 +180,10 @@ class CodeCellListeners(LogMixin):
             str: The cell's code name
         """
         qry = QryCodeName(cell=calc_cell)
-        return self._qry_handler.handle(qry)
+        result = self._qry_handler.handle(qry)
+        if Result.is_success(result):
+            return result.data
+        return ""
 
     def get_cell_listener(self, cell_obj: CellObj) -> CodeCellListener | None:
         """

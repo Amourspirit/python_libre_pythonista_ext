@@ -16,6 +16,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
+    from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
 else:
     from libre_pythonista_lib.cell.props.key_maker import KeyMaker
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.cmd_cell_t import CmdCellT
@@ -28,6 +29,7 @@ else:
     from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.utils.custom_ext import override
+    from libre_pythonista_lib.utils.result import Result
 
 
 class CmdCodeName(CmdBase, LogMixin, CmdCellT):
@@ -79,7 +81,10 @@ class CmdCodeName(CmdBase, LogMixin, CmdCellT):
             The current code name of the cell
         """
         qry = QryCodeName(cell=self.cell)
-        return self._execute_qry(qry)
+        result = self._execute_qry(qry)
+        if Result.is_success(result):
+            return result.data
+        return ""
 
     def _get_keys(self) -> KeyMaker:
         """

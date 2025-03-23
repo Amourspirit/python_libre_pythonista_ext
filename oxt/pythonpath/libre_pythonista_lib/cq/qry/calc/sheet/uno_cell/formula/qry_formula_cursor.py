@@ -1,56 +1,54 @@
 from __future__ import annotations
 from typing import Any, cast, TYPE_CHECKING
 
-from ooodev.utils.data_type.range_obj import RangeObj
 
 if TYPE_CHECKING:
     from com.sun.star.sheet import SheetCell  # service
     from com.sun.star.sheet import SheetCellCursor  # service
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.uno_cell.qry_cell_is_deleted import QryCellIsDeleted
-    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.uno_cell.formula.qry_formula_cursor import (
-        QryFormulaCursor,
-    )
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.uno_cell.qry_uno_cell_t import QryUnoCellT
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_base import QryBase
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
 else:
     from libre_pythonista_lib.cq.qry.calc.sheet.uno_cell.qry_cell_is_deleted import QryCellIsDeleted
-    from libre_pythonista_lib.cq.qry.calc.sheet.uno_cell.formula.qry_formula_cursor import QryFormulaCursor
     from libre_pythonista_lib.cq.qry.qry_base import QryBase
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.utils.result import Result
     from libre_pythonista_lib.cq.qry.calc.sheet.uno_cell.qry_uno_cell_t import QryUnoCellT
 
     SheetCell = Any
+    SheetCellCursor = Any
 
 
-class QryFormulaRange(QryBase, LogMixin, QryUnoCellT[Result[RangeObj, None] | Result[None, Exception]]):
+class QryFormulaCursor(QryBase, LogMixin, QryUnoCellT[Result[SheetCellCursor, None] | Result[None, Exception]]):
     """
-    Get the range of the cell's array formula.
+    Query to create a cursor for a cell's array formula range.
+
+    Inherits from QryBase, LogMixin, and QryUnoCellT with a Result type that can contain either
+    a SheetCellCursor or None, or an Exception in case of failure.
     """
 
     def __init__(self, cell: SheetCell) -> None:
+        """
+        Initialize the query with a cell.
+
+        Args:
+            cell (SheetCell): The LibreOffice Calc cell to query
+        """
         QryBase.__init__(self)
         LogMixin.__init__(self)
         self._cell = cell
 
-    def _qry_formula_cursor(self) -> SheetCellCursor:
-        """Get the cursor for the cell's array formula range."""
-        qry = QryFormulaCursor(cell=self.cell)
-        qry_result = self._execute_qry(qry)
-        if Result.is_success(qry_result):
-            return qry_result.data
-        raise qry_result.error
-
-    def execute(self) -> Result[RangeObj, None] | Result[None, Exception]:
+    def execute(self) -> Result[SheetCellCursor, None] | Result[None, Exception]:
         """
-        Executes the query to get the range of the cell's array formula.
+        Execute the query to get a cursor for the cell's array formula range.
 
         Returns:
-            Result: The range of the cell's array formula if successful, otherwise an exception.
+            Result containing either:
+            - Success: SheetCellCursor positioned at the array formula range
+            - Failure: None if cell is deleted, or Exception if error occurs
         """
-
         try:
             qry_cell_del = QryCellIsDeleted(cell=self.cell)
             if self._execute_qry(qry_cell_del):
@@ -58,10 +56,9 @@ class QryFormulaRange(QryBase, LogMixin, QryUnoCellT[Result[RangeObj, None] | Re
                 result = Result.failure(Exception("Cell is deleted."))
                 return result
 
-            cursor = self._qry_formula_cursor()
-            ca = cursor.getRangeAddress()
-            ro = RangeObj.from_range(ca)
-            result = Result.success(ro)
+            cursor = cast("SheetCellCursor", self._cell.getSpreadsheet().createCursorByRange(self._cell))  # type: ignore
+            cursor.collapseToCurrentArray()
+            result = Result.success(cursor)
             return result
 
         except Exception as e:
@@ -71,5 +68,10 @@ class QryFormulaRange(QryBase, LogMixin, QryUnoCellT[Result[RangeObj, None] | Re
 
     @property
     def cell(self) -> SheetCell:
-        """The cell being queried"""
+        """
+        The cell being queried.
+
+        Returns:
+            SheetCell: The LibreOffice Calc cell instance
+        """
         return self._cell

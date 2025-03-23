@@ -24,7 +24,6 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_uri import QryCellUri
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.doc.qry_lp_root_uri import QryLpRootUri
-    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_code_name import QryCodeName
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.config.qry_cell_cp_codename import QryCellCpCodeName
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.code.cmd_cell_src_code import CmdCellSrcCode
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.code.qry_cell_py_source import QryCellPySource
@@ -40,6 +39,7 @@ if TYPE_CHECKING:
         QryModuleStateLastItem,
     )
     from oxt.pythonpath.libre_pythonista_lib.code.py_module_t import PyModuleT
+    from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.const import (
         PYTHON_BEFORE_ADD_SRC_CODE,
         PYTHON_AFTER_ADD_SRC_CODE,
@@ -61,7 +61,6 @@ else:
     from libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_uri import QryCellUri
     from libre_pythonista_lib.cq.qry.doc.qry_lp_root_uri import QryLpRootUri
-    from libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_code_name import QryCodeName
     from libre_pythonista_lib.cq.qry.config.qry_cell_cp_codename import QryCellCpCodeName
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.code.cmd_cell_src_code import CmdCellSrcCode
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.code.qry_cell_py_source import QryCellPySource
@@ -75,6 +74,7 @@ else:
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.state.qry_module_state import QryModuleState
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.state.qry_module_state_last_item import QryModuleStateLastItem
     from libre_pythonista_lib.code.py_module_t import PyModuleT
+    from libre_pythonista_lib.utils.result import Result
     from libre_pythonista_lib.doc.calc.const import (
         PYTHON_BEFORE_ADD_SRC_CODE,
         PYTHON_AFTER_ADD_SRC_CODE,
@@ -144,10 +144,6 @@ class PySourceManager(LogMixin):
         qry = QryLpCells(doc=self._doc)
         return self._qry_handler.handle(qry)
 
-    def _qry_code_name(self, calc_cell: CalcCell) -> str:
-        qry = QryCodeName(cell=calc_cell)
-        return self._qry_handler.handle(qry)
-
     def _qry_cell_cp_code_name(self) -> str:
         """
         Query class that retrieves the codename from configuration.
@@ -158,7 +154,10 @@ class PySourceManager(LogMixin):
 
     def _qry_cell_uri(self, cell: CalcCell) -> str:
         qry = QryCellUri(cell=cell)
-        return self._qry_handler.handle(qry)
+        result = self._qry_handler.handle(qry)
+        if Result.is_success(result):
+            return result.data
+        raise result.error
 
     def _qry_py_source(self, uri: str, cell: CalcCell) -> PySource:
         qry = QryCellPySource(uri=uri, cell=cell)
@@ -167,12 +166,18 @@ class PySourceManager(LogMixin):
     def qry_last_module_state_item(self) -> ModuleStateItem | None:
         """Returns the last module state item or None if empty."""
         qry = QryModuleStateLastItem(mod=self._state_history.mod)
-        return self._qry_handler.handle(qry)
+        result = self._qry_handler.handle(qry)
+        if Result.is_success(result):
+            return result.data
+        return None
 
     def qry_module_state_item(self, cell: CalcCell) -> ModuleStateItem | None:
         """Returns the last module state item or None if empty."""
         qry = QryModuleState(cell=cell, mod=self.mod)
-        return self._qry_handler.handle(qry)
+        result = self._qry_handler.handle(qry)
+        if Result.is_success(result):
+            return result.data
+        return None
 
     def is_src_folder_exists(self) -> bool:
         """Checks if the source folder exists."""
@@ -202,11 +207,11 @@ class PySourceManager(LogMixin):
             for cell in cells:
                 calc_cell = sheet[cell]
                 qry_cell = QryCellUri(calc_cell)
-                uri = self._qry_handler.handle(qry_cell)
-                if not uri:
+                qry_cell_result = self._qry_handler.handle(qry_cell)
+                if Result.is_failure(qry_cell_result):
+                    self.log.warning("Failed to get URI for cell %s", cell)
                     continue
-                if not self._sfa.exists(uri):
-                    continue
+                uri = qry_cell_result.data
                 sources.append(self._qry_py_source(uri=uri, cell=calc_cell))
 
             sources.sort()
@@ -418,8 +423,9 @@ class PySourceManager(LogMixin):
             self.log.error("add_source() - Failed to set code name.")
             return
 
-        uri = self._qry_cell_uri(cell)
-        if not uri:
+        try:
+            uri = self._qry_cell_uri(cell)
+        except Exception:
             self.log.error("add_source() - Failed to get URI.")
             return
 

@@ -43,6 +43,20 @@ class Result(Generic[T, E]):
         self.data: T = data
         self.error: E = error
 
+    def __eq__(self, value: object) -> bool:
+        """
+        Check if two Result instances are equal.
+
+        Args:
+            value: The other Result instance to compare with
+
+        Returns:
+            True if the two instances are equal, False otherwise
+        """
+        if isinstance(value, Result):
+            return self.data == value.data and self.error == value.error
+        return False
+
     def __iter__(self) -> Iterator[Union[T, E]]:
         """
         Make Result instance iterable.

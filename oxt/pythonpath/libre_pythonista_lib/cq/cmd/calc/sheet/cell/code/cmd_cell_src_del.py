@@ -3,12 +3,9 @@ from typing import cast, Tuple, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcCell
-    from oxt.pythonpath.libre_pythonista_lib.const.cache_const import CELL_SRC_CODE, CELL_SRC_CODE_EXIST
+    from oxt.pythonpath.libre_pythonista_lib.const.cache_const import CELL_SRC_CODE_EXIST
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.cmd_cell_cache_t import CmdCellCacheT
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
-    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.code.qry_cell_src_code_exist import (
-        QryCellSrcCodeExist,
-    )
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.code.qry_cell_py_source import QryCellPySource
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_is_deleted import QryCellIsDeleted
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_uri import QryCellUri
@@ -17,8 +14,13 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
     from oxt.pythonpath.libre_pythonista_lib.utils.null import NULL
+    from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.code.qry_cell_src_code_exist import (
+        QryCellSrcCodeExist,
+    )
+
 else:
-    from libre_pythonista_lib.const.cache_const import CELL_SRC_CODE, CELL_SRC_CODE_EXIST
+    from libre_pythonista_lib.const.cache_const import CELL_SRC_CODE_EXIST
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.cmd_cell_cache_t import CmdCellCacheT
     from libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.code.qry_cell_py_source import QryCellPySource
@@ -30,6 +32,7 @@ else:
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.utils.custom_ext import override
     from libre_pythonista_lib.utils.null import NULL
+    from libre_pythonista_lib.utils.result import Result
 
 
 class CmdCellSrcDel(CmdBase, LogMixin, CmdCellCacheT):
@@ -68,7 +71,10 @@ class CmdCellSrcDel(CmdBase, LogMixin, CmdCellCacheT):
     def _qry_cell_uri(self) -> str:
         """Get the URI identifier for the cell."""
         qry = QryCellUri(cell=self.cell)
-        return self._execute_qry(qry)
+        result = self._execute_qry(qry)
+        if Result.is_success(result):
+            return result.data
+        raise result.error
 
     def _qry_py_src(self) -> PySource:
         """Get the Python source associated with the cell."""
@@ -161,7 +167,7 @@ class CmdCellSrcDel(CmdBase, LogMixin, CmdCellCacheT):
 
     @property
     def cache_keys(self) -> Tuple[str, ...]:
-        return (CELL_SRC_CODE, CELL_SRC_CODE_EXIST)
+        return (CELL_SRC_CODE_EXIST,)
 
     @property
     def uri(self) -> str:

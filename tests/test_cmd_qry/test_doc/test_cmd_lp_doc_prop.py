@@ -17,6 +17,7 @@ def test_cmd_lp_doc_prop(loader, build_setup) -> None:
         from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
         from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
         from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.cmd_lp_doc_prop import CmdLpDocProp
+        from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
     else:
         from libre_pythonista_lib.cq.cmd.calc.doc.cmd_lp_doc_props import CmdLpDocProps
         from libre_pythonista_lib.cq.qry.calc.doc.qry_lp_doc_props import QryLpDocProps
@@ -24,6 +25,7 @@ def test_cmd_lp_doc_prop(loader, build_setup) -> None:
         from libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
         from libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
         from libre_pythonista_lib.cq.cmd.calc.doc.cmd_lp_doc_prop import CmdLpDocProp
+        from libre_pythonista_lib.utils.result import Result
 
     doc = None
     try:
@@ -40,14 +42,14 @@ def test_cmd_lp_doc_prop(loader, build_setup) -> None:
         # none cached ver
         qry = QryLpDocProps(doc)
         result = qry_handler.handle(qry)
-        assert result is not None
-        assert result == test_props
+        assert Result.is_success(result)
+        assert result.data == test_props
 
         # cached ver
         qry = QryLpDocProps(doc)
         result = qry_handler.handle(qry)
-        assert result is not None
-        assert result == test_props
+        assert Result.is_success(result)
+        assert result.data == test_props
 
         qry_prop = QryLpDocProp(doc, "test_key")
         result = qry_handler.handle(qry_prop)
@@ -55,6 +57,7 @@ def test_cmd_lp_doc_prop(loader, build_setup) -> None:
 
         cmd_prop = CmdLpDocProp(doc, "test_key", "new_value")
         cmd_handler.handle(cmd_prop)
+        assert cmd_prop.success
 
         result = qry_handler.handle(qry_prop)
         assert result == "new_value"

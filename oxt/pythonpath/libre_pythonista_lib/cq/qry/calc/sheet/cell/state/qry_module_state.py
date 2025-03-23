@@ -9,14 +9,16 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.code.py_module_state import PyModuleState
     from oxt.pythonpath.libre_pythonista_lib.code.module_state_item import ModuleStateItem
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_t import QryCellT
+    from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
 else:
     from libre_pythonista_lib.cq.qry.qry_base import QryBase
     from libre_pythonista_lib.code.py_module_state import PyModuleState
     from libre_pythonista_lib.code.module_state_item import ModuleStateItem
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_t import QryCellT
+    from libre_pythonista_lib.utils.result import Result
 
 
-class QryModuleState(QryBase, QryCellT[ModuleStateItem | None]):
+class QryModuleState(QryBase, QryCellT[Result[ModuleStateItem, None] | Result[None, Exception]]):
     """
     Query class that retrieves the module state for a given cell and Python module.
 
@@ -39,17 +41,17 @@ class QryModuleState(QryBase, QryCellT[ModuleStateItem | None]):
         self._cell = cell
         self._mod = mod
 
-    def execute(self) -> ModuleStateItem | None:
+    def execute(self) -> Result[ModuleStateItem, None] | Result[None, Exception]:
         """
         Execute the query to get the module state for the cell.
 
         Returns:
-            ModuleStateItem | None: The module state item if found, None otherwise
+            Result: Success with ModuleStateItem if found, Failure with Exception if not found
         """
         mod_state = PyModuleState(self._mod)
         if self._cell in mod_state:
-            return mod_state[self._cell]
-        return None
+            return Result.success(mod_state[self._cell])
+        return Result.failure(Exception("No state found"))
 
     @property
     def cell(self) -> CalcCell:

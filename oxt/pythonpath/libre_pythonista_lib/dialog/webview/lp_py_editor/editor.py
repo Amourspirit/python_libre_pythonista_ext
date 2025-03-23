@@ -17,37 +17,39 @@ from ooodev.globals import GTC
 from ooodev.theme.theme_calc import ThemeCalc
 from ooodev.utils.data_type.range_obj import RangeObj
 
-from ....cell.code_edit.cell_code_edit import CellCodeEdit
-from ....code.py_source_mgr import PyInstance
-from ....const import DISPATCH_SEL_RNG
-from ....multi_process.process_mgr import ProcessMgr
-from ....multi_process.socket_manager import SocketManager
-from ....res.res_resolver import ResResolver
-from ....code import py_module
-from ....const.event_const import GBL_DOC_CLOSING
-from ....config.dialog.wv_code_cfg import WvCodeCfg
-from ....py_pip.pkg_info import PkgInfo
-from ....menus import menu_util as mu
-# from ...listener.top_listener_rng import TopListenerRng
-
 if TYPE_CHECKING:
-    try:
-        # python 3.12+
-        from typing import override  # type: ignore
-    except ImportError:
-        from typing_extensions import override
-
-    from ......___lo_pip___.oxt_logger.oxt_logger import OxtLogger
-    from ......___lo_pip___.oxt_logger.logger_config import LoggerConfig
-    from ......___lo_pip___.config import Config
+    from oxt.___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from oxt.___lo_pip___.oxt_logger.logger_config import LoggerConfig
+    from oxt.___lo_pip___.config import Config
+    from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
+    from oxt.pythonpath.libre_pythonista_lib.cell.code_edit.cell_code_edit import CellCodeEdit
+    from oxt.pythonpath.libre_pythonista_lib.code.py_source_mgr import PyInstance
+    from oxt.pythonpath.libre_pythonista_lib.const import DISPATCH_SEL_RNG
+    from oxt.pythonpath.libre_pythonista_lib.multi_process.process_mgr import ProcessMgr
+    from oxt.pythonpath.libre_pythonista_lib.multi_process.socket_manager import SocketManager
+    from oxt.pythonpath.libre_pythonista_lib.res.res_resolver import ResResolver
+    from oxt.pythonpath.libre_pythonista_lib.code import py_module
+    from oxt.pythonpath.libre_pythonista_lib.const.event_const import GBL_DOC_CLOSING
+    from oxt.pythonpath.libre_pythonista_lib.config.dialog.wv_code_cfg import WvCodeCfg
+    from oxt.pythonpath.libre_pythonista_lib.py_pip.pkg_info import PkgInfo
+    from oxt.pythonpath.libre_pythonista_lib.menus import menu_util as mu
 else:
-
-    def override(func):  # noqa: ANN001, ANN201
-        return func
-
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger  # noqa: F401
     from ___lo_pip___.oxt_logger.logger_config import LoggerConfig  # noqa: F401
     from ___lo_pip___.config import Config  # noqa: F401
+    from libre_pythonista_lib.utils.custom_ext import override
+    from libre_pythonista_lib.cell.code_edit.cell_code_edit import CellCodeEdit
+    from libre_pythonista_lib.code.py_source_mgr import PyInstance
+    from libre_pythonista_lib.const import DISPATCH_SEL_RNG
+    from libre_pythonista_lib.multi_process.process_mgr import ProcessMgr
+    from libre_pythonista_lib.multi_process.socket_manager import SocketManager
+    from libre_pythonista_lib.res.res_resolver import ResResolver
+    from libre_pythonista_lib.code import py_module
+    from libre_pythonista_lib.const.event_const import GBL_DOC_CLOSING
+    from libre_pythonista_lib.config.dialog.wv_code_cfg import WvCodeCfg
+    from libre_pythonista_lib.py_pip.pkg_info import PkgInfo
+    from libre_pythonista_lib.menus import menu_util as mu
+
 
 if os.name == "nt":
     STARTUP_INFO = subprocess.STARTUPINFO()
@@ -65,13 +67,13 @@ class PyCellCodeEdit(CellCodeEdit):
     @override
     def edit_code(self) -> bool:
         try:
-            self.log.debug(f"Editing code for cell: {self.cell}")
+            self.log.debug("Editing code for cell: %s", self.cell)
             py_inst = PyInstance(self.cell.calc_doc)  # singleton
             py_inst.update_source(code=self.src_code, cell=self.cell.cell_obj)
             py_inst.update_all()
             return True
         except Exception:
-            self.log.exception(f"Error editing code for cell: {self.cell.cell_obj}")
+            self.log.exception("Error editing code for cell: %s", self.cell.cell_obj)
             return False
 
 
@@ -104,7 +106,7 @@ class PyCellEditProcessMgr(ProcessMgr):
         self.doc = CalcDoc.from_current_doc()
         self.cache_key = f"doc_{self.doc.runtime_uid}_sheet_{self.sheet}_cell_{self.cell}"
         self.py_instance = PyInstance(self.doc)
-        self.log.debug(f"Sheet: {self.sheet}, Cell: {self.cell}")
+        self.log.debug("Sheet: %s, Cell: %s", self.sheet, self.cell)
         calc_sheet = self.doc.sheets[sheet]
         self.calc_cell = calc_sheet[cell]
         self._res = ResResolver()

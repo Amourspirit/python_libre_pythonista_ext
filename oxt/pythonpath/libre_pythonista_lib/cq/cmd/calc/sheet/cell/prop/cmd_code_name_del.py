@@ -16,6 +16,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_code_name import QryCodeName
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_key_maker import QryKeyMaker
+    from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
 else:
     from libre_pythonista_lib.utils.custom_ext import override
     from libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
@@ -28,6 +29,7 @@ else:
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_code_name import QryCodeName
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_key_maker import QryKeyMaker
+    from libre_pythonista_lib.utils.result import Result
 
 
 class CmdCodeNameDel(CmdBase, LogMixin, CmdCellT):
@@ -58,7 +60,10 @@ class CmdCodeNameDel(CmdBase, LogMixin, CmdCellT):
     def _qry_code_name(self) -> str:
         """Queries the code name for the cell"""
         qry = QryCodeName(cell=self.cell)
-        return self._execute_qry(qry)
+        result = self._execute_qry(qry)
+        if Result.is_success(result):
+            return result.data
+        raise result.error
 
     def _cmd_cell_extra_set_code_name_del(self) -> None:
         """
@@ -96,13 +101,13 @@ class CmdCodeNameDel(CmdBase, LogMixin, CmdCellT):
         Executes the command to delete the code name.
         Sets success to True if operation succeeds, False otherwise.
         """
-        if self._current_code_name is NULL_OBJ:
-            self._current_code_name = self._qry_code_name()
-        if not isinstance(self._keys, KeyMaker):
-            self._keys = self._get_keys()
-
         self.success = False
+
         try:
+            if self._current_code_name is NULL_OBJ:
+                self._current_code_name = self._qry_code_name()
+            if not isinstance(self._keys, KeyMaker):
+                self._keys = self._get_keys()
             if not self._current_code_name:
                 self.log.debug("Property does not exist on cell. Nothing to delete.")
                 self.success = True
@@ -116,7 +121,6 @@ class CmdCodeNameDel(CmdBase, LogMixin, CmdCellT):
 
         except Exception:
             self.log.exception("Error deleting cell Code Name")
-            self._undo()
             return
         self.log.debug("Successfully executed command.")
         self.success = True

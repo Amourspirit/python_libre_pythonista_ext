@@ -16,12 +16,14 @@ def test_cmd_code_name(loader, build_setup) -> None:
         from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
         from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
         from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_code_name_del import CmdCodeNameDel
+        from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
     else:
         from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_code_name import CmdCodeName
         from libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
         from libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
         from libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_code_name import QryCodeName
         from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_code_name_del import CmdCodeNameDel
+        from libre_pythonista_lib.utils.result import Result
 
     doc = None
     try:
@@ -32,7 +34,7 @@ def test_cmd_code_name(loader, build_setup) -> None:
         cmd_handler = CmdHandlerFactory.get_cmd_handler()
         qry = QryCodeName(cell=cell)
 
-        assert qry_handler.handle(qry) == ""
+        assert Result.is_failure(qry_handler.handle(qry))
 
         cmd = CmdCodeName(cell=cell)
         cmd_handler.handle(cmd)
@@ -40,12 +42,12 @@ def test_cmd_code_name(loader, build_setup) -> None:
 
         # Verify the code name was set
         code_id = qry_handler.handle(qry)
-        assert code_id
+        assert Result.is_success(code_id)
 
         # Test undo
         cmd_handler.undo()
         result = qry_handler.handle(qry)
-        assert result == ""
+        assert Result.is_failure(result)
 
         # Test redo
         cmd_handler.redo()
@@ -57,14 +59,14 @@ def test_cmd_code_name(loader, build_setup) -> None:
         cmd_handler.handle(cmd)
         assert cmd.success
         result = qry_handler.handle(qry)
-        assert result == ""
+        assert Result.is_failure(result)
 
         # Test deleting when cell does not have property
         cmd = CmdCodeNameDel(cell=cell)
         cmd_handler.handle(cmd)
-        assert cmd.success
+        assert not cmd.success
         result = qry_handler.handle(qry)
-        assert result == ""
+        assert Result.is_failure(result)
 
     finally:
         if doc is not None:

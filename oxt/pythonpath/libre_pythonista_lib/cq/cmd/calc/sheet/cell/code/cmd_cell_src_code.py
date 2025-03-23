@@ -11,11 +11,12 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.code.qry_cell_src_code import QryCellSrcCode
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.cmd_cell_cache_t import CmdCellCacheT
-    from oxt.pythonpath.libre_pythonista_lib.const.cache_const import CELL_SRC_CODE, CELL_SRC_CODE_EXIST
+    from oxt.pythonpath.libre_pythonista_lib.const.cache_const import CELL_SRC_CODE_EXIST
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.code.qry_cell_src_code_exist import (
         QryCellSrcCodeExist,
     )
+    from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
 else:
     from libre_pythonista_lib.utils.custom_ext import override
     from libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
@@ -23,9 +24,10 @@ else:
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.code.qry_cell_src_code import QryCellSrcCode
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.cmd_cell_cache_t import CmdCellCacheT
-    from libre_pythonista_lib.const.cache_const import CELL_SRC_CODE, CELL_SRC_CODE_EXIST
+    from libre_pythonista_lib.const.cache_const import CELL_SRC_CODE_EXIST
     from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.code.qry_cell_src_code_exist import QryCellSrcCodeExist
+    from libre_pythonista_lib.utils.result import Result
 
 
 class CmdCellSrcCode(CmdBase, LogMixin, CmdCellCacheT):
@@ -41,9 +43,12 @@ class CmdCellSrcCode(CmdBase, LogMixin, CmdCellCacheT):
         self._current_src = cast(str | None, NULL_OBJ)
         self._current_exist = cast(bool, NULL_OBJ)
 
-    def _get_current_src_code(self) -> str | None:
-        qry = QryCellSrcCode(uri=self._uri, cell=self.cell)
-        return self._execute_qry(qry)
+    def _get_current_src_code(self) -> str:
+        qry = QryCellSrcCode(cell=self.cell, uri=self._uri)
+        result = self._execute_qry(qry)
+        if Result.is_success(result):
+            return result.data
+        raise result.error
 
     def _get_src_code_exist(self) -> bool:
         qry = QryCellSrcCodeExist(uri=self._uri, cell=self.cell)
@@ -52,7 +57,10 @@ class CmdCellSrcCode(CmdBase, LogMixin, CmdCellCacheT):
     @override
     def execute(self) -> None:
         if self._current_src is NULL_OBJ:
-            self._current_src = self._get_current_src_code()
+            try:
+                self._current_src = self._get_current_src_code()
+            except Exception:
+                self._current_src = None
 
         if self._current_exist is NULL_OBJ:
             self._current_exist = self._get_src_code_exist()
@@ -95,4 +103,4 @@ class CmdCellSrcCode(CmdBase, LogMixin, CmdCellCacheT):
 
     @property
     def cache_keys(self) -> Tuple[str, ...]:
-        return (CELL_SRC_CODE, CELL_SRC_CODE_EXIST)
+        return (CELL_SRC_CODE_EXIST,)

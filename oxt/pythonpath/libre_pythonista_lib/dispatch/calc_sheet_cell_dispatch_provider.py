@@ -164,11 +164,11 @@ class CalcSheetCellDispatchProvider(XDispatchProviderInterceptor, LogMixin, unoh
                     raise
             else:
                 try:
-                    from .dispatch_edit_py_cell_mb import (
-                        DispatchEditPyCellMb as DispatchEditPyCell,
+                    from .dispatch_edit_py_cell_mb2 import (
+                        DispatchEditPyCellMb2 as DispatchEditPyCell,
                     )
                 except ImportError:
-                    self.log.exception("DispatchEditPyCellMb import error")
+                    self.log.exception("DispatchEditPyCellMb2 import error")
                     raise
 
             try:
@@ -192,7 +192,7 @@ class CalcSheetCellDispatchProvider(XDispatchProviderInterceptor, LogMixin, unoh
                     if is_experiential:
                         self.log.debug("queryDispatch: returning DispatchEditPyCellWv")
                     else:
-                        self.log.debug("queryDispatch: returning DispatchEditPyCellMb")
+                        self.log.debug("queryDispatch: returning DispatchEditPyCellMb2")
                 result = DispatchEditPyCell(sheet=args["sheet"], cell=args["cell"], in_thread=in_thread)
 
                 eargs = EventArgs.from_args(cargs)
