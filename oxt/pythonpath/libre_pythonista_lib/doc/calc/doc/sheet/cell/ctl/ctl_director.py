@@ -19,6 +19,8 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl_pd_series import CtlPdSeries
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl_data_tbl import CtlDataTbl
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl_empty import CtlEmpty
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl_error import CtlError
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl_none import CtlNone
     from oxt.pythonpath.libre_pythonista_lib.kind.ctl_kind import CtlKind
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.builder.build_director import get_builder
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.reader.read_director import get_reader
@@ -60,6 +62,8 @@ def _get_control_class(ctl_kind: CtlKind) -> Type[CtlBase] | None:
         from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl_pd_series import CtlPdSeries
         from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl_data_tbl import CtlDataTbl
         from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl_empty import CtlEmpty
+        from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl_error import CtlError
+        from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl_none import CtlNone
 
     control_map = {
         CtlKind.STRING: CtlStr,
@@ -69,6 +73,8 @@ def _get_control_class(ctl_kind: CtlKind) -> Type[CtlBase] | None:
         CtlKind.SERIES: CtlPdSeries,
         CtlKind.DATA_TABLE: CtlDataTbl,
         CtlKind.EMPTY: CtlEmpty,
+        CtlKind.ERROR: CtlError,
+        CtlKind.NONE: CtlNone,
     }
     return control_map.get(ctl_kind)
 
@@ -105,6 +111,10 @@ def create_control(calc_cell: CalcCell, ctl_kind: Literal[CtlKind.SERIES]) -> Ct
 def create_control(calc_cell: CalcCell, ctl_kind: Literal[CtlKind.DATA_TABLE]) -> CtlDataTbl: ...
 @overload
 def create_control(calc_cell: CalcCell, ctl_kind: Literal[CtlKind.EMPTY]) -> CtlEmpty: ...
+@overload
+def create_control(calc_cell: CalcCell, ctl_kind: Literal[CtlKind.ERROR]) -> CtlError: ...
+@overload
+def create_control(calc_cell: CalcCell, ctl_kind: Literal[CtlKind.NONE]) -> CtlNone: ...
 @overload
 def create_control(calc_cell: CalcCell, ctl_kind: CtlKind) -> CtlBase | None: ...
 

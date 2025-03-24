@@ -28,6 +28,8 @@ else:
     from libre_pythonista_lib.kind.rule_name_kind import RuleNameKind
     from libre_pythonista_lib.utils.custom_ext import override
 
+# tested in: tests/test_doc/test_calc/test_doc/test_sheet/test_cell/test_ctl/test_ctl_builder.py
+
 
 class CtlBuilderStr(CtlBuilder):
     @override

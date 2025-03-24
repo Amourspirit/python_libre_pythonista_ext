@@ -13,7 +13,7 @@ else:
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.ctl.read.qry_empty import QryEmpty
     from libre_pythonista_lib.utils.custom_ext import override
 
-# tested in: tests/test_doc/test_calc/test_doc/test_sheet/test_cell/test_ctl/test_ctl_builder_str.py
+# tested in: tests/test_doc/test_calc/test_doc/test_sheet/test_cell/test_ctl/test_ctl_builder.py
 
 
 class CtlReaderEmpty(CtlReaderShapeBase):
