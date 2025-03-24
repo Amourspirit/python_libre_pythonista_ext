@@ -73,7 +73,7 @@ class PyImpl(unohelper.Base, XPy):
                 mgr.createInstanceWithContext("com.sun.star.frame.Desktop", self.ctx),
             )
         except Exception as e:
-            self._log.error(f"Error: {e}", exc_info=True)
+            self._log.error("Error: %s", e, exc_info=True)
 
         # it seems init is only call when the functions is first called.
 

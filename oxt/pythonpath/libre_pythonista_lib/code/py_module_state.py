@@ -3,6 +3,7 @@ from typing import Any, TYPE_CHECKING
 from collections import OrderedDict
 
 from ooodev.calc import CalcCell
+from ooodev.utils.data_type.cell_obj import CellObj
 from ooodev.utils.helper.dot_dict import DotDict
 
 if TYPE_CHECKING:

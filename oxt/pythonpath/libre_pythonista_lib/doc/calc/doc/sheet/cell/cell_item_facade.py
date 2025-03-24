@@ -5,6 +5,7 @@ from typing import Any, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcCell
+    from oxt.pythonpath.libre_pythonista_lib.utils.null import NULL
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_t import QryHandlerT
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler_t import CmdHandlerT
     from oxt.pythonpath.libre_pythonista_lib.code.module_state_item import ModuleStateItem
@@ -27,6 +28,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
 else:
+    from libre_pythonista_lib.utils.null import NULL
     from libre_pythonista_lib.code.module_state_item import ModuleStateItem
     from libre_pythonista_lib.code.py_module import PyModule
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_code_name import CmdCodeName
@@ -79,13 +81,13 @@ class CellItemFacade(LogMixin):
         if not cmd.success:
             self.log.error("Failed to set code name.")
 
-    def _qry_module_state(self) -> ModuleStateItem | None:
+    def _qry_module_state(self) -> ModuleStateItem:
         """Queries the current module state for the cell"""
         qry = QryModuleState(cell=self._cell, mod=self._py_mod)
         result = self.qry_handler.handle(qry)
         if Result.is_success(result):
             return result.data
-        return None
+        raise result.error
 
     def _get_uri(self) -> str:
         """Gets the URI for the cell, ensuring it has a code name first"""
@@ -105,8 +107,10 @@ class CellItemFacade(LogMixin):
         """Adds a default string control to the cell and initializes empty code"""
         _ = ctl_director.create_control(self._cell, CtlKind.STRING)
         self._append_code("")
-        state = self._qry_module_state()
-        if state is None:
+        try:
+            state = self._qry_module_state()
+        except Exception:
+            self.log.exception("Failed to get module state.")
             return None
         return state.dd_data.get("data")
 
@@ -155,8 +159,10 @@ class CellItemFacade(LogMixin):
     def get_matched_rule(self) -> StateRuleT | None:
         """Gets the matching state rule for the cell's current state"""
         # do not cache this value. It may change when a cell get updated.
-        state = self._qry_module_state()
-        if state is None:
+        try:
+            state = self._qry_module_state()
+        except Exception:
+            self.log.exception("Failed to get module state.")
             return None
         return self._state_rules.get_matched_rule(self._cell, state.dd_data)
 
@@ -171,10 +177,16 @@ class CellItemFacade(LogMixin):
 
     def get_value(self) -> Any:  # noqa: ANN401
         """Gets the value of the cell"""
-        state = self._qry_module_state()
-        if state is None:
+        try:
+            state = self._qry_module_state()
+        except Exception:
+            self.log.exception("Failed to get module state.")
             return None
-        return state.dd_data.get("data")
+        result = state.dd_data.get("data", NULL)
+        if result is NULL:
+            self.log.debug("get_value() No data found. Returning None.")
+            return None
+        return result
 
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__}({self._cell.cell_obj})>"

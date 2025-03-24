@@ -125,15 +125,18 @@ class PySourceManager(LogMixin):
         self._shared_event = SharedEvent(doc)
         self._qry_handler = QryHandlerFactory.get_qry_handler()
         self._cmd_handler = CmdHandlerFactory.get_cmd_handler()
-        self._state_history = PyModuleState(mod)
 
         self.log.debug("Init")
         self._sfa = Sfa()
 
         self._root_uri = self._qry_root_uri()
-        self._data = self._get_sources()
+        self._data = SortedDict()
+        self._mod_state = PyModuleState(mod)
         self._se = SharedEvent(doc)
+        self._init_sources()
         self._se.trigger_event("PySourceManagerCreated", EventArgs(self))
+        self.log.debug("Number of cells in manager: %i", len(self._data))
+        self.log.debug("Init completed")
         self._is_init = True
 
     def _qry_root_uri(self) -> str:
@@ -165,7 +168,7 @@ class PySourceManager(LogMixin):
 
     def qry_last_module_state_item(self) -> ModuleStateItem | None:
         """Returns the last module state item or None if empty."""
-        qry = QryModuleStateLastItem(mod=self._state_history.mod)
+        qry = QryModuleStateLastItem(mod=self._mod_state.mod)
         result = self._qry_handler.handle(qry)
         if Result.is_success(result):
             return result.data
@@ -193,11 +196,8 @@ class PySourceManager(LogMixin):
             self._se.trigger_event("PySourceManagerDisposed", EventArgs(self))
         self._se = None
 
-    def _get_sources(self) -> SortedDict[Tuple[int, int, int], PySource]:  # type: ignore
-        # cc = CellCache(self._doc)
-        # code_prop_name = self._qry_cell_cp_code_name()
-        result = None
-        sources: List[PySource] = []
+    def _init_sources(self) -> None:  # type: ignore
+        sources: List[Tuple[PySource, CalcCell]] = []
         code_cells = self._qry_lp_cells()
         for sheet in self._doc.sheets:
             if sheet.sheet_index not in code_cells:
@@ -212,15 +212,15 @@ class PySourceManager(LogMixin):
                     self.log.warning("Failed to get URI for cell %s", cell)
                     continue
                 uri = qry_cell_result.data
-                sources.append(self._qry_py_source(uri=uri, cell=calc_cell))
+                py_src = self._qry_py_source(uri=uri, cell=calc_cell)
+                sources.append((py_src, calc_cell))
 
-            sources.sort()
-            result = SortedDict()
+            sources.sort(key=lambda x: x[0])  # Sort by PySource object only
             for src in sources:
-                result[src.sheet_idx, src.row, src.col] = src
-        if result is None:
-            result = SortedDict()
-        return result
+                py_src = src[0]
+                calc_cell = src[1]
+                self._data[py_src.sheet_idx, py_src.row, py_src.col] = py_src
+                _ = self._mod_state.update_with_result(cell=calc_cell, code=py_src.source_code)
 
     # endregion Init
 
@@ -610,7 +610,7 @@ class PySourceManager(LogMixin):
             name (str): Variable name.
             value (Any): Variable value.
         """
-        self._state_history.set_global_var(name, value)
+        self._mod_state.set_global_var(name, value)
 
     def get_index(self, cell: CellObj) -> int:
         """
@@ -675,7 +675,7 @@ class PySourceManager(LogMixin):
         self.set_global_var("CURRENT_CELL_ID", py_src.uri_info.unique_id)
         self.set_global_var("CURRENT_CELL_OBJ", cell_obj)
 
-        result = self._state_history.update_with_result(calc_cell, py_src.source_code)
+        result = self._mod_state.update_with_result(calc_cell, py_src.source_code)
         result.py_src = py_src
 
         eargs = EventArgs.from_args(cargs)
@@ -693,7 +693,7 @@ class PySourceManager(LogMixin):
         Triggers ``BeforeSourceUpdate`` and ``AfterSourceUpdate`` events.
         """
         self.log.debug("update_all() Entered.")
-        self._state_history.reset_module()
+        self._mod_state.reset_module()
         for key in self._data:
             co = CellObj.from_idx(col_idx=key[2], row_idx=key[1], sheet_idx=key[0])
             py_src = self[co]
@@ -758,7 +758,7 @@ class PySourceManager(LogMixin):
         else:
             self.log.debug("update_from_index(%i). Is not last index. Resetting module to py_src dict.", index)
             calc_cell = self.convert_cell_obj_to_calc_cell(co)
-            self._state_history.rollback_to_state(calc_cell)
+            self._mod_state.rollback_to_state(calc_cell)
         for i in range(index, length):
             key = keys[i]  # tuple in row, col format
             cell_obj = CellObj.from_idx(col_idx=key[2], row_idx=key[1], sheet_idx=key[0])
@@ -774,11 +774,11 @@ class PySourceManager(LogMixin):
 
     @property
     def state_history(self) -> PyModuleState:
-        return self._state_history
+        return self._mod_state
 
     @property
     def mod(self) -> PyModuleT:
-        return self._state_history.mod
+        return self._mod_state.mod
 
     @property
     def doc(self) -> CalcDoc:

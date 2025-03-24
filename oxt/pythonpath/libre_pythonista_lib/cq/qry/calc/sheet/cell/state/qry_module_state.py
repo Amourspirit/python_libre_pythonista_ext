@@ -1,21 +1,26 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import Any, TYPE_CHECKING
 
 from ooodev.calc import CalcCell
 
 if TYPE_CHECKING:
-    from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_base import QryBase
-    from oxt.pythonpath.libre_pythonista_lib.code.py_module_t import PyModuleT
-    from oxt.pythonpath.libre_pythonista_lib.code.py_module_state import PyModuleState
     from oxt.pythonpath.libre_pythonista_lib.code.module_state_item import ModuleStateItem
+    from oxt.pythonpath.libre_pythonista_lib.code.py_module_t import PyModuleT
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_t import QryCellT
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_base import QryBase
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source_manager import PySourceManager
     from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
 else:
-    from libre_pythonista_lib.cq.qry.qry_base import QryBase
-    from libre_pythonista_lib.code.py_module_state import PyModuleState
     from libre_pythonista_lib.code.module_state_item import ModuleStateItem
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_t import QryCellT
+    from libre_pythonista_lib.cq.qry.qry_base import QryBase
     from libre_pythonista_lib.utils.result import Result
+
+    PySourceManager = Any
+
+# The state item must be gotten from the source manager.
+# Otherwise, the source manager may not be initialized.
+# Both PyModuleState and PySourceManager are singletons per module.
 
 
 class QryModuleState(QryBase, QryCellT[Result[ModuleStateItem, None] | Result[None, Exception]]):
@@ -41,6 +46,21 @@ class QryModuleState(QryBase, QryCellT[Result[ModuleStateItem, None] | Result[No
         self._cell = cell
         self._mod = mod
 
+    def _qry_py_src_mgr(self) -> PySourceManager:
+        """
+        Get the PySourceManager instance for the current module.
+
+        Returns:
+            PySourceManager: The PySourceManager instance
+        """
+        # avoid circular import
+        if TYPE_CHECKING:
+            from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.state.qry_py_src_mgr import QryPySrcMgrCode
+        else:
+            from libre_pythonista_lib.cq.qry.calc.sheet.cell.state.qry_py_src_mgr import QryPySrcMgrCode
+        qry = QryPySrcMgrCode(cell=self.cell, mod=self._mod)
+        return self._execute_qry(qry)
+
     def execute(self) -> Result[ModuleStateItem, None] | Result[None, Exception]:
         """
         Execute the query to get the module state for the cell.
@@ -48,10 +68,17 @@ class QryModuleState(QryBase, QryCellT[Result[ModuleStateItem, None] | Result[No
         Returns:
             Result: Success with ModuleStateItem if found, Failure with Exception if not found
         """
-        mod_state = PyModuleState(self._mod)
-        if self._cell in mod_state:
-            return Result.success(mod_state[self._cell])
-        return Result.failure(Exception("No state found"))
+        try:
+            src_mgr = self._qry_py_src_mgr()
+            # if not self._cell.cell_obj in src_mgr:
+            #     return Result.failure(Exception("Cell Not found ing  source manager"))
+
+            mod_state = src_mgr.state_history
+            if self._cell in mod_state:
+                return Result.success(mod_state[self._cell])
+            return Result.failure(Exception("No state found"))
+        except Exception:
+            return Result.failure(Exception("Error executing query"))
 
     @property
     def cell(self) -> CalcCell:
