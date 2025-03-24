@@ -35,7 +35,7 @@ class CmdLblDefault(CmdBase, LogMixin, CmdCellCtlT):
             self._ctl.cell = cell
         self._current_state = None
 
-    def _get_label(self) -> str:
+    def _qry_label(self) -> str:
         qry = QryLblDefault(cell=self.cell)
         return self._execute_qry(qry)
 
@@ -44,7 +44,7 @@ class CmdLblDefault(CmdBase, LogMixin, CmdCellCtlT):
         self.success = False
         self._state_changed = False
         try:
-            value = self._get_label()
+            value = self._qry_label()
             self._current_state = self._ctl.get("label")
             if self._current_state == value:
                 self.log.debug("State is already set.")

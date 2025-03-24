@@ -17,6 +17,12 @@ if TYPE_CHECKING:
         CtlBuilderFloat,
     )
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.builder.ctl_builder import CtlBuilder
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.builder.ctl_builder_pd_df import (
+        CtlBuilderPdDf,
+    )
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.builder.ctl_builder_pd_series import (
+        CtlBuilderPdSeries,
+    )
 else:
     from libre_pythonista_lib.kind.ctl_kind import CtlKind
 
@@ -38,11 +44,15 @@ def _get_control_class(ctl_kind: CtlKind) -> Type[CtlBuilder] | None:
         from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.builder.ctl_builder_str import CtlBuilderStr
         from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.builder.ctl_builder_int import CtlBuilderInt
         from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.builder.ctl_builder_float import CtlBuilderFloat
+        from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.builder.ctl_builder_pd_df import CtlBuilderPdDf
+        from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.builder.ctl_builder_pd_series import CtlBuilderPdSeries
 
     control_map = {
         CtlKind.STRING: CtlBuilderStr,
         CtlKind.FLOAT: CtlBuilderFloat,
         CtlKind.INTEGER: CtlBuilderInt,
+        CtlKind.DATA_FRAME: CtlBuilderPdDf,
+        CtlKind.SERIES: CtlBuilderPdSeries,
     }
     return control_map.get(ctl_kind)
 
@@ -53,6 +63,10 @@ def get_builder(calc_cell: CalcCell, ctl_kind: Literal[CtlKind.STRING]) -> CtlBu
 def get_builder(calc_cell: CalcCell, ctl_kind: Literal[CtlKind.INTEGER]) -> CtlBuilderInt: ...
 @overload
 def get_builder(calc_cell: CalcCell, ctl_kind: Literal[CtlKind.FLOAT]) -> CtlBuilderFloat: ...
+@overload
+def get_builder(calc_cell: CalcCell, ctl_kind: Literal[CtlKind.DATA_FRAME]) -> CtlBuilderPdDf: ...
+@overload
+def get_builder(calc_cell: CalcCell, ctl_kind: Literal[CtlKind.SERIES]) -> CtlBuilderPdSeries: ...
 @overload
 def get_builder(calc_cell: CalcCell, ctl_kind: CtlKind) -> CtlBuilder: ...
 
