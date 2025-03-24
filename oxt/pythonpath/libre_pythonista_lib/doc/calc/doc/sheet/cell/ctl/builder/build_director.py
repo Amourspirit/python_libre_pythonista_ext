@@ -23,6 +23,12 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.builder.ctl_builder_pd_series import (
         CtlBuilderPdSeries,
     )
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.builder.ctl_builder_data_tbl import (
+        CtlBuilderDataTbl,
+    )
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.builder.ctl_builder_empty import (
+        CtlBuilderEmpty,
+    )
 else:
     from libre_pythonista_lib.kind.ctl_kind import CtlKind
 
@@ -46,6 +52,8 @@ def _get_control_class(ctl_kind: CtlKind) -> Type[CtlBuilder] | None:
         from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.builder.ctl_builder_float import CtlBuilderFloat
         from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.builder.ctl_builder_pd_df import CtlBuilderPdDf
         from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.builder.ctl_builder_pd_series import CtlBuilderPdSeries
+        from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.builder.ctl_builder_data_tbl import CtlBuilderDataTbl
+        from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.builder.ctl_builder_empty import CtlBuilderEmpty
 
     control_map = {
         CtlKind.STRING: CtlBuilderStr,
@@ -53,6 +61,8 @@ def _get_control_class(ctl_kind: CtlKind) -> Type[CtlBuilder] | None:
         CtlKind.INTEGER: CtlBuilderInt,
         CtlKind.DATA_FRAME: CtlBuilderPdDf,
         CtlKind.SERIES: CtlBuilderPdSeries,
+        CtlKind.DATA_TABLE: CtlBuilderDataTbl,
+        CtlKind.EMPTY: CtlBuilderEmpty,
     }
     return control_map.get(ctl_kind)
 
@@ -67,6 +77,10 @@ def get_builder(calc_cell: CalcCell, ctl_kind: Literal[CtlKind.FLOAT]) -> CtlBui
 def get_builder(calc_cell: CalcCell, ctl_kind: Literal[CtlKind.DATA_FRAME]) -> CtlBuilderPdDf: ...
 @overload
 def get_builder(calc_cell: CalcCell, ctl_kind: Literal[CtlKind.SERIES]) -> CtlBuilderPdSeries: ...
+@overload
+def get_builder(calc_cell: CalcCell, ctl_kind: Literal[CtlKind.DATA_TABLE]) -> CtlBuilderDataTbl: ...
+@overload
+def get_builder(calc_cell: CalcCell, ctl_kind: Literal[CtlKind.EMPTY]) -> CtlBuilderEmpty: ...
 @overload
 def get_builder(calc_cell: CalcCell, ctl_kind: CtlKind) -> CtlBuilder: ...
 

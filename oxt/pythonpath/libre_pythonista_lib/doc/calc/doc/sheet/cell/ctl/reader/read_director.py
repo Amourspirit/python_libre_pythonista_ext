@@ -19,6 +19,10 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.reader.ctl_reader_pd_series import (
         CtlReaderPdSeries,
     )
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.reader.ctl_reader_data_tbl import (
+        CtlReaderDataTbl,
+    )
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.reader.ctl_reader_empty import CtlReaderEmpty
 else:
     from libre_pythonista_lib.kind.ctl_kind import CtlKind
 
@@ -55,6 +59,8 @@ def _get_control_class(ctl_kind: CtlKind) -> Type[CtlReader] | None:
         from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.reader.ctl_reader_float import CtlReaderFloat
         from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.reader.ctl_reader_pd_df import CtlReaderPdDf
         from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.reader.ctl_reader_pd_series import CtlReaderPdSeries
+        from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.reader.ctl_reader_data_tbl import CtlReaderDataTbl
+        from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.reader.ctl_reader_empty import CtlReaderEmpty
 
     control_map = {
         CtlKind.STRING: CtlReaderStr,
@@ -62,6 +68,8 @@ def _get_control_class(ctl_kind: CtlKind) -> Type[CtlReader] | None:
         CtlKind.FLOAT: CtlReaderFloat,
         CtlKind.DATA_FRAME: CtlReaderPdDf,
         CtlKind.SERIES: CtlReaderPdSeries,
+        CtlKind.DATA_TABLE: CtlReaderDataTbl,
+        CtlKind.EMPTY: CtlReaderEmpty,
     }
     return control_map.get(ctl_kind)
 
@@ -78,6 +86,10 @@ def get_reader(calc_cell: CalcCell, kind: Literal[CtlKind.FLOAT]) -> CtlReaderFl
 def get_reader(calc_cell: CalcCell, kind: Literal[CtlKind.DATA_FRAME]) -> CtlReaderPdDf: ...
 @overload
 def get_reader(calc_cell: CalcCell, kind: Literal[CtlKind.SERIES]) -> CtlReaderPdSeries: ...
+@overload
+def get_reader(calc_cell: CalcCell, kind: Literal[CtlKind.DATA_TABLE]) -> CtlReaderDataTbl: ...
+@overload
+def get_reader(calc_cell: CalcCell, kind: Literal[CtlKind.EMPTY]) -> CtlReaderEmpty: ...
 @overload
 def get_reader(calc_cell: CalcCell, kind: CtlKind | None = None) -> CtlReader: ...
 

@@ -15,6 +15,10 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl_str import CtlStr
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl_float import CtlFloat
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl_int import CtlInt
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl_pd_df import CtlPdDf
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl_pd_series import CtlPdSeries
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl_data_tbl import CtlDataTbl
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl_empty import CtlEmpty
     from oxt.pythonpath.libre_pythonista_lib.kind.ctl_kind import CtlKind
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.builder.build_director import get_builder
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.reader.read_director import get_reader
@@ -23,6 +27,7 @@ if TYPE_CHECKING:
         CmdRemoveCtlProps,
     )
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.draw_page.del_shape_by_name import CmdDelShapeByName
+
 else:
     from libre_pythonista_lib.cq.cmd.general.cmd_batch import CmdBatch
     from libre_pythonista_lib.kind.ctl_kind import CtlKind
@@ -47,31 +52,23 @@ def _get_control_class(ctl_kind: CtlKind) -> Type[CtlBase] | None:
         Type[CtlBase] | None: The control class or None if not found
     """
     # Import controls here to avoid circular imports
-    if TYPE_CHECKING:
-        pass
-        # from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.data_frame_ctl import DataFrameCtl
-        # from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.data_series_ctl import DataSeriesCtl
-        # from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.data_tbl_ctl import DataTblCtl
-        # from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.mat_plot_figure_ctl import MatPlotFigureCtl
-        # from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.error_ctl import ErrorCtl
-        # from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.none_ctl import NoneCtl
-        # from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.empty_ctl import EmptyCtl
-    else:
+    if not TYPE_CHECKING:
         from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl_str import CtlStr
         from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl_float import CtlFloat
         from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl_int import CtlInt
-        # from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.data_frame_ctl import DataFrameCtl
-        # from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.data_series_ctl import DataSeriesCtl
-        # from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.data_tbl_ctl import DataTblCtl
-        # from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.mat_plot_figure_ctl import MatPlotFigureCtl
-        # from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.error_ctl import ErrorCtl
-        # from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.none_ctl import NoneCtl
-        # from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.empty_ctl import EmptyCtl
+        from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl_pd_df import CtlPdDf
+        from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl_pd_series import CtlPdSeries
+        from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl_data_tbl import CtlDataTbl
+        from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl_empty import CtlEmpty
 
     control_map = {
         CtlKind.STRING: CtlStr,
         CtlKind.FLOAT: CtlFloat,
         CtlKind.INTEGER: CtlInt,
+        CtlKind.DATA_FRAME: CtlPdDf,
+        CtlKind.SERIES: CtlPdSeries,
+        CtlKind.DATA_TABLE: CtlDataTbl,
+        CtlKind.EMPTY: CtlEmpty,
     }
     return control_map.get(ctl_kind)
 
@@ -100,6 +97,14 @@ def create_control(calc_cell: CalcCell, ctl_kind: Literal[CtlKind.STRING]) -> Ct
 def create_control(calc_cell: CalcCell, ctl_kind: Literal[CtlKind.INTEGER]) -> CtlInt: ...
 @overload
 def create_control(calc_cell: CalcCell, ctl_kind: Literal[CtlKind.FLOAT]) -> CtlFloat: ...
+@overload
+def create_control(calc_cell: CalcCell, ctl_kind: Literal[CtlKind.DATA_FRAME]) -> CtlPdDf: ...
+@overload
+def create_control(calc_cell: CalcCell, ctl_kind: Literal[CtlKind.SERIES]) -> CtlPdSeries: ...
+@overload
+def create_control(calc_cell: CalcCell, ctl_kind: Literal[CtlKind.DATA_TABLE]) -> CtlDataTbl: ...
+@overload
+def create_control(calc_cell: CalcCell, ctl_kind: Literal[CtlKind.EMPTY]) -> CtlEmpty: ...
 @overload
 def create_control(calc_cell: CalcCell, ctl_kind: CtlKind) -> CtlBase | None: ...
 
