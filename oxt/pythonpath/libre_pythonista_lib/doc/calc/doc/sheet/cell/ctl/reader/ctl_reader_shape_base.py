@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.ctl.label.qry_lbl_default import QryLblDefault
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.ctl.qry_ctl_cell_size_pos import QryCtlCellSizePos
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.ctl.qry_control_name import QryControlName
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.ctl.qry_ctl_current import QryCtlCurrent
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.ctl.qry_ctl_modify_trigger_event import (
         QryCtlModifyTriggerEvent,
@@ -23,6 +24,7 @@ if TYPE_CHECKING:
 else:
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.ctl.label.qry_lbl_default import QryLblDefault
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.ctl.qry_ctl_cell_size_pos import QryCtlCellSizePos
+    from libre_pythonista_lib.cq.qry.calc.sheet.cell.ctl.qry_control_name import QryControlName
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.ctl.qry_ctl_current import QryCtlCurrent
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.ctl.qry_ctl_modify_trigger_event import QryCtlModifyTriggerEvent
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.ctl.qry_ctl_orig_rule_name import QryCtlOrigRuleName
@@ -38,6 +40,7 @@ class CtlReaderShapeBase(CtlReader):
     @override
     def append_query(self) -> None:
         self.append(QryLblDefault(self.cell, self.ctl))
+        self.append(QryControlName(self.cell, self.ctl))
         self.append(QryCtlShapeName(self.cell, self.ctl))
         self.append(QryCtlRuleName(self.cell, self.ctl))
         self.append(QryCtlOrigRuleName(self.cell, self.ctl))

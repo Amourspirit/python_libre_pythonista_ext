@@ -42,24 +42,42 @@ class CmdCtlShapeName(CmdBase, LogMixin, CmdCellCtlT):
             self._ctl.cell = cell
         self._current_state = self._ctl.ctl_shape_name
 
+    def _validate(self) -> bool:
+        """Validates the ctl"""
+        required_attributes = {"ctl_name"}
+
+        # make a copy of the ctl dictionary because will always return True
+        # when checking for an attribute directly.
+        ctl_dict = self._ctl.copy_dict()
+
+        for attrib in required_attributes:
+            if not attrib in ctl_dict:
+                self.log.error("Validation error. %s attribute is missing.", attrib)
+                return False
+        return True
+
     def _get_keys(self) -> KeyMaker:
         qry = QryKeyMaker()
         return self._execute_qry(qry)
 
     @override
     def execute(self) -> None:
-        if self._keys is NULL_OBJ:
-            self._keys = self._get_keys()
-
         self.success = False
         self._state_changed = False
+
+        if not self._validate():
+            self.log.error("Validation error occurred. Unable to execute command.")
+            return
+
+        if self._keys is NULL_OBJ:
+            self._keys = self._get_keys()
         self._success_cmds.clear()
-        if not self._ctl.ctl_code_name:
-            self.log.error("Error setting cell address: ctl_code_name is empty")
+        if not self._ctl.ctl_name:
+            self.log.error("Error setting cell address: ctl_name is empty")
             return
         try:
-            # control_shape_name = f"SHAPE_{self._config.general_code_name}_ctl_cell_{self._ctl.ctl_code_name}"
-            control_shape_name = f"SHAPE_{self._ctl.ctl_code_name}"
+            # control_shape_name = f"SHAPE_{self._config.general_code_name}_ctl_cell_{self._ctl.ctl_name}"
+            control_shape_name = f"SHAPE_{self._ctl.ctl_name}"
 
             if self._current_state and control_shape_name == self._current_state:
                 self.log.debug("State is already set.")

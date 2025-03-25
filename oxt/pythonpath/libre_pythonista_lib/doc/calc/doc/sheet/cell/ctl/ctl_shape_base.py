@@ -34,4 +34,9 @@ class CtlShapeBase(CtlBase):
         """Gets the control for the cell or None if it does not exist."""
         return self.ctl.control
 
+    @property
+    def control_name(self) -> Any:  # noqa: ANN401
+        """Gets the control name for the cell or None if it does not exist."""
+        return self.ctl.ctl_name
+
     # endregion Properties

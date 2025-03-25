@@ -29,7 +29,7 @@ if TYPE_CHECKING:
     from ooodev.utils.type_var import PathOrStr
     from ooodev.calc import SpreadsheetDrawPage
     from ooodev.draw.shapes.draw_shape import DrawShape
-    from .....___lo_pip___.config import Config
+    from oxt.___lo_pip___.config import Config
 else:
     from ___lo_pip___.config import Config
 

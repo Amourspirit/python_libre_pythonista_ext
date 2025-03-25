@@ -9,7 +9,6 @@ if TYPE_CHECKING:
     from ooodev.calc import CalcCell
     from com.sun.star.sheet import Shape  # service
     from com.sun.star.drawing import ControlShape  # service
-    from oxt.___lo_pip___.basic_config import BasicConfig
     from ooodev.form.controls.form_ctl_base import FormCtlBase
     from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
@@ -22,8 +21,10 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.ctl.qry_ctl_cell_size_pos import QryCtlCellSizePos
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.common.style.ctl.qry_color_bg_default import QryColorBgDefault
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.create.cmd_set_location import CmdSetLocation
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.ctl.read.qry_mat_plot_figure import (
+        QryMatPlotFigure,
+    )
 else:
-    from ___lo_pip___.basic_config import BasicConfig
     from libre_pythonista_lib.utils.custom_ext import override
     from libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from libre_pythonista_lib.log.log_mixin import LogMixin
@@ -35,6 +36,7 @@ else:
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.ctl.qry_ctl_cell_size_pos import QryCtlCellSizePos
     from libre_pythonista_lib.cq.qry.calc.common.style.ctl.qry_color_bg_default import QryColorBgDefault
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.create.cmd_set_location import CmdSetLocation
+    from libre_pythonista_lib.cq.qry.calc.sheet.cell.ctl.read.qry_mat_plot_figure import QryMatPlotFigure
 
     Shape = object
     ControlShape = object
@@ -47,11 +49,10 @@ class CmdSimple(CmdBase, LogMixin, CmdCellCtlT):
         CmdBase.__init__(self)
         LogMixin.__init__(self)
         self._ctl = ctl
-        self._cfg = BasicConfig()
 
     def _validate(self) -> bool:
         """Validates the ctl"""
-        required_attributes = {"cell", "label", "ctl_code_name", "ctl_name"}
+        required_attributes = {"cell", "label", "ctl_code_name"}
 
         # make a copy of the ctl dictionary because will always return True
         # when checking for an attribute directly.
@@ -103,7 +104,7 @@ class CmdSimple(CmdBase, LogMixin, CmdCellCtlT):
 
     def _insert_control(self) -> None:
         cell_ctl = self.cell.control
-        btn = cell_ctl.insert_control_button(label=self._ctl.label, name=self._ctl.ctl_name)
+        btn = cell_ctl.insert_control_button(label=self._ctl.label, name=self._ctl.ctl_code_name)
         shape = btn.control_shape
         self._set_shape_size(shape)
         btn.printable = False
@@ -113,7 +114,8 @@ class CmdSimple(CmdBase, LogMixin, CmdCellCtlT):
         self._set_shape_props(cast(Shape, shape))
 
     def _on_executing(self, ctl: Ctl) -> None:
-        pass
+        qry = QryMatPlotFigure(self.cell, ctl)
+        self._execute_qry(qry)
 
     @override
     def execute(self) -> None:

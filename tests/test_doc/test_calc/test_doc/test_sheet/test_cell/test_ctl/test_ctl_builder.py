@@ -58,7 +58,7 @@ def test_ctl_builder_none(loader, build_setup, mocker: MockerFixture) -> None:
         # region CtlBuilder
         assert result.ctl_code_name.startswith("id_")
         assert result.addr == f"sheet_index={sheet.sheet_index}&cell_addr={cell.cell_obj}"
-        assert result.ctl_shape_name == f"SHAPE_{result.ctl_code_name}"
+        assert result.ctl_shape_name == f"SHAPE_{result.ctl_name}"
         # endregion CtlBuilder
 
         # region CtlBuilderStr
@@ -156,7 +156,7 @@ def test_ctl_builder_empty(loader, build_setup, mocker: MockerFixture) -> None:
         # region CtlBuilder
         assert result.ctl_code_name.startswith("id_")
         assert result.addr == f"sheet_index={sheet.sheet_index}&cell_addr={cell.cell_obj}"
-        assert result.ctl_shape_name == f"SHAPE_{result.ctl_code_name}"
+        assert result.ctl_shape_name == f"SHAPE_{result.ctl_name}"
         # endregion CtlBuilder
 
         # region CtlBuilderStr
@@ -254,7 +254,7 @@ def test_ctl_builder_error(loader, build_setup, mocker: MockerFixture) -> None:
         # region CtlBuilder
         assert result.ctl_code_name.startswith("id_")
         assert result.addr == f"sheet_index={sheet.sheet_index}&cell_addr={cell.cell_obj}"
-        assert result.ctl_shape_name == f"SHAPE_{result.ctl_code_name}"
+        assert result.ctl_shape_name == f"SHAPE_{result.ctl_name}"
         # endregion CtlBuilder
 
         # region CtlBuilderStr
@@ -348,7 +348,7 @@ def test_ctl_builder_str(loader, build_setup, mocker: MockerFixture) -> None:
         # region CtlBuilder
         assert result.ctl_code_name.startswith("id_")
         assert result.addr == f"sheet_index={sheet.sheet_index}&cell_addr={cell.cell_obj}"
-        assert result.ctl_shape_name == f"SHAPE_{result.ctl_code_name}"
+        assert result.ctl_shape_name == f"SHAPE_{result.ctl_name}"
         # endregion CtlBuilder
 
         # region CtlBuilderStr
@@ -446,7 +446,7 @@ def test_ctl_builder_pd_df(loader, build_setup, mocker: MockerFixture) -> None:
         # region CtlBuilder
         assert result.ctl_code_name.startswith("id_")
         assert result.addr == f"sheet_index={sheet.sheet_index}&cell_addr={cell.cell_obj}"
-        assert result.ctl_shape_name == f"SHAPE_{result.ctl_code_name}"
+        assert result.ctl_shape_name == f"SHAPE_{result.ctl_name}"
         # endregion CtlBuilder
 
         # region CtlBuilderStr
@@ -546,7 +546,7 @@ def test_ctl_builder_pd_series(loader, build_setup, mocker: MockerFixture) -> No
         # region CtlBuilder
         assert result.ctl_code_name.startswith("id_")
         assert result.addr == f"sheet_index={sheet.sheet_index}&cell_addr={cell.cell_obj}"
-        assert result.ctl_shape_name == f"SHAPE_{result.ctl_code_name}"
+        assert result.ctl_shape_name == f"SHAPE_{result.ctl_name}"
         # endregion CtlBuilder
 
         # region CtlBuilderStr
@@ -646,7 +646,7 @@ def test_ctl_builder_data_tbl(loader, build_setup, mocker: MockerFixture) -> Non
         # region CtlBuilder
         assert result.ctl_code_name.startswith("id_")
         assert result.addr == f"sheet_index={sheet.sheet_index}&cell_addr={cell.cell_obj}"
-        assert result.ctl_shape_name == f"SHAPE_{result.ctl_code_name}"
+        assert result.ctl_shape_name == f"SHAPE_{result.ctl_name}"
         # endregion CtlBuilder
 
         # region CtlBuilderStr

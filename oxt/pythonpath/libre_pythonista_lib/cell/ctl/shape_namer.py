@@ -1,20 +1,21 @@
 from __future__ import annotations
 from typing import Any, TYPE_CHECKING
-import uno
 from ooodev.calc import CalcCell
-from ...log.log_inst import LogInst
-from ...ex import CustomPropertyMissingError
 
 if TYPE_CHECKING:
-    from .....___lo_pip___.config import Config
+    from oxt.___lo_pip___.basic_config import BasicConfig
+    from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
+    from oxt.pythonpath.libre_pythonista_lib.ex.exceptions import CustomPropertyMissingError
 else:
-    from ___lo_pip___.config import Config
+    from ___lo_pip___.basic_config import BasicConfig
+    from libre_pythonista_lib.log.log_mixin import LogMixin
+    from libre_pythonista_lib.ex.exceptions import CustomPropertyMissingError
 
 
-class ShapeNamer:
+class ShapeNamer(LogMixin):
     """Gets Control Names for Controls of a Given Cell"""
 
-    def __init__(self, calc_cell: CalcCell):
+    def __init__(self, calc_cell: CalcCell) -> None:
         """
         Constructor
 
@@ -24,10 +25,10 @@ class ShapeNamer:
         Raises:
             CustomPropertyMissingError: Custom Property not found
         """
+        LogMixin.__init__(self)
         self._ctl_name = None
         self._shape_name = None
-        self._cfg = Config()
-        self.log = LogInst()
+        self._cfg = BasicConfig()
         self.is_deleted_cell = calc_cell.extra_data.get("deleted", False)
 
         if self.is_deleted_cell:
@@ -37,7 +38,7 @@ class ShapeNamer:
                 self._code_name = calc_cell.get_custom_property(self._cfg.cell_cp_codename)
             else:
                 with self.log.indent(True):
-                    self.log.error(f"CtlNamer: __init__(): Custom Property not found: {self._cfg.cell_cp_codename}")
+                    self.log.error("CtlNamer: __init__(): Custom Property not found: %s", self._cfg.cell_cp_codename)
                 raise CustomPropertyMissingError(f"Custom Property not found: {self._cfg.cell_cp_codename}")
 
     def _get_shape_name(self) -> str:
