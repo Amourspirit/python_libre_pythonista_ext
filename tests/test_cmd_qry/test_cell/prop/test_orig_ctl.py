@@ -17,12 +17,14 @@ def test_cmd_orig_ctl(loader, build_setup) -> None:
         from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler import QryHandler
         from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_orig_ctl import QryOrigCtl
         from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_orig_ctl_del import CmdOrigCtlDel
+        from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
     else:
         from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_orig_ctl import CmdOrigCtl
         from libre_pythonista_lib.cq.cmd.cmd_handler import CmdHandler
         from libre_pythonista_lib.cq.qry.qry_handler import QryHandler
         from libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_orig_ctl import QryOrigCtl
         from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_orig_ctl_del import CmdOrigCtlDel
+        from libre_pythonista_lib.utils.result import Result
 
     doc = None
     try:
@@ -46,14 +48,16 @@ def test_cmd_orig_ctl(loader, build_setup) -> None:
 
         # Verify the control name was set
         result = qry_handler.handle(qry)
-        assert result == test_name
+        assert Result.is_success(result)
+        assert result.data == test_name
 
         # Test setting same control name (should succeed but not change anything)
         cmd = CmdOrigCtl(cell=cell, name=test_name)
         cmd_handler.handle(cmd)
         assert cmd.success
         result = qry_handler.handle(qry)
-        assert result == test_name
+        assert Result.is_success(result)
+        assert result.data == test_name
 
         # Test changing to different control name and then undoing
         new_name = "cell_data_type_int"
@@ -61,26 +65,28 @@ def test_cmd_orig_ctl(loader, build_setup) -> None:
         cmd_handler.handle(cmd)
         assert cmd.success
         result = qry_handler.handle(qry)
-        assert result == new_name
+        assert Result.is_success(result)
+        assert result.data == new_name
 
         # Test undo
         cmd.undo()
         result = qry_handler.handle(qry)
-        assert result == test_name
+        assert Result.is_success(result)
+        assert result.data == test_name
 
         # Test deleting the code name
         cmd = CmdOrigCtlDel(cell=cell)
         cmd_handler.handle(cmd)
         assert cmd.success
         result = qry_handler.handle(qry)
-        assert result == ""
+        assert Result.is_failure(result)
 
         # Test deleting when cell does not have property
         cmd = CmdOrigCtlDel(cell=cell)
         cmd_handler.handle(cmd)
         assert cmd.success
         result = qry_handler.handle(qry)
-        assert result == ""
+        assert Result.is_failure(result)
 
     finally:
         if doc is not None:
