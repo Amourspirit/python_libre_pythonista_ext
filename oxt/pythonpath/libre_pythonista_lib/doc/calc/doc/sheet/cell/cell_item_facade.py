@@ -101,7 +101,10 @@ class CellItemFacade(LogMixin):
     def get_control_kind(self) -> CtlKind:
         """Gets the kind of control attached to the cell"""
         qry = QryCtlKind(self._cell)
-        return self.qry_handler.handle(qry)
+        result = self.qry_handler.handle(qry)
+        if Result.is_success(result):
+            return result.data
+        return CtlKind.UNKNOWN
 
     def add_default_control(self) -> Any:  # noqa: ANN401
         """Adds a default string control to the cell and initializes empty code"""

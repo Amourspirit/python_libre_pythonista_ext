@@ -29,6 +29,7 @@ if TYPE_CHECKING:
         CmdRemoveCtlProps,
     )
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.draw_page.del_shape_by_name import CmdDelShapeByName
+    from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
 
 else:
     from libre_pythonista_lib.cq.cmd.general.cmd_batch import CmdBatch
@@ -38,6 +39,7 @@ else:
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_ctl_kind import QryCtlKind
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.remove.cmd_remove_ctl_props import CmdRemoveCtlProps
     from libre_pythonista_lib.cq.cmd.calc.sheet.draw_page.del_shape_by_name import CmdDelShapeByName
+    from libre_pythonista_lib.utils.result import Result
 
     CmdHandlerT = Any
     QryHandlerT = Any
@@ -162,7 +164,11 @@ def get_control(calc_cell: CalcCell) -> CtlBase | None:
 
     qry = QryCtlKind(calc_cell)
     handler = _get_qry_handler()
-    ctl_kind = handler.handle(qry)
+    result = handler.handle(qry)
+    if Result.is_failure(result):
+        return None
+    ctl_kind = result.data
+
     control_class = _get_control_class(ctl_kind)
     if control_class is None:
         return None

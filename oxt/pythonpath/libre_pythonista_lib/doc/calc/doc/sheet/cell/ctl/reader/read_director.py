@@ -25,10 +25,11 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.reader.ctl_reader_empty import CtlReaderEmpty
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.reader.ctl_reader_error import CtlReaderError
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.reader.ctl_reader_none import CtlReaderNone
+    from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
 else:
     from libre_pythonista_lib.kind.ctl_kind import CtlKind
-
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_ctl_kind import QryCtlKind
+    from libre_pythonista_lib.utils.result import Result
 
 # tested in: tests/test_doc/test_calc/test_doc/test_sheet/test_cell/test_ctl/test_ctl_builder.py
 
@@ -40,8 +41,10 @@ def _get_kind(calc_cell: CalcCell) -> CtlKind:
         from libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
     qry = QryCtlKind(calc_cell)
     handler = QryHandlerFactory.get_qry_handler()
-    ctl_kind = handler.handle(qry)
-    return ctl_kind
+    result = handler.handle(qry)
+    if Result.is_failure(result):
+        return CtlKind.UNKNOWN
+    return result.data
 
 
 def _get_control_class(ctl_kind: CtlKind) -> Type[CtlReader] | None:

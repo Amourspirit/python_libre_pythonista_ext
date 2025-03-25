@@ -16,6 +16,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_pyc_rule import QryPycRule
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_key_maker import QryKeyMaker
+    from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
 else:
     from libre_pythonista_lib.kind.rule_name_kind import RuleNameKind
     from libre_pythonista_lib.utils.custom_ext import override
@@ -27,6 +28,7 @@ else:
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_pyc_rule import QryPycRule
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_key_maker import QryKeyMaker
+    from libre_pythonista_lib.utils.result import Result
 
 
 class CmdPycRule(CmdBase, LogMixin, CmdCellT):
@@ -45,7 +47,7 @@ class CmdPycRule(CmdBase, LogMixin, CmdCellT):
         self._cell = cell
         self.kind = CalcCmdKind.CELL
         self._keys = cast("KeyMaker", NULL_OBJ)
-        self._current_state = cast(str, NULL_OBJ)
+        self._current_state = cast(str | None, NULL_OBJ)
         self._state_changed = False
         self._errors = True
         rule_name = str(name)
@@ -69,7 +71,10 @@ class CmdPycRule(CmdBase, LogMixin, CmdCellT):
 
     def _get_current_state(self) -> RuleNameKind:
         qry = QryPycRule(cell=self.cell)
-        return self._execute_qry(qry)
+        result = self._execute_qry(qry)
+        if Result.is_success(result):
+            return result.data
+        return RuleNameKind.UNKNOWN
 
     @override
     def execute(self) -> None:

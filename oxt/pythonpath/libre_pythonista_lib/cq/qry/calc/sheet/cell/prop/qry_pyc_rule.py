@@ -9,6 +9,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_base import QryBase
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
     from oxt.pythonpath.libre_pythonista_lib.kind.rule_name_kind import RuleNameKind
+    from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
 else:
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_cell_prop_value import QryCellPropValue
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_t import QryCellT
@@ -16,9 +17,10 @@ else:
     from libre_pythonista_lib.cq.qry.qry_base import QryBase
     from libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
     from libre_pythonista_lib.kind.rule_name_kind import RuleNameKind
+    from libre_pythonista_lib.utils.result import Result
 
 
-class QryPycRule(QryBase, QryCellT[RuleNameKind]):
+class QryPycRule(QryBase, QryCellT[Result[RuleNameKind, None] | Result[None, Exception]]):
     """Gets the pyc rule of the cell such as ``CELL_DATA_TYPE_STR``"""
 
     def __init__(self, cell: CalcCell) -> None:
@@ -26,18 +28,20 @@ class QryPycRule(QryBase, QryCellT[RuleNameKind]):
         self.kind = CalcQryKind.CELL
         self._cell = cell
 
-    def execute(self) -> RuleNameKind:
+    def execute(self) -> Result[RuleNameKind, None] | Result[None, Exception]:
         """
         Executes the query and gets the pyc rule of the cell.
 
         Returns:
-            RuleNameKind: The pyc rule of the cell. If the rule is not found, then ``RuleNameKind.UNKNOWN`` is returned.
+            Result: Success with pyc rule or Failure with Exception
         """
         qry_km = QryKeyMaker()
         km = self._execute_qry(qry_km)
-        qry_state = QryCellPropValue(cell=self._cell, name=km.pyc_rule_key, default="")
-        result = str(self._execute_qry(qry_state))
-        return RuleNameKind.from_str(result)
+        qry_state = QryCellPropValue(cell=self._cell, name=km.pyc_rule_key, default=False)
+        result = self._execute_qry(qry_state)
+        if result:
+            return Result.success(RuleNameKind.from_str(result))
+        return Result.failure(Exception("Pyc rule not found"))
 
     @property
     def cell(self) -> CalcCell:

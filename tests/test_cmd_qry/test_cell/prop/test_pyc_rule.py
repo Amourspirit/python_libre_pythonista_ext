@@ -18,6 +18,7 @@ def test_cmd_pyc_rule(loader, build_setup) -> None:
         from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_pyc_rule import QryPycRule
         from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_pyc_rule_del import CmdPycRuleDel
         from oxt.pythonpath.libre_pythonista_lib.kind.rule_name_kind import RuleNameKind
+        from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
     else:
         from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_pyc_rule import CmdPycRule
         from libre_pythonista_lib.cq.cmd.cmd_handler import CmdHandler
@@ -25,6 +26,7 @@ def test_cmd_pyc_rule(loader, build_setup) -> None:
         from libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_pyc_rule import QryPycRule
         from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_pyc_rule_del import CmdPycRuleDel
         from libre_pythonista_lib.kind.rule_name_kind import RuleNameKind
+        from libre_pythonista_lib.utils.result import Result
 
     doc = None
     try:
@@ -48,14 +50,16 @@ def test_cmd_pyc_rule(loader, build_setup) -> None:
 
         # Verify the pyc rule was set
         result = qry_handler.handle(qry)
-        assert result == test_name
+        assert Result.is_success(result)
+        assert result.data == test_name
 
         # Test setting same pyc rule (should succeed but not change anything)
         cmd = CmdPycRule(cell=cell, name=test_name)
         cmd_handler.handle(cmd)
         assert cmd.success
         result = qry_handler.handle(qry)
-        assert result == test_name
+        assert Result.is_success(result)
+        assert result.data == test_name
 
         # Test changing to different pyc rule and then undoing
         new_name = "cell_data_type_int"
@@ -63,26 +67,28 @@ def test_cmd_pyc_rule(loader, build_setup) -> None:
         cmd_handler.handle(cmd)
         assert cmd.success
         result = qry_handler.handle(qry)
-        assert str(result) == new_name
+        assert Result.is_success(result)
+        assert str(result.data) == new_name
 
         # Test undo
         cmd.undo()
         result = qry_handler.handle(qry)
-        assert result == test_name
+        assert Result.is_success(result)
+        assert result.data == test_name
 
         # Test deleting the code name
         cmd = CmdPycRuleDel(cell=cell)
         cmd_handler.handle(cmd)
         assert cmd.success
         result = qry_handler.handle(qry)
-        assert result == RuleNameKind.UNKNOWN
+        assert Result.is_failure(result)
 
         # Test deleting when cell does not have property
         cmd = CmdPycRuleDel(cell=cell)
         cmd_handler.handle(cmd)
         assert cmd.success
         result = qry_handler.handle(qry)
-        assert result == RuleNameKind.UNKNOWN
+        assert Result.is_failure(result)
 
     finally:
         if doc is not None:
