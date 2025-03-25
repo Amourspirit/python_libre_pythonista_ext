@@ -41,6 +41,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.event.shared_event import SharedEvent
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.utils.gen_util import GenUtil
+    from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.const import (
         PYTHON_AFTER_ADD_SRC_CODE,
         PYTHON_AFTER_REMOVE_SOURCE_CODE,
@@ -58,6 +59,7 @@ else:
     from libre_pythonista_lib.event.shared_event import SharedEvent
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.utils.gen_util import GenUtil
+    from libre_pythonista_lib.utils.result import Result
     from libre_pythonista_lib.doc.calc.const import PYTHON_AFTER_ADD_SRC_CODE, PYTHON_AFTER_REMOVE_SOURCE_CODE
 
 # endregion Imports
@@ -606,7 +608,11 @@ class CellCache(LogMixin):
                 addr = Addr(addr_str)
 
                 qry = QryAddr(calc_cell)
-                current = self._qry_handler.handle(qry)
+                qry_result = self._qry_handler.handle(qry)
+                if Result.is_failure(qry_result):
+                    self.log.error("update_sheet_cell_addr_prop() Failed to get cell address property for %s", cell)
+                    continue
+                current = qry_result.data
 
                 if current != addr:
                     cmd = CmdAddr(calc_cell, addr)

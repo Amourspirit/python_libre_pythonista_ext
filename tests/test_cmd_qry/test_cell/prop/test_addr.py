@@ -16,12 +16,14 @@ def test_cmd_addr(loader, build_setup, mocker: MockerFixture) -> None:
         from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler import CmdHandler
         from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler import QryHandler
         from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_addr import QryAddr
+        from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
     else:
         from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_addr import CmdAddr
         from libre_pythonista_lib.data_type.calc.sheet.cell.prop.addr import Addr
         from libre_pythonista_lib.cq.cmd.cmd_handler import CmdHandler
         from libre_pythonista_lib.cq.qry.qry_handler import QryHandler
         from libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_addr import QryAddr
+        from libre_pythonista_lib.utils.result import Result
 
     doc = None
     try:
@@ -31,14 +33,17 @@ def test_cmd_addr(loader, build_setup, mocker: MockerFixture) -> None:
         ch = CmdHandler()
         qry_handler = QryHandler()
         qry = QryAddr(cell=cell)
-        assert qry_handler.handle(qry) == ""
+        qry_result = qry_handler.handle(qry)
+        assert Result.is_failure(qry_result)
 
         # Test setting new address
         cmd = CmdAddr(cell=cell, addr="sheet_index=0&cell_addr=B2")
         ch.handle(cmd)
         assert cmd.success
         assert cmd.cell == cell
-        assert qry_handler.handle(qry) == "sheet_index=0&cell_addr=B2"
+        qry_result = qry_handler.handle(qry)
+        assert Result.is_success(qry_result)
+        assert qry_result.data == "sheet_index=0&cell_addr=B2"
 
         # Test setting same address (should succeed but not change anything)
         cmd = CmdAddr(cell=cell, addr="sheet_index=0&cell_addr=B2")
@@ -49,7 +54,9 @@ def test_cmd_addr(loader, build_setup, mocker: MockerFixture) -> None:
         cmd = CmdAddr(cell=cell, addr="sheet_index=0&cell_addr=C3")
         ch.handle(cmd)
         assert cmd.success
-        assert qry_handler.handle(qry) == "sheet_index=0&cell_addr=C3"
+        qry_result = qry_handler.handle(qry)
+        assert Result.is_success(qry_result)
+        assert qry_result.data == "sheet_index=0&cell_addr=C3"
 
         # Test undo
         cmd.undo()
@@ -59,7 +66,9 @@ def test_cmd_addr(loader, build_setup, mocker: MockerFixture) -> None:
         cmd = CmdAddr(cell=cell, addr=addr)
         ch.handle(cmd)
         assert cmd.success
-        assert qry_handler.handle(qry) == "sheet_index=0&cell_addr=D4"
+        qry_result = qry_handler.handle(qry)
+        assert Result.is_success(qry_result)
+        assert qry_result.data == "sheet_index=0&cell_addr=D4"
 
         # Test with invalid address
         cmd = CmdAddr(cell=cell, addr="invalid_address")

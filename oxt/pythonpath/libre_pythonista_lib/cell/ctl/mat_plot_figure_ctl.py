@@ -47,15 +47,13 @@ class MatPlotFigureCtl:
 
     def _get_features(self) -> Set[str]:
         if self._supported_features is None:
-            self._supported_features = set(
-                [
-                    "add_ctl",
-                    "remove_ctl",
-                    "update_ctl_action",
-                    "get_rule_name",
-                    "get_cell_pos_size",
-                ]
-            )
+            self._supported_features = {
+                "add_ctl",
+                "remove_ctl",
+                "update_ctl_action",
+                "get_rule_name",
+                "get_cell_pos_size",
+            }
 
         return self._supported_features
 

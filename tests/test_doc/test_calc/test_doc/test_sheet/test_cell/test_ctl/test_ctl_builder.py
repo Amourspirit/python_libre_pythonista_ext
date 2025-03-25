@@ -24,6 +24,7 @@ def test_ctl_builder_none(loader, build_setup, mocker: MockerFixture) -> None:
         from oxt.pythonpath.libre_pythonista_lib.kind.rule_name_kind import RuleNameKind
         from oxt.___lo_pip___.basic_config import BasicConfig
         from oxt.___lo_pip___.config import Config
+        from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
     else:
         from libre_pythonista_lib.kind.ctl_kind import CtlKind
         from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.builder.build_director import get_builder
@@ -32,6 +33,7 @@ def test_ctl_builder_none(loader, build_setup, mocker: MockerFixture) -> None:
         from libre_pythonista_lib.kind.rule_name_kind import RuleNameKind
         from libre_pythonista.basic_config import BasicConfig
         from libre_pythonista.config import Config
+        from libre_pythonista_lib.utils.result import Result
 
     doc = None
     try:

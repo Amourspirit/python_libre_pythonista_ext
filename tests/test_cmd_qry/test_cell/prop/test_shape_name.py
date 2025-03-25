@@ -17,12 +17,14 @@ def test_cmd_shape(loader, build_setup) -> None:
         from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler import QryHandler
         from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_shape import QryShape
         from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_shape_del import CmdShapeDel
+        from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
     else:
         from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_shape import CmdShape
         from libre_pythonista_lib.cq.cmd.cmd_handler import CmdHandler
         from libre_pythonista_lib.cq.qry.qry_handler import QryHandler
         from libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_shape import QryShape
         from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_shape_del import CmdShapeDel
+        from libre_pythonista_lib.utils.result import Result
 
     doc = None
     try:
@@ -46,14 +48,16 @@ def test_cmd_shape(loader, build_setup) -> None:
 
         # Verify the shape was set
         result = qry_handler.handle(qry)
-        assert result == test_name
+        assert Result.is_success(result)
+        assert result.data == test_name
 
         # Test setting same shape (should succeed but not change anything)
         cmd = CmdShape(cell=cell, name=test_name)
         cmd_handler.handle(cmd)
         assert cmd.success
         result = qry_handler.handle(qry)
-        assert result == test_name
+        assert Result.is_success(result)
+        assert result.data == test_name
 
         # Test changing to different shape and then undoing
         new_name = "SHAPE_libre_pythonista_ctl_cell_id_lfjdlkj35lf"
@@ -61,38 +65,42 @@ def test_cmd_shape(loader, build_setup) -> None:
         cmd_handler.handle(cmd)
         assert cmd.success
         result = qry_handler.handle(qry)
-        assert result == new_name
+        assert Result.is_success(result)
+        assert result.data == new_name
 
         # Test undo
         cmd.undo()
         result = qry_handler.handle(qry)
-        assert result == test_name
+        assert Result.is_success(result)
+        assert result.data == test_name
 
         # Test deleting the shape
         cmd = CmdShapeDel(cell=cell)
         cmd_handler.handle(cmd)
         assert cmd.success
         result = qry_handler.handle(qry)
-        assert result == ""
+        assert Result.is_failure(result)
 
         # Test deleting when cell does not have property
         cmd = CmdShapeDel(cell=cell)
         cmd_handler.handle(cmd)
         assert cmd.success
         result = qry_handler.handle(qry)
+        assert Result.is_failure(result)
 
         # Test deleting the shape
         cmd = CmdShapeDel(cell=cell)
         cmd_handler.handle(cmd)
         assert cmd.success
         result = qry_handler.handle(qry)
-        assert result == ""
+        assert Result.is_failure(result)
 
         # Test deleting when cell does not have property
         cmd = CmdShapeDel(cell=cell)
         cmd_handler.handle(cmd)
         assert cmd.success
         result = qry_handler.handle(qry)
+        assert Result.is_failure(result)
 
     finally:
         if doc is not None:

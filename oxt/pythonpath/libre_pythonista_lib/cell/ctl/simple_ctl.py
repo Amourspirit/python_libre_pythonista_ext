@@ -42,7 +42,7 @@ else:
 
 
 class SimpleCtl:
-    def __init__(self, calc_cell: CalcCell):
+    def __init__(self, calc_cell: CalcCell) -> None:
         """
         Constructor
 

@@ -15,6 +15,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_key_maker import QryKeyMaker
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_addr import QryAddr
     from oxt.pythonpath.libre_pythonista_lib.data_type.calc.sheet.cell.prop.addr import Addr
+    from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
 else:
     from libre_pythonista_lib.utils.custom_ext import override
     from libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
@@ -24,6 +25,7 @@ else:
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_key_maker import QryKeyMaker
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_addr import QryAddr
     from libre_pythonista_lib.data_type.calc.sheet.cell.prop.addr import Addr
+    from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
 
 
 class CmdAddr(CmdBase, LogMixin, CmdCellT):
@@ -71,7 +73,10 @@ class CmdAddr(CmdBase, LogMixin, CmdCellT):
     def _get_current_state(self) -> str:
         """Gets the current address state of the cell"""
         qry = QryAddr(cell=self.cell)
-        return self._execute_qry(qry)
+        result = self._execute_qry(qry)
+        if Result.is_success(result):
+            return result.data
+        return ""
 
     @override
     def execute(self) -> None:

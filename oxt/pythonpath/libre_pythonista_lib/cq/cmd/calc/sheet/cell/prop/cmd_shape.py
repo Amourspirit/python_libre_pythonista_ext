@@ -14,6 +14,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_shape import QryShape
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_key_maker import QryKeyMaker
+    from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
 else:
     from libre_pythonista_lib.utils.custom_ext import override
     from libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
@@ -23,6 +24,7 @@ else:
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_shape import QryShape
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_key_maker import QryKeyMaker
+    from libre_pythonista_lib.utils.result import Result
 
 
 class CmdShape(CmdBase, LogMixin, CmdCellT):
@@ -59,7 +61,10 @@ class CmdShape(CmdBase, LogMixin, CmdCellT):
 
     def _get_current_state(self) -> str:
         qry = QryShape(cell=self.cell)
-        return self._execute_qry(qry)
+        qry_result = self._execute_qry(qry)
+        if Result.is_success(qry_result):
+            return qry_result.data
+        return ""
 
     @override
     def execute(self) -> None:

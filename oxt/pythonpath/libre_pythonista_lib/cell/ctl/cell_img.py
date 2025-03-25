@@ -35,9 +35,22 @@ else:
 
 
 class CellImg(SheetControlBase):
-    """A partial class for a cell control."""
+    """
+    A class for managing images in spreadsheet cells.
+    Inherits from SheetControlBase to provide cell-level control functionality.
+    """
 
     def __init__(self, calc_obj: CalcCell, lo_inst: LoInst | None = None) -> None:
+        """
+        Initialize a new CellImg instance.
+
+        Args:
+            calc_obj: The CalcCell object representing the cell to work with
+            lo_inst: Optional LibreOffice instance
+
+        Raises:
+            CustomPropertyMissingError: If required custom property is not found
+        """
         super().__init__(calc_obj, lo_inst)
         self._cfg = Config()
         self.__log = LogInst()
@@ -51,10 +64,17 @@ class CellImg(SheetControlBase):
             self.__log.debug(f"CellControl: __init__(): Exit")
 
     def _init_calc_sheet_prop(self) -> None:
+        """Initialize the CalcSheetPropPartial mixin."""
         CalcSheetPropPartial.__init__(self, self.calc_obj.calc_sheet)
 
     @override
     def _get_pos_size(self) -> Tuple[UnitMM100, UnitMM100, UnitMM100, UnitMM100]:  # type: ignore
+        """
+        Get the position and size of the cell, handling merged cells.
+
+        Returns:
+            Tuple containing (X position, Y position, Width, Height) in 1/100th mm units
+        """
         if self.calc_obj.component.IsMerged:  # type: ignore
             self.__log.debug(f"CellControl: _get_pos_size(): Cell is merged")
             cursor = self.calc_obj.calc_sheet.create_cursor_by_range(cell_obj=self.calc_obj.cell_obj)
@@ -70,6 +90,13 @@ class CellImg(SheetControlBase):
 
     @override
     def _get_form(self) -> CalcForm:
+        """
+        Get or create a form for the sheet.
+        Creates a default form if none exists.
+
+        Returns:
+            CalcForm: The form object
+        """
         sheet = self.calc_sheet
         if len(sheet.draw_page.forms) == 0:
             # insert a default user form so custom controls can be on a separate form
@@ -80,6 +107,13 @@ class CellImg(SheetControlBase):
 
     @override
     def _find_current_control(self) -> Any:
+        """
+        Find the existing control (shape) in the cell.
+        Triggers on_finding_control event.
+
+        Returns:
+            XShape object if found, None otherwise
+        """
         with self.__log.indent(True):
             self.__log.debug(f"CellControl: _find_current_control(): Entered")
             # pylint: disable=import-outside-toplevel
@@ -106,6 +140,13 @@ class CellImg(SheetControlBase):
 
     @override
     def _set_shape_props(self, shape: XShape) -> None:
+        """
+        Set the properties for a shape.
+        Triggers on_setting_shape_props event.
+
+        Args:
+            shape: The XShape object to configure
+        """
         event_data = DotDict(
             Anchor=self.calc_obj.component,
             Decorative=False,
@@ -126,6 +167,15 @@ class CellImg(SheetControlBase):
                 setattr(shape, key, value)
 
     def insert_cell_image_linked(self, fmn: PathOrStr) -> DrawShape[SpreadsheetDrawPage[CalcSheet]]:
+        """
+        Insert a linked image into the cell.
+
+        Args:
+            fmn: Path or string representing the image file
+
+        Returns:
+            DrawShape: The created image shape object
+        """
         sheet = self.calc_sheet
         shape = sheet.draw_page.add_shape(DrawingShapeKind.GRAPHIC_OBJECT_SHAPE, *self._get_pos_size())
         shape.set_image(fmn)
@@ -135,4 +185,10 @@ class CellImg(SheetControlBase):
 
     @property
     def calc_obj(self) -> CalcCell:
+        """
+        Get the CalcCell object.
+
+        Returns:
+            CalcCell: The cell object this instance is working with
+        """
         return super().calc_obj

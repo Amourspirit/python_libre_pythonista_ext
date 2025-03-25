@@ -13,6 +13,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl import Ctl
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
+    from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
 else:
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_shape import QryShape as QryShapeName
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_t import QryCellT
@@ -21,9 +22,12 @@ else:
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl import Ctl
     from libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
     from libre_pythonista_lib.log.log_mixin import LogMixin
+    from libre_pythonista_lib.utils.result import Result
 
 
-class QryLpShape(QryBase, LogMixin, QryCellT[DrawShape[SpreadsheetDrawPage[CalcSheet]] | None]):
+class QryLpShape(
+    QryBase, LogMixin, QryCellT[Result[DrawShape[SpreadsheetDrawPage[CalcSheet]], None] | Result[None, Exception]]
+):
     """Gets the control shape"""
 
     def __init__(self, cell: CalcCell, ctl: Ctl | None = None) -> None:
@@ -38,32 +42,40 @@ class QryLpShape(QryBase, LogMixin, QryCellT[DrawShape[SpreadsheetDrawPage[CalcS
         self.kind = CalcQryKind.CELL
         self._ctl = ctl
 
-    def _get_shape_name(self) -> str:
+    def _get_shape_name(self) -> Result[str, None] | Result[None, Exception]:
         qry_shape = QryShapeName(cell=self.cell)
         return self._execute_qry(qry_shape)
 
-    def execute(self) -> DrawShape[SpreadsheetDrawPage[CalcSheet]] | None:
+    def execute(self) -> Result[DrawShape[SpreadsheetDrawPage[CalcSheet]], None] | Result[None, Exception]:
         """
         Executes the query to get control shape
 
         Returns:
-            DrawShape[SpreadsheetDrawPage[CalcSheet]] | None: The control shape
+            Result: Success with shape or Failure with Exception
         """
-        shape_name = self._get_shape_name()
-        if not shape_name:
-            self.log.debug("No shape name found. Returning None.")
-            return None
-        qry_shape = QryShapeByName(sheet=self.cell.calc_sheet, shape_name=shape_name)
-        result = self._execute_qry(qry_shape)
-        if result is None:
-            self.log.debug("Shape not found: %s", shape_name)
-        else:
-            self.log.debug("Found shape for : %s", shape_name)
-        if self._ctl is not None:
-            self._ctl.ctl_shape = result
-            if not self._ctl.cell:
-                self._ctl.cell = self.cell
-        return result
+        qry_shape_name = QryShapeName(cell=self.cell)
+        result = self._execute_qry(qry_shape_name)
+        if Result.is_failure(result):
+            return result
+
+        try:
+            shape_name = result.data
+            qry_shape = QryShapeByName(sheet=self.cell.calc_sheet, shape_name=shape_name)
+            result = self._execute_qry(qry_shape)
+            if result is None:
+                self.log.debug("Shape not found: %s", shape_name)
+            else:
+                self.log.debug("Found shape for : %s", shape_name)
+            if self._ctl is not None:
+                self._ctl.ctl_shape = result
+                if not self._ctl.cell:
+                    self._ctl.cell = self.cell
+            if result is None:
+                return Result.failure(Exception("Shape not found"))
+            return Result.success(result)
+        except Exception:
+            self.log.exception("Error getting shape")
+            return Result.failure(Exception("Shape not found"))
 
     @property
     def cell(self) -> CalcCell:
