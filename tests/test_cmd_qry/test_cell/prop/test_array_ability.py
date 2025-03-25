@@ -16,11 +16,13 @@ def test_cmd_array_ability(loader, build_setup) -> None:
         from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler import CmdHandler
         from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler import QryHandler
         from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_array_ability import QryArrayAbility
+        from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
     else:
         from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_array_ability import CmdArrayAbility
         from libre_pythonista_lib.cq.cmd.cmd_handler import CmdHandler
         from libre_pythonista_lib.cq.qry.qry_handler import QryHandler
         from libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_array_ability import QryArrayAbility
+        from libre_pythonista_lib.utils.result import Result
 
     doc = None
     try:
@@ -30,14 +32,15 @@ def test_cmd_array_ability(loader, build_setup) -> None:
         ch = CmdHandler()
         qry_handler = QryHandler()
         qry = QryArrayAbility(cell=cell)
-        assert qry_handler.handle(qry) is None
+        qry_result = qry_handler.handle(qry)
+        assert Result.is_failure(qry_result)
 
         # Test setting array ability to True
         cmd = CmdArrayAbility(cell=cell, ability=True)
         ch.handle(cmd)
         assert cmd.success
         assert cmd.cell == cell
-        assert qry_handler.handle(qry)
+        assert Result.is_success(qry_handler.handle(qry))
 
         # Test setting same state (should succeed but not change anything)
         cmd = CmdArrayAbility(cell=cell, ability=True)

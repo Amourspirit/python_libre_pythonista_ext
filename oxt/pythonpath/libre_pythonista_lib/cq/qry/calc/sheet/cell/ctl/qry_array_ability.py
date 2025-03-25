@@ -11,6 +11,7 @@ if TYPE_CHECKING:
         QryArrayAbility as QryPropArrayAbility,
     )
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_t import QryCellT
+    from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
 else:
     from libre_pythonista_lib.cq.qry.qry_base import QryBase
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl import Ctl
@@ -19,9 +20,10 @@ else:
         QryArrayAbility as QryPropArrayAbility,
     )
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_t import QryCellT
+    from libre_pythonista_lib.utils.result import Result
 
 
-class QryArrayAbility(QryBase, QryCellT[bool | None]):
+class QryArrayAbility(QryBase, QryCellT[Result[bool, None] | Result[None, Exception]]):
     """Gets the array ability."""
 
     def __init__(self, cell: CalcCell, ctl: Ctl | None = None) -> None:
@@ -36,20 +38,22 @@ class QryArrayAbility(QryBase, QryCellT[bool | None]):
         self._ctl = ctl
         self.kind = CalcQryKind.CELL
 
-    def execute(self) -> bool | None:
+    def execute(self) -> Result[bool, None] | Result[None, Exception]:
         """
         Executes the query to get array ability.
 
         Returns:
-            bool | None: The Array Ability
+            Result: Success with array ability or Failure with Exception
         """
         qry_ability = QryPropArrayAbility(cell=self.cell)
-        value = self._execute_qry(qry_ability)
+        result = self._execute_qry(qry_ability)
+        if Result.is_failure(result):
+            return result
         if self._ctl is not None:
-            self._ctl.array_ability = value
+            self._ctl.array_ability = result.data
             if not self._ctl.cell:
                 self._ctl.cell = self.cell
-        return value
+        return result
 
     @property
     def cell(self) -> CalcCell:

@@ -27,6 +27,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.kind.ctl_kind import CtlKind
     from oxt.pythonpath.libre_pythonista_lib.log.log_inst import LogInst
     from oxt.pythonpath.libre_pythonista_lib.res.res_resolver import ResResolver
+    from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
     from oxt.pythonpath.libre_pythonista_lib.const import (
         CS_CMD_START,
         DISPATCH_CODE_EDIT,
@@ -56,6 +57,7 @@ else:
     from libre_pythonista_lib.kind.ctl_kind import CtlKind
     from libre_pythonista_lib.log.log_inst import LogInst
     from libre_pythonista_lib.res.res_resolver import ResResolver
+    from libre_pythonista_lib.utils.result import Result
     from libre_pythonista_lib.const import (
         CS_CMD_START,
         DISPATCH_CODE_EDIT,
@@ -172,7 +174,10 @@ class CtlPopup:
 
     def _qry_array_ability(self) -> bool | None:
         qry = QryArrayAbility(cell=self._cell)
-        return _get_qry_handler().handle(qry)
+        result = _get_qry_handler().handle(qry)
+        if Result.is_success(result):
+            return result.data
+        return None
 
     def _get_state_menu(self) -> list:
         with self._log.indent(True):

@@ -26,6 +26,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.state.state_kind import StateKind
     from oxt.pythonpath.libre_pythonista_lib.log.log_inst import LogInst
     from oxt.pythonpath.libre_pythonista_lib.res.res_resolver import ResResolver
+    from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
     from oxt.pythonpath.libre_pythonista_lib.const import (
         DISPATCH_CODE_EDIT_MB,
         DISPATCH_CODE_DEL,
@@ -39,6 +40,7 @@ else:
     from libre_pythonista_lib.dispatch.cell_dispatch_state2 import CellDispatchState2
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.state.state_kind import StateKind
     from libre_pythonista_lib.log.log_inst import LogInst
+    from libre_pythonista_lib.utils.result import Result
     from libre_pythonista_lib.res.res_resolver import ResResolver
     from libre_pythonista_lib.const import (
         DISPATCH_CODE_EDIT_MB,
@@ -125,7 +127,11 @@ def on_menu_intercept(
                 try:
                     log_debug("Getting Resource for mnuEditCode")
                     qry_array_ability = QryArrayAbility(cell=cell)
-                    has_array_ability = bool(qry_handler.handle(qry_array_ability))
+                    qry_array_ability_result = qry_handler.handle(qry_array_ability)
+                    if Result.is_success(qry_array_ability_result):
+                        has_array_ability = qry_array_ability_result.data
+                    else:
+                        has_array_ability = False
 
                     items = ActionTriggerContainer()
                     rr = ResResolver()

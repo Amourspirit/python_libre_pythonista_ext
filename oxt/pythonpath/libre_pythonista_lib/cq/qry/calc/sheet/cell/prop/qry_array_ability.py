@@ -1,5 +1,4 @@
 from __future__ import annotations
-import contextlib
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -9,15 +8,17 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_cell_prop_value import QryCellPropValue
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_key_maker import QryKeyMaker
+    from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
 else:
     from libre_pythonista_lib.cq.qry.qry_base import QryBase
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_t import QryCellT
     from libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_cell_prop_value import QryCellPropValue
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_key_maker import QryKeyMaker
+    from libre_pythonista_lib.utils.result import Result
 
 
-class QryArrayAbility(QryBase, QryCellT[bool | None]):
+class QryArrayAbility(QryBase, QryCellT[Result[bool, None] | Result[None, Exception]]):
     """Gets the state of the cell"""
 
     def __init__(self, cell: CalcCell) -> None:
@@ -25,19 +26,20 @@ class QryArrayAbility(QryBase, QryCellT[bool | None]):
         self.kind = CalcQryKind.CELL
         self._cell = cell
 
-    def execute(self) -> bool | None:
+    def execute(self) -> Result[bool, None] | Result[None, Exception]:
         """
         Executes the query and gets the array ability of the cell.
 
         Returns:
-            bool | None: The array ability of the cell.
-                If an error occurs, None is returned.
-                If the cell does not have a state, None is returned.
+            Result: Success with array ability or Failure with Exception
         """
         qry_km = QryKeyMaker()
         km = self._execute_qry(qry_km)
         qry_state = QryCellPropValue(cell=self._cell, name=km.cell_array_ability_key, default=None)
-        return self._execute_qry(qry_state)
+        result = self._execute_qry(qry_state)
+        if result is None:
+            return Result.failure(Exception("Array ability not found"))
+        return Result.success(result)
 
     @property
     def cell(self) -> CalcCell:
