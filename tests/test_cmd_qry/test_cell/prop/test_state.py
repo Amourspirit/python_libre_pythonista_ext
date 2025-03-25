@@ -14,17 +14,19 @@ def test_cmd_state(loader, build_setup, mocker: MockerFixture) -> None:
     if TYPE_CHECKING:
         from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_state import CmdState
         from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler import CmdHandler
-        from oxt.pythonpath.libre_pythonista_lib.cell.state.state_kind import StateKind
+        from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.state.state_kind import StateKind
         from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_state import QryState
         from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler import QryHandler
         from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_state_del import CmdStateDel
+        from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
     else:
         from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_state import CmdState
         from libre_pythonista_lib.cq.cmd.cmd_handler import CmdHandler
-        from libre_pythonista_lib.cell.state.state_kind import StateKind
+        from libre_pythonista_lib.doc.calc.doc.sheet.cell.state.state_kind import StateKind
         from libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_state import QryState
         from libre_pythonista_lib.cq.qry.qry_handler import QryHandler
         from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_state_del import CmdStateDel
+        from libre_pythonista_lib.utils.result import Result
 
     # _ = mocker.patch("libre_pythonista_lib.cq.cmd.calc.sheet.cell.cmd_state.LogInst")
 
@@ -42,26 +44,32 @@ def test_cmd_state(loader, build_setup, mocker: MockerFixture) -> None:
         cmd_handler.handle(cmd)
         assert cmd.success
         assert cmd.cell == cell
-        assert qry_handler.handle(qry) == StateKind.UNKNOWN
+        result = qry_handler.handle(qry)
+        assert Result.is_failure(result)
 
         # Test setting same state (should succeed but not change anything)
         cmd = CmdState(cell=cell, state=StateKind.PY_OBJ)
         cmd_handler.handle(cmd)
         assert cmd.success
-        assert qry_handler.handle(qry) == StateKind.PY_OBJ
+        result = qry_handler.handle(qry)
+        assert Result.is_success(result)
+        assert result.data == StateKind.PY_OBJ
 
         # Test changing to different state
         cmd = CmdState(cell=cell, state=StateKind.ARRAY)
         cmd_handler.handle(cmd)
         assert cmd.success
-
-        assert qry_handler.handle(qry) == StateKind.ARRAY
+        result = qry_handler.handle(qry)
+        assert Result.is_success(result)
+        assert result.data == StateKind.ARRAY
 
         # Test undo
         cmd.undo()
         assert cmd.success
 
-        assert qry_handler.handle(qry) == StateKind.PY_OBJ
+        result = qry_handler.handle(qry)
+        assert Result.is_success(result)
+        assert result.data == StateKind.PY_OBJ
 
         # Test failed execution
         cmd = CmdState(cell=cell, state=StateKind.ARRAY)
@@ -75,14 +83,14 @@ def test_cmd_state(loader, build_setup, mocker: MockerFixture) -> None:
         cmd_handler.handle(cmd)
         assert cmd.success
         result = qry_handler.handle(qry)
-        assert result == StateKind.UNKNOWN
+        assert Result.is_failure(result)
 
         # Test deleting when cell does not have property
         cmd = CmdStateDel(cell=cell)
         cmd_handler.handle(cmd)
         assert cmd.success
         result = qry_handler.handle(qry)
-        assert result == StateKind.UNKNOWN
+        assert Result.is_failure(result)
 
     finally:
         if doc is not None:
@@ -92,11 +100,11 @@ def test_cmd_state(loader, build_setup, mocker: MockerFixture) -> None:
 def test_cmd_kind(build_setup, mocker: MockerFixture) -> None:
     if TYPE_CHECKING:
         from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_state import CmdState
-        from oxt.pythonpath.libre_pythonista_lib.cell.state.state_kind import StateKind
+        from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.state.state_kind import StateKind
         from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
     else:
         from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_state import CmdState
-        from libre_pythonista_lib.cell.state.state_kind import StateKind
+        from libre_pythonista_lib.doc.calc.doc.sheet.cell.state.state_kind import StateKind
         from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
 
     cell = mocker.MagicMock()

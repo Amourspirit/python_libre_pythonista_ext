@@ -11,6 +11,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.state.state_kind import StateKind
     from oxt.pythonpath.libre_pythonista_lib.kind.ctl_kind import CtlKind
+    from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
     from oxt.pythonpath.libre_pythonista_lib.const import (
         DISPATCH_CODE_EDIT,
         DISPATCH_CODE_EDIT_MB,
@@ -27,6 +28,7 @@ else:
     from libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.state.state_kind import StateKind
     from libre_pythonista_lib.kind.ctl_kind import CtlKind
+    from libre_pythonista_lib.utils.result import Result
     from libre_pythonista_lib.const import (
         DISPATCH_CODE_EDIT,
         DISPATCH_CODE_EDIT_MB,
@@ -75,7 +77,10 @@ class CellDispatchState2:
 
     def _qry_ctl_kind(self) -> CtlKind:
         qry = QryCtlKind(self._cell)
-        return self._qry_handler.handle(qry)
+        result = self._qry_handler.handle(qry)
+        if Result.is_success(result):
+            return result.data
+        return CtlKind.UNKNOWN
 
     def get_rule_dispatch_cmd(self) -> str:
         """
@@ -101,9 +106,10 @@ class CellDispatchState2:
             StateKind: The state.
         """
         qry = QryState(self._cell)
-        state = self._qry_handler.handle(qry)
-
-        return state
+        result = self._qry_handler.handle(qry)
+        if Result.is_success(result):
+            return result.data
+        return StateKind.UNKNOWN
 
     def set_state(self, value: StateKind) -> None:
         """
