@@ -22,6 +22,7 @@ def test_cmd_modify_trigger_event(loader, build_setup) -> None:
         from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_modify_trigger_event_del import (
             CmdModifyTriggerEventDel,
         )
+        from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
     else:
         from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_modify_trigger_event import CmdModifyTriggerEvent
         from libre_pythonista_lib.cq.cmd.cmd_handler import CmdHandler
@@ -30,6 +31,7 @@ def test_cmd_modify_trigger_event(loader, build_setup) -> None:
         from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_modify_trigger_event_del import (
             CmdModifyTriggerEventDel,
         )
+        from libre_pythonista_lib.utils.result import Result
 
     doc = None
     try:
@@ -53,14 +55,16 @@ def test_cmd_modify_trigger_event(loader, build_setup) -> None:
 
         # Verify the trigger event was set
         result = qry_handler.handle(qry)
-        assert result == test_event
+        assert Result.is_success(result)
+        assert result.data == test_event
 
         # Test setting same trigger event (should succeed but not change anything)
         cmd = CmdModifyTriggerEvent(cell=cell, name=test_event)
         cmd_handler.handle(cmd)
         assert cmd.success
         result = qry_handler.handle(qry)
-        assert result == test_event
+        assert Result.is_success(result)
+        assert result.data == test_event
 
         # Test changing to different trigger event and then undoing
         new_event = "cell_data_type_int"
@@ -68,26 +72,28 @@ def test_cmd_modify_trigger_event(loader, build_setup) -> None:
         cmd_handler.handle(cmd)
         assert cmd.success
         result = qry_handler.handle(qry)
-        assert result == new_event
+        assert Result.is_success(result)
+        assert result.data == new_event
 
         # Test undo
         cmd.undo()
         result = qry_handler.handle(qry)
-        assert result == test_event
+        assert Result.is_success(result)
+        assert result.data == test_event
 
         # Test deleting the trigger event
         cmd = CmdModifyTriggerEventDel(cell=cell)
         cmd_handler.handle(cmd)
         assert cmd.success
         result = qry_handler.handle(qry)
-        assert result == ""
+        assert Result.is_failure(result)
 
         # Test deleting when cell does not have property
         cmd = CmdModifyTriggerEventDel(cell=cell)
         cmd_handler.handle(cmd)
         assert cmd.success
         result = qry_handler.handle(qry)
-        assert result == ""
+        assert Result.is_failure(result)
 
     finally:
         if doc is not None:

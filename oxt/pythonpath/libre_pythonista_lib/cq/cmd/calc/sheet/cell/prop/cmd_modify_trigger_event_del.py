@@ -18,6 +18,7 @@ if TYPE_CHECKING:
         QryModifyTriggerEvent,
     )
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_key_maker import QryKeyMaker
+    from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
 else:
     from libre_pythonista_lib.utils.custom_ext import override
     from libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
@@ -27,6 +28,7 @@ else:
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_modify_trigger_event import QryModifyTriggerEvent
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_key_maker import QryKeyMaker
+    from libre_pythonista_lib.utils.result import Result
 
 
 class CmdModifyTriggerEventDel(CmdBase, LogMixin, CmdCellT):
@@ -51,7 +53,10 @@ class CmdModifyTriggerEventDel(CmdBase, LogMixin, CmdCellT):
 
     def _get_current_state(self) -> str:
         qry = QryModifyTriggerEvent(cell=self.cell)
-        return self._execute_qry(qry)
+        result = self._execute_qry(qry)
+        if Result.is_success(result):
+            return result.data
+        return ""
 
     @override
     def execute(self) -> None:

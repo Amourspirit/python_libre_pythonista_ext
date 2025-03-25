@@ -13,6 +13,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_modify_trigger_event import (
         QryModifyTriggerEvent,
     )
+    from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
 else:
     from libre_pythonista_lib.cq.qry.qry_base import QryBase
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_t import QryCellT
@@ -21,9 +22,10 @@ else:
     from libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl import Ctl
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_modify_trigger_event import QryModifyTriggerEvent
+    from libre_pythonista_lib.utils.result import Result
 
 
-class QryCtlModifyTriggerEvent(QryBase, LogMixin, QryCellT[str]):
+class QryCtlModifyTriggerEvent(QryBase, LogMixin, QryCellT[Result[str, None] | Result[None, Exception]]):
     """
     Gets the modify trigger event of the cell such as ``cell_data_type_str``.
 
@@ -43,26 +45,28 @@ class QryCtlModifyTriggerEvent(QryBase, LogMixin, QryCellT[str]):
         self._ctl = ctl
         self.kind = CalcQryKind.CELL
 
-    def execute(self) -> str:
+    def execute(self) -> Result[str, None] | Result[None, Exception]:
         """
         Executes the query to get the modify trigger event of the cell.
 
         Assigns the modify trigger event to the control as property ``modify_trigger_event``
 
         Returns:
-            str: The modify trigger event of the cell.
+            Result: Success with modify trigger event or Failure with Exception
         """
         qry_shape = QryModifyTriggerEvent(cell=self.cell)
-        value = self._execute_qry(qry_shape)
+        result = self._execute_qry(qry_shape)
+        if Result.is_failure(result):
+            return result
         if self._ctl is not None:
             try:
-                kind = RuleNameKind(value)
+                kind = RuleNameKind(result.data)
                 self._ctl.modify_trigger_event = kind
                 if not self._ctl.cell:
                     self._ctl.cell = self.cell
             except Exception:
                 self.log.exception("Error getting rule name")
-        return value
+        return result
 
     @property
     def cell(self) -> CalcCell:
