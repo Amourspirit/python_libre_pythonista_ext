@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, Dict, TYPE_CHECKING
+from typing import Any, Dict, List, TYPE_CHECKING
 
 
 if TYPE_CHECKING:
@@ -7,27 +7,27 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
-    from oxt.pythonpath.libre_pythonista_lib.kind.ctl_kind import CtlKind
-    from oxt.pythonpath.libre_pythonista_lib.kind.ctl_prop_kind import CtlPropKind
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_t import CmdT
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.cmd_cell_ctl_t import CmdCellCtlT
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl import Ctl
-    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.ctl.read.qry_mat_plot_figure import (
-        QryMatPlotFigure,
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.draw_page.cmd_add_image_linked import (
+        CmdAddImageLinked,
     )
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.config.qry_shape_name_img import QryShapeNameImg
 else:
     from libre_pythonista_lib.utils.custom_ext import override
     from libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from libre_pythonista_lib.log.log_mixin import LogMixin
-    from libre_pythonista_lib.kind.ctl_kind import CtlKind
-    from libre_pythonista_lib.kind.ctl_prop_kind import CtlPropKind
     from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
+    from libre_pythonista_lib.cq.cmd.cmd_t import CmdT
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.cmd_cell_ctl_t import CmdCellCtlT
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl import Ctl
-    from libre_pythonista_lib.cq.qry.calc.sheet.cell.ctl.read.qry_mat_plot_figure import QryMatPlotFigure
+    from libre_pythonista_lib.cq.cmd.calc.sheet.cell.draw_page.cmd_add_image_linked import CmdAddImageLinked
+    from libre_pythonista_lib.cq.qry.config.qry_shape_name_img import QryShapeNameImg
 
 
-class CmdMatPlotFigure(CmdBase, LogMixin, CmdCellCtlT):
+class CmdMatPlotFigureImg(CmdBase, LogMixin, CmdCellCtlT):
     def __init__(self, cell: CalcCell, ctl: Ctl) -> None:
         CmdBase.__init__(self)
         LogMixin.__init__(self)
@@ -35,11 +35,13 @@ class CmdMatPlotFigure(CmdBase, LogMixin, CmdCellCtlT):
         self._ctl = ctl
         if not self._ctl.cell:
             self._ctl.cell = cell
+        self._current_shape_name = self._ctl.ctl_shape_name
+        self._success_cmds: List[CmdT] = []
         self._current_ctl: Dict[str, Any] | None = None
 
     def _validate(self) -> bool:
         """Validates the ctl"""
-        required_attributes = {"cell", "ctl_code_name"}
+        required_attributes = {"cell", "ctl_code_name", "ctl_img_path"}
 
         # make a copy of the ctl dictionary because will always return True
         # when checking for an attribute directly.
@@ -51,41 +53,63 @@ class CmdMatPlotFigure(CmdBase, LogMixin, CmdCellCtlT):
                 return False
         return True
 
-    def _set_control_kind(self) -> None:
-        self._ctl.control_kind = CtlKind.MAT_PLT_FIGURE
+    def _cmd_add_image_linked(self) -> bool:
+        """
+        Sets a unique code name for the cell.
 
-    def _set_control_props(self) -> None:
-        self._ctl.ctl_props = (
-            CtlPropKind.CTL_SHAPE,
-            CtlPropKind.PYC_RULE,
-            CtlPropKind.MODIFY_TRIGGER_EVENT,
-        )
+        Returns:
+            bool: True if code name was successfully set, False otherwise
+        """
+        cmd = CmdAddImageLinked(cell=self.cell, fnm=self._ctl.ctl_img_path)
+        self._execute_cmd(cmd)
+        if cmd.success:
+            self._success_cmds.append(cmd)
+            return True
+        return False
+
+    def _qry_shape_img_name(self, code_name: str) -> str:
+        """
+        Generates a unique shape name for the image based on the cell's code name.
+
+        Args:
+            code_name: The cell's code name
+
+        Returns:
+            str: Generated shape name for the image
+        """
+        qry = QryShapeNameImg(code_name=code_name)
+        return self._execute_qry(qry)
 
     def _on_executing(self, ctl: Ctl) -> None:
-        qry = QryMatPlotFigure(self.cell, ctl)
-        self._execute_qry(qry)
+        pass
 
     @override
     def execute(self) -> None:
         self.success = False
+        self._state_changed = False
+        self._success_cmds.clear()
         if not self._validate():
             self.log.error("Validation error occurred. Unable to execute command.")
             return
-        self._state_changed = False
         try:
             if self._current_ctl is None:
                 self._current_ctl = self._ctl.copy_dict()
+            self._cmd_add_image_linked()
+            self._ctl.ctl_shape_name = self._qry_shape_img_name(self._ctl.ctl_code_name)
             self._on_executing(self._ctl)
-            self._set_control_kind()
-            self._set_control_props()
             self._state_changed = True
         except Exception:
             self.log.exception("Error inserting control")
+            self._undo()
             return
         self.log.debug("Successfully executed command.")
         self.success = True
 
     def _undo(self) -> None:
+        for cmd in self._success_cmds:
+            self._execute_cmd_undo(cmd)
+        self._success_cmds.clear()
+
         if not self._state_changed:
             self.log.debug("State has not changed. Undo not needed.")
             return
@@ -94,8 +118,9 @@ class CmdMatPlotFigure(CmdBase, LogMixin, CmdCellCtlT):
                 self._ctl.clear()
                 self._ctl.update(self._current_ctl)
                 self._current_ctl = None
+
         except Exception:
-            self.log.exception("Error undoing control")
+            self.log.exception("Error executing undo command")
             return
         self.log.debug("Successfully executed undo command.")
 

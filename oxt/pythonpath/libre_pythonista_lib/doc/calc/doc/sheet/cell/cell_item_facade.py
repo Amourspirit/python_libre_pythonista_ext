@@ -1,34 +1,39 @@
 # region Imports
 from __future__ import annotations
-from typing import Any, TYPE_CHECKING
+from typing import Any, Iterable, TYPE_CHECKING
 
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcCell
-    from oxt.pythonpath.libre_pythonista_lib.utils.null import NULL
-    from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_t import QryHandlerT
-    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler_t import CmdHandlerT
     from oxt.pythonpath.libre_pythonista_lib.code.module_state_item import ModuleStateItem
     from oxt.pythonpath.libre_pythonista_lib.code.py_module import PyModule
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_code_name import CmdCodeName
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.state.cmd_append_code import CmdAppendCode
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.state.cmd_update_code import CmdUpdateCode
-    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.common.map.qry_ctl_kind_from_rule_name_kind import (
-        QryCtlKindFromRuleNameKind,
-    )
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler_t import CmdHandlerT
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_ctl_kind import QryCtlKind
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_pyc_rule import QryPycRule
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_uri import QryCellUri
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.rule_value.qry_value import QryValue
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.state.qry_module_state import QryModuleState
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_t import QryHandlerT
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source_manager import PySourceManager
-    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl_base import CtlBase
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl import ctl_director
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl_base import CtlBase
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.state_rules.state_rule_t import StateRuleT
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.state_rules.state_rules import StateRules
     from oxt.pythonpath.libre_pythonista_lib.kind.ctl_kind import CtlKind
+    from oxt.pythonpath.libre_pythonista_lib.kind.rule_name_kind import RuleNameKind
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
+    from oxt.pythonpath.libre_pythonista_lib.utils.null import NULL
     from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.state.qry_state_rules_default import (
+        QryStateRulesDefault,
+    )
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.common.map.qry_ctl_kind_from_rule_name_kind import (
+        QryCtlKindFromRuleNameKind,
+    )
 else:
-    from libre_pythonista_lib.utils.null import NULL
     from libre_pythonista_lib.code.module_state_item import ModuleStateItem
     from libre_pythonista_lib.code.py_module import PyModule
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_code_name import CmdCodeName
@@ -36,13 +41,18 @@ else:
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.state.cmd_update_code import CmdUpdateCode
     from libre_pythonista_lib.cq.qry.calc.common.map.qry_ctl_kind_from_rule_name_kind import QryCtlKindFromRuleNameKind
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_ctl_kind import QryCtlKind
+    from libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_pyc_rule import QryPycRule
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_uri import QryCellUri
+    from libre_pythonista_lib.cq.qry.calc.sheet.cell.rule_value.qry_value import QryValue
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.state.qry_module_state import QryModuleState
+    from libre_pythonista_lib.cq.qry.calc.sheet.cell.state.qry_state_rules_default import QryStateRulesDefault
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source_manager import PySourceManager
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl import ctl_director
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.state_rules.state_rules import StateRules
     from libre_pythonista_lib.kind.ctl_kind import CtlKind
+    from libre_pythonista_lib.kind.rule_name_kind import RuleNameKind
     from libre_pythonista_lib.log.log_mixin import LogMixin
+    from libre_pythonista_lib.utils.null import NULL
     from libre_pythonista_lib.utils.result import Result
 
     StateRuleT = Any
@@ -69,10 +79,11 @@ class CellItemFacade(LogMixin):
         """
         LogMixin.__init__(self)
         self._cell = cell
-        self._state_rules = StateRules()
         self._py_mod = PyModule()
         self._uri = None
         self._py_src_mgr = PySourceManager(doc=self._cell.calc_doc, mod=self._py_mod)
+        self._cache = {}
+        self.log.debug("CellItemFacade.__init__() for cell: %s", self._cell.cell_obj)
 
     def _ensure_code_name(self) -> None:
         """Ensures the cell has a code name set, without overwriting existing ones"""
@@ -81,18 +92,59 @@ class CellItemFacade(LogMixin):
         if not cmd.success:
             self.log.error("Failed to set code name.")
 
+    def _qry_state_rules(self) -> StateRules:
+        """Queries the default state rules for the cell"""
+        # QryStateRulesDefault is a cached query
+        qry = QryStateRulesDefault()
+        return self.qry_handler.handle(qry)
+
     def _qry_module_state(self) -> ModuleStateItem:
         """Queries the current module state for the cell"""
-        qry = QryModuleState(cell=self._cell, mod=self._py_mod)
-        result = self.qry_handler.handle(qry)
+        key = "qry_module_state_result"
+        if key in self._cache:
+            result = self._cache[key]
+        else:
+            qry = QryModuleState(cell=self._cell, mod=self._py_mod)
+            result = self.qry_handler.handle(qry)
+            self._cache[key] = result
         if Result.is_success(result):
             return result.data
         raise result.error
 
-    def _get_uri(self) -> str:
+    def _qry_uri(self) -> str:
         """Gets the URI for the cell, ensuring it has a code name first"""
-        self._ensure_code_name()
-        qry = QryCellUri(self._cell)
+        key = "qry_uri_result"
+        if key in self._cache:
+            result = self._cache[key]
+        else:
+            self._ensure_code_name()
+            qry = QryCellUri(self._cell)
+            result = self.qry_handler.handle(qry)
+            self._cache[key] = result
+        if Result.is_success(result):
+            self.log.debug("qry_uri_result: %s", result.data)
+            return result.data
+        raise result.error
+
+    def _qry_ctl_rule_name_kind(self) -> RuleNameKind:
+        """Queries the rule name kind for the cell's control"""
+        key = "qry_ctl_rule_name_kind_result"
+        if key in self._cache:
+            result = self._cache[key]
+        else:
+            qry = QryPycRule(self._cell)
+            result = self.qry_handler.handle(qry)
+            self._cache[key] = result
+        if Result.is_success(result):
+            self.log.debug("qry_ctl_rule_name_kind_result: %s for cell: %s", result.data, self._cell.cell_obj)
+            return result.data
+        raise result.error
+
+    def _qry_value(self) -> Iterable[Iterable[object]]:
+        """Queries the value of the cell"""
+        rule_kind = self._qry_ctl_rule_name_kind()
+        state = self._qry_module_state()
+        qry = QryValue(cell=self._cell, rule_kind=rule_kind, data=state.dd_data)
         result = self.qry_handler.handle(qry)
         if Result.is_success(result):
             return result.data
@@ -103,19 +155,21 @@ class CellItemFacade(LogMixin):
         qry = QryCtlKind(self._cell)
         result = self.qry_handler.handle(qry)
         if Result.is_success(result):
+            self.log.debug("get_control_kind() Control Kind: %s for cell: %s", result.data, self._cell.cell_obj)
             return result.data
         return CtlKind.UNKNOWN
 
-    def add_default_control(self) -> Any:  # noqa: ANN401
+    def add_default_control(self) -> Iterable[Iterable[object]]:
         """Adds a default string control to the cell and initializes empty code"""
         _ = ctl_director.create_control(self._cell, CtlKind.STRING)
         self._append_code("")
         try:
-            state = self._qry_module_state()
+            self._cache.clear()
+            return self.get_value()
         except Exception:
-            self.log.exception("Failed to get module state.")
-            return None
-        return state.dd_data.get("data")
+            self.log.exception("add_default_control() Failed to get module state.")
+            return ((None,),)
+        # return state.dd_data.get("data")
 
     def _append_code(self, code: str) -> None:
         """Appends Python code to the cell's module"""
@@ -145,6 +199,7 @@ class CellItemFacade(LogMixin):
         if not cmd.success:
             self.log.error("Failed to update code.")
             return
+        self._cache.clear()
         rule = self.get_matched_rule()
         if rule is None:
             self.log.error("Failed to get matched rule.")
@@ -163,11 +218,13 @@ class CellItemFacade(LogMixin):
         """Gets the matching state rule for the cell's current state"""
         # do not cache this value. It may change when a cell get updated.
         try:
+            state_rules = self._qry_state_rules()
             state = self._qry_module_state()
         except Exception:
             self.log.exception("Failed to get module state.")
             return None
-        return self._state_rules.get_matched_rule(self._cell, state.dd_data)
+
+        return state_rules.get_matched_rule(self._cell, state.dd_data)
 
     def is_control(self) -> bool:
         """Checks if the cell has a control attached"""
@@ -178,18 +235,13 @@ class CellItemFacade(LogMixin):
         """Checks if the cell is a source cell"""
         return self.cell.cell_obj in self._py_src_mgr
 
-    def get_value(self) -> Any:  # noqa: ANN401
+    def get_value(self) -> Iterable[Iterable[object]]:
         """Gets the value of the cell"""
         try:
-            state = self._qry_module_state()
+            return self._qry_value()
         except Exception:
-            self.log.exception("Failed to get module state.")
-            return None
-        result = state.dd_data.get("data", NULL)
-        if result is NULL:
-            self.log.debug("get_value() No data found. Returning None.")
-            return None
-        return result
+            self.log.exception("get_value() Failed to get module state.")
+            return ((None,),)
 
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__}({self._cell.cell_obj})>"
@@ -198,7 +250,7 @@ class CellItemFacade(LogMixin):
     def uri(self) -> str:
         """Gets the cell's URI"""
         if self._uri is None:
-            self._uri = self._get_uri()
+            self._uri = self._qry_uri()
         return self._uri
 
     @property

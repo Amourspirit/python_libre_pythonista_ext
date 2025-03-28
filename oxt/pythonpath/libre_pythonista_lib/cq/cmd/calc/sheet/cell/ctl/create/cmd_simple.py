@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, cast
+from typing import Any, Dict, TYPE_CHECKING, cast
 
 from ooo.dyn.awt.size import Size
 from ooo.dyn.awt.point import Point
@@ -48,6 +48,7 @@ class CmdSimple(CmdBase, LogMixin, CmdCellCtlT):
         LogMixin.__init__(self)
         self._ctl = ctl
         self._cfg = BasicConfig()
+        self.__current_ctl: Dict[str, Any] | None = None
 
     def _validate(self) -> bool:
         """Validates the ctl"""
@@ -123,6 +124,8 @@ class CmdSimple(CmdBase, LogMixin, CmdCellCtlT):
             return
         self._state_changed = False
         try:
+            if self.__current_ctl is None:
+                self.__current_ctl = self._ctl.copy_dict()
             self._insert_control()
             if self._ctl is not None:
                 self._on_executing(self._ctl)
@@ -139,8 +142,13 @@ class CmdSimple(CmdBase, LogMixin, CmdCellCtlT):
         if not self._state_changed:
             self.log.debug("State has not changed. Undo not needed.")
             return
+
         try:
             self.cell.control.current_control = None
+            if self.__current_ctl is not None:
+                self._ctl.clear()
+                self._ctl.update(self.__current_ctl)
+                self.__current_ctl = None
         except Exception:
             self.log.exception("Error undoing control")
             return

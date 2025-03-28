@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import List, TYPE_CHECKING
+from typing import Any, Dict, List, TYPE_CHECKING
 
 
 if TYPE_CHECKING:
@@ -39,6 +39,7 @@ class CmdRuleName(CmdBase, LogMixin, CmdCellCtlT):
             self._ctl.cell = cell
         self._config = BasicConfig()
         self._current = self._ctl.ctl_rule_kind
+        self._current_ctl: Dict[str, Any] | None = None
 
     @override
     def execute(self) -> None:
@@ -46,6 +47,9 @@ class CmdRuleName(CmdBase, LogMixin, CmdCellCtlT):
         self._state_changed = False
         self._success_cmds.clear()
         try:
+            if self._current_ctl is None:
+                self._current_ctl = self._ctl.copy_dict()
+
             if self._current == self._rule_kind:
                 self.log.debug("State is already set.")
                 self.success = True
@@ -74,7 +78,15 @@ class CmdRuleName(CmdBase, LogMixin, CmdCellCtlT):
         for cmd in reversed(self._success_cmds):
             self._execute_cmd_undo(cmd)
         self._success_cmds.clear()
-        self._ctl.ctl_rule_kind = self._current
+        try:
+            if self._current_ctl is not None:
+                self._ctl.clear()
+                self._ctl.update(self._current_ctl)
+                self._current_ctl = None
+
+        except Exception:
+            self.log.exception("Error executing undo command")
+            return
         self.log.debug("Successfully executed undo command.")
 
     @override

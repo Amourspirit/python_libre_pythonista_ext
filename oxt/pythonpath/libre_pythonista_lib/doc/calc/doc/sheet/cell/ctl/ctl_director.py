@@ -28,7 +28,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.remove.cmd_remove_ctl_props import (
         CmdRemoveCtlProps,
     )
-    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.draw_page.del_shape_by_name import CmdDelShapeByName
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.draw_page.cmd_del_shape_by_name import CmdDelShapeByName
     from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
 
 else:
@@ -38,7 +38,7 @@ else:
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.reader.read_director import get_reader
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_ctl_kind import QryCtlKind
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.remove.cmd_remove_ctl_props import CmdRemoveCtlProps
-    from libre_pythonista_lib.cq.cmd.calc.sheet.draw_page.del_shape_by_name import CmdDelShapeByName
+    from libre_pythonista_lib.cq.cmd.calc.sheet.draw_page.cmd_del_shape_by_name import CmdDelShapeByName
     from libre_pythonista_lib.utils.result import Result
 
     CmdHandlerT = Any

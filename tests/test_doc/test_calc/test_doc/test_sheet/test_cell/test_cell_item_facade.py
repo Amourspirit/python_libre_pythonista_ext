@@ -34,7 +34,7 @@ def test_cell_item_facade(loader, build_setup, mocker: MockerFixture) -> None:
 
         # Test adding default control
         result = facade.add_default_control()
-        assert result == ""  # Initially empty string
+        assert result == (("",),)  # Initially empty string
         assert facade.is_control()
         assert facade.get_control_kind() == CtlKind.STRING
 

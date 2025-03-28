@@ -7,14 +7,14 @@ if __name__ == "__main__":
     pytest.main([__file__])
 
 if TYPE_CHECKING:
-    from .....build.pythonpath.libre_pythonista_lib.code.py_module import PyModule
+    from oxt.pythonpath.libre_pythonista_lib.code.py_module import PyModule
 
 
 def test_plot_expr(py_mod: PyModule, mocker: MockerFixture) -> None:
     from ooodev.utils.helper.dot_dict import DotDict
 
     if TYPE_CHECKING:
-        from .....build.pythonpath.libre_pythonista_lib.code.rules.lp_fn_plot_expr import LpFnPlotExpr
+        from oxt.pythonpath.libre_pythonista_lib.code.rules.lp_fn_plot_expr import LpFnPlotExpr
     else:
         from libre_pythonista_lib.code.rules.lp_fn_plot_expr import LpFnPlotExpr
 

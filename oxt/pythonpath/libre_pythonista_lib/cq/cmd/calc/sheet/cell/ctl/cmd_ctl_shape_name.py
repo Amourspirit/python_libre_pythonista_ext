@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import cast, List, TYPE_CHECKING
+from typing import Any, Dict, cast, List, TYPE_CHECKING
 
 from ooodev.utils.gen_util import NULL_OBJ
 
@@ -41,6 +41,7 @@ class CmdCtlShapeName(CmdBase, LogMixin, CmdCellCtlT):
         if not self._ctl.cell:
             self._ctl.cell = cell
         self._current_state = self._ctl.ctl_shape_name
+        self._current_ctl: Dict[str, Any] | None = None
 
     def _validate(self) -> bool:
         """Validates the ctl"""
@@ -76,6 +77,8 @@ class CmdCtlShapeName(CmdBase, LogMixin, CmdCellCtlT):
             self.log.error("Error setting cell address: ctl_name is empty")
             return
         try:
+            if self._current_ctl is None:
+                self._current_ctl = self._ctl.copy_dict()
             # control_shape_name = f"SHAPE_{self._config.general_code_name}_ctl_cell_{self._ctl.ctl_name}"
             control_shape_name = f"SHAPE_{self._ctl.ctl_name}"
 
@@ -107,7 +110,16 @@ class CmdCtlShapeName(CmdBase, LogMixin, CmdCellCtlT):
         for cmd in reversed(self._success_cmds):
             self._execute_cmd_undo(cmd)
         self._success_cmds.clear()
-        self._ctl.ctl_shape_name = self._current_state
+
+        try:
+            if self._current_ctl is not None:
+                self._ctl.clear()
+                self._ctl.update(self._current_ctl)
+                self._current_ctl = None
+
+        except Exception:
+            self.log.exception("Error executing undo command")
+            return
         self.log.debug("Successfully executed undo command.")
 
     @override

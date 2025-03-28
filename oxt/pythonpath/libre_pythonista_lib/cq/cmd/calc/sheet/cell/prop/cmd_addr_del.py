@@ -25,7 +25,7 @@ else:
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_addr import QryAddr
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_key_maker import QryKeyMaker
-    from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
+    from libre_pythonista_lib.utils.result import Result
 
 
 class CmdAddrDel(CmdBase, LogMixin, CmdCellT):

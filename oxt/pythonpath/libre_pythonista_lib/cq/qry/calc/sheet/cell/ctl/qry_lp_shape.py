@@ -61,17 +61,15 @@ class QryLpShape(
         try:
             shape_name = result.data
             qry_shape = QryShapeByName(sheet=self.cell.calc_sheet, shape_name=shape_name)
-            result = self._execute_qry(qry_shape)
-            if result is None:
-                self.log.debug("Shape not found: %s", shape_name)
-            else:
-                self.log.debug("Found shape for : %s", shape_name)
+            qry_result = self._execute_qry(qry_shape)
+            if Result.is_failure(qry_result):
+                return qry_result
+            result = qry_result.data
+            self.log.debug("Found shape for : %s", shape_name)
             if self._ctl is not None:
                 self._ctl.ctl_shape = result
                 if not self._ctl.cell:
                     self._ctl.cell = self.cell
-            if result is None:
-                return Result.failure(Exception("Shape not found"))
             return Result.success(result)
         except Exception:
             self.log.exception("Error getting shape")

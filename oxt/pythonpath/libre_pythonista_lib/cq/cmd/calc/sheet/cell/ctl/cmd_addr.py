@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import List, TYPE_CHECKING
+from typing import Any, Dict, List, TYPE_CHECKING
 
 from ooodev.utils.gen_util import NULL_OBJ
 
@@ -25,7 +25,7 @@ else:
     from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_addr import QryAddr
-    from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
+    from libre_pythonista_lib.utils.result import Result
 
 
 class CmdAddr(CmdBase, LogMixin, CmdCellCtlT):
@@ -41,6 +41,7 @@ class CmdAddr(CmdBase, LogMixin, CmdCellCtlT):
         if not self._ctl.cell:
             self._ctl.cell = cell
         self._current_state = NULL_OBJ
+        self._current_ctl: Dict[str, Any] | None = None
 
     def _get_current_state(self) -> str:
         qry = QryAddr(cell=self.cell)
@@ -58,6 +59,8 @@ class CmdAddr(CmdBase, LogMixin, CmdCellCtlT):
         self._state_changed = False
         self._success_cmds.clear()
         try:
+            if self._current_ctl is None:
+                self._current_ctl = self._ctl.copy_dict()
             addr = f"sheet_index={self.cell.calc_sheet.sheet_index}&cell_addr={self.cell.cell_obj}"
             if self._current_state == addr:
                 self.log.debug("State is already set.")
@@ -81,13 +84,19 @@ class CmdAddr(CmdBase, LogMixin, CmdCellCtlT):
         self.success = True
 
     def _undo(self) -> None:
-        if not self._state_changed:
-            self.log.debug("State has not changed. Undo not needed.")
-            return
         for cmd in reversed(self._success_cmds):
             self._execute_cmd_undo(cmd)
         self._success_cmds.clear()
+
+        if not self._state_changed:
+            self.log.debug("State has not changed. Undo not needed.")
+            return
         self._ctl.addr = self._current_state
+
+        if self._current_ctl is not None:
+            self._ctl.clear()
+            self._ctl.update(self._current_ctl)
+            self._current_ctl = None
         self.log.debug("Successfully executed undo command.")
 
     @override

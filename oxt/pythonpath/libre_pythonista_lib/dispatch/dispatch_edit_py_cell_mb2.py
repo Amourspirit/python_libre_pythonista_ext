@@ -19,6 +19,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.state.cmd_append_code import CmdAppendCode
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.state.cmd_update_code import CmdUpdateCode
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.state.cmd_refresh_control import CmdRefreshControl
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler_t import CmdHandlerT
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_uri import QryCellUri
@@ -38,7 +39,9 @@ else:
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
     from libre_pythonista_lib.utils.custom_ext import override
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.state.cmd_append_code import CmdAppendCode
+
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.state.cmd_update_code import CmdUpdateCode
+    from libre_pythonista_lib.cq.cmd.calc.sheet.cell.state.cmd_refresh_control import CmdRefreshControl
     from libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.code.qry_cell_src_code_exist import QryCellSrcCodeExist
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_uri import QryCellUri
@@ -228,6 +231,7 @@ class DispatchCellCodeEdit(CellCodeEdit):
 def edit_code(inst_id: str, calc_cell: CalcCell, log: OxtLogger, src_code: str = "") -> bool:
     global _ACTIVE_WINDOWS
     cell_obj = calc_cell.cell_obj
+    log.debug("edit_code() cell: %s", cell_obj)
 
     qry_handler = _get_qry_handler()
     cmd_handler = _get_cmd_handler()
@@ -245,14 +249,26 @@ def edit_code(inst_id: str, calc_cell: CalcCell, log: OxtLogger, src_code: str =
 
         qry_src_exist = QryCellSrcCodeExist(uri=uri, cell=calc_cell)
         src_exist = qry_handler.handle(qry_src_exist)
+        success = True
         if src_exist:
             cmd = CmdUpdateCode(cell=calc_cell, mod=py_src_mgr.mod, code=src_code)
             cmd_handler.handle(cmd)
-            return cmd.success
+            if not cmd.success:
+                log.error("Failed to update code")
+            success = success and cmd.success
         else:
             cmd = CmdAppendCode(cell=calc_cell, mod=py_src_mgr.mod, code=src_code)
             cmd_handler.handle(cmd)
-            return cmd.success
+            if not cmd.success:
+                log.error("Failed to append code")
+            success = success and cmd.success
+        if success:
+            cmd = CmdRefreshControl(cell=calc_cell, mod=py_src_mgr.mod)
+            cmd_handler.handle(cmd)
+            if not cmd.success:
+                log.error("Failed to refresh control")
+            success = success and cmd.success
+        return success
 
     ctx = Lo.get_context()
     if DialogMb.has_instance(inst_id):
@@ -269,7 +285,7 @@ def edit_code(inst_id: str, calc_cell: CalcCell, log: OxtLogger, src_code: str =
     _ACTIVE_WINDOWS[inst_id] = mb
 
     log.debug("Displaying dialog")
-    result = False
+    success = True
     if mb.show():
         log.debug("Dialog returned with OK")
         txt = mb.text.strip()
@@ -283,13 +299,20 @@ def edit_code(inst_id: str, calc_cell: CalcCell, log: OxtLogger, src_code: str =
                     py_src_mgr.add_source(code=txt, cell_obj=calc_cell.cell_obj)
                     log.debug("Cell Code added for %s", cell_obj)
                 log.debug("Code updated")
-                result = True
+                cmd = CmdRefreshControl(cell=calc_cell, mod=py_src_mgr.mod)
+                cmd_handler.handle(cmd)
+                if cmd.success:
+                    log.debug("Control refreshed")
+                else:
+                    log.error("Failed to refresh control")
+                success = success and cmd.success
             except Exception:
                 log.error("Error updating code", exc_info=True)
+                success = False
         else:
             log.debug("Code has not changed")
     else:
         with log.indent(True):
             log.debug("Dialog returned with Cancel")
     mb.dispose()
-    return result
+    return success

@@ -304,9 +304,9 @@ class CalcSheetDispatchMgr:
 
         elif URL.Path == PATH_CELL_CTl_UPDATE:
             try:
-                from .dispatch_ctl_update import DispatchCtlUpdate
+                from .dispatch_ctl_update2 import DispatchCtlUpdate2
             except ImportError:
-                log.exception("DispatchCtlUpdate import error")
+                log.exception("DispatchCtlUpdate2 import error")
                 raise
 
             try:
@@ -319,8 +319,8 @@ class CalcSheetDispatchMgr:
                     return None
 
                 with log.indent(True):
-                    log.debug("CalcSheetDispatchMgr.dispatch: dispatching DispatchCtlUpdate")
-                result = DispatchCtlUpdate(sheet=args["sheet"], cell=args["cell"])
+                    log.debug("CalcSheetDispatchMgr.dispatch: dispatching DispatchCtlUpdate2")
+                result = DispatchCtlUpdate2(sheet=args["sheet"], cell=args["cell"])
                 result.dispatch(URL, Arguments)
 
                 eargs = EventArgs.from_args(cargs)

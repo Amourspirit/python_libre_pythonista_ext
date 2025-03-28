@@ -10,14 +10,18 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.qry_sheet_t import QrySheetT
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
+    from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
 else:
     from libre_pythonista_lib.cq.qry.qry_base import QryBase
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.cq.qry.calc.sheet.qry_sheet_t import QrySheetT
     from libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
+    from libre_pythonista_lib.utils.result import Result
 
 
-class QryShapeByName(QryBase, LogMixin, QrySheetT[DrawShape[SpreadsheetDrawPage[CalcSheet]] | None]):
+class QryShapeByName(
+    QryBase, LogMixin, QrySheetT[Result[DrawShape[SpreadsheetDrawPage[CalcSheet]], None] | Result[None, Exception]]
+):
     def __init__(self, sheet: CalcSheet, shape_name: str) -> None:
         QryBase.__init__(self)
         LogMixin.__init__(self)
@@ -25,23 +29,23 @@ class QryShapeByName(QryBase, LogMixin, QrySheetT[DrawShape[SpreadsheetDrawPage[
         self._shape_name = shape_name
         self._sheet = sheet
 
-    def execute(self) -> DrawShape[SpreadsheetDrawPage[CalcSheet]] | None:
+    def execute(self) -> Result[DrawShape[SpreadsheetDrawPage[CalcSheet]], None] | Result[None, Exception]:
         """
         Executes the query to get the shape.
 
         Returns:
-            DrawShape[SpreadsheetDrawPage[CalcSheet]] | None: The shape if successful, otherwise None.
+            Result: Success with shape or Failure with Exception
         """
-
         try:
             dp = self._sheet.draw_page
             shape = dp.find_shape_by_name(self._shape_name)
-            return shape
-        except ShapeMissingError:
+            return Result.success(shape)
+        except ShapeMissingError as e:
             self.log.debug("Shape not found: %s", self._shape_name)
-        except Exception:
+            return Result.failure(e)
+        except Exception as e:
             self.log.exception("Error getting shape")
-        return None
+            return Result.failure(e)
 
     @property
     def sheet(self) -> CalcSheet:

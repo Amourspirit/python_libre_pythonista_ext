@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import Any, Dict, TYPE_CHECKING
 
 
 if TYPE_CHECKING:
@@ -26,18 +26,16 @@ class CmdCodeNameDel(CmdBase, LogMixin, CmdCellCtlT):
         self._ctl = ctl
         if not self._ctl.cell:
             self._ctl.cell = cell
-        self._current_code_name = self._ctl.ctl_code_name
         self._current_dict_code_name = self.cell.extra_data.get("code_name", "")
+        self._current_ctl: Dict[str, Any] | None = None
 
     @override
     def execute(self) -> None:
         self.success = False
         self._state_changed = False
         try:
-            if not self._current_code_name:
-                self.log.debug("State is already set.")
-                self.success = True
-                return
+            if self._current_ctl is None:
+                self._current_ctl = self._ctl.copy_dict()
             self._ctl.ctl_code_name = None
             if self.cell.extra_data.has("code_name"):
                 del self.cell.extra_data.code_name
@@ -53,8 +51,14 @@ class CmdCodeNameDel(CmdBase, LogMixin, CmdCellCtlT):
         if not self._state_changed:
             self.log.debug("State has not changed. Undo not needed.")
             return
-        self._ctl.ctl_code_name = self._current_code_name
-        self.cell.extra_data.code_name = self._current_dict_code_name
+        try:
+            self.cell.extra_data.code_name = self._current_dict_code_name
+            if self._current_ctl is not None:
+                self._ctl.clear()
+                self._ctl.update(self._current_ctl)
+                self._current_ctl = None
+        except Exception:
+            self.log.exception("Error undoing code name")
         self.log.debug("Successfully executed undo command.")
 
     @override

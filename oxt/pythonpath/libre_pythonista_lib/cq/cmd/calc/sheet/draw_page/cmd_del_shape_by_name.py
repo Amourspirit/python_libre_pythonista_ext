@@ -14,6 +14,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.draw_page.qry_shape_by_name import QryShapeByName
+    from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
 
 else:
     from libre_pythonista_lib.cq.cmd.calc.sheet.cmd_sheet_t import CmdSheetT
@@ -22,6 +23,7 @@ else:
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.utils.custom_ext import override
     from libre_pythonista_lib.cq.qry.calc.sheet.draw_page.qry_shape_by_name import QryShapeByName
+    from libre_pythonista_lib.utils.result import Result
 
 
 class CmdDelShapeByName(CmdBase, LogMixin, CmdSheetT):
@@ -45,7 +47,10 @@ class CmdDelShapeByName(CmdBase, LogMixin, CmdSheetT):
     def _qry_shape(self) -> DrawShape[SpreadsheetDrawPage[CalcSheet]] | None:
         """Query the shape to be deleted by its name."""
         qry = QryShapeByName(sheet=self._sheet, shape_name=self._shape_name)
-        return self._execute_qry(qry)
+        result = self._execute_qry(qry)
+        if Result.is_success(result):
+            return result.data
+        return None
 
     @override
     def execute(self) -> None:

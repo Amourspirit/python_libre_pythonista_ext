@@ -41,7 +41,7 @@ def _custom_plt_show(*args, **kwargs):
     s = "plt_" + OooDevGenUtil.generate_random_hex_string(12) + ".svg"
     pth = Lo.tmp_dir / s
     if log.is_debug:
-        log.debug(f"Saving Plot to {pth}")
+        log.debug("Saving Plot to %s", pth)
 
     plt.savefig(str(pth), format="svg")
     try:
@@ -51,7 +51,7 @@ def _custom_plt_show(*args, **kwargs):
         plt.close()
         log.debug("Closed plot")
     except Exception as e:
-        log.exception(f"Error in _custom_plt_show with plt.close: {e}")
+        log.exception("Error in _custom_plt_show with plt.close: %s", e, exc_info=True)
     if log.is_debug:
         log.debug("Plot saved to %s", pth)
     dd = DotDict(data=str(pth), data_type="file", file_kind="image", file_ext="svg", details="figure")

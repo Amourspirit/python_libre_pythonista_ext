@@ -125,8 +125,6 @@ class PyImpl(unohelper.Base, XPy):
             self._log.exception("Error Init Doc: %s", e)
 
         try:
-            # from libre_pythonista_lib.doc.calc.doc.sheet.cell.cell_item import CellItem
-
             sheet_idx = sheet_num - 1
             sheet = doc.sheets[sheet_idx]
             x_cell = sheet.component.getCellRangeByName(cell_address)
@@ -135,6 +133,7 @@ class PyImpl(unohelper.Base, XPy):
             if ci.is_source_cell():
                 self._log.debug("pyc - Cell is source cell")
                 value = ci.get_value()
+                # self._log.debug("pyc - Cell has Value %s", value)
             else:
                 self._log.debug("pyc - Not a source cell. Creating Default.")
                 value = ci.add_default_control()
@@ -143,7 +142,7 @@ class PyImpl(unohelper.Base, XPy):
             self._log.exception("Error Init CellItem: %s", e)
 
         self._log.debug("pyc - Doc UID: %s", doc.runtime_uid)
-        result = ((value,),)
+        result = value
         self._log.debug("pyc - Done")
         return result
 

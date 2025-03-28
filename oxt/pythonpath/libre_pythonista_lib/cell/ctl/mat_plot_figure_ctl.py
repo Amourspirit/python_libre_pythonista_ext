@@ -107,7 +107,7 @@ class MatPlotFigureCtl:
             cargs.event_data = dd
             self.shared_event.trigger_event(CONTROL_ADDING, cargs)
             if cargs.cancel:
-                self.log.debug(f"{self.__class__.__name__}: add_ctl(): Cancelled")
+                self.log.debug("%s: add_ctl(): Cancelled", self.__class__.__name__)
                 return
 
             src = self._py_src[self.calc_cell.cell_obj]
@@ -165,7 +165,7 @@ class MatPlotFigureCtl:
         """
 
         with self.log.indent(True):
-            self.log.debug(f"{self.__class__.__name__}: remove_ctl(): Entered")
+            self.log.debug("%s: remove_ctl(): Entered", self.__class__.__name__)
             try:
                 sheet = self.calc_cell.calc_sheet
                 dp = sheet.draw_page
