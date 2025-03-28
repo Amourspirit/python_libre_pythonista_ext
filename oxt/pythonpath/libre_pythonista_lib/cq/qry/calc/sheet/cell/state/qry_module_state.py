@@ -8,12 +8,14 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.code.py_module_t import PyModuleT
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_t import QryCellT
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_base import QryBase
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_py_module_default import QryPyModuleDefault
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source_manager import PySourceManager
     from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
 else:
     from libre_pythonista_lib.code.module_state_item import ModuleStateItem
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_t import QryCellT
     from libre_pythonista_lib.cq.qry.qry_base import QryBase
+    from libre_pythonista_lib.cq.qry.calc.doc.qry_py_module_default import QryPyModuleDefault
     from libre_pythonista_lib.utils.result import Result
 
     PySourceManager = Any
@@ -31,20 +33,25 @@ class QryModuleState(QryBase, QryCellT[Result[ModuleStateItem, None] | Result[No
 
     Args:
         cell (CalcCell): The cell to query the module state for
-        mod (PyModuleT): The Python module to query the state from
+        mod (PyModuleT, optional): The Python module to query the state from. Defaults to None.
     """
 
-    def __init__(self, cell: CalcCell, mod: PyModuleT) -> None:
+    def __init__(self, cell: CalcCell, mod: PyModuleT | None = None) -> None:
         """
         Initialize the query with a cell and module.
 
         Args:
             cell (CalcCell): The cell to query the module state for
-            mod (PyModuleT): The Python module to query the state from
+            mod (PyModuleT, optional): The Python module to query the state from. Defaults to None.
         """
         QryBase.__init__(self)
         self._cell = cell
         self._mod = mod
+
+    def _qry_mod(self) -> PyModuleT:
+        """Gets the Python module via query"""
+        qry = QryPyModuleDefault()
+        return self._execute_qry(qry)
 
     def _qry_py_src_mgr(self) -> PySourceManager:
         """
@@ -58,7 +65,7 @@ class QryModuleState(QryBase, QryCellT[Result[ModuleStateItem, None] | Result[No
             from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.state.qry_py_src_mgr import QryPySrcMgrCode
         else:
             from libre_pythonista_lib.cq.qry.calc.sheet.cell.state.qry_py_src_mgr import QryPySrcMgrCode
-        qry = QryPySrcMgrCode(cell=self.cell, mod=self._mod)
+        qry = QryPySrcMgrCode(cell=self.cell, mod=self.mod)
         return self._execute_qry(qry)
 
     def execute(self) -> Result[ModuleStateItem, None] | Result[None, Exception]:
@@ -79,6 +86,18 @@ class QryModuleState(QryBase, QryCellT[Result[ModuleStateItem, None] | Result[No
             return Result.failure(Exception("No state found"))
         except Exception:
             return Result.failure(Exception("Error executing query"))
+
+    @property
+    def mod(self) -> PyModuleT:
+        """
+        Get the Python module associated with this query.
+
+        Returns:
+            PyModuleT: The Python module instance
+        """
+        if self._mod is None:
+            self._mod = self._qry_mod()
+        return self._mod
 
     @property
     def cell(self) -> CalcCell:

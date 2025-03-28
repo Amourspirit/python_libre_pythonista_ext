@@ -11,6 +11,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_t import CmdT
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.cmd_cell_ctl_t import CmdCellCtlT
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl import Ctl
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_shape import CmdShape
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.draw_page.cmd_add_image_linked import (
         CmdAddImageLinked,
     )
@@ -23,6 +24,7 @@ else:
     from libre_pythonista_lib.cq.cmd.cmd_t import CmdT
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.cmd_cell_ctl_t import CmdCellCtlT
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl import Ctl
+    from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_shape import CmdShape
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.draw_page.cmd_add_image_linked import CmdAddImageLinked
     from libre_pythonista_lib.cq.qry.config.qry_shape_name_img import QryShapeNameImg
 
@@ -41,7 +43,7 @@ class CmdMatPlotFigureImg(CmdBase, LogMixin, CmdCellCtlT):
 
     def _validate(self) -> bool:
         """Validates the ctl"""
-        required_attributes = {"cell", "ctl_code_name", "ctl_img_path"}
+        required_attributes = {"cell", "ctl_code_name", "ctl_storage_location"}
 
         # make a copy of the ctl dictionary because will always return True
         # when checking for an attribute directly.
@@ -60,7 +62,7 @@ class CmdMatPlotFigureImg(CmdBase, LogMixin, CmdCellCtlT):
         Returns:
             bool: True if code name was successfully set, False otherwise
         """
-        cmd = CmdAddImageLinked(cell=self.cell, fnm=self._ctl.ctl_img_path)
+        cmd = CmdAddImageLinked(cell=self.cell, fnm=self._ctl.ctl_storage_location)
         self._execute_cmd(cmd)
         if cmd.success:
             self._success_cmds.append(cmd)
@@ -94,12 +96,21 @@ class CmdMatPlotFigureImg(CmdBase, LogMixin, CmdCellCtlT):
         try:
             if self._current_ctl is None:
                 self._current_ctl = self._ctl.copy_dict()
-            self._cmd_add_image_linked()
-            self._ctl.ctl_shape_name = self._qry_shape_img_name(self._ctl.ctl_code_name)
+            if not self._cmd_add_image_linked():
+                raise Exception("Error adding image linked")
+            self._ctl.ctl_shape_name = "SHAPE_" + self._qry_shape_img_name(self._ctl.ctl_code_name)
+
+            cmd_shape = CmdShape(cell=self.cell, name=self._ctl.ctl_shape_name)
+            self._execute_cmd(cmd_shape)
+            if cmd_shape.success:
+                self._success_cmds.append(cmd_shape)
+            else:
+                raise Exception("Error setting cell shape name")
+
             self._on_executing(self._ctl)
             self._state_changed = True
-        except Exception:
-            self.log.exception("Error inserting control")
+        except Exception as e:
+            self.log.exception("Error inserting control: %s", e)
             self._undo()
             return
         self.log.debug("Successfully executed command.")

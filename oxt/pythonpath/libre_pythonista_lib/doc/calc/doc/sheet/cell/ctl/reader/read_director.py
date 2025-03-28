@@ -25,6 +25,9 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.reader.ctl_reader_empty import CtlReaderEmpty
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.reader.ctl_reader_error import CtlReaderError
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.reader.ctl_reader_none import CtlReaderNone
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.reader.ctl_reader_mat_plot_fig import (
+        CtlReaderMatPlotFig,
+    )
     from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
 else:
     from libre_pythonista_lib.kind.ctl_kind import CtlKind
@@ -68,6 +71,9 @@ def _get_control_class(ctl_kind: CtlKind) -> Type[CtlReader] | None:
         from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.reader.ctl_reader_empty import CtlReaderEmpty
         from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.reader.ctl_reader_error import CtlReaderError
         from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.reader.ctl_reader_none import CtlReaderNone
+        from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.reader.ctl_reader_mat_plot_fig import (
+            CtlReaderMatPlotFig,
+        )
 
     control_map = {
         CtlKind.STRING: CtlReaderStr,
@@ -79,6 +85,7 @@ def _get_control_class(ctl_kind: CtlKind) -> Type[CtlReader] | None:
         CtlKind.EMPTY: CtlReaderEmpty,
         CtlKind.ERROR: CtlReaderError,
         CtlKind.NONE: CtlReaderNone,
+        CtlKind.MAT_PLT_FIGURE: CtlReaderMatPlotFig,
     }
     return control_map.get(ctl_kind)
 
@@ -103,6 +110,8 @@ def get_reader(calc_cell: CalcCell, kind: Literal[CtlKind.EMPTY]) -> CtlReaderEm
 def get_reader(calc_cell: CalcCell, kind: Literal[CtlKind.ERROR]) -> CtlReaderError: ...
 @overload
 def get_reader(calc_cell: CalcCell, kind: Literal[CtlKind.NONE]) -> CtlReaderNone: ...
+@overload
+def get_reader(calc_cell: CalcCell, kind: Literal[CtlKind.MAT_PLT_FIGURE]) -> CtlReaderMatPlotFig: ...
 @overload
 def get_reader(calc_cell: CalcCell, kind: CtlKind | None = None) -> CtlReader: ...
 

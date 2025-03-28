@@ -1,20 +1,18 @@
 from __future__ import annotations
 from typing import cast, List, Tuple, TYPE_CHECKING
-
-from com.sun.star.drawing import XShape
+from pathlib import Path
 
 from ooodev.units import UnitMM100
 from ooodev.utils.gen_util import NULL_OBJ
 from ooodev.utils.kind.drawing_shape_kind import DrawingShapeKind
+from ooodev.calc import CalcCell, CalcSheet
+from ooodev.draw.shapes.draw_shape import DrawShape
+from ooodev.calc import SpreadsheetDrawPage
 
 if TYPE_CHECKING:
-    from ooodev.calc import CalcCell, CalcSheet
-    from ooodev.draw.shapes.draw_shape import DrawShape
-    from ooodev.calc import SpreadsheetDrawPage
     from ooodev.utils.type_var import PathOrStr
     from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
-    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source import PySource
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.cmd_cell_t import CmdCellT
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
@@ -27,7 +25,6 @@ if TYPE_CHECKING:
 else:
     from libre_pythonista_lib.utils.custom_ext import override
     from libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
-    from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source import PySource
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.cmd_cell_t import CmdCellT
     from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
@@ -78,6 +75,16 @@ class CmdAddImageLinked(CmdBase, LogMixin, CmdCellT):
         self._success_cmds: List[CmdCellT] = []
         self._current_shape = cast(DrawShape[SpreadsheetDrawPage[CalcSheet]] | None, NULL_OBJ)
         self._new_shape: DrawShape[SpreadsheetDrawPage[CalcSheet]] | None = None
+
+    def _validate(self) -> bool:
+        if not self._fnm:
+            self.log.error("Validation error. fnm attribute is empty.")
+            return False
+        fnm_pth: Path = Path(self._fnm) if isinstance(self._fnm, str) else self._fnm  # type: ignore
+        if not fnm_pth.exists():
+            self.log.error("Validation error. fnm attribute does not exist.")
+            return False
+        return True
 
     def _cmd_code_name(self) -> bool:
         """
@@ -218,8 +225,7 @@ class CmdAddImageLinked(CmdBase, LogMixin, CmdCellT):
         sheet = self.cell.calc_sheet
         shape = sheet.draw_page.add_shape(DrawingShapeKind.GRAPHIC_OBJECT_SHAPE, *self._qry_size_pos())
         shape.set_image(self._fnm)
-        self.__log.debug("CellImg: insert_cell_image_linked(): Image set  %s", self._fnm)
-        self._set_shape_props(shape)
+        self.log.debug("CellImg: insert_cell_image_linked(): Image set  %s", self._fnm)
         return shape
 
     @override
@@ -235,6 +241,9 @@ class CmdAddImageLinked(CmdBase, LogMixin, CmdCellT):
         """
         self._success_cmds.clear()
         self.success = False
+        if not self._validate():
+            self.log.error("Validation error occurred. Unable to execute command.")
+            return
 
         try:
             if self._code_name is None:
@@ -252,8 +261,8 @@ class CmdAddImageLinked(CmdBase, LogMixin, CmdCellT):
             self._new_shape = self._add_cell_image_linked()
             self._set_shape_props(self._new_shape)
             self._set_shape_name(self._new_shape)
-        except Exception:
-            self.log.exception("Error setting cell Code")
+        except Exception as e:
+            self.log.exception("Error setting cell Code: %s", e)
             for cmd in reversed(self._success_cmds):
                 self._execute_cmd_undo(cmd)
             self._success_cmds.clear()

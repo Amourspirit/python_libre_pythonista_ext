@@ -35,6 +35,9 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.builder.ctl_builder_none import (
         CtlBuilderNone,
     )
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.builder.ctl_builder_mat_plot_fig import (
+        CtlBuilderMatPlotFig,
+    )
 else:
     from libre_pythonista_lib.kind.ctl_kind import CtlKind
 
@@ -62,6 +65,9 @@ def _get_control_class(ctl_kind: CtlKind) -> Type[CtlBuilder] | None:
         from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.builder.ctl_builder_empty import CtlBuilderEmpty
         from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.builder.ctl_builder_error import CtlBuilderError
         from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.builder.ctl_builder_none import CtlBuilderNone
+        from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.builder.ctl_builder_mat_plot_fig import (
+            CtlBuilderMatPlotFig,
+        )
 
     control_map = {
         CtlKind.STRING: CtlBuilderStr,
@@ -73,6 +79,7 @@ def _get_control_class(ctl_kind: CtlKind) -> Type[CtlBuilder] | None:
         CtlKind.EMPTY: CtlBuilderEmpty,
         CtlKind.ERROR: CtlBuilderError,
         CtlKind.NONE: CtlBuilderNone,
+        CtlKind.MAT_PLT_FIGURE: CtlBuilderMatPlotFig,
     }
     return control_map.get(ctl_kind)
 
@@ -95,6 +102,8 @@ def get_builder(calc_cell: CalcCell, ctl_kind: Literal[CtlKind.EMPTY]) -> CtlBui
 def get_builder(calc_cell: CalcCell, ctl_kind: Literal[CtlKind.ERROR]) -> CtlBuilderError: ...
 @overload
 def get_builder(calc_cell: CalcCell, ctl_kind: Literal[CtlKind.NONE]) -> CtlBuilderNone: ...
+@overload
+def get_builder(calc_cell: CalcCell, ctl_kind: Literal[CtlKind.MAT_PLT_FIGURE]) -> CtlBuilderMatPlotFig: ...
 @overload
 def get_builder(calc_cell: CalcCell, ctl_kind: CtlKind) -> CtlBuilder: ...
 

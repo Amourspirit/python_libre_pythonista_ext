@@ -118,6 +118,7 @@ class CmdRefreshControl(CmdBase, LogMixin, CmdCellT):
         rule_kind = self._qry_state_rule_kind()
         return CtlKind.from_rule_name_kind(rule_kind)
 
+    @override
     def execute(self) -> None:
         """
         Executes the control refresh command.
@@ -184,6 +185,7 @@ class CmdRefreshControl(CmdBase, LogMixin, CmdCellT):
         except Exception:
             self.log.exception("Error undoing cell address")
 
+    @override
     def undo(self) -> None:
         """
         Public undo method that only executes if the command was successful.

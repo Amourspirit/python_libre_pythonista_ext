@@ -7,10 +7,12 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.code.py_module_t import PyModuleT
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_t import QryCellT
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_base import QryBase
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_py_module_default import QryPyModuleDefault
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source_manager import PySourceManager
 else:
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_t import QryCellT
     from libre_pythonista_lib.cq.qry.qry_base import QryBase
+    from libre_pythonista_lib.cq.qry.calc.doc.qry_py_module_default import QryPyModuleDefault
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source_manager import PySourceManager
 
 
@@ -18,19 +20,55 @@ else:
 
 
 class QryPySrcMgrCode(QryBase, QryCellT[PySourceManager]):
-    def __init__(self, cell: CalcCell, mod: PyModuleT) -> None:
+    """
+    Query class that retrieves a PySourceManager instance for a given cell.
+
+    This class manages the retrieval of Python source code associated with a specific cell
+    in a LibreOffice Calc document.
+    """
+
+    def __init__(self, cell: CalcCell, mod: PyModuleT | None = None) -> None:
+        """
+        Initialize the query with a cell and optional Python module.
+
+        Args:
+            cell: (CalcCell) The CalcCell instance to query
+            mod: (PyModuleT, optional) Optional Python module. If not provided, will be queried when needed
+        """
         QryBase.__init__(self)
         self._cell = cell
         self._mod = mod
 
-    def execute(self) -> PySourceManager:
+    def _qry_mod(self) -> PyModuleT:
         """
-        Executes the query to retrieve the source code for the cell.
+        Gets the Python module via query.
 
         Returns:
-            str | None: The source code if found, None if the cell has no associated code or on error
+            PyModuleT: The default Python module for the document
         """
-        return PySourceManager(doc=self.cell.calc_doc, mod=self._mod)
+        qry = QryPyModuleDefault()
+        return self._execute_qry(qry)
+
+    def execute(self) -> PySourceManager:
+        """
+        Executes the query to create a new PySourceManager instance.
+
+        Returns:
+            PySourceManager: A new source manager instance for the cell's document
+        """
+        return PySourceManager(doc=self.cell.calc_doc, mod=self.mod)
+
+    @property
+    def mod(self) -> PyModuleT:
+        """
+        Get the Python module associated with this query.
+
+        Returns:
+            PyModuleT: The Python module instance, querying it if not already set
+        """
+        if self._mod is None:
+            self._mod = self._qry_mod()
+        return self._mod
 
     @property
     def cell(self) -> CalcCell:
@@ -38,6 +76,6 @@ class QryPySrcMgrCode(QryBase, QryCellT[PySourceManager]):
         Get the cell associated with this query.
 
         Returns:
-            CalcCell: The cell instance
+            CalcCell: The cell instance provided during initialization
         """
         return self._cell

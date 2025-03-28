@@ -13,6 +13,9 @@ if TYPE_CHECKING:
     )
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.ctl.qry_ctl_shape_name import QryCtlShapeName
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.ctl.qry_lp_shape import QryLpShape
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.ctl.qry_ctl_img_storage_location import (
+        QryCtlStorageLocation,
+    )
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.reader.ctl_reader import CtlReader
     from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
 else:
@@ -22,6 +25,7 @@ else:
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.ctl.qry_ctl_rule_name_kind import QryCtlRuleNameKind
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.ctl.qry_ctl_shape_name import QryCtlShapeName
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.ctl.qry_lp_shape import QryLpShape
+    from libre_pythonista_lib.cq.qry.calc.sheet.cell.ctl.qry_ctl_img_storage_location import QryCtlStorageLocation
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.reader.ctl_reader import CtlReader
     from libre_pythonista_lib.utils.custom_ext import override
 
@@ -35,3 +39,4 @@ class CtlReaderMatPlotFig(CtlReader):
         self.append(QryCtlModifyTriggerEvent(self.cell, self.ctl))
         self.append(QryLpShape(self.cell, self.ctl))
         self.append(QryCtlCellSizePos(cell=self.cell, ctl=self.ctl, merged=True))
+        self.append(QryCtlStorageLocation(self.cell, self.ctl))
