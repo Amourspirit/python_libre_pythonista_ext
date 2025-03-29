@@ -22,7 +22,6 @@ if TYPE_CHECKING:
 
     # just for design time
     from typing_extensions import override
-    from ooodev.loader import Lo
     from ooodev.calc import CalcDoc
     from oxt.___lo_pip___.events.lo_events import LoEvents
     from oxt.___lo_pip___.events.args.event_args import EventArgs
@@ -39,7 +38,6 @@ else:
 
     _CONDITIONS_MET = _conditions_met()
     if _CONDITIONS_MET:
-        from ooodev.loader import Lo
         from ooodev.calc import CalcDoc
         from ___lo_pip___.events.lo_events import LoEvents
         from ___lo_pip___.events.args.event_args import EventArgs
@@ -108,7 +106,6 @@ class RegisterDispatchJob(XJob, unohelper.Base):
             if not _CONDITIONS_MET:
                 self._log.debug("Conditions not met. Returning.")
                 return
-            _ = Lo.load_office()
             doc = CalcDoc.get_doc_from_component(self.document)
 
             cmd_handler = CmdHandlerFactory.get_cmd_handler()

@@ -33,7 +33,7 @@ else:
 
     break_mgr = BreakMgr()
     # break_mgr.add_breakpoint("libre_pythonista_lib.code.py_module.init")
-    break_mgr.add_breakpoint("libre_pythonista_lib.code.py_module.execute_code")
+    # break_mgr.add_breakpoint("libre_pythonista_lib.code.py_module.execute_code")
 
 _KEY = "libre_pythonista_lib.code.py_module.PyModule"
 

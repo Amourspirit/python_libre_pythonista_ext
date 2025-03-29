@@ -1,12 +1,13 @@
-from typing import TypeVar, Union, Generic, Iterator, TypeGuard, Tuple, Union, TYPE_CHECKING
+from __future__ import annotations
+from typing import TypeVar, Union, Generic, Iterator, Tuple, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from typing_extensions import TypeIs
 else:
-    TypeIs = TypeGuard
+    TypeIs = Union
 
 T = TypeVar("T")
-E = TypeVar("E", bound=Union[BaseException, None])  # Can be None or BaseException
+E = TypeVar("E", bound=Union[BaseException, None])
 T_Success = TypeVar("T_Success")
 E_Failure = TypeVar("E_Failure", bound=Union[BaseException, None])
 
@@ -56,6 +57,24 @@ class Result(Generic[T, E]):
         if isinstance(value, Result):
             return self.data == value.data and self.error == value.error
         return False
+
+    def __bool__(self) -> bool:
+        """
+        Check if the Result represents success.
+
+        Returns:
+            True if the Result represents success, False otherwise
+        """
+        return self.error is None
+
+    def __repr__(self) -> str:
+        """
+        Get the string representation of the Result instance.
+
+        Returns:
+            A string representation of the Result instance
+        """
+        return f"Result(data={repr(self.data)}, error={repr(self.error)})"
 
     def __iter__(self) -> Iterator[Union[T, E]]:
         """

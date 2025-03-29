@@ -12,15 +12,17 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_doc_t import QryDocT
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_lp_code_dir import QryLpCodeDir
+    from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
 
 else:
     from libre_pythonista_lib.cq.qry.qry_base import QryBase
     from libre_pythonista_lib.cq.qry.calc.doc.qry_doc_t import QryDocT
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.cq.qry.calc.doc.qry_lp_code_dir import QryLpCodeDir
+    from libre_pythonista_lib.utils.result import Result
 
 
-class QryIsDocPythonista(QryBase, LogMixin, QryDocT[bool | None]):
+class QryIsDocPythonista(QryBase, LogMixin, QryDocT[Result[bool, None] | Result[None, Exception]]):
     def __init__(self, doc: CalcDoc) -> None:
         QryBase.__init__(self)
         LogMixin.__init__(self)
@@ -38,7 +40,7 @@ class QryIsDocPythonista(QryBase, LogMixin, QryDocT[bool | None]):
         qry = QryLpCodeDir(self._doc)
         return self._execute_qry(qry)
 
-    def execute(self) -> bool | None:
+    def execute(self) -> Result[bool, None] | Result[None, Exception]:
         """
         Executes the query to check if the document is a LibrePythonista document.
 
@@ -48,10 +50,10 @@ class QryIsDocPythonista(QryBase, LogMixin, QryDocT[bool | None]):
         try:
             lp_code_dir = self._get_lp_code_dir()
             if lp_code_dir == "":
-                return None
+                return Result.failure(Exception("Code directory not found"))
             result = self._sfa.exists(lp_code_dir)
             self.log.debug("is LibrePythonista doc: %s", result)
-            return result
-        except Exception:
+            return Result.success(result)
+        except Exception as e:
             self.log.exception("Error executing query")
-        return None
+            return Result.failure(e)

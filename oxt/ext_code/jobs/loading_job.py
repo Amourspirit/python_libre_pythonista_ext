@@ -19,8 +19,15 @@ def _conditions_met() -> bool:
 
 if TYPE_CHECKING:
     # just for design time
+    _CONDITIONS_MET = True
+    from ooodev.calc import CalcDoc
     from typing_extensions import override
-    from ...___lo_pip___.oxt_logger import OxtLogger
+    from oxt.___lo_pip___.oxt_logger import OxtLogger
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.cmd_calculate_all import CmdCalculateAll
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.doc.cmd_current_ctx_load import CmdCurrentCtxLoad
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_doc_init import QryDocInit
 else:
 
     def override(func):  # noqa: ANN001, ANN201
@@ -28,7 +35,12 @@ else:
 
     _CONDITIONS_MET = _conditions_met()
     if _CONDITIONS_MET:
-        pass
+        from ooodev.calc import CalcDoc
+        from libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
+        from libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
+        from libre_pythonista_lib.cq.cmd.calc.doc.cmd_calculate_all import CmdCalculateAll
+        from libre_pythonista_lib.cq.cmd.doc.cmd_current_ctx_load import CmdCurrentCtxLoad
+        from libre_pythonista_lib.cq.qry.calc.doc.qry_doc_init import QryDocInit
 # endregion imports
 
 
@@ -45,39 +57,66 @@ class LoadingJob(XJob, unohelper.Base):
 
     # region Init
 
-    def __init__(self, ctx):
+    def __init__(self, ctx: object) -> None:
         XJob.__init__(self)
         unohelper.Base.__init__(self)
         self.ctx = ctx
         self.document = None
-        self._logger = self._get_local_logger()
+        self._log = self._get_local_logger()
 
     # endregion Init
 
+    def _lo_load(self, doc: Any) -> None:  # noqa: ANN401
+        """Loads OooDev"""
+        self._log.debug("_lo_load()_ Loading OooDev")
+        cmd_handler = CmdHandlerFactory.get_cmd_handler()
+        cmd = CmdCurrentCtxLoad(ctx=self.ctx, uid=doc.RuntimeUID)
+        cmd_handler.handle(cmd)
+        if not cmd.success:
+            self._log.error("Error loading OooDev")
+            return
+        self._log.debug("OooDev Loaded")
+
     # region execute
     @override
-    def execute(self, Arguments: Any) -> None:  # type: ignore
-        self._logger.debug("execute")
+    def execute(self, Arguments: Any) -> None:  # type: ignore  # noqa: ANN401, N803
+        self._log.debug("execute")
         try:
             # loader = Lo.load_office()
-            self._logger.debug(f"Args Length: {len(Arguments)}")
             arg1 = Arguments[0]
 
             for struct in arg1.Value:
-                self._logger.debug(f"Struct: {struct.Name}")
+                self._log.debug(f"Struct: {struct.Name}")
                 if struct.Name == "Model":
                     self.document = struct.Value
-                    self._logger.debug("Document Found")
+                    self._log.debug("Document Found")
             if self.document is None:
-                self._logger.debug("Document is None")
+                self._log.debug("Document is None")
                 return
+
+            if _CONDITIONS_MET:
+                self._lo_load(self.document)
+
             if self.document.supportsService("com.sun.star.sheet.SpreadsheetDocument"):
-                self._logger.debug("Document Loading is a spreadsheet")
+                self._log.debug("Document Loading is a spreadsheet")
+                qry_handler = QryHandlerFactory.get_qry_handler()
+                cmd_handler = CmdHandlerFactory.get_cmd_handler()
+                qry = QryDocInit()
+                if not qry_handler.handle(qry):
+                    self._log.debug("Document is not initialized. .")
+                    doc = CalcDoc.get_doc_from_component(self.document)
+                    cmd = CmdCalculateAll(doc=doc)
+                    cmd_handler.handle(cmd)
+                    if cmd.success:
+                        self._log.debug("Successfully calculated all formulas.")
+                    else:
+                        self._log.error("Error calculating all formulas.")
+                    return
             else:
-                self._logger.debug("Document Loading not a spreadsheet")
+                self._log.debug("Document Loading not a spreadsheet")
 
         except Exception:
-            self._logger.error("Error getting current document", exc_info=True)
+            self._log.error("Error getting current document", exc_info=True)
             return
 
     # endregion execute
@@ -96,8 +135,7 @@ class LoadingJob(XJob, unohelper.Base):
 
 # region Implementation
 
-g_TypeTable = {}
-g_ImplementationHelper = unohelper.ImplementationHelper()
+g_ImplementationHelper = unohelper.ImplementationHelper()  # noqa: N816
 g_ImplementationHelper.addImplementation(*LoadingJob.get_imple())
 
 # endregion Implementation

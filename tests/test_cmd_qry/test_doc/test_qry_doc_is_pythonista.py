@@ -13,9 +13,11 @@ def test_new_doc(loader, build_setup) -> None:
     if TYPE_CHECKING:
         from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler import QryHandler
         from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_is_doc_pythonista import QryIsDocPythonista
+        from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
     else:
         from libre_pythonista_lib.cq.qry.qry_handler import QryHandler
         from libre_pythonista_lib.cq.qry.calc.doc.qry_is_doc_pythonista import QryIsDocPythonista
+        from libre_pythonista_lib.utils.result import Result
 
     doc = None
     try:
@@ -24,7 +26,8 @@ def test_new_doc(loader, build_setup) -> None:
         qry = QryIsDocPythonista(doc)
         handler = QryHandler()
         result = handler.handle(qry)
-        assert result is False
+        assert Result.is_success(result)
+        assert result.data is False
 
     finally:
         if not doc is None:
@@ -37,9 +40,11 @@ def test_existing_doc(loader, build_setup, copy_fix_calc) -> None:
     if TYPE_CHECKING:
         from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler import QryHandler
         from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_is_doc_pythonista import QryIsDocPythonista
+        from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
     else:
         from libre_pythonista_lib.cq.qry.qry_handler import QryHandler
         from libre_pythonista_lib.cq.qry.calc.doc.qry_is_doc_pythonista import QryIsDocPythonista
+        from libre_pythonista_lib.utils.result import Result
 
     doc = None
     try:
@@ -49,7 +54,8 @@ def test_existing_doc(loader, build_setup, copy_fix_calc) -> None:
         qry = QryIsDocPythonista(doc)
         handler = QryHandler()
         result = handler.handle(qry)
-        assert result is False
+        assert Result.is_success(result)
+        assert result.data is False
 
     finally:
         if not doc is None:
@@ -62,9 +68,11 @@ def test_existing_lp_doc(loader, build_setup, copy_fix_calc) -> None:
     if TYPE_CHECKING:
         from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler import QryHandler
         from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_is_doc_pythonista import QryIsDocPythonista
+        from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
     else:
         from libre_pythonista_lib.cq.qry.qry_handler import QryHandler
         from libre_pythonista_lib.cq.qry.calc.doc.qry_is_doc_pythonista import QryIsDocPythonista
+        from libre_pythonista_lib.utils.result import Result
 
     doc = None
     try:
@@ -74,7 +82,8 @@ def test_existing_lp_doc(loader, build_setup, copy_fix_calc) -> None:
         qry = QryIsDocPythonista(doc)
         handler = QryHandler()
         result = handler.handle(qry)
-        assert result
+        assert Result.is_success(result)
+        assert result.data
 
     finally:
         if not doc is None:

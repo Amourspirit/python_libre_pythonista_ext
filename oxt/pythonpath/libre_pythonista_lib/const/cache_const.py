@@ -10,3 +10,5 @@ DOC_CALC_PROPS = "DocCalcProps"
 DOC_INIT_COMPLETED = "DocInitCompleted"
 
 DOC_STATE_RULES_DEFAULT = "DocStateRulesDefault"
+
+DOC_CTX_LOADED = "DocCtxLoaded"

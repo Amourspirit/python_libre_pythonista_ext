@@ -30,22 +30,22 @@ if TYPE_CHECKING:
     from ooodev.utils.helper.dot_dict import DotDict
     from ooodev.calc import CalcDoc
     from ooodev.loader import Lo
-    from ...___lo_pip___.oxt_logger import OxtLogger
-    from ...pythonpath.libre_pythonista_lib.event.shared_event import SharedEvent
-    from ...pythonpath.libre_pythonista_lib.sheet.listen.code_sheet_modify_listener import (
+    from oxt.___lo_pip___.oxt_logger import OxtLogger
+    from oxt.pythonpath.libre_pythonista_lib.event.shared_event import SharedEvent
+    from oxt.pythonpath.libre_pythonista_lib.sheet.listen.code_sheet_modify_listener import (
         CodeSheetModifyListener,
     )
-    from ...pythonpath.libre_pythonista_lib.sheet.listen.code_sheet_activation_listener import (
+    from oxt.pythonpath.libre_pythonista_lib.sheet.listen.code_sheet_activation_listener import (
         CodeSheetActivationListener,
     )
-    from ...pythonpath.libre_pythonista_lib.code.mod_helper.lplog import LpLog
-    from ...pythonpath.libre_pythonista_lib.cell.cell_mgr import CellMgr
-    from ...pythonpath.libre_pythonista_lib.menus import cell_reg_interceptor
-    from ...pythonpath.libre_pythonista_lib.const.event_const import GBL_DOC_CLOSING
+    from oxt.pythonpath.libre_pythonista_lib.code.mod_helper.lplog import LpLog
+    from oxt.pythonpath.libre_pythonista_lib.cell.cell_mgr import CellMgr
+    from oxt.pythonpath.libre_pythonista_lib.menus import cell_reg_interceptor
+    from oxt.pythonpath.libre_pythonista_lib.const.event_const import GBL_DOC_CLOSING
 
     # from ...pythonpath.libre_pythonista_lib.state.calc_state_mgr import CalcStateMgr
-    from ...pythonpath.libre_pythonista_lib.doc.calc_doc_mgr import CalcDocMgr
-    from ...___lo_pip___.debug.break_mgr import BreakMgr
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc_doc_mgr import CalcDocMgr
+    from oxt.___lo_pip___.debug.break_mgr import BreakMgr
 
     # Initialize the breakpoint manager
     break_mgr = BreakMgr()

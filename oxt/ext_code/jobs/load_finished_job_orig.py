@@ -1,6 +1,7 @@
 # region imports
 from __future__ import unicode_literals, annotations
-from typing import Any, Tuple, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING
+import threading
 import contextlib
 import os
 
@@ -25,20 +26,11 @@ if TYPE_CHECKING:
 
     # just for design time
     _CONDITIONS_MET = True
+    from ooodev.loader import Lo
     from ooodev.calc import CalcDoc
     from ooodev.utils.props import Props
-    from oxt.___lo_pip___.debug.break_mgr import BreakMgr
-    from oxt.___lo_pip___.events.args.event_args import EventArgs
-    from oxt.___lo_pip___.events.lo_events import LoEvents
     from oxt.___lo_pip___.oxt_logger import OxtLogger
-    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.cmd_calculate_all import CmdCalculateAll
-    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
-    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.doc.cmd_current_ctx_load import CmdCurrentCtxLoad
-    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_doc_init import QryDocInit
-    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_is_doc_pythonista import QryIsDocPythonista
-    from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
-    from oxt.pythonpath.libre_pythonista_lib.doc.doc_globals import GET_CURRENT_EVENT
-    from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
+    from oxt.___lo_pip___.debug.break_mgr import BreakMgr
 
     break_mgr = BreakMgr()
 
@@ -47,24 +39,15 @@ if TYPE_CHECKING:
     # )
 else:
 
-    def override(func):  # noqa: ANN001, ANN201
+    def override(func):
         return func
 
     _CONDITIONS_MET = _conditions_met()
     if _CONDITIONS_MET:
+        from ooodev.loader import Lo
         from ooodev.calc import CalcDoc
         from ooodev.utils.props import Props
         from ___lo_pip___.debug.break_mgr import BreakMgr
-        from ___lo_pip___.events.args.event_args import EventArgs
-        from ___lo_pip___.events.lo_events import LoEvents
-        from libre_pythonista_lib.cq.cmd.calc.doc.cmd_calculate_all import CmdCalculateAll
-        from libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
-        from libre_pythonista_lib.cq.cmd.doc.cmd_current_ctx_load import CmdCurrentCtxLoad
-        from libre_pythonista_lib.cq.qry.calc.doc.qry_doc_init import QryDocInit
-        from libre_pythonista_lib.cq.qry.calc.doc.qry_is_doc_pythonista import QryIsDocPythonista
-        from libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
-        from libre_pythonista_lib.doc.doc_globals import GET_CURRENT_EVENT
-        from libre_pythonista_lib.utils.result import Result
 
         # Initialize the breakpoint manager
         break_mgr = BreakMgr()
@@ -81,40 +64,23 @@ class LoadFinishedJob(unohelper.Base, XJob):
     SERVICE_NAMES = ("com.sun.star.task.Job",)
 
     @classmethod
-    def get_imple(cls) -> Tuple[Any, str, Tuple[str, ...]]:
+    def get_imple(cls):
         return (cls, cls.IMPLE_NAME, cls.SERVICE_NAMES)
 
     # region Init
 
-    def __init__(self, ctx: object) -> None:
+    def __init__(self, ctx):
         XJob.__init__(self)
         unohelper.Base.__init__(self)
         self.ctx = ctx
         self.document = None
         self._log = self._get_local_logger()
-        self._log.debug("init")
-        if _CONDITIONS_MET:
-            # subscribe to the DocGlobals.get_current event and set the uid for the current document.
-            self._fn_on_get_current = self._on_get_current
-            self._events = LoEvents()
-            self._events.on(GET_CURRENT_EVENT, self._fn_on_get_current)
 
     # endregion Init
 
-    def _lo_load(self, doc: Any) -> None:  # noqa: ANN401
-        """Loads OooDev"""
-        self._log.debug("_lo_load()_ Loading OooDev")
-        cmd_handler = CmdHandlerFactory.get_cmd_handler()
-        cmd = CmdCurrentCtxLoad(ctx=self.ctx, uid=doc.RuntimeUID)
-        cmd_handler.handle(cmd)
-        if not cmd.success:
-            self._log.error("Error loading OooDev")
-            return
-        self._log.debug("OooDev Loaded")
-
     # region execute
     @override
-    def execute(self, Arguments: Any) -> None:  # noqa: ANN401, N803
+    def execute(self, Arguments: Any) -> None:
         # This job may be executed more then once or not at all.
         # When a spreadsheet is put into print preview this is fired.
         # When the print preview is closed this is fired again.
@@ -136,15 +102,11 @@ class LoadFinishedJob(unohelper.Base, XJob):
             if self.document is None:
                 self._log.debug("ViewJob - Document is None")
                 return
-
-            if _CONDITIONS_MET:
-                self._lo_load(self.document)
-
             if self.document.supportsService("com.sun.star.sheet.SpreadsheetDocument"):
                 run_id = self.document.RuntimeUID
                 key = f"LIBRE_PYTHONISTA_DOC_{run_id}"
                 os.environ[key] = "1"
-                self._log.debug("Added %s to environment variables", key)
+                self._log.debug(f"Added {key} to environment variables")
                 if _CONDITIONS_MET:
                     try:
                         self._log.debug("Conditions met. Continuing ...")
@@ -161,37 +123,16 @@ class LoadFinishedJob(unohelper.Base, XJob):
                             self._log.debug("Macros are not enabled. Exiting.")
                             return
 
-                        qry_handler = QryHandlerFactory.get_qry_handler()
-                        cmd_handler = CmdHandlerFactory.get_cmd_handler()
-
+                        _ = Lo.load_office()
                         doc = CalcDoc.get_doc_from_component(self.document)
-                        qry = QryIsDocPythonista(doc=doc)
-                        qry_result = qry_handler.handle(qry)
-                        if Result.is_failure(qry_result):
-                            self._log.error(
-                                "Error checking if document is a LibrePythonista. Error: %s", qry_result.error
-                            )
-                            return
-                        if not qry_result.data:
-                            self._log.debug("Document is not a LibrePythonista. Returning.")
-                            return
-
-                        qry = QryDocInit()
-                        if not qry_handler.handle(qry):
-                            self._log.debug("Document is not initialized. .")
-                            cmd = CmdCalculateAll(doc=doc)
-                            cmd_handler.handle(cmd)
-                            if cmd.success:
-                                self._log.debug("Successfully calculated all formulas.")
-                            else:
-                                self._log.error("Error calculating all formulas.")
-                            return
+                        # if os.getenv("LIBREOFFICE_DEBUG_ATTACHED"):
+                        #     breakpoint()
+                        t = threading.Thread(target=_init_with_state, args=(doc, self._log), daemon=True)
+                        t.start()
+                        # t.join() # DO NOT join. Can cause LibreOffice to hang.
 
                     except Exception:
                         self._log.error("Error setting components on view.", exc_info=True)
-
-                    # no longer needs to listen for the DocGlobals.get_current event.
-                    self._events.remove(GET_CURRENT_EVENT, self._fn_on_get_current)
                 else:
                     self._log.debug("Conditions not met to register dispatch manager")
             else:
@@ -203,14 +144,6 @@ class LoadFinishedJob(unohelper.Base, XJob):
 
     # endregion execute
 
-    # region Event Handlers
-
-    def _on_get_current(self, source: Any, event: EventArgs) -> None:  # noqa: ANN401
-        if self.document is not None:
-            event.event_data["uid"] = self.document.RuntimeUID
-
-    # endregion Event Handlers
-
     # region Logging
 
     def _get_local_logger(self) -> OxtLogger:
@@ -221,11 +154,47 @@ class LoadFinishedJob(unohelper.Base, XJob):
     # endregion Logging
 
 
+def _init_with_state(doc: CalcDoc, log: OxtLogger):
+    # This method is run in a thread.
+    # The reason for this on Ubuntu 20.04 is that the main thread crashes if there is a plot in the document python code.
+    # This crash does not give any information in the logs.
+    # After much testing and debugging I discovered that crash can be avoided if this code is run in a thread.
+    # The crash did not happen Flatpak version, Snap Version, Windows version or Docker version. Only on Ubuntu 20.04 when apt installed so far.
+    log.debug("_init_with_state()")
+    if TYPE_CHECKING:
+        from ...pythonpath.libre_pythonista_lib.doc.calc_doc_mgr import CalcDocMgr
+
+    else:
+        try:
+            from libre_pythonista_lib.doc.calc_doc_mgr import CalcDocMgr
+
+            log.debug("Imported CalcDocMgr")
+        except ImportError:
+            log.error("Error importing oxt_init and/or CalcStateMgr", exc_info=True)
+            return
+
+    try:
+        log.debug("Creating an instance of CalcDocMgr")
+        # if os.getenv("LIBREOFFICE_DEBUG_ATTACHED"):
+        #     breakpoint()
+        break_mgr.check_breakpoint("load_finished_job_init_state")
+
+        doc_mgr = CalcDocMgr()
+        doc_mgr.calc_state_mgr.is_oxt_init = True
+        doc_mgr.is_job_loading_finished = True
+        doc_mgr.ensure_events()  # must be called after is_oxt_init is set to True
+        # doc.component.calculateAll()
+
+    except Exception:
+        log.error("Error _init_with_state()", exc_info=True)
+
+
 # endregion XJob
 
 # region Implementation
 
-g_ImplementationHelper = unohelper.ImplementationHelper()  # noqa: N816
+g_TypeTable = {}
+g_ImplementationHelper = unohelper.ImplementationHelper()
 g_ImplementationHelper.addImplementation(*LoadFinishedJob.get_imple())
 
 # endregion Implementation

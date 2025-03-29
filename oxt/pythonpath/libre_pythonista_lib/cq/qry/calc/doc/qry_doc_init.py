@@ -8,11 +8,13 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.const.cache_const import DOC_INIT_COMPLETED
     from oxt.pythonpath.libre_pythonista_lib.doc.doc_globals import DocGlobals
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.doc.qry_doc_globals import QryDocGlobals
+    from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
 else:
     from libre_pythonista_lib.cq.qry.qry_base import QryBase
     from libre_pythonista_lib.cq.qry.qry_t import QryT
     from libre_pythonista_lib.const.cache_const import DOC_INIT_COMPLETED
     from libre_pythonista_lib.cq.qry.doc.qry_doc_globals import QryDocGlobals
+    from libre_pythonista_lib.utils.result import Result
 
     DocGlobals = Any
 
@@ -25,7 +27,10 @@ class QryDocInit(QryBase, QryT[bool]):
 
     def _get_globals(self) -> DocGlobals | None:
         qry = QryDocGlobals()
-        return self._execute_qry(qry)
+        qry_result = self._execute_qry(qry)
+        if Result.is_success(qry_result):
+            return qry_result.data
+        return None
 
     def execute(self) -> bool:
         """

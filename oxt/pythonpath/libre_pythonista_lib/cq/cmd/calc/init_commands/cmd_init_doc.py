@@ -22,6 +22,7 @@ if TYPE_CHECKING:
 
     from pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.cmd_doc_init import CmdDocInit
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.doc.qry_doc_globals import QryDocGlobals
+    from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
 else:
     from libre_pythonista_lib.utils.custom_ext import override
     from libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
@@ -37,6 +38,7 @@ else:
     from libre_pythonista_lib.cq.cmd.calc.doc.listener.cmd_form_design_mode_off import CmdFormDesignModeOff
     from libre_pythonista_lib.cq.cmd.calc.doc.cmd_doc_init import CmdDocInit
     from libre_pythonista_lib.cq.qry.doc.qry_doc_globals import QryDocGlobals
+    from libre_pythonista_lib.utils.result import Result
 
 
 _KEY = "libre_pythonista_lib.init.init_doc.InitDoc"
@@ -63,7 +65,10 @@ class CmdInitDoc(CmdBase, List[CmdT], LogMixin, CmdDocT):
 
     def _get_globals(self) -> DocGlobals | None:
         qry = QryDocGlobals()
-        return self._execute_qry(qry)
+        qry_result = self._execute_qry(qry)
+        if Result.is_success(qry_result):
+            return qry_result.data
+        return None
 
     @override
     def execute(self) -> None:

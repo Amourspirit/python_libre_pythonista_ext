@@ -27,10 +27,10 @@ if TYPE_CHECKING:
     _CONDITIONS_MET = True
     from ooodev.loader import Lo
     from ooodev.events.args.event_args import EventArgs
-    from ...___lo_pip___.oxt_logger import OxtLogger
-    from ...___lo_pip___.config import Config
-    from ...pythonpath.libre_pythonista_lib.const.res_const import RES_LOG_WIN_URL
-    from ...pythonpath.libre_pythonista_lib.const.event_const import (
+    from oxt.___lo_pip___.oxt_logger import OxtLogger
+    from oxt.___lo_pip___.config import Config
+    from oxt.pythonpath.libre_pythonista_lib.const.res_const import RES_LOG_WIN_URL
+    from oxt.pythonpath.libre_pythonista_lib.const.event_const import (
         LOG_OPTIONS_CHANGED,
         LOG_PY_LOGGER_RESET,
     )
@@ -99,9 +99,7 @@ class LogWindowJob(XJob, unohelper.Base):
             if _CONDITIONS_MET:
                 try:
                     # Lo.dispatch_cmd(cmd="service:___lo_identifier___.Switcher", in_thread=True)
-                    layout_mgr = (
-                        document.getCurrentController().getFrame().LayoutManager
-                    )
+                    layout_mgr = document.getCurrentController().getFrame().LayoutManager
                     if layout_mgr.isElementVisible(RES_LOG_WIN_URL):
                         layout_mgr.hideElement(RES_LOG_WIN_URL)
                     # SharedEvent().trigger_event(LOG_OPTIONS_CHANGED, EventArgs(self))

@@ -21,7 +21,6 @@ if TYPE_CHECKING:
     # just for design time
     _CONDITIONS_MET = True
     from ooodev.calc import CalcDoc
-    from ooodev.events.args.event_args import EventArgs
     from ooodev.utils.helper.dot_dict import DotDict
     from oxt.___lo_pip___.events.args.event_args import EventArgs
     from oxt.___lo_pip___.events.lo_events import LoEvents
@@ -50,7 +49,6 @@ else:
     _CONDITIONS_MET = _conditions_met()
     if _CONDITIONS_MET:
         from ooodev.calc import CalcDoc
-        from ooodev.events.args.event_args import EventArgs
         from ooodev.utils.helper.dot_dict import DotDict
         from ___lo_pip___.events.args.event_args import EventArgs
         from ___lo_pip___.events.lo_events import LoEvents
@@ -127,7 +125,14 @@ class SavingJob(XJob, unohelper.Base):
                     doc = CalcDoc.get_doc_from_component(self.document)
 
                     qry_is_doc_pythonista = QryIsDocPythonista(doc)
-                    if not qry_handler.handle(qry_is_doc_pythonista):
+                    qry_is_doc_pythonista_result = qry_handler.handle(qry_is_doc_pythonista)
+                    if Result.is_failure(qry_is_doc_pythonista_result):
+                        self._log.error(
+                            "Error checking if document is a LibrePythonista. Error: %s",
+                            qry_is_doc_pythonista_result.error,
+                        )
+                        return
+                    if not qry_is_doc_pythonista_result.data:
                         self._log.debug("Document is not a LibrePythonista. Returning.")
                         return
 
