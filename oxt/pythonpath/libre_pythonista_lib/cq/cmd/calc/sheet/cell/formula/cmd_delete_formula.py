@@ -37,22 +37,20 @@ else:
     SheetCellCursor = Any
 
 
-class CmdSetFormula(CmdBase, LogMixin, CmdCellT):
+class CmdDeleteFormula(CmdBase, LogMixin, CmdCellT):
     """
-    Command to update a cell's array formula.
+    Command to delete a cell's formula.
 
     Inherits from CmdBase for command functionality, LogMixin for logging, and CmdCellT for cell-specific operations.
 
-    If the cell is a formula and not an array formula then it will be converted into an array formula.
     """
 
-    def __init__(self, cell: CalcCell, formula: str | None = None) -> None:
+    def __init__(self, cell: CalcCell) -> None:
         """
         Initialize the command with a target cell.
 
         Args:
             cell: The CalcCell instance to operate on
-            formula: The formula to set. If None, gets current formula. Defaults to None.
         """
         CmdBase.__init__(self)
         LogMixin.__init__(self)
@@ -62,10 +60,7 @@ class CmdSetFormula(CmdBase, LogMixin, CmdCellT):
         self._is_array_formula = cast(bool, None)
         self._is_formula = cast(bool, None)
         self._current_col_rows = (0, 0)
-        if formula:
-            self._formula = formula.lstrip("{").rstrip("}")
-        else:
-            self._formula = None
+        self.log.debug("init done for cell %s", self.cell.cell_obj)
 
     def _qry_is_array_formula(self) -> bool:
         """Check if the cell contains an array formula."""
@@ -119,7 +114,7 @@ class CmdSetFormula(CmdBase, LogMixin, CmdCellT):
             raise Exception("Cell %s has no formula.", self.cell.cell_obj)
         return formula.lstrip("{").rstrip("}")
 
-    def _set_formula(self) -> bool:
+    def _remove_formula(self) -> bool:
         """
         Set Formula.
 
@@ -127,24 +122,38 @@ class CmdSetFormula(CmdBase, LogMixin, CmdCellT):
             True if conversion successful, False otherwise
         """
         try:
-            self.log.debug("Setting formula")
-            formula = cast(str, self._formula)
+            self.log.debug("Removing formula")
+            self.cell.component.setFormula("")
+            return True
+        except Exception:
+            self.log.exception("Error removing formula for cell: %s", self.cell.cell_obj)
+        return False
+
+    def _remove_array_formula(self) -> bool:
+        """
+        Set Formula.
+
+        Returns:
+            True if conversion successful, False otherwise
+        """
+        try:
+            self.log.debug("Removing array formula")
 
             cursor = self._qry_formula_cursor()
             cursor.clearContents(CellFlags.DATETIME | CellFlags.VALUE | CellFlags.STRING | CellFlags.FORMULA)
-            self.cell.component.setFormula(formula)
+            cursor.setArrayFormula("")
 
             return True
         except Exception:
-            self.log.exception("Error updating array formula for cell: %s", self.cell.cell_obj)
+            self.log.exception("Error removing array formula for cell: %s", self.cell.cell_obj)
         return False
 
     @override
     def execute(self) -> None:
         """
-        Execute the update array formula command.
+        Execute the delete formula command.
 
-        Determines the current formula state and update to array formula.
+        Determines the current formula state and delete formula.
         Sets success flag based on operation result.
         """
         self.success = False
@@ -169,12 +178,13 @@ class CmdSetFormula(CmdBase, LogMixin, CmdCellT):
                     self._current_formula = None
                     self._undo_available = False
 
-            if not self._formula:
-                self._formula = self._get_formula()
-            if not self._set_formula():
+            if self._is_formula and not self._remove_formula():
                 return
+            if self._is_array_formula and not self._remove_array_formula():
+                return
+
         except Exception:
-            self.log.exception("Error setting formula for cell: %s", self.cell.cell_obj)
+            self.log.exception("Error deleting formula for cell: %s", self.cell.cell_obj)
             return
         self.log.debug("Successfully executed command.")
         self.success = True

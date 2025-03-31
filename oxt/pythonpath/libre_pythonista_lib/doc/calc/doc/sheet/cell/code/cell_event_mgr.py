@@ -14,10 +14,15 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.formula.qry_cell_is_pyc_formula import (
         QryCellIsPycFormula,
     )
-    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.cell_item_facade import CellItemFacade
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.listen.code_cell_listeners import (
         CodeCellListeners,
     )
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.formula.cmd_delete_formula import CmdDeleteFormula
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.state.cmd_delete_code import CmdDeleteCode
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.state.cmd_delete_control import CmdDeleteControl
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.general.cmd_batch import CmdBatch
+    from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
 else:
     from libre_pythonista_lib.event.shared_event import SharedEvent
     from libre_pythonista_lib.log.log_mixin import LogMixin
@@ -25,8 +30,13 @@ else:
     from libre_pythonista_lib.doc.doc_globals import DocGlobals
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_addr import CmdAddr
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.formula.qry_cell_is_pyc_formula import QryCellIsPycFormula
-    from libre_pythonista_lib.doc.calc.doc.sheet.cell.cell_item_facade import CellItemFacade
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.listen.code_cell_listeners import CodeCellListeners
+    from libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
+    from libre_pythonista_lib.cq.cmd.calc.sheet.cell.formula.cmd_delete_formula import CmdDeleteFormula
+    from libre_pythonista_lib.cq.cmd.calc.sheet.cell.state.cmd_delete_code import CmdDeleteCode
+    from libre_pythonista_lib.cq.cmd.calc.sheet.cell.state.cmd_delete_control import CmdDeleteControl
+    from libre_pythonista_lib.cq.cmd.general.cmd_batch import CmdBatch
+    from libre_pythonista_lib.utils.result import Result
 
 _KEY = "libre_pythonista_lib.doc.calc.doc.sheet.cell.code.cell_event_mgr.CellEventMgr"
 
@@ -58,8 +68,17 @@ class CellEventMgr(LogMixin):
         self._se = SharedEvent(src_mgr.doc)
         self._src_mgr = src_mgr
         self._listeners = CodeCellListeners(src_mgr.doc)
+        self._init_py_src_items()
         self._init_events()
         self._is_init = True
+
+    def _init_py_src_items(self) -> None:
+        for calc_cell in self._src_mgr.get_calc_cells():
+            result = self._listeners.add_listener(calc_cell)
+            if Result.is_failure(result):
+                self.log.error("Failed to add listener for cell: %s", calc_cell.cell_obj)
+            else:
+                self.log.debug("Added listener for cell: %s", calc_cell.cell_obj)
 
     def _init_events(self) -> None:
         self._fn_on_cell_deleted = self.on_cell_deleted
@@ -77,10 +96,18 @@ class CellEventMgr(LogMixin):
         # - Remove Source code
         # - Remove from PySourceManager
         # - Remove Cell Control
-        facade = CellItemFacade(calc_cell)
-        facade.remove_control()
+
+        cmd_handler = CmdHandlerFactory.get_cmd_handler()
+        cmd_del_control = CmdDeleteControl(cell=calc_cell)
+        cmd_del_code = CmdDeleteCode(cell=calc_cell)
+        cmd_del_formula = CmdDeleteFormula(cell=calc_cell)
+        batch = CmdBatch(cmd_del_formula, cmd_del_control, cmd_del_code)
+        cmd_handler.handle(batch)
+        if not batch.success:
+            self.log.error("Failed to delete control, code and formula.")
+            cmd_handler.handle_undo(batch)
+            return
         self._listeners.remove_listener(calc_cell)
-        self._src_mgr.remove_source(calc_cell.cell_obj)
 
     def on_cell_deleted(self, src: Any, event: EventArgs) -> None:  # noqa: ANN401
         """
@@ -189,3 +216,8 @@ class CellEventMgr(LogMixin):
             self.log.exception("Error modifying cell: %s", dd.absolute_name)
 
         self.log.debug("Cell modified: %s", dd.absolute_name)
+
+    @property
+    def listeners(self) -> CodeCellListeners:
+        """Gets the code cell listeners."""
+        return self._listeners

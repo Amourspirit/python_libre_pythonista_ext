@@ -7,38 +7,41 @@ from typing import List, TYPE_CHECKING
 if TYPE_CHECKING:
     from ooodev.calc import CalcCell
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
-    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.cmd_cell_ctl_t import CmdCellCtlT
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_t import CmdT
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler import CmdHandler
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.cmd_code_name import CmdCodeName
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.cmd_addr import CmdAddr
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.listener.cmd_code_listener import CmdCodeListener
 
     # from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.cmd_ctl_name import CmdCtlName
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl import Ctl
 else:
     from libre_pythonista_lib.log.log_mixin import LogMixin
-    from libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.cmd_cell_ctl_t import CmdCellCtlT
+    from libre_pythonista_lib.cq.cmd.cmd_t import CmdT
     from libre_pythonista_lib.cq.cmd.cmd_handler import CmdHandler
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.cmd_code_name import CmdCodeName
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.cmd_addr import CmdAddr
+    from libre_pythonista_lib.cq.cmd.calc.sheet.cell.listener.cmd_code_listener import CmdCodeListener
 
     # from libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.cmd_ctl_name import CmdCtlName
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl import Ctl
 
 
-class CtlBuilder(List[CmdCellCtlT], LogMixin, ABC):
+class CtlBuilder(List[CmdT], LogMixin, ABC):
     def __init__(self, cell: CalcCell) -> None:
         list.__init__(self)
         LogMixin.__init__(self)
         self.ctl = Ctl()
         self.ctl.cell = cell
         self._success = False
-        self._success_cmds: List[CmdCellCtlT] = []
+        self._success_cmds: List[CmdT] = []
         self._cmd_handler = CmdHandler()
 
     def _append_base_commands(self) -> None:
         self.clear()
         self.append(CmdCodeName(self.cell, self.ctl, overwrite_existing=False))
         self.append(CmdAddr(self.cell, self.ctl))
+        self.append(CmdCodeListener(self.cell))
         self.append_commands()
 
     @abstractmethod

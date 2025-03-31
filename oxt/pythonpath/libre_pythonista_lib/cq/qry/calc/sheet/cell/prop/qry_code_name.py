@@ -37,9 +37,13 @@ class QryCodeName(QryBase, QryCellT[Result[str, None] | Result[None, Exception]]
         """
         qry_km = QryKeyMaker()
         km = self._execute_qry(qry_km)
-        qry_state = QryCellPropValue(cell=self._cell, name=km.cell_code_name, default="")
+        qry_state = QryCellPropValue(
+            cell=self._cell, name=km.cell_code_name, default=self._cell.extra_data.get("code_name", "")
+        )
         result = self._execute_qry(qry_state)
         if result:
+            if not "code_name" in self._cell.extra_data:
+                self._cell.extra_data["code_name"] = result
             return Result.success(result)
         return Result.failure(Exception("Code name not found"))
 

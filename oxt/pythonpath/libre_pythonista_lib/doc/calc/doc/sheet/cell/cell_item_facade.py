@@ -236,8 +236,14 @@ class CellItemFacade(LogMixin):
         return self.cell.cell_obj in self._py_src_mgr
 
     def get_value(self) -> Iterable[Iterable[object]]:
-        """Gets the value of the cell"""
+        """
+        Gets the value of the cell.
+        """
         try:
+            # if update_globals:
+            #     py_src = self._py_src_mgr[self._cell.cell_obj]
+            #     self._py_src_mgr.set_global_var("CURRENT_CELL_ID", py_src.uri_info.unique_id)
+            #     self._py_src_mgr.set_global_var("CURRENT_CELL_OBJ", self._cell.cell_obj)
             return self._qry_value()
         except Exception:
             self.log.exception("get_value() Failed to get module state.")

@@ -5,14 +5,19 @@ from ooodev.utils.helper.dot_dict import DotDict
 
 if TYPE_CHECKING:
     from ooodev.utils.data_type.cell_obj import CellObj
+    from oxt.pythonpath.libre_pythonista_lib.code.py_module_state import PyModuleState
+else:
+    PyModuleState = Any
 
 
 class ModuleStateItem:
-    def __init__(self, cell_obj: CellObj, mod_dict: Dict[str, Any], runtime_uid: str) -> None:
+    def __init__(self, cell_obj: CellObj, mod_dict: Dict[str, Any], owner: PyModuleState) -> None:
         self.cell_obj = cell_obj.copy()
         self.mod_dict = mod_dict
-        self.runtime_uid = runtime_uid
-        self.dd_data = DotDict(data=self.mod_dict.get("_"), cell_obj=cell_obj.copy(), runtime_uid=runtime_uid)
+        self.py_state = owner
+        self.dd_data = DotDict(
+            data=self.mod_dict.get("_"), cell_obj=cell_obj.copy(), runtime_uid=self.py_state.runtime_uid
+        )
 
     def __lt__(self, other: object) -> bool:
         """

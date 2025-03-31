@@ -119,9 +119,7 @@ class PyModuleState(LogMixin):
             DotDict containing the execution result
         """
         result = self._py_mod.update_with_result(code)
-        state_item = ModuleStateItem(
-            cell_obj=cell.cell_obj, mod_dict=self._py_mod.copy_dict(), runtime_uid=self.runtime_uid
-        )
+        state_item = ModuleStateItem(cell_obj=cell.cell_obj, mod_dict=self._py_mod.copy_dict(), owner=self)
         state_item.dd_data.update(result)
         state_key = cell.unique_id
         self._state_history[state_key] = state_item

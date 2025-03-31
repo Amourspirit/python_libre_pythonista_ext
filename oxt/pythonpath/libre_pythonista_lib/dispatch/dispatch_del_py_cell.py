@@ -23,26 +23,32 @@ from ooodev.events.args.cancel_event_args import CancelEventArgs
 from ooodev.events.args.event_args import EventArgs
 from ooodev.events.partial.events_partial import EventsPartial
 from ooodev.utils.data_type.range_obj import RangeObj
-from ooodev.utils.data_type.range_values import RangeValues
 from ooodev.utils.helper.dot_dict import DotDict
-from ..code.cell_cache import CellCache
-from ..cell.props.key_maker import KeyMaker
-from ..cell.state.ctl_state import CtlState
-from ..cell.state.state_kind import StateKind
-from ..res.res_resolver import ResResolver
-from ..event.shared_event import SharedEvent
+
 
 if TYPE_CHECKING:
+    import pandas as pd
     from com.sun.star.frame import XStatusListener
     from com.sun.star.sheet import SheetCellCursor
-    from ....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
-    import pandas as pd
+    from oxt.___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from oxt.pythonpath.libre_pythonista_lib.code.cell_cache import CellCache
+    from oxt.pythonpath.libre_pythonista_lib.cell.props.key_maker import KeyMaker
+    from oxt.pythonpath.libre_pythonista_lib.cell.state.ctl_state import CtlState
+    from oxt.pythonpath.libre_pythonista_lib.cell.state.state_kind import StateKind
+    from oxt.pythonpath.libre_pythonista_lib.res.res_resolver import ResResolver
+    from oxt.pythonpath.libre_pythonista_lib.event.shared_event import SharedEvent
 else:
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from libre_pythonista_lib.code.cell_cache import CellCache
+    from libre_pythonista_lib.cell.props.key_maker import KeyMaker
+    from libre_pythonista_lib.cell.state.ctl_state import CtlState
+    from libre_pythonista_lib.cell.state.state_kind import StateKind
+    from libre_pythonista_lib.res.res_resolver import ResResolver
+    from libre_pythonista_lib.event.shared_event import SharedEvent
 
 
 class DispatchDelPyCell(XDispatch, EventsPartial, unohelper.Base):
-    def __init__(self, sheet: str, cell: str):
+    def __init__(self, sheet: str, cell: str) -> None:
         XDispatch.__init__(self)
         EventsPartial.__init__(self)
         unohelper.Base.__init__(self)
@@ -50,7 +56,7 @@ class DispatchDelPyCell(XDispatch, EventsPartial, unohelper.Base):
         self._cell = cell
         self._log = OxtLogger(log_name=self.__class__.__name__)
         self.add_event_observers(SharedEvent().event_observer)
-        self._log.debug(f"init: sheet={sheet}, cell={cell}")
+        self._log.debug("init: sheet=%s, cell=%s", sheet, cell)
         self._status_listeners: Dict[str, XStatusListener] = {}
 
     @override
@@ -63,9 +69,9 @@ class DispatchDelPyCell(XDispatch, EventsPartial, unohelper.Base):
         Note: Notifications can't be guaranteed! This will be a part of interface XNotifyingDispatch.
         """
         with self._log.indent(True):
-            self._log.debug(f"addStatusListener(): url={URL.Main}")
+            self._log.debug("addStatusListener(): url=%s", URL.Main)
             if URL.Complete in self._status_listeners:
-                self._log.debug(f"addStatusListener(): url={URL.Main} already exists.")
+                self._log.debug("addStatusListener(): url=%s already exists.", URL.Main)
             else:
                 # setting IsEnable=False here does not disable the dispatch command
                 # State=True may cause the menu items to be displayed as checked.
@@ -87,7 +93,7 @@ class DispatchDelPyCell(XDispatch, EventsPartial, unohelper.Base):
         """
         with self._log.indent(True):
             try:
-                self._log.debug(f"dispatch(): url={URL.Main}")
+                self._log.debug("dispatch(): url=%s", URL.Main)
                 doc = CalcDoc.from_current_doc()
                 sheet = doc.sheets[self._sheet]
                 cell = sheet[self._cell]
@@ -101,7 +107,7 @@ class DispatchDelPyCell(XDispatch, EventsPartial, unohelper.Base):
                 )
                 self.trigger_event(f"{URL.Main}_before_dispatch", cargs)
                 if cargs.cancel:
-                    self._log.debug(f"Event {URL.Main}_before_dispatch was cancelled.")
+                    self._log.debug("Event %s_before_dispatch was cancelled.", URL.Main)
                     return
 
                 cc = CellCache(doc)  # singleton
@@ -198,7 +204,7 @@ class DispatchDelPyCell(XDispatch, EventsPartial, unohelper.Base):
         Un-registers a listener from a control.
         """
         with self._log.indent(True):
-            self._log.debug(f"removeStatusListener(): url={URL.Main}")
+            self._log.debug("removeStatusListener(): url=%s", URL.Main)
             if URL.Complete in self._status_listeners:
                 del self._status_listeners[URL.Complete]
 

@@ -4,7 +4,7 @@ from typing import Any, cast, TYPE_CHECKING
 import uno
 
 from ooodev.loader import Lo
-from ooodev.calc import CalcDoc, CalcSheet, CalcCell
+from ooodev.calc import CalcDoc, CalcSheet
 from ooodev.utils.helper.dot_dict import DotDict
 from ooodev.utils.data_type.cell_obj import CellObj
 from ooodev.utils.data_type.range_obj import RangeObj
@@ -21,31 +21,29 @@ from ooodev.exceptions import ex as mEx  # noqa: N812
 LAST_LP_RESULT = DotDict(data=None)
 
 if TYPE_CHECKING:
+    from com.sun.star.sheet import SheetCell
     from com.sun.star.sheet import SheetCellRange
     from oxt.___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from oxt.pythonpath.libre_pythonista_lib.cell.cell_mgr import CellMgr
     from oxt.pythonpath.libre_pythonista_lib.code.mod_helper.lp_enum import LpEnum
     from oxt.pythonpath.libre_pythonista_lib.code.mod_helper.lp_rules.lp_rules_engine import LpRulesEngine
-    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.state.qry_py_src_mgr import QryPySrcMgrCode
-    from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
     from oxt.pythonpath.libre_pythonista_lib.data.pandas_data_obj import PandasDataObj
-    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source_manager import PySourceManager
     from oxt.pythonpath.libre_pythonista_lib.log.log_inst import LogInst
 
     CURRENT_CELL_OBJ: CellObj
 else:
     CURRENT_CELL_OBJ = None
+    from libre_pythonista_lib.cell.cell_mgr import CellMgr
     from libre_pythonista_lib.code.mod_helper.lp_enum import LpEnum
     from libre_pythonista_lib.code.mod_helper.lp_rules.lp_rules_engine import LpRulesEngine
-    from libre_pythonista_lib.cq.qry.calc.sheet.cell.state.qry_py_src_mgr import QryPySrcMgrCode
-    from libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
     from libre_pythonista_lib.data.pandas_data_obj import PandasDataObj
-    from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source_manager import PySourceManager
     from libre_pythonista_lib.log.log_inst import LogInst
+
+    SheetCell = Any
 
 # endregion imports
 
 _RULES_ENGINE = LpRulesEngine()
-_QRY_HANDLER = QryHandlerFactory.get_qry_handler()
 
 
 def _collapse_to_used(sheet: CalcSheet, rng_obj: RangeObj) -> RangeObj:
@@ -64,38 +62,30 @@ def _set_last_lp_result(result: Any, **kwargs) -> Any:  # noqa: ANN003, ANN401
     dd.data = result
     LAST_LP_RESULT = dd
     if log.is_debug:
-        log.debug(
-            "lp_mod - _set_last_lp_result() - LAST_LP_RESULT.data Type: %s",
-            type(LAST_LP_RESULT.data).__name__,
-        )
+        with log.indent(True):
+            log.debug(
+                "lp_mod - _set_last_lp_result() - LAST_LP_RESULT.data Type: %s",
+                type(LAST_LP_RESULT.data).__name__,
+            )
     return LAST_LP_RESULT.data
 
 
-def _qry_py_src_mgr_code(cell: CalcCell) -> PySourceManager:
-    global CURRENT_CELL_OBJ, _QRY_HANDLER
-    qry = QryPySrcMgrCode(cell=cell)
-    return _QRY_HANDLER.handle(qry)
-
-
 def _handle_cell_only(addr: str, log: OxtLogger, **kwargs) -> Any:  # noqa: ANN003, ANN401
-    global CURRENT_CELL_OBJ, _QRY_HANDLER
+    global CURRENT_CELL_OBJ
     log.debug("_handle_cell_only() Entered")
     log.debug("lp - Cell Name: %s", addr)
     gbl_cell = cast(CellObj, CURRENT_CELL_OBJ)
-    log.debug("lp - _handle_cell_only() - CURRENT_CELL_OBJ: %s", gbl_cell)
     doc = cast(CalcDoc, Lo.current_doc)
+    cm = CellMgr(doc)  # singleton
     cell_obj = CellObj.from_cell(addr)
     cell_obj.set_sheet_index(gbl_cell.sheet_idx)
     sheet = doc.sheets[gbl_cell.sheet_idx]
     cell = sheet[cell_obj]
-    py_src_mgr = _qry_py_src_mgr_code(cell)  # singleton
 
-    if cell in py_src_mgr.state_history:
-        # TODO check if there are any negative effects pulling from state history
-        log.debug("lp - Cell found in state history: %s for sheet: %i", cell.cell_obj, cell.cell_obj.sheet_idx)
-        state_item = py_src_mgr.state_history[cell]
-        return _set_last_lp_result(state_item.dd_data.data)
-
+    if cm.has_cell(cell_obj=cell.cell_obj):
+        log.debug("lp - Cell found in cache: %s for sheet: %i", cell.cell_obj, cell.cell_obj.sheet_idx)
+        py_src = cm.get_py_src(cell_obj=cell.cell_obj)
+        return _set_last_lp_result(py_src.value)
     log.debug("lp - Cell not found in cache: %s for sheet: %i", cell.cell_obj, cell.cell_obj.sheet_idx)
     log.debug("Returning actual cell value")
     return _set_last_lp_result(cell.value)
@@ -108,17 +98,16 @@ def _handle_sheet_cell(addr: str, log: OxtLogger, **kwargs) -> Any:  # noqa: ANN
     sheet_name, addr_str = addr.split(".")
     calc_sheet = doc.sheets.get_by_name(sheet_name)
 
+    cm = CellMgr(doc)  # singleton
     cell_obj = CellObj.from_cell(addr_str)
     cell_obj.set_sheet_index(calc_sheet.sheet_index)
     sheet = doc.sheets[cell_obj.sheet_idx]
     cell = sheet[cell_obj]
-    py_src_mgr = _qry_py_src_mgr_code(cell)  # singleton
-    if cell in py_src_mgr.state_history:
-        # TODO check if there are any negative effects pulling from state history
-        log.debug("lp - Cell found in state history: %s for sheet: %i", cell.cell_obj, cell.cell_obj.sheet_idx)
-        state_item = py_src_mgr.state_history[cell]
-        return _set_last_lp_result(state_item.dd_data.data)
 
+    if cm.has_cell(cell_obj=cell.cell_obj):
+        log.debug("lp - Cell found in cache: %s for sheet: %i", cell.cell_obj, cell.cell_obj.sheet_idx)
+        py_src = cm.get_py_src(cell_obj=cell.cell_obj)
+        return _set_last_lp_result(py_src.value)
     log.debug("lp - Cell not found in cache: %s for sheet: %i", cell.cell_obj, cell.cell_obj.sheet_idx)
     log.debug("Returning actual cell value")
     return _set_last_lp_result(cell.value)
@@ -138,7 +127,6 @@ def _handle_range_only(addr: str, log: OxtLogger, **kwargs) -> Any:  # noqa: ANN
     column_types = kwargs.get("column_types")
 
     gbl_cell = cast(CellObj, CURRENT_CELL_OBJ)
-    log.debug("lp - _handle_range_only() - CURRENT_CELL_OBJ: %s", gbl_cell)
 
     addr_rng = RangeObj.from_range(addr)
     addr_rng.set_sheet_index(gbl_cell.sheet_idx)

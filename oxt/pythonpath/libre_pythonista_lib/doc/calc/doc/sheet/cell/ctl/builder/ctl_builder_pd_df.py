@@ -14,6 +14,8 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.builder.ctl_builder import CtlBuilder
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.style.cmd_style_text_align import CmdStyleTextAlign
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.label.cmd_lbl_rr import CmdLblRR
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.cmd_state import CmdState
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.state.state_kind import StateKind
     from oxt.pythonpath.libre_pythonista_lib.kind.rule_name_kind import RuleNameKind
     from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
 else:
@@ -26,6 +28,8 @@ else:
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.create.cmd_pd_df import CmdPdDf
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.style.cmd_style_text_align import CmdStyleTextAlign
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.label.cmd_lbl_rr import CmdLblRR
+    from libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.cmd_state import CmdState
+    from libre_pythonista_lib.doc.calc.doc.sheet.cell.state.state_kind import StateKind
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.builder.ctl_builder import CtlBuilder
     from libre_pythonista_lib.kind.rule_name_kind import RuleNameKind
     from libre_pythonista_lib.utils.custom_ext import override
@@ -44,4 +48,5 @@ class CtlBuilderPdDf(CtlBuilder):
         self.append(CmdArrayAbility(cell=self.cell, ctl=self.ctl, ability=True))
         self.append(CmdModifyTriggerEvent(cell=self.cell, ctl=self.ctl, kind=RuleNameKind.CELL_DATA_TYPE_PD_DF))
         self.append(CmdPdDf(cell=self.cell, ctl=self.ctl))
+        self.append(CmdState(cell=self.cell, ctl=self.ctl, state=StateKind.PY_OBJ))
         self.append(CmdStyleTextAlign(cell=self.cell, indent=0))

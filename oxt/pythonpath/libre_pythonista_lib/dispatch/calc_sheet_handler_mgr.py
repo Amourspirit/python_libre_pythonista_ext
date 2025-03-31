@@ -157,9 +157,9 @@ class CalcSheetHandlerMgr:
 
         elif URL.Path == PATH_CODE_DEL:
             try:
-                from .dispatch_del_py_cell import DispatchDelPyCell
+                from .dispatch_del_py_cell2 import DispatchDelPyCell2
             except ImportError:
-                log.exception("DispatchDelPyCell import error")
+                log.exception("DispatchDelPyCell2 import error")
                 raise
             try:
                 args = self._convert_query_to_dict(URL.Arguments)
@@ -171,8 +171,8 @@ class CalcSheetHandlerMgr:
                     return None
 
                 with log.indent(True):
-                    log.debug("DispatchProviderInterceptor.queryDispatch: returning DispatchDelPyCell")
-                result = DispatchDelPyCell(sheet=args["sheet"], cell=args["cell"])
+                    log.debug("DispatchProviderInterceptor.queryDispatch: returning DispatchDelPyCell2")
+                result = DispatchDelPyCell2(sheet=args["sheet"], cell=args["cell"])
 
                 eargs = EventArgs.from_args(cargs)
                 eargs.event_data.dispatch = result

@@ -88,7 +88,7 @@ class CmdBatch(CmdBase, List[CmdT], LogMixin, CmdT):
         Returns:
             None: This method does not return anything.
         """
-        if self.success:
+        if self._success_cmds:
             self._undo()
         else:
             self.log.debug("Undo not needed.")

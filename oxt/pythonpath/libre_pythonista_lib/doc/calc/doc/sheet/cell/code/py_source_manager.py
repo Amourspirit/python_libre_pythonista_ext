@@ -220,6 +220,8 @@ class PySourceManager(LogMixin):
                 py_src = src[0]
                 calc_cell = src[1]
                 self._data[py_src.sheet_idx, py_src.row, py_src.col] = py_src
+                self.set_global_var("CURRENT_CELL_ID", py_src.uri_info.unique_id)
+                self.set_global_var("CURRENT_CELL_OBJ", calc_cell.cell_obj)
                 _ = self._mod_state.update_with_result(cell=calc_cell, code=py_src.source_code)
 
     # endregion Init

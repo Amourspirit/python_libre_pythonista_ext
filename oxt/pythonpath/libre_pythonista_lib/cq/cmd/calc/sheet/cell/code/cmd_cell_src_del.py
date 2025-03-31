@@ -118,8 +118,10 @@ class CmdCellSrcDel(CmdBase, LogMixin, CmdCellCacheT):
                 return
             self._current_py_src.del_source()
 
-            if "code_name" in self.cell.extra_data:
-                del self.cell.extra_data["code_name"]
+            # do not remove code_name from extra data here it may be used in
+            # other places such as cq.qry.calc.sheet.cell.prop.qry_code_name.QryCodeName
+            # if "code_name" in self.cell.extra_data:
+            #     del self.cell.extra_data["code_name"]
         except Exception:
             self.log.exception("Error deleting cell Code")
             return
@@ -142,8 +144,8 @@ class CmdCellSrcDel(CmdBase, LogMixin, CmdCellCacheT):
                 py_code = PySource(uri=self.uri, cell=self.cell.cell_obj)
                 py_code.source_code = self._current_src
 
-            if self._cell_code_name:
-                self.cell.extra_data["code_name"] = self._cell_code_name
+            # if self._cell_code_name:
+            #     self.cell.extra_data["code_name"] = self._cell_code_name
 
             self.log.debug("Successfully executed undo command.")
         except Exception:

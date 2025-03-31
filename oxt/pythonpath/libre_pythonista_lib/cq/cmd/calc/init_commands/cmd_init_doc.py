@@ -3,6 +3,7 @@ from typing import List, Type, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcDoc
+    from oxt.pythonpath.libre_pythonista_lib.code.py_module_t import PyModuleT
     from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from oxt.pythonpath.libre_pythonista_lib.doc.doc_globals import DocGlobals
@@ -22,6 +23,9 @@ if TYPE_CHECKING:
 
     from pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.cmd_doc_init import CmdDocInit
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.doc.qry_doc_globals import QryDocGlobals
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_py_module_default import QryPyModuleDefault
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_py_src_mgr import QryPySrcMgr
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_cell_event_mgr import QryCellEventMgr
     from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
 else:
     from libre_pythonista_lib.utils.custom_ext import override
@@ -38,6 +42,9 @@ else:
     from libre_pythonista_lib.cq.cmd.calc.doc.listener.cmd_form_design_mode_off import CmdFormDesignModeOff
     from libre_pythonista_lib.cq.cmd.calc.doc.cmd_doc_init import CmdDocInit
     from libre_pythonista_lib.cq.qry.doc.qry_doc_globals import QryDocGlobals
+    from libre_pythonista_lib.cq.qry.calc.doc.qry_py_module_default import QryPyModuleDefault
+    from libre_pythonista_lib.cq.qry.calc.doc.qry_py_src_mgr import QryPySrcMgr
+    from libre_pythonista_lib.cq.qry.calc.doc.qry_cell_event_mgr import QryCellEventMgr
     from libre_pythonista_lib.utils.result import Result
 
 
@@ -68,7 +75,20 @@ class CmdInitDoc(CmdBase, List[CmdT], LogMixin, CmdDocT):
         qry_result = self._execute_qry(qry)
         if Result.is_success(qry_result):
             return qry_result.data
-        return None
+
+    def _qry_default_mod(self) -> PyModuleT:
+        qry = QryPyModuleDefault()
+        return self._execute_qry(qry)
+
+    def _init_queries(self) -> None:
+        """
+        Initializes the queries for the document.
+        """
+        mod = self._qry_default_mod()
+        qry_py_src_mgr = QryPySrcMgr(doc=self._doc, mod=mod)
+        qry_cell_event_mgr = QryCellEventMgr(doc=self._doc, mod=mod)
+        self._execute_qry(qry_py_src_mgr)
+        self._execute_qry(qry_cell_event_mgr)
 
     @override
     def execute(self) -> None:
@@ -109,6 +129,7 @@ class CmdInitDoc(CmdBase, List[CmdT], LogMixin, CmdDocT):
                 self.log.debug("Batch command failed.")
                 self._undo()
                 return
+            self._init_queries()
             doc_globals.mem_cache[_KEY] = "1"
         except Exception as e:
             self.log.exception("An unexpected error occurred: %s", e)

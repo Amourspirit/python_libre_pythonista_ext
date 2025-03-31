@@ -59,7 +59,16 @@ class QryCellUri(QryBase, LogMixin, QryCellT[Result[str, None] | Result[None, Ex
             Result: Success with URI or Failure with Exception
         """
         try:
-            code_name = self._get_code_name()
+            try:
+                code_name = self._get_code_name()
+            except Exception as e:
+                # Cell cell is in process of deleting Python code then the code name property may not be found.
+                if "code_name" in self.cell.extra_data:
+                    self.log.debug("Code name not found. Using code_name from extra data.")
+                    code_name = self.cell.extra_data["code_name"]
+                else:
+                    self.log.exception("Error getting code name")
+                    return Result.failure(e)
 
             root_uri = self._get_root_uri()
 

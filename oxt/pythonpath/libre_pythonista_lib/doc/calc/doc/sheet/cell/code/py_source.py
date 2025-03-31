@@ -155,7 +155,7 @@ class PySource(LogMixin):
         Returns:
             str: The source code content or empty string if file doesn't exist
         """
-        self.log.debug("PySource._get_source() - Getting Source")
+        self.log.debug("PySource._get_source() - Getting Source for cell: %s", self._cell_obj)
         if not self.exists():
             self.log.debug(
                 "PySource._get_source() - Source file does not exist: %s. Returning empty string.", self._uri
@@ -170,13 +170,13 @@ class PySource(LogMixin):
         Args:
             code (str): The source code to write
         """
-        self.log.debug("PySource._set_source() - Setting Source")
+        self.log.debug("PySource._set_source() - Setting Source for cell: %s", self._cell_obj)
         self._src_provider.ensure_src()
         self._src_provider.set_source(code)
 
     def del_source(self) -> None:
         """Deletes the source code file from storage."""
-        self.log.debug("PySource.del_source() - Deleting Source")
+        self.log.debug("PySource.del_source() - Deleting Source for cell: %s", self._cell_obj)
         if self.exists():
             self._src_provider.del_source()
         else:

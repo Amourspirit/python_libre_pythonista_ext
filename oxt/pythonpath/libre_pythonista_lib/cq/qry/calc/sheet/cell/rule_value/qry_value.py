@@ -72,6 +72,7 @@ class QryValue(QryBase, LogMixin, QryCellT[Result[Iterable[Iterable[object]], No
             Result: Success with URI or Failure with Exception
         """
         try:
+            self.log.debug("execute() - rule_kind: %s", self._rule_kind)
             if self._rule_kind in (
                 RuleNameKind.CELL_DATA_TYPE_EMPTY,
                 RuleNameKind.CELL_DATA_TYPE_NONE,
@@ -86,13 +87,18 @@ class QryValue(QryBase, LogMixin, QryCellT[Result[Iterable[Iterable[object]], No
             ):
                 return self.qry_direct_data()
             if self._rule_kind == RuleNameKind.CELL_DATA_TYPE_PD_DF:
+                self.log.debug("execute() -Success for rule_kind: %s", self._rule_kind)
                 return self.qry_pd_df()
             if self._rule_kind == RuleNameKind.CELL_DATA_TYPE_PD_SERIES:
+                self.log.debug("execute() -Success for rule_kind: %s", self._rule_kind)
                 return self.qry_pd_series()
             if self._rule_kind == RuleNameKind.CELL_DATA_TYPE_TBL_DATA:
+                self.log.debug("execute() -Success for rule_kind: %s", self._rule_kind)
                 return self.qry_tbl_data()
+            self.log.error("Not implemented rule kind: %s", self._rule_kind)
             return Result.failure(NotImplementedError("Not implemented rule kind: %s", self._rule_kind))
         except Exception as e:
+            self.log.exception("Error executing query")
             return Result.failure(e)
 
     @property

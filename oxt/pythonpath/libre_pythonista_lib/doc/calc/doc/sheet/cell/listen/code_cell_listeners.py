@@ -169,7 +169,7 @@ class CodeCellListeners(LogMixin):
         sheet = doc.sheets[cell_obj.sheet_idx]
         return sheet[cell_obj]
 
-    def qry_code_name(self, calc_cell: CalcCell) -> str:
+    def qry_code_name(self, calc_cell: CalcCell) -> Result[str, None] | Result[None, Exception]:
         """
         Query the code name for a cell.
 
@@ -180,12 +180,9 @@ class CodeCellListeners(LogMixin):
             str: The cell's code name
         """
         qry = QryCodeName(cell=calc_cell)
-        result = self._qry_handler.handle(qry)
-        if Result.is_success(result):
-            return result.data
-        return ""
+        return self._qry_handler.handle(qry)
 
-    def get_cell_listener(self, cell_obj: CellObj) -> CodeCellListener | None:
+    def get_cell_listener(self, cell_obj: CellObj) -> Result[CodeCellListener, None] | Result[None, Exception]:
         """
         Get the listener for a specific cell.
 
@@ -198,17 +195,18 @@ class CodeCellListeners(LogMixin):
         cell = self._get_calc_cell(cell_obj)
         if cell is None:
             self.log.warning("Cell not found: %s. Returning None", cell_obj)
-            return None
-        code_name = self.qry_code_name(cell)
-        if not code_name:
-            self.log.warning("Cell has no code name: %s. Returning None", cell_obj)
-            return None
+            return Result.failure(Exception("Cell not found"))
+        code_name_qry = self.qry_code_name(cell)
+        if Result.is_failure(code_name_qry):
+            self.log.warning("Cell has no code name: %s.", cell_obj)
+            return code_name_qry
+        code_name = code_name_qry.data
         if code_name not in self:
             self.log.warning("Cell listener not found: %s. Returning None", code_name)
-            return None
-        return self[code_name]
+            return Result.failure(Exception("Cell listener not found"))
+        return Result.success(self[code_name])
 
-    def get(self, code_name: str) -> CodeCellListener | None:
+    def get(self, code_name: str) -> Result[CodeCellListener, None] | Result[None, Exception]:
         """
         Get a listener by its code name.
 
@@ -219,11 +217,11 @@ class CodeCellListeners(LogMixin):
             CodeCellListener | None: The listener or None if not found
         """
         if code_name in self:
-            return self[code_name]
+            return Result.success(self[code_name])
         self.log.warning("Listener not found: %s", code_name)
-        return None
+        return Result.failure(Exception("Listener not found"))
 
-    def pop(self, code_name: str) -> CodeCellListener | None:
+    def pop(self, code_name: str) -> Result[CodeCellListener, None] | Result[None, Exception]:
         """
         Remove and return a listener by its code name.
 
@@ -241,11 +239,11 @@ class CodeCellListeners(LogMixin):
             else:
                 self.log.error("Cell not found: %s", listener.cell_obj)
             del self._listeners[code_name]
-            return listener
+            return Result.success(listener)
         self.log.warning("Listener not found: %s", code_name)
-        return None
+        return Result.failure(Exception("Listener not found"))
 
-    def add_listener(self, cell: CalcCell) -> CodeCellListener | None:
+    def add_listener(self, cell: CalcCell) -> Result[CodeCellListener, None] | Result[None, Exception]:
         """
         Add a new listener to a cell.
 
@@ -253,16 +251,17 @@ class CodeCellListeners(LogMixin):
             cell (CalcCell): Cell to add the listener to
 
         Returns:
-            CodeCellListener | None: The created listener or None if failed
+            Result[CodeCellListener, None] | Result[None, Exception]: The created listener or None if failed
         """
-        code_name = self.qry_code_name(cell)
+        code_name_qry = self.qry_code_name(cell)
+        if Result.is_failure(code_name_qry):
+            self.log.warning("Cell has no code name: %s", cell.cell_obj)
+            return code_name_qry
+        code_name = code_name_qry.data
         try:
-            if not code_name:
-                self.log.error("Cell has no code name: %s", cell.cell_obj)
-                return None
             if code_name in self:
                 self.log.error("Listener already exists: %s", code_name)
-                return None
+                return Result.failure(Exception("Listener already exists"))
             listener = CodeCellListener(
                 absolute_name=cell.component.AbsoluteName,
                 code_name=code_name,
@@ -271,13 +270,10 @@ class CodeCellListeners(LogMixin):
             )
             self[code_name] = listener
             cell.component.addModifyListener(listener)
-            return listener
+            return Result.success(listener)
         except Exception:
-            if code_name:
-                self.log.exception("Error adding listener for cell %s with codename: %s", cell.cell_obj, code_name)
-            else:
-                self.log.exception("Error adding listener for cell %s.", cell.cell_obj)
-            return None
+            self.log.exception("Error adding listener for cell %s with codename: %s", cell.cell_obj, code_name)
+            return Result.failure(Exception("Error adding listener"))
 
     def remove_all_listeners(self) -> None:
         """Remove all listeners from their cells and clear the internal dictionary."""
@@ -289,19 +285,23 @@ class CodeCellListeners(LogMixin):
         self.clear()
         self.log.debug("Removed all listeners")
 
-    def remove_listener(self, cell: CalcCell) -> None:
+    def remove_listener(self, cell: CalcCell) -> bool:
         """
         Remove a specific listener from a cell.
 
         Args:
             cell (CalcCell): Cell to remove the listener from
+
+        Returns:
+            bool: True if the listener was removed, False otherwise
         """
         code_name = ""
         try:
-            code_name = self.qry_code_name(cell)
-            if not code_name:
-                self.log.error("Cell has no code name: %s", cell.cell_obj)
-                return
+            code_name_result = self.qry_code_name(cell)
+            if Result.is_failure(code_name_result):
+                return False
+            code_name = code_name_result.data
+
             if code_name in self._listeners:
                 listener = self._listeners[code_name]
                 if not self.is_cell_deleted(cell.component):
@@ -310,13 +310,13 @@ class CodeCellListeners(LogMixin):
                 else:
                     self.log.debug("Cell with codename %s has been deleted. Not removing listener.", code_name)
                 del self._listeners[code_name]
+                return True
             else:
-                self.log.error("Listener does not exists for cell with codename %s.", code_name)
+                self.log.warning("Listener does not exists for cell with codename %s.", code_name)
+                return False
         except Exception:
-            if code_name:
-                self.log.exception("Error removing listener from cell %s with codename %s.", cell.cell_obj, code_name)
-            else:
-                self.log.exception("Error removing listener from cell %s.", cell.cell_obj)
+            self.log.exception("Error removing listener from cell %s with codename %s.", cell.cell_obj, code_name)
+        return False
 
     def is_cell_deleted(self, cell: SheetCell) -> bool:
         """
@@ -340,10 +340,12 @@ class CodeCellListeners(LogMixin):
 
         self.log.debug("Suspend listener context for cell: %s", cell.cell_obj)
         listener = None
-        code_name = self.qry_code_name(cell)
-        if not code_name:
+        code_name_result = self.qry_code_name(cell)
+        if Result.is_failure(code_name_result):
             self.log.warning("Cell has no code name: %s", cell.cell_obj)
             return
+        code_name = code_name_result.data
+
         trigger_state = False
         try:
             if code_name in self._listeners:

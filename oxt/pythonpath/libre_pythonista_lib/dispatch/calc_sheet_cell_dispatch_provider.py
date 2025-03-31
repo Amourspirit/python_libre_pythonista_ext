@@ -205,9 +205,9 @@ class CalcSheetCellDispatchProvider(XDispatchProviderInterceptor, LogMixin, unoh
 
         elif cs_url.Path == PATH_CODE_DEL:
             try:
-                from .dispatch_del_py_cell import DispatchDelPyCell
+                from .dispatch_del_py_cell2 import DispatchDelPyCell2
             except ImportError:
-                self.log.exception("DispatchDelPyCell import error")
+                self.log.exception("DispatchDelPyCell2 import error")
                 raise
             try:
                 args = self._convert_query_to_dict(cs_url.Arguments)
@@ -219,8 +219,8 @@ class CalcSheetCellDispatchProvider(XDispatchProviderInterceptor, LogMixin, unoh
                     return None
 
                 with self.log.indent(True):
-                    self.log.debug("queryDispatch: returning DispatchDelPyCell")
-                result = DispatchDelPyCell(sheet=args["sheet"], cell=args["cell"])
+                    self.log.debug("queryDispatch: returning DispatchDelPyCell2")
+                result = DispatchDelPyCell2(sheet=args["sheet"], cell=args["cell"])
 
                 eargs = EventArgs.from_args(cargs)
                 eargs.event_data.dispatch = result
