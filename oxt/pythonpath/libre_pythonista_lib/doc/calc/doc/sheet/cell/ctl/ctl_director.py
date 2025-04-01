@@ -25,18 +25,17 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.builder.build_director import get_builder
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.reader.read_director import get_reader
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_ctl_kind import QryCtlKind
-    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.listener.cmd_code_listener_del import (
-        CmdCodeListenerDel,
-    )
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.remove.cmd_remove_ctl_props import (
         CmdRemoveCtlProps,
     )
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.draw_page.cmd_del_shape_by_name import CmdDelShapeByName
     from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
+    # from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.listener.cmd_code_listener_del import (
+    #     CmdCodeListenerDel,
+    # )
 
 else:
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.remove.cmd_remove_ctl_props import CmdRemoveCtlProps
-    from libre_pythonista_lib.cq.cmd.calc.sheet.cell.listener.cmd_code_listener_del import CmdCodeListenerDel
     from libre_pythonista_lib.cq.cmd.calc.sheet.draw_page.cmd_del_shape_by_name import CmdDelShapeByName
     from libre_pythonista_lib.cq.cmd.general.cmd_batch import CmdBatch
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_ctl_kind import QryCtlKind
@@ -44,6 +43,7 @@ else:
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.reader.read_director import get_reader
     from libre_pythonista_lib.kind.ctl_kind import CtlKind
     from libre_pythonista_lib.utils.result import Result
+    # from libre_pythonista_lib.cq.cmd.calc.sheet.cell.listener.cmd_code_listener_del import CmdCodeListenerDel
 
     CmdHandlerT = Any
     QryHandlerT = Any
@@ -156,8 +156,8 @@ def remove_control(calc_cell: CalcCell) -> bool:
     # remove control properties from cell.
     cmd_del_props = CmdRemoveCtlProps(ctl.ctl)
     cmd_del_shape = CmdDelShapeByName(calc_cell.calc_sheet, shape_name)
-    cmd_del_listener = CmdCodeListenerDel(calc_cell)
-    batch = CmdBatch(cmd_del_shape, cmd_del_props, cmd_del_listener)
+    # cmd_del_listener = CmdCodeListenerDel(calc_cell)
+    batch = CmdBatch(cmd_del_shape, cmd_del_props)
     cmd_handler.handle(batch)
     if not batch.success:
         cmd_handler.undo()

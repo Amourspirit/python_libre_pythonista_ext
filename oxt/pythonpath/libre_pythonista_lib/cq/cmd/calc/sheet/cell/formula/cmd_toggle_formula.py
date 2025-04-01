@@ -19,6 +19,8 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.style.style_t import StyleT
     from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
     from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.draw_page.cmd_shape_visibility import CmdShapeVisibility
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_shape import QryShape
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.range.style.cmd_rng_add_border_style import (
         CmdRngAddBorderStyle,
     )
@@ -58,6 +60,8 @@ else:
     from libre_pythonista_lib.style.style_t import StyleT
     from libre_pythonista_lib.utils.custom_ext import override
     from libre_pythonista_lib.utils.result import Result
+    from libre_pythonista_lib.cq.cmd.calc.sheet.draw_page.cmd_shape_visibility import CmdShapeVisibility
+    from libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_shape import QryShape
     from libre_pythonista_lib.cq.cmd.calc.sheet.range.style.cmd_rng_add_border_style import CmdRngAddBorderStyle
     from libre_pythonista_lib.cq.cmd.calc.sheet.range.style.cmd_rng_remove_border_style import (
         CmdRngRemoveBorderStyle,
@@ -196,6 +200,19 @@ class CmdToggleFormula(CmdBase, LogMixin, CmdCellT):
         #         return False
         return not (kind == StateKind.ARRAY and not self._cmd_add_range_border(cell_rng))
 
+    def _cmd_set_visibility(self, visible: bool) -> bool:
+        """Set the visibility of the cell's shape."""
+        qry = QryShape(cell=self.cell)
+        qry_result = self._execute_qry(qry)
+        if Result.is_failure(qry_result):
+            return False
+        shape_name = qry_result.data
+        cmd = CmdShapeVisibility(sheet=self.cell.calc_sheet, shape_name=shape_name, visible=visible)
+        self._execute_cmd(cmd)
+        if cmd.success:
+            self._success_cmds.append(cmd)
+        return cmd.success
+
     @override
     def execute(self) -> None:
         """
@@ -220,6 +237,11 @@ class CmdToggleFormula(CmdBase, LogMixin, CmdCellT):
             self._formula_state = StateKind.ARRAY
 
         try:
+            if is_formula and not self._cmd_set_visibility(False):
+                return
+            if is_array_formula and not self._cmd_set_visibility(True):
+                return
+
             if is_formula and not self._cmd_remove_style(StateKind.ARRAY):
                 return
             if is_array_formula and not self._cmd_remove_style(StateKind.PY_OBJ):
