@@ -41,5 +41,5 @@ class CtlBuilderFloat(CtlBuilder):
         self.append(CmdOrigRuleName(cell=self.cell, ctl=self.ctl, kind=RuleNameKind.CELL_DATA_TYPE_FLOAT))
         self.append(CmdArrayAbility(cell=self.cell, ctl=self.ctl, ability=False))
         self.append(CmdModifyTriggerEvent(cell=self.cell, ctl=self.ctl, kind=RuleNameKind.CELL_DATA_TYPE_FLOAT))
-        self.append(CmdFloat(self.cell, self.ctl))
+        self.append(CmdFloat(cell=self.cell, ctl=self.ctl, opt=self._get_control_options()))
         self.append(CmdStyleTextAlign(cell=self.cell))

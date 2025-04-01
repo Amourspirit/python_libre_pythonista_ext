@@ -12,6 +12,9 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.cmd_code_name import CmdCodeName
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.cmd_addr import CmdAddr
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.listener.cmd_code_listener import CmdCodeListener
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.options.ctl_options import CtlOptions
+    from oxt.pythonpath.libre_pythonista_lib.style.default_style import DefaultStyle
+    from oxt.pythonpath.libre_pythonista_lib.style.style_t import StyleT
 
     # from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.cmd_ctl_name import CmdCtlName
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl import Ctl
@@ -22,6 +25,9 @@ else:
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.cmd_code_name import CmdCodeName
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.cmd_addr import CmdAddr
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.listener.cmd_code_listener import CmdCodeListener
+    from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.options.ctl_options import CtlOptions
+    from libre_pythonista_lib.style.default_style import DefaultStyle
+    from libre_pythonista_lib.style.style_t import StyleT
 
     # from libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.cmd_ctl_name import CmdCtlName
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl import Ctl
@@ -48,6 +54,14 @@ class CtlBuilder(List[CmdT], LogMixin, ABC):
     def append_commands(self) -> None:
         """Appends commands to the list of commands to be executed."""
         ...
+
+    def _get_style(self) -> StyleT:
+        """Gets the style"""
+        return DefaultStyle()
+
+    def _get_control_options(self) -> CtlOptions:
+        """Gets the control options"""
+        return CtlOptions(style=self._get_style())
 
     def _execute(self) -> None:
         """

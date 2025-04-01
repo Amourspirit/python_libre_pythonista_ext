@@ -12,6 +12,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.cmd_cell_ctl_t import CmdCellCtlT
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl import Ctl
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.options.ctl_options import CtlOptions
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.ctl.read.qry_mat_plot_figure import (
         QryMatPlotFigure,
     )
@@ -24,11 +25,12 @@ else:
     from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.cmd_cell_ctl_t import CmdCellCtlT
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl import Ctl
+    from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.options.ctl_options import CtlOptions
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.ctl.read.qry_mat_plot_figure import QryMatPlotFigure
 
 
 class CmdMatPlotFigure(CmdBase, LogMixin, CmdCellCtlT):
-    def __init__(self, cell: CalcCell, ctl: Ctl) -> None:
+    def __init__(self, cell: CalcCell, ctl: Ctl, opt: CtlOptions | None = None) -> None:
         CmdBase.__init__(self)
         LogMixin.__init__(self)
         self.kind = CalcCmdKind.CELL
@@ -36,6 +38,9 @@ class CmdMatPlotFigure(CmdBase, LogMixin, CmdCellCtlT):
         if not self._ctl.cell:
             self._ctl.cell = cell
         self._current_ctl: Dict[str, Any] | None = None
+        if opt is None:
+            opt = CtlOptions()
+        self._opt = opt
 
     def _validate(self) -> bool:
         """Validates the ctl"""

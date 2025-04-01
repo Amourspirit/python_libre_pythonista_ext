@@ -46,5 +46,5 @@ class CtlBuilderMatPlotFig(CtlBuilder):
         self.append(CmdModifyTriggerEvent(cell=self.cell, ctl=self.ctl, kind=RuleNameKind.CELL_DATA_TYPE_MP_FIGURE))
         self.append(CmdStyleTextAlign(cell=self.cell, indent=0))
         self.append(CmdCtlStorageLocation(cell=self.cell, ctl=self.ctl))
-        self.append(CmdMatPlotFigure(cell=self.cell, ctl=self.ctl))
+        self.append(CmdMatPlotFigure(cell=self.cell, ctl=self.ctl, opt=self._get_control_options()))
         self.append(CmdMatPlotFigureImg(cell=self.cell, ctl=self.ctl))

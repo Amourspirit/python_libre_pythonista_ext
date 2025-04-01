@@ -22,6 +22,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.ctl.qry_ctl_cell_size_pos import QryCtlCellSizePos
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.common.style.ctl.qry_color_bg_default import QryColorBgDefault
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.create.cmd_set_location import CmdSetLocation
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.options.ctl_options import CtlOptions
 else:
     from ___lo_pip___.basic_config import BasicConfig
     from libre_pythonista_lib.utils.custom_ext import override
@@ -35,6 +36,7 @@ else:
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.ctl.qry_ctl_cell_size_pos import QryCtlCellSizePos
     from libre_pythonista_lib.cq.qry.calc.common.style.ctl.qry_color_bg_default import QryColorBgDefault
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.create.cmd_set_location import CmdSetLocation
+    from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.options.ctl_options import CtlOptions
 
     Shape = object
     ControlShape = object
@@ -43,12 +45,15 @@ else:
 class CmdSimple(CmdBase, LogMixin, CmdCellCtlT):
     """Creates a simple control"""
 
-    def __init__(self, cell: CalcCell, ctl: Ctl) -> None:
+    def __init__(self, cell: CalcCell, ctl: Ctl, opt: CtlOptions | None = None) -> None:
         CmdBase.__init__(self)
         LogMixin.__init__(self)
         self._ctl = ctl
         self._cfg = BasicConfig()
         self.__current_ctl: Dict[str, Any] | None = None
+        if opt is None:
+            opt = CtlOptions()
+        self._opt = opt
 
     def _validate(self) -> bool:
         """Validates the ctl"""
@@ -82,7 +87,7 @@ class CmdSimple(CmdBase, LogMixin, CmdCellCtlT):
 
     def _get_button_bg_color(self) -> int:
         """Gets the background color"""
-        qry = QryColorBgDefault()
+        qry = QryColorBgDefault(style=self._opt.style)
         return self._execute_qry(qry)
 
     def _set_shape_size(self, shape: ControlShape) -> None:

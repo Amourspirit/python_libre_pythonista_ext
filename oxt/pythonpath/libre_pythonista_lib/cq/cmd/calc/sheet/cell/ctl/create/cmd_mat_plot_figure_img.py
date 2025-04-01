@@ -16,6 +16,7 @@ if TYPE_CHECKING:
         CmdAddImageLinked,
     )
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.config.qry_shape_name_img import QryShapeNameImg
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.options.ctl_options import CtlOptions
 else:
     from libre_pythonista_lib.utils.custom_ext import override
     from libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
@@ -27,10 +28,11 @@ else:
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_shape import CmdShape
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.draw_page.cmd_add_image_linked import CmdAddImageLinked
     from libre_pythonista_lib.cq.qry.config.qry_shape_name_img import QryShapeNameImg
+    from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.options.ctl_options import CtlOptions
 
 
 class CmdMatPlotFigureImg(CmdBase, LogMixin, CmdCellCtlT):
-    def __init__(self, cell: CalcCell, ctl: Ctl) -> None:
+    def __init__(self, cell: CalcCell, ctl: Ctl, opt: CtlOptions | None = None) -> None:
         CmdBase.__init__(self)
         LogMixin.__init__(self)
         self.kind = CalcCmdKind.CELL
@@ -40,6 +42,9 @@ class CmdMatPlotFigureImg(CmdBase, LogMixin, CmdCellCtlT):
         self._current_shape_name = self._ctl.ctl_shape_name
         self._success_cmds: List[CmdT] = []
         self._current_ctl: Dict[str, Any] | None = None
+        if opt is None:
+            opt = CtlOptions()
+        self._opt = opt
 
     def _validate(self) -> bool:
         """Validates the ctl"""
