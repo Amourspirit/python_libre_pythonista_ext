@@ -50,6 +50,7 @@ class CmdShape(CmdBase, LogMixin, CmdCellT):
             return
         self._state = name
         self._errors = False
+        self.log.debug("init done for cell %s and shape %s", self._cell.cell_obj, self._state)
 
     def _get_state(self) -> str:
         # use method to make possible to mock for testing
@@ -81,7 +82,7 @@ class CmdShape(CmdBase, LogMixin, CmdCellT):
         self._state_changed = False
         try:
             if self._current_state and self._get_state() == self._current_state:
-                self.log.debug("State is already set.")
+                self.log.debug("State is already set for cell %s.", self._cell.cell_obj)
                 self.success = True
                 return
             cmd = CmdCellPropSet(cell=self.cell, name=self._keys.ctl_shape_key, value=self._state)
@@ -91,13 +92,13 @@ class CmdShape(CmdBase, LogMixin, CmdCellT):
             self.log.exception("Error setting cell shape")
             self._undo()
             return
-        self.log.debug("Successfully executed command.")
+        self.log.debug("Successfully executed command. Shape name has been set to %s", self._state)
         self.success = True
 
     def _undo(self) -> None:
         try:
             if not self._state_changed:
-                self.log.debug("State is already set. Undo not needed.")
+                self.log.debug("State is already set. Undo not needed for cell %s.", self._cell.cell_obj)
                 return
             if self._current_state:
                 cmd = CmdCellPropSet(cell=self.cell, name=self._keys.ctl_shape_key, value=self._current_state)
@@ -111,16 +112,16 @@ class CmdShape(CmdBase, LogMixin, CmdCellT):
 
                 cmd = CmdShapeDel(cell=self.cell)
             self._execute_cmd(cmd)
-            self.log.debug("Successfully executed undo command.")
+            self.log.debug("Successfully executed undo command for cell %s.", self._cell.cell_obj)
         except Exception:
-            self.log.exception("Error undoing cell shape")
+            self.log.exception("Error undoing cell shape for cell %s", self._cell.cell_obj)
 
     @override
     def undo(self) -> None:
         if self.success:
             self._undo()
         else:
-            self.log.debug("Undo not needed.")
+            self.log.debug("Undo not needed for cell %s.", self._cell.cell_obj)
 
     @property
     def cell(self) -> CalcCell:

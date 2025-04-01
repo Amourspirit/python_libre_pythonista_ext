@@ -225,27 +225,28 @@ class CmdToggleFormula(CmdBase, LogMixin, CmdCellT):
         self.success = False
         self._success_cmds.clear()
         self._formula_state = StateKind.UNKNOWN
-        is_formula = self._qry_is_formula()
-        is_array_formula = self._qry_is_array_formula()
-        if not is_formula and not is_array_formula:
-            self.log.warning("Cell %s is not a formula cell. Nothing to do.", self.cell.cell_obj)
-            self.success = False
-            return
-        if is_formula:
-            self._formula_state = StateKind.PY_OBJ
-        elif is_array_formula:
-            self._formula_state = StateKind.ARRAY
 
         try:
+            is_formula = self._qry_is_formula()
+            is_array_formula = self._qry_is_array_formula()
+            if not is_formula and not is_array_formula:
+                self.log.warning("Cell %s is not a formula cell. Nothing to do.", self.cell.cell_obj)
+                self.success = False
+                raise Exception("Cell %s is not a formula cell. Nothing to do.", self.cell.cell_obj)
+            if is_formula:
+                self._formula_state = StateKind.PY_OBJ
+            elif is_array_formula:
+                self._formula_state = StateKind.ARRAY
+
             if is_formula and not self._cmd_set_visibility(False):
-                return
+                raise Exception("Failed to set visibility for cell %s.", self.cell.cell_obj)
             if is_array_formula and not self._cmd_set_visibility(True):
-                return
+                raise Exception("Failed to set visibility for cell %s.", self.cell.cell_obj)
 
             if is_formula and not self._cmd_remove_style(StateKind.ARRAY):
-                return
+                raise Exception("Failed to remove style for cell %s.", self.cell.cell_obj)
             if is_array_formula and not self._cmd_remove_style(StateKind.PY_OBJ):
-                return
+                raise Exception("Failed to remove style for cell %s.", self.cell.cell_obj)
 
             if self._cmd is None:
                 self._cmd = self._get_cmd(self.cell)
@@ -257,14 +258,15 @@ class CmdToggleFormula(CmdBase, LogMixin, CmdCellT):
             self._execute_cmd(self._cmd)
             if not self._cmd.success:
                 self.log.error("Failed to execute command for cell %s.", self.cell.cell_obj)
-                return
+                raise Exception("Failed to execute command for cell %s.", self.cell.cell_obj)
             self._success_cmds.append(self._cmd)
             if is_formula and not self._cmd_add_style(StateKind.ARRAY):
-                return
+                raise Exception("Failed to add style for cell %s.", self.cell.cell_obj)
             if is_array_formula and not self._cmd_add_style(StateKind.PY_OBJ):
-                return
-        except Exception:
-            self.log.exception("Error setting cell address")
+                raise Exception("Failed to add style for cell %s.", self.cell.cell_obj)
+        except Exception as e:
+            self.log.warning("Error toggling formula for cell %s. %s", self.cell.cell_obj, e)
+            self._undo()
             return
         self.log.debug("Successfully executed command.")
         self.success = True

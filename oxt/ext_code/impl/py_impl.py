@@ -114,7 +114,7 @@ class PyImpl(unohelper.Base, XPy):
                 "pyc - Could not get current document. This usually happens when the document is not fully loaded."
             )
             if self._log.is_debug:
-                self._log.exception("Error getting current document")
+                self._log.error("Error getting current document")
             return None
 
         try:

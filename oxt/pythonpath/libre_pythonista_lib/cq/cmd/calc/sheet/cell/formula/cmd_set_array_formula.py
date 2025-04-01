@@ -144,38 +144,31 @@ class CmdSetArrayFormula(CmdBase, LogMixin, CmdCellT):
             raise Exception("Cell %s has no formula.", self.cell.cell_obj)
         return formula.lstrip("{").rstrip("}")
 
-    def _set_array_formula(self) -> bool:
+    def _set_array_formula(self) -> None:
         """
         Update an array formula.
 
         Returns:
             True if conversion successful, False otherwise
         """
-        try:
-            self.log.debug("Updating array formula")
-            formula = cast(str, self._formula)
+        self.log.debug("Updating array formula")
+        formula = cast(str, self._formula)
 
-            ro = self._get_range_obj()
-            cell_rng = self.cell.calc_sheet.get_range(range_obj=ro)
-            rng_util = RangeUtil(doc=self.cell.calc_doc)
-            if not rng_util.get_cell_can_expand(cell_rng):
-                msg = f"Range can not expand into range: {ro}"
-                if self.cell.calc_sheet.is_sheet_protected():
-                    msg += " Sheet is protected. Cells may be protected or contain other data."
-                else:
-                    msg += " Cells may contain other data."
-                self.log.error(msg)
-                raise CellFormulaExpandError(msg)
+        ro = self._get_range_obj()
+        cell_rng = self.cell.calc_sheet.get_range(range_obj=ro)
+        rng_util = RangeUtil(doc=self.cell.calc_doc)
+        if not rng_util.get_cell_can_expand(cell_rng):
+            msg = f"Range can not expand into range: {ro}"
+            if self.cell.calc_sheet.is_sheet_protected():
+                msg += " Sheet is protected. Cells may be protected or contain other data."
+            else:
+                msg += " Cells may contain other data."
+            raise CellFormulaExpandError(msg)
 
-            code_listeners = CodeCellListeners(self.cell.calc_doc)
-            with code_listeners.suspend_listener_ctx(self.cell):
-                self.cell.component.setFormula("")
-                cell_rng.component.setArrayFormula(formula)
-
-            return True
-        except Exception:
-            self.log.exception("Error updating array formula for cell: %s", self.cell.cell_obj)
-        return False
+        code_listeners = CodeCellListeners(self.cell.calc_doc)
+        with code_listeners.suspend_listener_ctx(self.cell):
+            self.cell.component.setFormula("")
+            cell_rng.component.setArrayFormula(formula)
 
     @override
     def execute(self) -> None:
@@ -214,8 +207,11 @@ class CmdSetArrayFormula(CmdBase, LogMixin, CmdCellT):
             if not self._formula:
                 self._formula = self._get_formula()
 
-            if not self._set_array_formula():
-                return
+            self._set_array_formula()
+
+        except CellFormulaExpandError as e:
+            self.log.warning(str(e))
+            return
         except Exception:
             self.log.exception("Error setting formula for cell: %s", self.cell.cell_obj)
             return

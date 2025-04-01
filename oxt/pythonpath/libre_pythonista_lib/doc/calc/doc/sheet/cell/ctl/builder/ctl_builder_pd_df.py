@@ -47,6 +47,6 @@ class CtlBuilderPdDf(CtlBuilder):
         self.append(CmdOrigRuleName(cell=self.cell, ctl=self.ctl, kind=RuleNameKind.CELL_DATA_TYPE_PD_DF))
         self.append(CmdArrayAbility(cell=self.cell, ctl=self.ctl, ability=True))
         self.append(CmdModifyTriggerEvent(cell=self.cell, ctl=self.ctl, kind=RuleNameKind.CELL_DATA_TYPE_PD_DF))
-        self.append(CmdPdDf(cell=self.cell, ctl=self.ctl, opt=self._get_control_options()))
         self.append(CmdState(cell=self.cell, ctl=self.ctl, state=StateKind.PY_OBJ))
+        self.append(CmdPdDf(cell=self.cell, ctl=self.ctl, opt=self._get_control_options()))
         self.append(CmdStyleTextAlign(cell=self.cell, indent=0))

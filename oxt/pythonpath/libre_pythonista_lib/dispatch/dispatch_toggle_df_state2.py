@@ -86,7 +86,7 @@ class DispatchToggleDfState2(XDispatch, LogMixin, unohelper.Base):
         except Exception as e:
             # log the error and do not re-raise it.
             # re-raising the error may crash the entire LibreOffice app.
-            self.log.error("Error: %s", e, exc_info=True)
+            self.log.warning("Error: %s", e)
             return
 
     @override

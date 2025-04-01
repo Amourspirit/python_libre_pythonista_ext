@@ -40,9 +40,10 @@ class CmdPdDf(CmdSimple):
         qry = QryCtlCellSizePos(cell=self.cell)
         size_pos = self._execute_qry(qry)
 
+        width = int(size_pos.width)
         height = int(size_pos.height)
         x = int(size_pos.x)
         y = int(size_pos.y)
-        new_sz = Size(height, height)
+        new_sz = Size(width, height)
         shape.setSize(new_sz)
         shape.setPosition(Point(x, y))
