@@ -358,6 +358,9 @@ class CodeCellListeners(LogMixin):
             yield
         finally:
             if listener is not None:
-                self.log.debug("Subscribing to listeners for cell: %s", cell.cell_obj)
-                listener.set_trigger_state(trigger_state)
-                self._listeners[code_name] = listener
+                if trigger_state:
+                    self.log.debug("Resuming listeners for cell: %s", cell.cell_obj)
+                    listener.set_trigger_state(True)
+                    self._listeners[code_name] = listener
+                else:
+                    self.log.debug("Not resuming listeners for cell: %s", cell.cell_obj)

@@ -1,10 +1,11 @@
 from __future__ import annotations
-from typing import Any, Iterable, Tuple, TYPE_CHECKING
+from typing import Iterable, TYPE_CHECKING
 
 from ooodev.calc import CalcCell
 from ooodev.utils.helper.dot_dict import DotDict
 
 if TYPE_CHECKING:
+    from oxt.___lo_pip___.debug.break_mgr import BreakMgr
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_base import QryBase
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.rule_value.qry_empty import QryEmpty
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.rule_value.qry_direct_data import QryDirectData
@@ -12,8 +13,10 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.kind.rule_name_kind import RuleNameKind
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_t import QryCellT
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
+    from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
     from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
 else:
+    from ___lo_pip___.debug.break_mgr import BreakMgr
     from libre_pythonista_lib.cq.qry.qry_base import QryBase
     from libre_pythonista_lib.kind.rule_name_kind import RuleNameKind
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_t import QryCellT
@@ -21,7 +24,13 @@ else:
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.rule_value.qry_direct_data import QryDirectData
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.rule_value.qry_tbl_data import QryTblData
     from libre_pythonista_lib.log.log_mixin import LogMixin
+    from libre_pythonista_lib.utils.custom_ext import override
     from libre_pythonista_lib.utils.result import Result
+
+
+break_mgr = BreakMgr()
+
+# break_mgr.add_breakpoint("libre_pythonista_lib.cq.qry.calc.sheet.cell.rule_value.qry_value.execute")
 
 # tested in: tests/test_cmd/test_cmd_py_src.py
 
@@ -62,6 +71,7 @@ class QryValue(QryBase, LogMixin, QryCellT[Result[Iterable[Iterable[object]], No
         qry = QryTblData(cell=self._cell, data=self._data)
         return self._execute_qry(qry)
 
+    @override
     def execute(self) -> Result[Iterable[Iterable[object]], None] | Result[None, Exception]:
         """
         Executes the query to get the URI for a cell.
@@ -72,6 +82,7 @@ class QryValue(QryBase, LogMixin, QryCellT[Result[Iterable[Iterable[object]], No
             Result: Success with URI or Failure with Exception
         """
         try:
+            break_mgr.check_breakpoint("libre_pythonista_lib.cq.qry.calc.sheet.cell.rule_value.qry_value.execute")
             self.log.debug("execute() - rule_kind: %s", self._rule_kind)
             if self._rule_kind in (
                 RuleNameKind.CELL_DATA_TYPE_EMPTY,

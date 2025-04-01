@@ -6,31 +6,38 @@ from ooodev.utils.data_type.range_values import RangeValues
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcCell
-    from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
+    from oxt.pythonpath.libre_pythonista_lib.code.py_module_t import PyModuleT
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.cmd_cell_t import CmdCellT
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.array.qry_rows_cols import QryRowCols
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.formula.qry_cell_is_formula import QryCellIsFormula
-    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.uno_cell.formula.qry_formula_range import (
-        QryFormulaRange,
-    )
     from oxt.pythonpath.libre_pythonista_lib.ex.exceptions import CellFormulaExpandError
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.sheet.range.rng_util import RangeUtil
     from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
+    from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.uno_cell.formula.qry_formula_range import (
+        QryFormulaRange,
+    )
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.formula.qry_cell_is_array_formula import (
         QryCellIsArrayFormula,
     )
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.listen.code_cell_listeners import (
+        CodeCellListeners,
+    )
 else:
-    from libre_pythonista_lib.utils.result import Result
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.cmd_cell_t import CmdCellT
     from libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
+    from libre_pythonista_lib.cq.qry.calc.sheet.cell.array.qry_rows_cols import QryRowCols
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.formula.qry_cell_is_array_formula import QryCellIsArrayFormula
-    from libre_pythonista_lib.cq.qry.calc.sheet.uno_cell.formula.qry_formula_range import QryFormulaRange
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.formula.qry_cell_is_formula import QryCellIsFormula
+    from libre_pythonista_lib.cq.qry.calc.sheet.uno_cell.formula.qry_formula_range import QryFormulaRange
+    from libre_pythonista_lib.doc.calc.doc.sheet.cell.listen.code_cell_listeners import CodeCellListeners
     from libre_pythonista_lib.ex.exceptions import CellFormulaExpandError
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.sheet.range.rng_util import RangeUtil
     from libre_pythonista_lib.utils.custom_ext import override
+    from libre_pythonista_lib.utils.result import Result
 
 
 class CmdSetArrayFormula(CmdBase, LogMixin, CmdCellT):
@@ -42,7 +49,9 @@ class CmdSetArrayFormula(CmdBase, LogMixin, CmdCellT):
     If the cell is a formula and not an array formula then it will be converted into an array formula.
     """
 
-    def __init__(self, cell: CalcCell, rows: int = -1, cols: int = -1, formula: str | None = None) -> None:
+    def __init__(
+        self, cell: CalcCell, rows: int = -1, cols: int = -1, formula: str | None = None, mod: PyModuleT | None = None
+    ) -> None:
         """
         Initialize the command with a target cell.
 
@@ -55,6 +64,7 @@ class CmdSetArrayFormula(CmdBase, LogMixin, CmdCellT):
         CmdBase.__init__(self)
         LogMixin.__init__(self)
         self._cell = cell
+        self._mod = mod
         self._rows = rows
         self._cols = cols
         self._current_range_obj: RangeObj | None = None
@@ -66,12 +76,14 @@ class CmdSetArrayFormula(CmdBase, LogMixin, CmdCellT):
             self._formula = formula.lstrip("{").rstrip("}")
         else:
             self._formula = None
+        self.log.debug("init done for cell %s", self.cell.cell_obj)
 
     def _qry_formula_range(self) -> RangeObj:
         """Get the range object of the cell's array formula."""
         qry = QryFormulaRange(cell=self.cell.component)
         qry_result = self._execute_qry(qry)
         if Result.is_success(qry_result):
+            self.log.debug("_qry_formula_range() range obj: %s", qry_result.data)
             return qry_result.data
         raise qry_result.error
 
@@ -85,6 +97,14 @@ class CmdSetArrayFormula(CmdBase, LogMixin, CmdCellT):
         qry = QryCellIsFormula(cell=self.cell)
         return self._execute_qry(qry)
 
+    def _qry_rows_cols(self) -> tuple[int, ...]:
+        """Get the range object of the cell."""
+        qry = QryRowCols(cell=self.cell, mod=self._mod)
+        qry_result = self._execute_qry(qry)
+        if Result.is_success(qry_result):
+            return tuple(qry_result.data)
+        raise qry_result.error
+
     def _get_range_values(self) -> RangeValues:
         """Get the range object of the cell."""
         ca = self._cell.cell_obj.get_cell_address()
@@ -94,16 +114,13 @@ class CmdSetArrayFormula(CmdBase, LogMixin, CmdCellT):
             row_start=ca.Row,
             row_end=ca.Row + max(0, self._rows - 1),
         )
+        self.log.debug("_get_range_values() range values: %s", rv)
         return rv
-
-    def _get_cols_rows(self) -> tuple[int, int]:
-        """Get the range object of the cell."""
-        ro = self._qry_formula_range()
-        return ro.col_count, ro.row_count
 
     def _get_range_obj(self) -> RangeObj:
         """Get the range object of the cell."""
         rv = self._get_range_values()
+        self.log.debug("_get_range_obj() range values: %s", rv)
         return RangeObj.from_range(rv)
 
     def _get_formula(self) -> str:
@@ -150,8 +167,10 @@ class CmdSetArrayFormula(CmdBase, LogMixin, CmdCellT):
                 self.log.error(msg)
                 raise CellFormulaExpandError(msg)
 
-            self.cell.component.setFormula("")
-            cell_rng.component.setArrayFormula(formula)
+            code_listeners = CodeCellListeners(self.cell.calc_doc)
+            with code_listeners.suspend_listener_ctx(self.cell):
+                self.cell.component.setFormula("")
+                cell_rng.component.setArrayFormula(formula)
 
             return True
         except Exception:
@@ -170,6 +189,11 @@ class CmdSetArrayFormula(CmdBase, LogMixin, CmdCellT):
         self._undo_available = True
 
         try:
+            if self._rows <= 0 or self._cols <= 0:
+                rows_cols = self._qry_rows_cols()
+                self._rows = rows_cols[0]
+                self._cols = rows_cols[1]
+
             if self._is_array_formula is None:
                 self._is_array_formula = self._qry_is_array_formula()
                 try:
@@ -189,9 +213,6 @@ class CmdSetArrayFormula(CmdBase, LogMixin, CmdCellT):
 
             if not self._formula:
                 self._formula = self._get_formula()
-
-            if self._rows == -1 or self._cols == -1:
-                self._cols, self._rows = self._get_cols_rows()
 
             if not self._set_array_formula():
                 return

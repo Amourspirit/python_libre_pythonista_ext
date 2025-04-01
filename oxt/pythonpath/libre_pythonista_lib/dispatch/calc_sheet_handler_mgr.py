@@ -22,7 +22,7 @@ from ..log.log_inst import LogInst
 from ..event.shared_event import SharedEvent
 
 if TYPE_CHECKING:
-    from ....___lo_pip___.config import Config
+    from oxt.___lo_pip___.config import Config
 else:
     from ___lo_pip___.config import Config
 

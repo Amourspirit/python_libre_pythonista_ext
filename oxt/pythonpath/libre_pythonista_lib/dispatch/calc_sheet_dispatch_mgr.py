@@ -30,9 +30,15 @@ from ..log.log_inst import LogInst
 from ..event.shared_event import SharedEvent
 
 if TYPE_CHECKING:
-    from ....___lo_pip___.config import Config
+    from oxt.___lo_pip___.config import Config
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.general.qry_ctx_runtime_uid import QryCtxRuntimeUID
+    from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
 else:
     from ___lo_pip___.config import Config
+    from libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
+    from libre_pythonista_lib.cq.qry.general.qry_ctx_runtime_uid import QryCtxRuntimeUID
+    from libre_pythonista_lib.utils.result import Result
 
 
 class CalcSheetDispatchMgr:
@@ -40,6 +46,7 @@ class CalcSheetDispatchMgr:
         self.ctx = ctx
         self.frame = frame
         self._config = Config()
+        self._runtime_id = None
 
     def _convert_query_to_dict(self, query: str) -> Dict[str, str]:
         query_dict = parse_qs(query)
@@ -219,9 +226,9 @@ class CalcSheetDispatchMgr:
 
         elif URL.Path == PATH_DF_STATE:
             try:
-                from .dispatch_toggle_df_state import DispatchToggleDfState
+                from .dispatch_toggle_df_state2 import DispatchToggleDfState2
             except ImportError:
-                log.exception("DispatchToggleDfState import error")
+                log.exception("DispatchToggleDfState2 import error")
                 raise
             try:
                 args = self._convert_query_to_dict(URL.Arguments)
@@ -233,8 +240,8 @@ class CalcSheetDispatchMgr:
                     return None
 
                 with log.indent(True):
-                    log.debug("CalcSheetDispatchMgr.dispatch: dispatching DispatchToggleDfState")
-                result = DispatchToggleDfState(sheet=args["sheet"], cell=args["cell"])
+                    log.debug("CalcSheetDispatchMgr.dispatch: dispatching DispatchToggleDfState2")
+                result = DispatchToggleDfState2(sheet=args["sheet"], cell=args["cell"], uid=self.runtime_uid)
                 result.dispatch(URL, Arguments)
 
                 eargs = EventArgs.from_args(cargs)
@@ -443,3 +450,12 @@ class CalcSheetDispatchMgr:
                 return None
 
         return None
+
+    @property
+    def runtime_uid(self) -> str:
+        if self._runtime_id is None:
+            qry_handler = QryHandlerFactory.get_qry_handler()
+            qry = QryCtxRuntimeUID(ctx=self.ctx)
+            qry_result = qry_handler.handle(qry)
+            self._runtime_id = qry_result.data if Result.is_success(qry_result) else ""
+        return self._runtime_id

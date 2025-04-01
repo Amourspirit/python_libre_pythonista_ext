@@ -57,14 +57,16 @@ class QryFormulaCursor(QryBase, LogMixin, QryUnoCellT[Result[SheetCellCursor, No
                 return result
 
             cursor = cast("SheetCellCursor", self._cell.getSpreadsheet().createCursorByRange(self._cell))  # type: ignore
+            if cursor is None:
+                result = Result.failure(Exception("Cursor is None."))
+                return result
             cursor.collapseToCurrentArray()
             result = Result.success(cursor)
             return result
 
         except Exception as e:
             self.log.exception("Error executing query: %s", e)
-            result = Result.failure(e)
-            return result
+            return Result.failure(e)
 
     @property
     def cell(self) -> SheetCell:

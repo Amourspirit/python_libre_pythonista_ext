@@ -240,11 +240,9 @@ class CellItemFacade(LogMixin):
         Gets the value of the cell.
         """
         try:
-            # if update_globals:
-            #     py_src = self._py_src_mgr[self._cell.cell_obj]
-            #     self._py_src_mgr.set_global_var("CURRENT_CELL_ID", py_src.uri_info.unique_id)
-            #     self._py_src_mgr.set_global_var("CURRENT_CELL_OBJ", self._cell.cell_obj)
-            return self._qry_value()
+            result = self._qry_value()
+            # self.log.debug("get_value() result: %s", result)
+            return result
         except Exception:
             self.log.exception("get_value() Failed to get module state.")
             return ((None,),)

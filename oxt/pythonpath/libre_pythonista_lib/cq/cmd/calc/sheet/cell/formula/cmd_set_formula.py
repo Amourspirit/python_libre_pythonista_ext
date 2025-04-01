@@ -23,6 +23,9 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.uno_cell.formula.qry_formula_range import (
         QryFormulaRange,
     )
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.listen.code_cell_listeners import (
+        CodeCellListeners,
+    )
 else:
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.cmd_cell_t import CmdCellT
     from libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
@@ -30,6 +33,7 @@ else:
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.formula.qry_cell_is_formula import QryCellIsFormula
     from libre_pythonista_lib.cq.qry.calc.sheet.uno_cell.formula.qry_formula_cursor import QryFormulaCursor
     from libre_pythonista_lib.cq.qry.calc.sheet.uno_cell.formula.qry_formula_range import QryFormulaRange
+    from libre_pythonista_lib.doc.calc.doc.sheet.cell.listen.code_cell_listeners import CodeCellListeners
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.utils.custom_ext import override
     from libre_pythonista_lib.utils.result import Result
@@ -66,6 +70,7 @@ class CmdSetFormula(CmdBase, LogMixin, CmdCellT):
             self._formula = formula.lstrip("{").rstrip("}")
         else:
             self._formula = None
+        self.log.debug("init done for cell %s", self.cell.cell_obj)
 
     def _qry_is_array_formula(self) -> bool:
         """Check if the cell contains an array formula."""
@@ -108,16 +113,22 @@ class CmdSetFormula(CmdBase, LogMixin, CmdCellT):
         Returns:
             The formula string without surrounding braces
         """
-        formula = ""
-        if self._is_formula:
-            formula = self.cell.component.getFormula()
-        elif self._is_array_formula:
-            ro = self._qry_formula_range()
-            cell_rng = self.cell.calc_sheet.get_range(range_obj=ro)
-            formula = cell_rng.component.getArrayFormula()
+        formula = self.cell.component.getFormula()
+        # if self._is_formula:
+        #     formula = self.cell.component.getFormula()
+        # elif self._is_array_formula:
+        # don't know way but cell_rng.component.getArrayFormula()
+        # does not work as expected.
+        # It returns formula in format of '=PY.C(SHEET(),CELL("ADDRESS"),C1)'
+        # Expected '=COM.GITHUB.AMOURSPIRIT.EXTENSIONS.LIBREPYTHONISTA.PYIMPL.PYC(SHEET();CELL("ADDRESS");C1)'
+        # ro = self._qry_formula_range()
+        # cell_rng = self.cell.calc_sheet.get_range(range_obj=ro)
+        # formula = cell_rng.component.getArrayFormula()
         if not formula:
             raise Exception("Cell %s has no formula.", self.cell.cell_obj)
-        return formula.lstrip("{").rstrip("}")
+        result = formula.lstrip("{").rstrip("}")
+        self.log.debug("_get_formula() formula: %s", result)
+        return result
 
     def _set_formula(self) -> bool:
         """
@@ -128,11 +139,14 @@ class CmdSetFormula(CmdBase, LogMixin, CmdCellT):
         """
         try:
             self.log.debug("Setting formula")
-            formula = cast(str, self._formula)
+            code_listeners = CodeCellListeners(self.cell.calc_doc)
 
+            formula = cast(str, self._formula)
             cursor = self._qry_formula_cursor()
-            cursor.clearContents(CellFlags.DATETIME | CellFlags.VALUE | CellFlags.STRING | CellFlags.FORMULA)
-            self.cell.component.setFormula(formula)
+            with code_listeners.suspend_listener_ctx(self.cell):
+                cursor.clearContents(CellFlags.DATETIME | CellFlags.VALUE | CellFlags.STRING | CellFlags.FORMULA)
+                cursor.gotoStart()
+                self.cell.component.setFormula(formula)
 
             return True
         except Exception:

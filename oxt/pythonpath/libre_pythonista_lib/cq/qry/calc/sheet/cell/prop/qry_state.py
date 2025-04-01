@@ -43,7 +43,7 @@ class QryState(QryBase, QryCellT[Result[StateKind, None] | Result[None, Exceptio
         if not result:
             return Result.failure(Exception("State not found"))
         try:
-            state_kind = StateKind(result)
+            state_kind = StateKind(int(result))
         except Exception as e:
             return Result.failure(e)
         return Result.success(state_kind)

@@ -42,6 +42,7 @@ class CmdState(CmdBase, LogMixin, CmdCellT):
         self._keys = cast("KeyMaker", NULL_OBJ)
         self._current_state = cast(StateKind, NULL_OBJ)
         self._state_changed = False
+        self.log.debug("init done for cell %s and state %s", self._cell.cell_obj, self._state)
 
     def _get_state(self) -> StateKind:
         # use method to make possible to mock for testing
@@ -69,14 +70,18 @@ class CmdState(CmdBase, LogMixin, CmdCellT):
         self._state_changed = False
         try:
             if self._get_state() == self._current_state:
-                self.log.debug("State is already set.")
+                self.log.debug("State is already set for cell %s.", self._cell.cell_obj)
                 self.success = True
                 return
             cmd = CmdCellPropSet(cell=self.cell, name=self._keys.ctl_state_key, value=self._state.value)
             self._execute_cmd(cmd)
+            if cmd.success:
+                self.log.debug("Successfully set cell %s state: %s", self._cell.cell_obj, self._state.value)
+            else:
+                raise Exception("Error setting cell %s state to: %s", self._cell.cell_obj, self._state.value)
             self._state_changed = True
         except Exception:
-            self.log.exception("Error setting cell state")
+            self.log.exception("Error setting cell %s state", self._cell.cell_obj)
             self._undo()
             return
         self.log.debug("Successfully executed command.")
@@ -85,7 +90,7 @@ class CmdState(CmdBase, LogMixin, CmdCellT):
     def _undo(self) -> None:
         try:
             if not self._state_changed:
-                self.log.debug("State is already set. Undo not needed.")
+                self.log.debug("State is already set. Undo not needed for cell %s.", self._cell.cell_obj)
                 return
             if self._current_state == StateKind.UNKNOWN:
                 # avoid circular import
@@ -101,7 +106,7 @@ class CmdState(CmdBase, LogMixin, CmdCellT):
             self._execute_cmd(cmd)
             self.log.debug("Successfully executed undo command.")
         except Exception:
-            self.log.exception("Error undoing cell state")
+            self.log.exception("Error undoing cell %s state", self._cell.cell_obj)
 
     @override
     def undo(self) -> None:

@@ -286,9 +286,9 @@ class CalcSheetCellDispatchProvider(XDispatchProviderInterceptor, LogMixin, unoh
 
         if cs_url.Path == PATH_DF_STATE:
             try:
-                from .dispatch_toggle_df_state import DispatchToggleDfState
+                from .dispatch_toggle_df_state2 import DispatchToggleDfState2
             except ImportError:
-                self.log.exception("DispatchToggleDfState import error")
+                self.log.exception("DispatchToggleDfState2 import error")
                 raise
             try:
                 args = self._convert_query_to_dict(cs_url.Arguments)
@@ -300,8 +300,8 @@ class CalcSheetCellDispatchProvider(XDispatchProviderInterceptor, LogMixin, unoh
                     return None
 
                 with self.log.indent(True):
-                    self.log.debug("queryDispatch: returning DispatchToggleDfState")
-                result = DispatchToggleDfState(sheet=args["sheet"], cell=args["cell"])
+                    self.log.debug("queryDispatch: returning DispatchToggleDfState2")
+                result = DispatchToggleDfState2(sheet=args["sheet"], cell=args["cell"], uid=self._doc.runtime_uid)
 
                 eargs = EventArgs.from_args(cargs)
                 eargs.event_data.dispatch = result
