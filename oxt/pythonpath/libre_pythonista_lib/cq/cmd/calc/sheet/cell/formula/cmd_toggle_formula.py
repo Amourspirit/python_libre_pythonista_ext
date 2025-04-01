@@ -1,11 +1,13 @@
 from __future__ import annotations
 from typing import Any, TYPE_CHECKING
 
+from ooodev.calc import CalcCell, CalcCellRange
+from ooodev.utils.data_type.range_obj import RangeObj
 
 if TYPE_CHECKING:
-    from ooodev.calc import CalcCell
     from oxt.___lo_pip___.debug.break_mgr import BreakMgr
     from oxt.pythonpath.libre_pythonista_lib.code.py_module_t import PyModuleT
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_t import CmdT
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.cmd_cell_t import CmdCellT
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.formula.cmd_set_formula import CmdSetFormula
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_state import CmdState
@@ -13,17 +15,36 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.formula.qry_cell_is_formula import QryCellIsFormula
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.state.state_kind import StateKind
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
+    from oxt.pythonpath.libre_pythonista_lib.style.default_style import DefaultStyle
+    from oxt.pythonpath.libre_pythonista_lib.style.style_t import StyleT
     from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
+    from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.range.style.cmd_rng_add_border_style import (
+        CmdRngAddBorderStyle,
+    )
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.range.style.cmd_rng_remove_border_style import (
+        CmdRngRemoveBorderStyle,
+    )
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.style.cmd_cell_add_border_style import (
+        CmdCellAddBorderStyle,
+    )
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.style.cmd_cell_remove_border_style import (
+        CmdCellRemoveBorderStyle,
+    )
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.formula.qry_cell_is_array_formula import (
         QryCellIsArrayFormula,
     )
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.formula.cmd_set_array_formula import (
         CmdSetArrayFormula,
     )
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.uno_cell.formula.qry_formula_range import (
+        QryFormulaRange,
+    )
 
 
 else:
     from ___lo_pip___.debug.break_mgr import BreakMgr
+    from libre_pythonista_lib.cq.cmd.cmd_t import CmdT
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.cmd_cell_t import CmdCellT
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.formula.cmd_set_array_formula import CmdSetArrayFormula
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.formula.cmd_set_formula import CmdSetFormula
@@ -33,7 +54,19 @@ else:
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.formula.qry_cell_is_formula import QryCellIsFormula
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.state.state_kind import StateKind
     from libre_pythonista_lib.log.log_mixin import LogMixin
+    from libre_pythonista_lib.style.default_style import DefaultStyle
+    from libre_pythonista_lib.style.style_t import StyleT
     from libre_pythonista_lib.utils.custom_ext import override
+    from libre_pythonista_lib.utils.result import Result
+    from libre_pythonista_lib.cq.cmd.calc.sheet.range.style.cmd_rng_add_border_style import CmdRngAddBorderStyle
+    from libre_pythonista_lib.cq.cmd.calc.sheet.range.style.cmd_rng_remove_border_style import (
+        CmdRngRemoveBorderStyle,
+    )
+    from libre_pythonista_lib.cq.cmd.calc.sheet.cell.style.cmd_cell_add_border_style import CmdCellAddBorderStyle
+    from libre_pythonista_lib.cq.cmd.calc.sheet.cell.style.cmd_cell_remove_border_style import (
+        CmdCellRemoveBorderStyle,
+    )
+    from libre_pythonista_lib.cq.qry.calc.sheet.uno_cell.formula.qry_formula_range import QryFormulaRange
 
     PyModuleT = Any
 
@@ -49,7 +82,7 @@ class CmdToggleFormula(CmdBase, LogMixin, CmdCellT):
     Inherits from CmdBase for command functionality, LogMixin for logging, and CmdCellT for cell-specific operations.
     """
 
-    def __init__(self, cell: CalcCell, mod: PyModuleT | None = None) -> None:
+    def __init__(self, cell: CalcCell, mod: PyModuleT | None = None, style: StyleT | None = None) -> None:
         """
         Initialize the command with a target cell.
 
@@ -61,8 +94,13 @@ class CmdToggleFormula(CmdBase, LogMixin, CmdCellT):
         self._cell = cell
         self._mod = mod
         self._cmd: CmdCellT | None = None
-        self._success_cmds: list[CmdCellT] = []
+        self._success_cmds: list[CmdT] = []
         self._formula_state = StateKind.UNKNOWN  # 0: unknown, 1: normal formula, 2: array formula
+        if style is None:
+            self._style = DefaultStyle()
+        else:
+            self._style = style
+        self.log.debug("init done for cell %s", self.cell.cell_obj)
 
     def _get_cmd(self, cell: CalcCell) -> CmdCellT:
         """Get the appropriate command based on the current formula state."""
@@ -85,6 +123,14 @@ class CmdToggleFormula(CmdBase, LogMixin, CmdCellT):
         qry = QryCellIsArrayFormula(cell=self.cell)
         return self._execute_qry(qry)
 
+    def _qry_formula_range(self) -> RangeObj:
+        """Get the range object of the cell's array formula."""
+        qry = QryFormulaRange(cell=self.cell.component)
+        qry_result = self._execute_qry(qry)
+        if Result.is_success(qry_result):
+            return qry_result.data
+        raise qry_result.error
+
     def _cmd_set_state(self, state_kind: StateKind) -> bool:
         """Set the formula state."""
         cmd = CmdState(cell=self.cell, state=state_kind)
@@ -92,6 +138,63 @@ class CmdToggleFormula(CmdBase, LogMixin, CmdCellT):
         if cmd.success:
             self._success_cmds.append(cmd)
         return cmd.success
+
+    def _cmd_set_cell_border_style(self) -> bool:
+        """Set the cell border style."""
+        cmd = CmdCellAddBorderStyle(cell=self.cell, style=self._style)
+        self._execute_cmd(cmd)
+        if cmd.success:
+            self._success_cmds.append(cmd)
+        return cmd.success
+
+    def _cmd_remove_cell_border_style(self) -> bool:
+        """Remove the cell border style."""
+        cmd = CmdCellRemoveBorderStyle(cell=self.cell, style=self._style)
+        self._execute_cmd(cmd)
+        if cmd.success:
+            self._success_cmds.append(cmd)
+        return cmd.success
+
+    def _cmd_add_range_border(self, cell_rng: CalcCellRange) -> bool:
+        """Add the range border style."""
+        cmd = CmdRngAddBorderStyle(rng=cell_rng, style=self._style)
+        self._execute_cmd(cmd)
+        if cmd.success:
+            self._success_cmds.append(cmd)
+        return cmd.success
+
+    def _cmd_remove_range_border(self, cell_rng: CalcCellRange) -> bool:
+        """Remove the range border style."""
+        cmd = CmdRngRemoveBorderStyle(rng=cell_rng, style=self._style)
+        self._execute_cmd(cmd)
+        if cmd.success:
+            self._success_cmds.append(cmd)
+        return cmd.success
+
+    def _cmd_remove_style(self, kind: StateKind) -> bool:
+        """Toggle the style based on the formula state."""
+        rng = self._qry_formula_range()
+        cell_rng = CalcCellRange(owner=self.cell.calc_sheet, rng=rng, lo_inst=self.cell.lo_inst)
+        if kind == StateKind.PY_OBJ:
+            if not self._cmd_remove_range_border(cell_rng):
+                return False
+        elif kind == StateKind.ARRAY and not self._cmd_remove_cell_border_style():
+            return False
+        return True
+
+    def _cmd_add_style(self, kind: StateKind) -> bool:
+        """Toggle the style based on the formula state."""
+        if kind == StateKind.PY_OBJ:
+            # not setting any border for single cell.
+            return True
+        rng = self._qry_formula_range()
+        cell_rng = CalcCellRange(owner=self.cell.calc_sheet, rng=rng, lo_inst=self.cell.lo_inst)
+        # if kind == StateKind.PY_OBJ:
+        #     if self._cmd_set_cell_border_style():
+        #         return True
+        #     else:
+        #         return False
+        return not (kind == StateKind.ARRAY and not self._cmd_add_range_border(cell_rng))
 
     @override
     def execute(self) -> None:
@@ -117,6 +220,11 @@ class CmdToggleFormula(CmdBase, LogMixin, CmdCellT):
             self._formula_state = StateKind.ARRAY
 
         try:
+            if is_formula and not self._cmd_remove_style(StateKind.ARRAY):
+                return
+            if is_array_formula and not self._cmd_remove_style(StateKind.PY_OBJ):
+                return
+
             if self._cmd is None:
                 self._cmd = self._get_cmd(self.cell)
             if self._formula_state == StateKind.PY_OBJ:
@@ -129,6 +237,10 @@ class CmdToggleFormula(CmdBase, LogMixin, CmdCellT):
                 self.log.error("Failed to execute command for cell %s.", self.cell.cell_obj)
                 return
             self._success_cmds.append(self._cmd)
+            if is_formula and not self._cmd_add_style(StateKind.ARRAY):
+                return
+            if is_array_formula and not self._cmd_add_style(StateKind.PY_OBJ):
+                return
         except Exception:
             self.log.exception("Error setting cell address")
             return
@@ -141,10 +253,9 @@ class CmdToggleFormula(CmdBase, LogMixin, CmdCellT):
         Reverts the formula to its previous state.
         """
         try:
-            if self._cmd is None:
-                self.log.debug("No Current State. Unable to undo.")
-                return
-            self._execute_cmd_undo(self._cmd)
+            for cmd in reversed(self._success_cmds):
+                self._execute_cmd_undo(cmd)
+            self._success_cmds.clear()
             self._cmd = None
             self.success = False
             self._formula_state = StateKind.UNKNOWN
