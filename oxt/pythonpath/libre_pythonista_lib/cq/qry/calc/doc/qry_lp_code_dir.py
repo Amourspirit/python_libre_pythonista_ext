@@ -1,23 +1,25 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import Any, TYPE_CHECKING
 
 
 if TYPE_CHECKING:
-    from ooodev.calc import CalcDoc
-    from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_base import QryBase
-    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_doc_t import QryDocT
-    from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
+    from ooodev.proto.office_document_t import OfficeDocumentT
     from oxt.___lo_pip___.basic_config import BasicConfig
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_doc_t import QryDocT
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_base import QryBase
+    from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
 
 else:
-    from libre_pythonista_lib.cq.qry.qry_base import QryBase
-    from libre_pythonista_lib.cq.qry.calc.doc.qry_doc_t import QryDocT
-    from libre_pythonista_lib.log.log_mixin import LogMixin
     from ___lo_pip___.basic_config import BasicConfig
+    from libre_pythonista_lib.cq.qry.calc.doc.qry_doc_t import QryDocT
+    from libre_pythonista_lib.cq.qry.qry_base import QryBase
+    from libre_pythonista_lib.log.log_mixin import LogMixin
+
+    OfficeDocumentT = Any
 
 
 class QryLpCodeDir(QryBase, LogMixin, QryDocT[str]):
-    def __init__(self, doc: CalcDoc) -> None:
+    def __init__(self, doc: OfficeDocumentT) -> None:
         QryBase.__init__(self)
         LogMixin.__init__(self)
         self._cfg = BasicConfig()

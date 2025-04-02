@@ -1,52 +1,60 @@
 from __future__ import annotations
-from typing import List, Type, TYPE_CHECKING
+from typing import Any, List, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcDoc
+    from oxt.pythonpath.libre_pythonista_lib.code.py_module import PyModule
     from oxt.pythonpath.libre_pythonista_lib.code.py_module_t import PyModuleT
-    from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
-    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
-    from oxt.pythonpath.libre_pythonista_lib.doc.doc_globals import DocGlobals
-    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.listener.cmd_doc_event import CmdDocEvent
+    from oxt.pythonpath.libre_pythonista_lib.const import LP_DOCUMENT
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.cmd_doc_init import CmdDocInit
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.cmd_doc_t import CmdDocT
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.cmd_lp_doc_json_file import CmdLpDocJsonFile
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.cmd_py_module_default import CmdPyModuleDefault
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.doc.cmd_doc_custom_prop import CmdDocCustomProp
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.listener.cmd_code_sheet_activation_listener import (
         CmdCodeSheetActivation,
     )
-    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.listener.cmd_sheet_modified import CmdSheetsModified
-    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.listener.cmd_sheet_activation import CmdSheetActivation
-    from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
-    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.cmd_doc_t import CmdDocT
-    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_t import CmdT
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.listener.cmd_doc_event import CmdDocEvent
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.listener.cmd_form_design_mode_off import (
         CmdFormDesignModeOff,
     )
-
-    from pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.cmd_doc_init import CmdDocInit
-    from oxt.pythonpath.libre_pythonista_lib.cq.qry.doc.qry_doc_globals import QryDocGlobals
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.listener.cmd_sheet_activation import CmdSheetActivation
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.listener.cmd_sheet_modified import CmdSheetsModified
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_t import CmdT
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_cell_event_mgr import QryCellEventMgr
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_py_module_default import QryPyModuleDefault
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_py_src_mgr import QryPySrcMgr
-    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_cell_event_mgr import QryCellEventMgr
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.doc.qry_doc_globals import QryDocGlobals
+    from oxt.pythonpath.libre_pythonista_lib.doc.doc_globals import DocGlobals
+    from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
+    from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
     from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
 else:
-    from libre_pythonista_lib.utils.custom_ext import override
-    from libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
-    from libre_pythonista_lib.doc.doc_globals import DocGlobals
-    from libre_pythonista_lib.cq.cmd.calc.doc.listener.cmd_doc_event import CmdDocEvent
-    from libre_pythonista_lib.cq.cmd.calc.doc.cmd_lp_doc_json_file import CmdLpDocJsonFile
-    from libre_pythonista_lib.cq.cmd.calc.doc.listener.cmd_code_sheet_activation_listener import CmdCodeSheetActivation
-    from libre_pythonista_lib.cq.cmd.calc.doc.listener.cmd_sheet_modified import CmdSheetsModified
-    from libre_pythonista_lib.cq.cmd.calc.doc.listener.cmd_sheet_activation import CmdSheetActivation
-    from libre_pythonista_lib.log.log_mixin import LogMixin
-    from libre_pythonista_lib.cq.cmd.calc.doc.cmd_doc_t import CmdDocT
-    from libre_pythonista_lib.cq.cmd.cmd_t import CmdT
-    from libre_pythonista_lib.cq.cmd.calc.doc.listener.cmd_form_design_mode_off import CmdFormDesignModeOff
+    from libre_pythonista_lib.code.py_module import PyModule
+    from libre_pythonista_lib.const import LP_DOCUMENT
     from libre_pythonista_lib.cq.cmd.calc.doc.cmd_doc_init import CmdDocInit
-    from libre_pythonista_lib.cq.qry.doc.qry_doc_globals import QryDocGlobals
+    from libre_pythonista_lib.cq.cmd.calc.doc.cmd_doc_t import CmdDocT
+    from libre_pythonista_lib.cq.cmd.calc.doc.cmd_lp_doc_json_file import CmdLpDocJsonFile
+    from libre_pythonista_lib.cq.cmd.calc.doc.cmd_py_module_default import CmdPyModuleDefault
+    from libre_pythonista_lib.cq.cmd.doc.cmd_doc_custom_prop import CmdDocCustomProp
+    from libre_pythonista_lib.cq.cmd.calc.doc.listener.cmd_code_sheet_activation_listener import CmdCodeSheetActivation
+    from libre_pythonista_lib.cq.cmd.calc.doc.listener.cmd_doc_event import CmdDocEvent
+    from libre_pythonista_lib.cq.cmd.calc.doc.listener.cmd_form_design_mode_off import CmdFormDesignModeOff
+    from libre_pythonista_lib.cq.cmd.calc.doc.listener.cmd_sheet_activation import CmdSheetActivation
+    from libre_pythonista_lib.cq.cmd.calc.doc.listener.cmd_sheet_modified import CmdSheetsModified
+    from libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
+    from libre_pythonista_lib.cq.cmd.cmd_t import CmdT
+    from libre_pythonista_lib.cq.qry.calc.doc.qry_cell_event_mgr import QryCellEventMgr
     from libre_pythonista_lib.cq.qry.calc.doc.qry_py_module_default import QryPyModuleDefault
     from libre_pythonista_lib.cq.qry.calc.doc.qry_py_src_mgr import QryPySrcMgr
-    from libre_pythonista_lib.cq.qry.calc.doc.qry_cell_event_mgr import QryCellEventMgr
+    from libre_pythonista_lib.cq.qry.doc.qry_doc_globals import QryDocGlobals
+    from libre_pythonista_lib.doc.doc_globals import DocGlobals
+    from libre_pythonista_lib.log.log_mixin import LogMixin
+    from libre_pythonista_lib.utils.custom_ext import override
     from libre_pythonista_lib.utils.result import Result
 
+    PyModuleT = Any
 
 _KEY = "libre_pythonista_lib.init.init_doc.InitDoc"
 
@@ -60,12 +68,14 @@ class CmdInitDoc(CmdBase, List[CmdT], LogMixin, CmdDocT):
         CmdBase.__init__(self)
         list.__init__(self)
         LogMixin.__init__(self)
+        self.append(CmdDocCustomProp(doc=doc, name=LP_DOCUMENT, value=True))
         self.append(CmdDocEvent(doc=doc))
         self.append(CmdCodeSheetActivation(doc=doc))
         self.append(CmdSheetsModified(doc=doc))
         self.append(CmdSheetActivation(doc=doc))
         self.append(CmdFormDesignModeOff(doc=doc))
         self.append(CmdLpDocJsonFile(doc=doc))
+        self.append(CmdPyModuleDefault(doc=doc, mod=PyModule()))
         self.append(CmdDocInit(doc=doc))  # must be last in the list
         self._success_cmds: List[CmdT] = []
         self._doc = doc

@@ -43,6 +43,7 @@ DISPATCH_SEL_LP_FN = f"{CS_PROTOCOL}libre_pythonista.calc.sel.lp_fn"
 DISPATCH_SEL_RNG = f"{CS_PROTOCOL}{PATH_SEL_RNG}"
 
 LP_EXT_VERSION = "libre_pythonista.ext.version"
+LP_DOCUMENT = "LibrePythonista.ext.document"
 
 
 def _get_formula_pyimpl() -> str:
