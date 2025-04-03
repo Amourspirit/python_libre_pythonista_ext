@@ -3,26 +3,29 @@ import logging
 import sys
 import contextlib
 from pathlib import Path
-from typing import Any, Dict, Callable, TYPE_CHECKING
+from typing import Any, Callable, TYPE_CHECKING
 from logging import Logger
 from logging.handlers import TimedRotatingFileHandler
 from ooodev.loader import Lo
-from ooodev.events.lo_events import LoEvents
 from ooodev.events.args.event_args import EventArgs
 from ooodev.utils.helper.dot_dict import DotDict
-
-from ..const.event_const import LOG_PY_LOGGER_RESET, GBL_DOC_CLOSING
-from ..event.shared_event import SharedEvent
-
-
-from .event_log_handler import EventLogHandler
 
 
 if TYPE_CHECKING:
     from ooodev.proto.office_document_t import OfficeDocumentT
-    from ....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from oxt.___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from oxt.pythonpath.libre_pythonista_lib.event.shared_event import SharedEvent
+    from oxt.pythonpath.libre_pythonista_lib.log.event_log_handler import EventLogHandler
+    from oxt.pythonpath.libre_pythonista_lib.doc.doc_globals import DocGlobals
+    from oxt.pythonpath.libre_pythonista_lib.const.event_const import LOG_PY_LOGGER_RESET, GBL_DOC_CLOSING
 else:
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from libre_pythonista_lib.event.shared_event import SharedEvent
+    from libre_pythonista_lib.log.event_log_handler import EventLogHandler
+    from libre_pythonista_lib.doc.doc_globals import DocGlobals
+    from libre_pythonista_lib.const.event_const import LOG_PY_LOGGER_RESET, GBL_DOC_CLOSING
+
+_KEY = "libre_pythonista_lib.log.py_logger.PyLogger"
 
 
 class PyLogger(Logger):
@@ -32,17 +35,27 @@ class PyLogger(Logger):
     This class will only log to the Document that created the logger.
     """
 
-    _instances: Dict[str, PyLogger] = {}
+    def __new__(cls, doc: OfficeDocumentT) -> "PyLogger":
+        """
+        Creates or returns existing singleton instance for the given document.
 
-    def __new__(cls, doc: OfficeDocumentT):
-        key = f"doc_{doc.runtime_uid}"
-        if not key in cls._instances:
-            inst = super(PyLogger, cls).__new__(cls)
-            inst._is_init = False
-            cls._instances[key] = inst
-        return cls._instances[key]
+        Args:
+            doc (CalcDoc): The Calc document to create/get cache for
 
-    def __init__(self, doc: OfficeDocumentT):
+        Returns:
+            CellCache: The singleton instance for the document
+        """
+        gbl_cache = DocGlobals.get_current(doc.runtime_uid)
+        if _KEY in gbl_cache.mem_cache:
+            return gbl_cache.mem_cache[_KEY]
+
+        inst = super().__new__(cls)
+        inst._is_init = False
+
+        gbl_cache.mem_cache[_KEY] = inst
+        return inst
+
+    def __init__(self, doc: OfficeDocumentT) -> None:
         """
         Creates a logger.
 
@@ -56,12 +69,15 @@ class PyLogger(Logger):
         if getattr(self, "_is_init", False):
             return
         # avoid circular import
-        from ..doc_props.calc_props import CalcProps
+        if TYPE_CHECKING:
+            from oxt.pythonpath.libre_pythonista_lib.doc_props.calc_props2 import CalcProps2
+        else:
+            from libre_pythonista_lib.doc_props.calc_props2 import CalcProps2
 
         self._uid = doc.runtime_uid
         self._otx_log = OxtLogger(log_name=self.__class__.__name__)
         self._otx_log.debug("Initializing PyLogger")
-        calc_props = CalcProps(doc=doc)
+        calc_props = CalcProps2()
 
         self._log_name = self.__class__.__name__
         self._formatter = logging.Formatter(calc_props.log_format)
@@ -121,16 +137,16 @@ class PyLogger(Logger):
             self._otx_log.debug("PyLogger Initialed")
         self._is_init = True
 
-    def _get_console_handler(self):
+    def _get_console_handler(self):  # noqa: ANN202
         console_handler = logging.StreamHandler(sys.stdout)
         console_handler.setFormatter(self._formatter)
         console_handler.setLevel(self._log_level)
         return console_handler
 
-    def _get_null_handler(self):
+    def _get_null_handler(self):  # noqa: ANN202
         return logging.NullHandler()
 
-    def _get_file_handler(self):
+    def _get_file_handler(self):  # noqa: ANN202
         log_file = self._log_file
         file_handler = TimedRotatingFileHandler(
             log_file, when="W0", interval=1, backupCount=3, encoding="utf8", delay=True
@@ -167,13 +183,13 @@ class PyLogger(Logger):
 
     def _is_doc_match(self) -> bool:
         try:
-            return self._uid == Lo.current_doc.runtime_uid
+            return self._uid == Lo.current_doc.runtime_uid  # type: ignore
         except Exception as e:
-            self._otx_log.error(f"_is_doc_match() Doc not available: {e}")
+            self._otx_log.error("_is_doc_match() Doc not available: %s", e)
             return False
 
     # region Log Overrides:
-    def debug(self, msg, *args, **kwargs):
+    def debug(self, msg, *args, **kwargs) -> None:  # noqa: ANN001, ANN002, ANN003
         """
         Log 'msg % args' with severity 'DEBUG'.
 
@@ -185,7 +201,7 @@ class PyLogger(Logger):
         if self.isEnabledFor(logging.DEBUG) and self._is_doc_match():
             super().debug(msg, *args, **kwargs)
 
-    def info(self, msg, *args, **kwargs):
+    def info(self, msg, *args, **kwargs) -> None:  # noqa: ANN001, ANN002, ANN003
         """
         Log 'msg % args' with severity 'INFO'.
 
@@ -197,7 +213,7 @@ class PyLogger(Logger):
         if self.isEnabledFor(logging.INFO) and self._is_doc_match():
             super().info(msg, *args, **kwargs)
 
-    def warning(self, msg, *args, **kwargs):
+    def warning(self, msg, *args, **kwargs) -> None:  # noqa: ANN001, ANN002, ANN003
         """
         Log 'msg % args' with severity 'WARNING'.
 
@@ -209,7 +225,7 @@ class PyLogger(Logger):
         if self.isEnabledFor(logging.WARNING) and self._is_doc_match():
             super().warning(msg, *args, **kwargs)
 
-    def error(self, msg, *args, **kwargs):
+    def error(self, msg, *args, **kwargs) -> None:  # noqa: ANN001, ANN002, ANN003
         """
         Log 'msg % args' with severity 'ERROR'.
 
@@ -227,7 +243,7 @@ class PyLogger(Logger):
         """
         self.error(msg, *args, exc_info=exc_info, **kwargs)
 
-    def critical(self, msg, *args, **kwargs):
+    def critical(self, msg, *args, **kwargs) -> None:  # noqa: ANN001, ANN002, ANN003
         """
         Log 'msg % args' with severity 'CRITICAL'.
 
@@ -239,7 +255,7 @@ class PyLogger(Logger):
         if self.isEnabledFor(logging.CRITICAL) and self._is_doc_match():
             super().critical(msg, *args, **kwargs)
 
-    def log(self, level, msg, *args, **kwargs):
+    def log(self, level, msg, *args, **kwargs) -> None:  # noqa: ANN001, ANN002, ANN003
         """
         Log 'msg % args' with the integer severity 'level'.
 
@@ -294,6 +310,7 @@ class PyLogger(Logger):
         Args:
             doc (CalcDoc | None, optional): Calc Doc or None. If None all cached instances are cleared. Defaults to None.
         """
+
         se = SharedEvent(doc=doc)
         if doc is None:
             cls._instances = {}
@@ -301,20 +318,10 @@ class PyLogger(Logger):
             eargs.event_data = DotDict(reset_all=True, runtime_id="")
             se.trigger_event(LOG_PY_LOGGER_RESET, eargs)
             return
-        key = f"doc_{doc.runtime_uid}"
-        if key in cls._instances:
-            del cls._instances[key]
+
+        gbl_cache = DocGlobals.get_current(uid=doc.runtime_uid)  # type: ignore
+        if _KEY in gbl_cache.mem_cache:
+            del gbl_cache.mem_cache[_KEY]
             eargs = EventArgs(cls)
             eargs.event_data = DotDict(reset_all=False, runtime_id=doc.runtime_uid)
             se.trigger_event(LOG_PY_LOGGER_RESET, eargs)
-
-
-def _on_doc_closing(src: Any, event: EventArgs) -> None:
-    # clean up singleton
-    uid = str(event.event_data.uid)
-    key = f"doc_{uid}"
-    if key in PyLogger._instances:
-        del PyLogger._instances[key]
-
-
-LoEvents().on(GBL_DOC_CLOSING, _on_doc_closing)

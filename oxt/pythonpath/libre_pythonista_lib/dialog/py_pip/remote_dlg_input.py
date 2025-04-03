@@ -1,6 +1,5 @@
 from __future__ import annotations
-import uno
-from typing import Any, TYPE_CHECKING
+from typing import Any, cast, TYPE_CHECKING
 
 from ooo.dyn.awt.push_button_type import PushButtonType
 from ooo.dyn.awt.pos_size import PosSize
@@ -14,29 +13,31 @@ from ooodev.utils.info import Info
 from ooodev.utils.color import StandardColor
 from ooodev.utils.sys_info import SysInfo
 
-from ...doc_props.calc_props import CalcProps
 
 if TYPE_CHECKING:
+    from ooodev.proto.office_document_t import OfficeDocumentT
     from ooodev.dialog.dl_control import CtlCheckBox
-
-    from .....___lo_pip___.config import Config
-    from .....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
-    from .....___lo_pip___.lo_util.resource_resolver import ResourceResolver
+    from oxt.___lo_pip___.config import Config
+    from oxt.___lo_pip___.lo_util.resource_resolver import ResourceResolver
+    from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
+    from oxt.pythonpath.libre_pythonista_lib.doc_props.calc_props2 import CalcProps2
 else:
     from ___lo_pip___.config import Config
-    from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
     from ___lo_pip___.lo_util.resource_resolver import ResourceResolver
+    from libre_pythonista_lib.log.log_mixin import LogMixin
+    from libre_pythonista_lib.doc_props.calc_props2 import CalcProps2
+
+    OfficeDocumentT = Any
 
 
-class RemoteDlgInput:
-
+class RemoteDlgInput(LogMixin):
     def __init__(self) -> None:
-        self._doc = Lo.current_doc
-        self._log = OxtLogger(log_name=self.__class__.__name__)
-        self._log.debug("Init Class")
+        LogMixin.__init__(self)
+        self._doc = cast(OfficeDocumentT, Lo.current_doc)
+        self.log.debug("Init Class")
         self._cfg = Config()  # singleton
         self._rr = ResourceResolver(ctx=self._doc.lo_inst.get_context())
-        self._calc_props = CalcProps(self._doc)
+        self._calc_props = CalcProps2()
         self._platform = SysInfo.get_platform()
         self._border_kind = BorderKind.BORDER_SIMPLE
         if self._border_kind != BorderKind.BORDER_3D:
@@ -162,12 +163,12 @@ class RemoteDlgInput:
         self._ctl_chk_force_install.help_text = self._rr.resolve_string("strForceInstallHelp")
         self._ctl_chk_force_install.add_event_item_state_changed(self._fn_on_check_changed)
 
-    def on_button_action_preformed(self, src: Any, event: EventArgs, control_src: Any, *args, **kwargs) -> None:
+    def on_button_action_preformed(self, src: Any, event: EventArgs, control_src: Any, *args, **kwargs) -> None:  # noqa: ANN002, ANN003, ANN401
         """Method that is fired when Info button is clicked."""
         pass
 
-    def on_check_changed(self, src: Any, event: EventArgs, control_src: CtlCheckBox, *args, **kwargs) -> None:
-        self._log.debug(f"Check Changed: {control_src.state}")
+    def on_check_changed(self, src: Any, event: EventArgs, control_src: CtlCheckBox, *args, **kwargs) -> None:  # noqa: ANN002, ANN003, ANN401
+        self.log.debug(f"Check Changed: {control_src.state}")
         self._tri_force_install = control_src.state
 
     def _clean_pkg_name(self, pkg_name: str) -> str:

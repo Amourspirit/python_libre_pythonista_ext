@@ -19,9 +19,7 @@ The Keys in the cache can be a tuple of (sheet_index, row, column).
 from __future__ import annotations
 from typing import Any, cast, Dict, Set, TYPE_CHECKING, Iterator, Generator
 from contextlib import contextmanager
-from dataclasses import dataclass, field
 from ooodev.calc import CalcDoc, CalcCell
-from ooodev.events.args.cancel_event_args import CancelEventArgs
 from ooodev.events.args.event_args import EventArgs
 from ooodev.events.events import Events
 from ooodev.utils.data_type.cell_obj import CellObj
