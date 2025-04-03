@@ -32,8 +32,6 @@ break_mgr = BreakMgr()
 
 # break_mgr.add_breakpoint("libre_pythonista_lib.cq.qry.calc.sheet.cell.rule_value.qry_value.execute")
 
-# tested in: tests/test_cmd/test_cmd_py_src.py
-
 
 class QryValue(QryBase, LogMixin, QryCellT[Result[Iterable[Iterable[object]], None] | Result[None, Exception]]):
     def __init__(self, cell: CalcCell, rule_kind: RuleNameKind, data: DotDict) -> None:

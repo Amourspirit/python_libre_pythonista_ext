@@ -12,20 +12,20 @@ from ooodev.calc import CalcDoc
 
 if TYPE_CHECKING:
     from com.sun.star.frame import XStatusListener
-    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.formula.cmd_toggle_formula import CmdToggleFormula
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from typing_extensions import override
 else:
-    from libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.formula.cmd_toggle_formula import CmdToggleFormula
+    from libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
     from libre_pythonista_lib.log.log_mixin import LogMixin
 
     def override(func):  # noqa: ANN001, ANN201
         return func
 
 
-class DispatchToggleDfState2(XDispatch, LogMixin, unohelper.Base):
+class DispatchToggleDataTblState2(XDispatch, LogMixin, unohelper.Base):
     def __init__(self, sheet: str, cell: str, uid: str = "") -> None:
         XDispatch.__init__(self)
         LogMixin.__init__(self)
@@ -46,15 +46,16 @@ class DispatchToggleDfState2(XDispatch, LogMixin, unohelper.Base):
 
         Note: Notifications can't be guaranteed! This will be a part of interface XNotifyingDispatch.
         """
-        self.log.debug("addStatusListener(): url=%s", URL.Main)
-        if URL.Complete in self._status_listeners:
-            self.log.debug("addStatusListener(): url=%s already exists.", URL.Main)
-        else:
-            # setting IsEnable=False here does not disable the dispatch command
-            # State=True may cause the menu items to be displayed as checked.
-            fe = FeatureStateEvent(FeatureURL=URL, IsEnabled=True, State=None)
-            Control.statusChanged(fe)
-            self._status_listeners[URL.Complete] = Control
+        with self.log.indent(True):
+            self.log.debug("addStatusListener(): url=%s", URL.Main)
+            if URL.Complete in self._status_listeners:
+                self.log.debug("addStatusListener(): url=%s already exists.", URL.Main)
+            else:
+                # setting IsEnable=False here does not disable the dispatch command
+                # State=True may cause the menu items to be displayed as checked.
+                fe = FeatureStateEvent(FeatureURL=URL, IsEnabled=True, State=None)
+                Control.statusChanged(fe)
+                self._status_listeners[URL.Complete] = Control
 
     @override
     def dispatch(self, URL: URL, Arguments: Tuple[PropertyValue, ...]) -> None:  # noqa: N803
@@ -80,11 +81,12 @@ class DispatchToggleDfState2(XDispatch, LogMixin, unohelper.Base):
             if not cmd_toggle.success:
                 self.log.error("Failed to toggle formula.")
                 raise Exception("Failed to toggle formula.")
+                return
 
         except Exception as e:
             # log the error and do not re-raise it.
             # re-raising the error may crash the entire LibreOffice app.
-            self.log.warning("Error: %s", e)
+            self.log.error("Error: %s", e, exc_info=True)
             return
 
     @override
@@ -92,6 +94,7 @@ class DispatchToggleDfState2(XDispatch, LogMixin, unohelper.Base):
         """
         Un-registers a listener from a control.
         """
-        self.log.debug("removeStatusListener(): url=%s", URL.Main)
-        if URL.Complete in self._status_listeners:
-            del self._status_listeners[URL.Complete]
+        with self.log.indent(True):
+            self.log.debug("removeStatusListener(): url=%s", URL.Main)
+            if URL.Complete in self._status_listeners:
+                del self._status_listeners[URL.Complete]

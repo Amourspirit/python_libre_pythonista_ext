@@ -132,6 +132,10 @@ class PyImpl(unohelper.Base, XPy):
             ci = CellItemFacade(cell)
             if ci.is_source_cell():
                 self._log.debug("pyc - Cell is source cell")
+                # if auto_update is not call then get value will act as a cached version
+                # This can be uses as a static option for cell latter on.
+                # see https://github.com/Amourspirit/python_libre_pythonista_ext/issues/61
+                ci.auto_update()
                 value = ci.get_value()
                 # self._log.debug("pyc - Cell has Value %s", value)
             else:

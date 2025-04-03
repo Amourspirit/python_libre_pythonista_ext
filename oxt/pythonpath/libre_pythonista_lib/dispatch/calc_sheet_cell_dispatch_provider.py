@@ -340,9 +340,9 @@ class CalcSheetCellDispatchProvider(XDispatchProviderInterceptor, LogMixin, unoh
 
         elif cs_url.Path == PATH_DATA_TBL_STATE:
             try:
-                from .dispatch_toggle_data_tbl_state import DispatchToggleDataTblState
+                from .dispatch_toggle_data_tbl_state2 import DispatchToggleDataTblState2
             except ImportError:
-                self.log.exception("DispatchToggleDataTblState import error")
+                self.log.exception("DispatchToggleDataTblState2 import error")
                 raise
             try:
                 args = self._convert_query_to_dict(cs_url.Arguments)
@@ -354,8 +354,8 @@ class CalcSheetCellDispatchProvider(XDispatchProviderInterceptor, LogMixin, unoh
                     return None
 
                 with self.log.indent(True):
-                    self.log.debug("queryDispatch: returning DispatchToggleDataTblState")
-                result = DispatchToggleDataTblState(sheet=args["sheet"], cell=args["cell"])
+                    self.log.debug("queryDispatch: returning DispatchToggleDataTblState2")
+                result = DispatchToggleDataTblState2(sheet=args["sheet"], cell=args["cell"], uid=self._doc.runtime_uid)
 
                 eargs = EventArgs.from_args(cargs)
                 eargs.event_data.dispatch = result

@@ -11,6 +11,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.state.cmd_append_code import CmdAppendCode
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.state.cmd_update_code import CmdUpdateCode
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler_t import CmdHandlerT
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.code.qry_cell_src_code import QryCellSrcCode
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_ctl_kind import QryCtlKind
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_pyc_rule import QryPycRule
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_uri import QryCellUri
@@ -40,6 +41,7 @@ else:
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.state.cmd_append_code import CmdAppendCode
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.state.cmd_update_code import CmdUpdateCode
     from libre_pythonista_lib.cq.qry.calc.common.map.qry_ctl_kind_from_rule_name_kind import QryCtlKindFromRuleNameKind
+    from libre_pythonista_lib.cq.qry.calc.sheet.cell.code.qry_cell_src_code import QryCellSrcCode
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_ctl_kind import QryCtlKind
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_pyc_rule import QryPycRule
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_uri import QryCellUri
@@ -123,6 +125,13 @@ class CellItemFacade(LogMixin):
             self._cache[key] = result
         if Result.is_success(result):
             self.log.debug("qry_uri_result: %s", result.data)
+            return result.data
+        raise result.error
+
+    def _qry_src_code(self) -> str:
+        qry = QryCellSrcCode(cell=self._cell, uri=self.uri)
+        result = self.qry_handler.handle(qry)
+        if Result.is_success(result):
             return result.data
         raise result.error
 
@@ -213,6 +222,15 @@ class CellItemFacade(LogMixin):
             self.log.error("Failed to remove control.")
             return
         _ = ctl_director.create_control(self._cell, ctl_kind)
+
+    def auto_update(self) -> None:
+        self.log.debug("Auto Updating Code")
+        try:
+            code = self._qry_src_code()
+            self.update_code(code)
+            self.log.debug("Code Auto Updated")
+        except Exception as e:
+            self.log.debug("Failed to auto-update %s", e)
 
     def get_matched_rule(self) -> StateRuleT | None:
         """Gets the matching state rule for the cell's current state"""

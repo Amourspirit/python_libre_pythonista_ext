@@ -395,9 +395,9 @@ class CalcSheetDispatchMgr:
 
         elif URL.Path == PATH_DATA_TBL_STATE:
             try:
-                from .dispatch_toggle_data_tbl_state import DispatchToggleDataTblState
+                from .dispatch_toggle_data_tbl_state2 import DispatchToggleDataTblState2
             except ImportError:
-                log.exception("DispatchToggleDataTblState import error")
+                log.exception("DispatchToggleDataTblState2 import error")
                 raise
             try:
                 args = self._convert_query_to_dict(URL.Arguments)
@@ -409,8 +409,8 @@ class CalcSheetDispatchMgr:
                     return None
 
                 with log.indent(True):
-                    log.debug("CalcSheetDispatchMgr.dispatch: dispatching DispatchToggleDataTblState")
-                result = DispatchToggleDataTblState(sheet=args["sheet"], cell=args["cell"])
+                    log.debug("CalcSheetDispatchMgr.dispatch: dispatching DispatchToggleDataTblState2")
+                result = DispatchToggleDataTblState2(sheet=args["sheet"], cell=args["cell"], uid=self.runtime_uid)
                 result.dispatch(URL, Arguments)
 
                 eargs = EventArgs.from_args(cargs)

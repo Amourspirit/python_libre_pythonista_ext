@@ -59,6 +59,8 @@ class QryCellSrcCode(QryBase, LogMixin, QryCellT[Result[str, None] | Result[None
             if not self._uri:
                 self._uri = self._qry_cell_uri()
             py_code = PySource(uri=self._uri, cell=self.cell.cell_obj)
+            if not py_code.exists():
+                return Result.failure(ValueError("Source code does not exits"))
             return Result.success(py_code.source_code)
         except Exception:
             self.log.exception("Error executing query")
