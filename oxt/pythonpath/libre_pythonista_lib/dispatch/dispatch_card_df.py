@@ -7,7 +7,6 @@ try:
 except ImportError:
     from typing_extensions import override
 
-import uno
 import unohelper
 from com.sun.star.frame import XDispatch
 from com.sun.star.beans import PropertyValue
@@ -23,12 +22,10 @@ from ooodev.utils.helper.dot_dict import DotDict
 
 if TYPE_CHECKING:
     from com.sun.star.frame import XStatusListener
-    from oxt.___lo_pip___.oxt_logger.oxt_logger import OxtLogger
     from oxt.pythonpath.libre_pythonista_lib.dialog.card.df_card2 import DfCard2
     from oxt.pythonpath.libre_pythonista_lib.event.shared_event import SharedEvent
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
 else:
-    from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
     from libre_pythonista_lib.dialog.card.df_card2 import DfCard2
     from libre_pythonista_lib.event.shared_event import SharedEvent
     from libre_pythonista_lib.log.log_mixin import LogMixin
@@ -42,9 +39,8 @@ class DispatchCardDf(XDispatch, LogMixin, EventsPartial, unohelper.Base):
         unohelper.Base.__init__(self)
         self._sheet = sheet
         self._cell = cell
-        self._log = OxtLogger(log_name=self.__class__.__name__)
         self.add_event_observers(SharedEvent().event_observer)
-        self._log.debug("init: sheet=%s, cell=%s", sheet, cell)
+        self.log.debug("init: sheet=%s, cell=%s", sheet, cell)
         self._status_listeners: Dict[str, XStatusListener] = {}
 
     @override
@@ -56,10 +52,10 @@ class DispatchCardDf(XDispatch, LogMixin, EventsPartial, unohelper.Base):
 
         Note: Notifications can't be guaranteed! This will be a part of interface XNotifyingDispatch.
         """
-        with self._log.indent(True):
-            self._log.debug("addStatusListener(): url=%s", URL.Main)
+        with self.log.indent(True):
+            self.log.debug("addStatusListener(): url=%s", URL.Main)
             if URL.Complete in self._status_listeners:
-                self._log.debug("addStatusListener(): url=%s already exists.", URL.Main)
+                self.log.debug("addStatusListener(): url=%s already exists.", URL.Main)
             else:
                 # State=True may cause the menu items to be displayed as checked.
                 fe = FeatureStateEvent(FeatureURL=URL, IsEnabled=True, State=None)
@@ -78,9 +74,9 @@ class DispatchCardDf(XDispatch, LogMixin, EventsPartial, unohelper.Base):
         By default, and absent any arguments, ``SynchronMode`` is considered ``False`` and the execution is performed asynchronously (i.e. dispatch() returns immediately, and the action is performed in the background).
         But when set to ``True``, dispatch() processes the request synchronously.
         """
-        with self._log.indent(True):
+        with self.log.indent(True):
             try:
-                self._log.debug(f"dispatch(): url={URL.Main}")
+                self.log.debug(f"dispatch(): url={URL.Main}")
                 doc = CalcDoc.from_current_doc()
                 sheet = doc.sheets[self._sheet]
                 cell = sheet[self._cell]
@@ -94,7 +90,7 @@ class DispatchCardDf(XDispatch, LogMixin, EventsPartial, unohelper.Base):
                 )
                 self.trigger_event(f"{URL.Main}_before_dispatch", cargs)
                 if cargs.cancel:
-                    self._log.debug("Event %s_before_dispatch was cancelled.", URL.Main)
+                    self.log.debug("Event %s_before_dispatch was cancelled.", URL.Main)
                     return
 
                 card = DfCard2(cell)
@@ -106,7 +102,7 @@ class DispatchCardDf(XDispatch, LogMixin, EventsPartial, unohelper.Base):
             except Exception as e:
                 # log the error and do not re-raise it.
                 # re-raising the error may crash the entire LibreOffice app.
-                self._log.error("Error: %s", e, exc_info=True)
+                self.log.error("Error: %s", e, exc_info=True)
                 return
 
     @override
@@ -114,7 +110,7 @@ class DispatchCardDf(XDispatch, LogMixin, EventsPartial, unohelper.Base):
         """
         Un-registers a listener from a control.
         """
-        with self._log.indent(True):
-            self._log.debug("removeStatusListener(): url=%s", URL.Main)
+        with self.log.indent(True):
+            self.log.debug("removeStatusListener(): url=%s", URL.Main)
             if URL.Complete in self._status_listeners:
                 del self._status_listeners[URL.Complete]

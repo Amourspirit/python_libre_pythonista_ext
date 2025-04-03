@@ -1,26 +1,32 @@
 # region Imports
 from __future__ import annotations
-from typing import cast, TYPE_CHECKING, Tuple
+import uno
+from typing import Any, cast, TYPE_CHECKING, List
 from ooo.dyn.awt.push_button_type import PushButtonType
 from ooo.dyn.awt.pos_size import PosSize
 
 from ooodev.dialog import BorderKind
-from ooodev.calc import CalcCell
-from ooodev.units import UnitAppFontWidth
+from ooodev.calc import CalcCell, RangeObj
 from ooodev.loader import Lo
-import pandas as pd
+
 
 if TYPE_CHECKING:
+    from oxt.___lo_pip___.oxt_logger.oxt_logger import OxtLogger
     from oxt.___lo_pip___.lo_util.resource_resolver import ResourceResolver
+    from oxt.pythonpath.libre_pythonista_lib.cell.lpl_cell import LplCell
     from oxt.pythonpath.libre_pythonista_lib.utils.pandas_util import PandasUtil
+    from oxt.pythonpath.libre_pythonista_lib.data.tbl_data_obj import TblDataObj
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
     from oxt.pythonpath.libre_pythonista_lib.code.module_state_item import ModuleStateItem
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.state.qry_module_state import QryModuleState
     from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
 else:
+    from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
     from ___lo_pip___.lo_util.resource_resolver import ResourceResolver
+    from libre_pythonista_lib.cell.lpl_cell import LplCell
     from libre_pythonista_lib.utils.pandas_util import PandasUtil
+    from libre_pythonista_lib.data.tbl_data_obj import TblDataObj
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
     from libre_pythonista_lib.code.module_state_item import ModuleStateItem
@@ -31,7 +37,7 @@ else:
 # endregion Imports
 
 
-class DfCard2(LogMixin):
+class TblDataCard2(LogMixin):
     # pylint: disable=unused-argument
     # region Init
     def __init__(self, cell: CalcCell) -> None:
@@ -45,8 +51,8 @@ class DfCard2(LogMixin):
         self._margin = 6
         self._vert_margin = 12
         self._box_height = 30
-        self._title = self._rr.resolve_string("dlgCardDfTitle")
-        self._msg = self._rr.resolve_string("strDataFrame")
+        self._title = self._rr.resolve_string("dlgCardTblDataTitle")
+        self._msg = self._rr.resolve_string("strDataTable")
         if self._border_kind != BorderKind.BORDER_3D:
             self._padding = 10
         else:
@@ -106,116 +112,107 @@ class DfCard2(LogMixin):
     # region Data
     def _get_message(self) -> str:
         """Get the message to display in the dialog."""
-        state = self.module_state
+        data = cast(List[List[Any]], self.module_state.dd_data.data)
+        rows, cols = self._get_rows_cols(data)
 
-        df = cast(pd.DataFrame, state.dd_data.data)
-        msg_str = self._rr.resolve_string("strDataFrame")
-        if not PandasUtil.is_dataframe(df):
-            self.log.error("Data is not a DataFrame")
-            return ""
-
-        shape = df.shape
-        shape_len = len(shape)
-        if shape_len == 0:
-            return msg_str
-        if shape_len == 1:
-            rows = shape[0]
-            return f"{rows} x 0 {msg_str}"
-        return f"{shape[0]} x {shape[1]} {msg_str}"
+        df_str = self._rr.resolve_string("strDataTable")
+        return f"{rows} x {cols} {df_str}"
 
     def _set_table_data(self) -> None:
-        state = self.module_state
-        df = cast(pd.DataFrame, state.dd_data.data)
+        data = cast(List[List[Any]], self.module_state.dd_data.data)
+        rows, cols = self._get_rows_cols(data)
 
-        if not PandasUtil.is_dataframe(df):
-            self.log.error("Data is not a DataFrame")
-            return
-        rows = df.shape[0]
-        if PandasUtil.is_describe_output(df):
-            self.log.debug("DataFrame is a describe output")
-            tbl, max_len = self._get_table_data_describe()
+        if rows <= 5:  # noqa: SIM108
+            tbl = self._get_table_data_head()
         else:
-            if rows <= 5:
-                tbl, max_len = self._get_table_data_head()
-            else:
-                tbl, max_len = self._get_table_data_head_tail()
+            tbl = self._get_table_data_head_tail()
 
-        row_header_width = int(UnitAppFontWidth(max_len * 6))
-        self.log.debug(f"_set_table_data() Row header width: {row_header_width}")
         self._ctl_table1.set_table_data(
             data=tbl,
             align="RLC",
             # widths=widths,
-            has_row_headers=True,
-            has_colum_headers=PandasUtil.has_headers(df),
-            row_header_width=row_header_width,
+            has_row_headers=self._get_has_row_header(),
+            has_colum_headers=False,
         )
         self._ctl_table1.horizontal_scrollbar = True
 
-    def _get_table_data_describe(self) -> Tuple[list, int]:
+    def _get_has_row_header(self) -> bool:
+        """Check if the range has headers. Considered to be a header if the first row is all string values."""
+        try:
+            if not "range_obj" in self.module_state.dd_data:
+                return False
+            ro = cast(RangeObj, self.module_state.dd_data.range_obj)
+            cell_rng = self._cell.calc_sheet.get_range(range_obj=ro)
+            tdo = TblDataObj(cell_rng)
+            return tdo.has_headers
+        except Exception:
+            self.log.exception("Error getting range object")
+            return False
+
+    def _get_table_data_head(self) -> list:
         """Convert the dataframe and display in dialog grid control."""
-        state = self.module_state
-        df = cast(pd.DataFrame, state.dd_data.data)
+        data = cast(List[List[Any]], self.module_state.dd_data.data)
 
-        tbl = PandasUtil.pandas_to_array(df)
-        max_len = PandasUtil.get_df_index_max_len(df.describe())
-        self.log.debug(f"_set_table_data() Max length: {max_len}")
-        PandasUtil.convert_array_to_lo(tbl)
-        return tbl, max_len
+        row_count = max(len(data), 5)
 
-    def _get_table_data_head(self) -> Tuple[list, int]:
+        # get the first five rows
+        head_data = data[:row_count]
+        PandasUtil.convert_array_to_lo(head_data)
+        return head_data
+
+    def _get_rows_cols(self, lst_data: List[List[Any]]) -> List[int]:
+        rows = len(lst_data)
+        if rows == 0:
+            return [0, 0]
+        first = lst_data[0]
+        cols = len(first)
+        return [rows, cols]
+
+    def _get_table_data_head_tail(self) -> list:
         """Convert the dataframe and display in dialog grid control."""
-        state = self.module_state
-        df = cast(pd.DataFrame, state.dd_data.data)
+        data = cast(List[List[Any]], self.module_state.dd_data.data)
 
-        head_data = df.head()
-        max_len = PandasUtil.get_df_index_max_len(head_data)
-        self.log.debug(f"_set_table_data() Max length: {max_len}")
-        tbl = PandasUtil.pandas_to_array(df.head(), index_opt=1)
-        PandasUtil.convert_array_to_lo(tbl)
-        return tbl, max_len
+        rows, cols = self._get_rows_cols(data)
 
-    def _get_table_data_head_tail(self) -> Tuple[list, int]:
-        """Convert the dataframe and display in dialog grid control."""
-        state = self.module_state
-        df = cast(pd.DataFrame, state.dd_data.data)
+        row_count = max(len(data), 10)
 
-        _, cols = PandasUtil.get_df_rows_columns(df)
-        head_data = df.head()
-        tail_data = df.tail()
-        head_max = PandasUtil.get_df_index_max_len(head_data)
-        tail_max = PandasUtil.get_df_index_max_len(tail_data)
-        max_len = max(head_max, tail_max)
-        self.log.debug("_set_table_data() Max length: %i", max_len)
-        head = PandasUtil.pandas_to_array(df.head(), index_opt=1, convert=False)
-        tail = PandasUtil.pandas_to_array(df.tail(), header_opt=2, index_opt=1, convert=False)
+        if row_count < 2:
+            self.log.error("_get_table_data_head_tail() Row count is less than 2: %i", row_count)
+            raise ValueError("Row count is less than 2")
 
-        PandasUtil.convert_array_to_lo(head)
-        PandasUtil.convert_array_to_lo(tail)
+        end = row_count // 2
+        start = row_count - end
+
+        head_data = data[:start]
+        tail_data = data[-end:]
+        PandasUtil.convert_array_to_lo(head_data)
+        PandasUtil.convert_array_to_lo(tail_data)
+
         # create a row of ellipse to insert before tail.
-        ellipse = ["..." for _ in range(cols + 1)]  # one extra column for row index
-        tbl = head + [ellipse] + tail
-        return tbl, max_len
+        ellipse = ["..." for _ in range(cols)]  # one extra column for row index
+        tbl = head_data + [ellipse] + tail_data
+        return tbl
 
     # endregion Data
 
     # region Show Dialog
     def show(self) -> int:
-        # window = Lo.get_frame().getContainerWindow()
-        self._doc.activate()
-        try:
-            self._ctl_main_lbl.label = self._get_message()
-        except Exception as ex:
-            self.log.error(f"Error setting message: {ex}")
-        window = self._doc.get_frame().getContainerWindow()
-        ps = window.getPosSize()
-        x = round(ps.Width / 2 - self._width / 2)
-        y = round(ps.Height / 2 - self._height / 2)
-        self._dialog.set_pos_size(x, y, self._width, self._height, PosSize.POSSIZE)
-        self._dialog.set_visible(True)
-        result = self._dialog.execute()
-        self._dialog.dispose()
-        return result
+        with self.log.indent(True):
+            # window = Lo.get_frame().getContainerWindow()
+            self._doc.activate()
+            try:
+                self._ctl_main_lbl.label = self._get_message()
+            except Exception as ex:
+                self.log.error("Error setting message: %s", ex)
+            window = self._doc.get_frame().getContainerWindow()
+            ps = window.getPosSize()
+            x = round(ps.Width / 2 - self._width / 2)
+            y = round(ps.Height / 2 - self._height / 2)
+            self._dialog.set_pos_size(x, y, self._width, self._height, PosSize.POSSIZE)
+            self._dialog.set_visible(True)
+            result = self._dialog.execute()
+            self._dialog.dispose()
+            return result
 
     # endregion Show Dialog
 
