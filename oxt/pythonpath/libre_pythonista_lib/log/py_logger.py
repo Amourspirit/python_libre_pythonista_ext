@@ -237,7 +237,7 @@ class PyLogger(Logger):
         if self.isEnabledFor(logging.ERROR) and self._is_doc_match():
             super().error(msg, *args, **kwargs)
 
-    def exception(self, msg, *args, exc_info=True, **kwargs):
+    def exception(self, msg, *args, exc_info=True, **kwargs) -> None:  # noqa: ANN001, ANN002, ANN003
         """
         Convenience method for logging an ERROR with exception information.
         """
