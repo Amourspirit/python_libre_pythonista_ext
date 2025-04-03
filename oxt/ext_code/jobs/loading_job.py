@@ -27,6 +27,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.cmd_calculate_all import CmdCalculateAll
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.doc.cmd_current_ctx_load import CmdCurrentCtxLoad
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.doc.qry_is_macro_enabled import QryIsMacroEnabled
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_doc_init import QryDocInit
 else:
 
@@ -40,6 +41,7 @@ else:
         from libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
         from libre_pythonista_lib.cq.cmd.calc.doc.cmd_calculate_all import CmdCalculateAll
         from libre_pythonista_lib.cq.cmd.doc.cmd_current_ctx_load import CmdCurrentCtxLoad
+        from libre_pythonista_lib.cq.qry.doc.qry_is_macro_enabled import QryIsMacroEnabled
         from libre_pythonista_lib.cq.qry.calc.doc.qry_doc_init import QryDocInit
 # endregion imports
 
@@ -99,12 +101,22 @@ class LoadingJob(XJob, unohelper.Base):
 
             if self.document.supportsService("com.sun.star.sheet.SpreadsheetDocument"):
                 self._log.debug("Document Loading is a spreadsheet")
+                doc = CalcDoc.get_doc_from_component(self.document)
                 qry_handler = QryHandlerFactory.get_qry_handler()
                 cmd_handler = CmdHandlerFactory.get_cmd_handler()
-                qry = QryDocInit()
-                if not qry_handler.handle(qry):
+
+                qry_macro_mode = QryIsMacroEnabled(doc=doc)
+                macros_enabled = qry_handler.handle(qry_macro_mode)
+                if macros_enabled:
+                    self._log.debug("Macros are enabled.")
+                else:
+                    self._log.debug("Macros are not enabled. Exiting.")
+                    return
+
+                qry_doc_init = QryDocInit()
+
+                if not qry_handler.handle(qry_doc_init):
                     self._log.debug("Document is not initialized. .")
-                    doc = CalcDoc.get_doc_from_component(self.document)
                     cmd = CmdCalculateAll(doc=doc)
                     cmd_handler.handle(cmd)
                     if cmd.success:

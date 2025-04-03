@@ -1,6 +1,6 @@
 # region imports
-from __future__ import unicode_literals, annotations
-from typing import Any, TYPE_CHECKING
+from __future__ import annotations
+from typing import Any, Tuple, TYPE_CHECKING
 import contextlib
 import unohelper
 
@@ -25,29 +25,27 @@ if TYPE_CHECKING:
 
     # just for design time
     _CONDITIONS_MET = True
-    from ooodev.loader import Lo
-    from ooodev.events.args.event_args import EventArgs
+    from ooodev.calc import CalcDoc
     from oxt.___lo_pip___.oxt_logger import OxtLogger
-    from oxt.___lo_pip___.config import Config
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.doc.qry_is_macro_enabled import QryIsMacroEnabled
     from oxt.pythonpath.libre_pythonista_lib.const.res_const import RES_LOG_WIN_URL
     from oxt.pythonpath.libre_pythonista_lib.const.event_const import (
         LOG_OPTIONS_CHANGED,
         LOG_PY_LOGGER_RESET,
     )
-    from ...pythonpath.libre_pythonista_lib.event.shared_event import SharedEvent
 else:
     override = lambda func: func  # noqa: E731
     _CONDITIONS_MET = _conditions_met()
     if _CONDITIONS_MET:
-        from ooodev.loader import Lo
-        from ooodev.events.args.event_args import EventArgs  # noqa: F401
-        from ___lo_pip___.config import Config  # noqa: F401
+        from ooodev.calc import CalcDoc
+        from libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
+        from libre_pythonista_lib.cq.qry.doc.qry_is_macro_enabled import QryIsMacroEnabled
         from libre_pythonista_lib.const.res_const import RES_LOG_WIN_URL
         from libre_pythonista_lib.const.event_const import (
             LOG_OPTIONS_CHANGED,
             LOG_PY_LOGGER_RESET,
         )  # noqa: F401
-        from libre_pythonista_lib.event.shared_event import SharedEvent  # noqa: F401
     else:
         RES_LOG_WIN_URL = ""
 # endregion imports
@@ -61,55 +59,65 @@ class LogWindowJob(XJob, unohelper.Base):
     SERVICE_NAMES = ("com.sun.star.task.Job",)
 
     @classmethod
-    def get_imple(cls):
+    def get_imple(cls) -> Tuple[Any, str, Tuple[str, ...]]:
         return cls, cls.IMPLE_NAME, cls.SERVICE_NAMES
 
     # region Init
 
-    def __init__(self, ctx):
+    def __init__(self, ctx: object) -> None:
         XJob.__init__(self)
         unohelper.Base.__init__(self)
         self.ctx = ctx
         self.document = None
-        self._logger = self._get_local_logger()
+        self._log = self._get_local_logger()
 
     # endregion Init
 
     # region execute
     @override
-    def execute(self, Arguments: Any) -> None:
+    def execute(self, Arguments: Any) -> None:  # noqa: ANN401, N803
         # print("LibrePythonistaLogWindowJob execute")
         global RES_LOG_WIN_URL
-        self._logger.debug("execute")
+        self._log.debug("execute")
+        if not _CONDITIONS_MET:
+            self._log.debug("Conditions not met. Returning.")
+            return
+
         try:
-            # can't use args here because this job is also called via dispatch
-            # loader = Lo.load_office()
-            self._logger.debug(f"Args Length: {len(Arguments)}")
+            arg1 = Arguments[0]
 
-            doc = Lo.current_doc
-            if not doc:
-                self._logger.debug("Document is None")
+            for struct in arg1.Value:
+                self._log.debug("Struct: %s", struct.Name)
+                if struct.Name == "Model":
+                    self.document = struct.Value
+                    self._log.debug("Document Found")
+
+            if self.document is None:
+                self._log.debug("ViewJob - Document is None")
                 return
-            document = doc.component  # type: ignore
-            if document.supportsService("com.sun.star.sheet.SpreadsheetDocument"):
-                self._logger.debug("Document is a spreadsheet")
+
+            if self.document.supportsService("com.sun.star.sheet.SpreadsheetDocument"):
+                self._log.debug("Document is a spreadsheet")
+                qry_handler = QryHandlerFactory.get_qry_handler()
+                doc = CalcDoc.get_doc_from_component(self.document)
+                qry_macro_mode = QryIsMacroEnabled(doc=doc)
+                macros_enabled = qry_handler.handle(qry_macro_mode)
+                if macros_enabled:
+                    self._log.debug("Macros are enabled.")
+                else:
+                    self._log.debug("Macros are not enabled. Exiting.")
+                    return
+
+                layout_mgr = self.document.getCurrentController().getFrame().LayoutManager
+                if layout_mgr.isElementVisible(RES_LOG_WIN_URL):
+                    layout_mgr.hideElement(RES_LOG_WIN_URL)
+                self._log.debug("Log Window Job Done")
             else:
-                self._logger.debug("Document is not a spreadsheet")
+                self._log.debug("Document is not a spreadsheet")
                 return
-            if _CONDITIONS_MET:
-                try:
-                    # Lo.dispatch_cmd(cmd="service:___lo_identifier___.Switcher", in_thread=True)
-                    layout_mgr = document.getCurrentController().getFrame().LayoutManager
-                    if layout_mgr.isElementVisible(RES_LOG_WIN_URL):
-                        layout_mgr.hideElement(RES_LOG_WIN_URL)
-                    # SharedEvent().trigger_event(LOG_OPTIONS_CHANGED, EventArgs(self))
-                    self._logger.debug("Log Window Job Done")
-
-                except Exception:
-                    self._logger.error("Error Setting Custom Properties", exc_info=True)
 
         except Exception:
-            self._logger.error("Error getting current document", exc_info=True)
+            self._log.error("Error getting current document", exc_info=True)
             return
 
     # endregion execute
@@ -129,8 +137,7 @@ class LogWindowJob(XJob, unohelper.Base):
 
 # region Implementation
 
-g_TypeTable = {}
-g_ImplementationHelper = unohelper.ImplementationHelper()
+g_ImplementationHelper = unohelper.ImplementationHelper()  # noqa: N816
 g_ImplementationHelper.addImplementation(*LogWindowJob.get_imple())
 
 # endregion Implementation

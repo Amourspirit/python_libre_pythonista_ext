@@ -124,7 +124,7 @@
         <node oor:name="VizTracerJob" oor:op="fuse" />
         <node oor:name="DebugLpJob" oor:op="fuse" />
         <node oor:name="ViewJob" oor:op="fuse" />
-        <node oor:name="RegisterDispatchJob" oor:op="fuse" />
+        <!-- <node oor:name="RegisterDispatchJob" oor:op="fuse" /> -->
       </node>
     </node>
     <node oor:name="OnLoadFinished" oor:op="fuse">

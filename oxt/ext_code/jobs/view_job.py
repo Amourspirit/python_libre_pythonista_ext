@@ -16,19 +16,24 @@ def _conditions_met() -> bool:
 
 
 if TYPE_CHECKING:
-    try:
-        # python 3.12+
-        from typing import override  # type: ignore
-    except ImportError:
-        from typing_extensions import override
+    from typing_extensions import override
 
     # just for design time
     _CONDITIONS_MET = True
-    from ooodev.utils.props import Props
+    from ooodev.calc import CalcDoc
     from oxt.___lo_pip___.oxt_logger import OxtLogger
     from oxt.___lo_pip___.debug.break_mgr import BreakMgr
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.doc.cmd_current_ctx_load import CmdCurrentCtxLoad
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.doc.qry_is_macro_enabled import QryIsMacroEnabled
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_is_calc_view import QryIsCalcView
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.cmd_register_dispatch_interceptor import (
+        CmdRegisterDispatchInterceptor,
+    )
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.cmd_unregister_dispatch_interceptor import (
+        CmdUnRegisterDispatchInterceptor,
+    )
 
     break_mgr = BreakMgr()
 
@@ -37,15 +42,24 @@ if TYPE_CHECKING:
     # )
 else:
 
-    def override(func):
+    def override(func):  # noqa: ANN001, ANN201
         return func
 
     _CONDITIONS_MET = _conditions_met()
     if _CONDITIONS_MET:
-        from ooodev.utils.props import Props
+        from ooodev.calc import CalcDoc  # noqa: F401
         from ___lo_pip___.debug.break_mgr import BreakMgr
         from libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
         from libre_pythonista_lib.cq.cmd.doc.cmd_current_ctx_load import CmdCurrentCtxLoad
+        from libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
+        from libre_pythonista_lib.cq.qry.doc.qry_is_macro_enabled import QryIsMacroEnabled
+        from libre_pythonista_lib.cq.qry.calc.doc.qry_is_calc_view import QryIsCalcView
+        from libre_pythonista_lib.cq.cmd.calc.doc.cmd_register_dispatch_interceptor import (
+            CmdRegisterDispatchInterceptor,
+        )
+        from libre_pythonista_lib.cq.cmd.calc.doc.cmd_unregister_dispatch_interceptor import (
+            CmdUnRegisterDispatchInterceptor,
+        )
 
         # Initialize the breakpoint manager
         break_mgr = BreakMgr()
@@ -117,21 +131,43 @@ class ViewJob(unohelper.Base, XJob):
                 # run_id = self.document.RuntimeUID
                 # key = f"LIBRE_PYTHONISTA_DOC_{run_id}"
                 # os.environ[key] = "1"
-                # self._log.debug(f"Added {key} to environment variables")
+                # self._log.debug(f"Added {key} to environment variables"
+                self._log.debug("Document is a spreadsheet")
+
                 if _CONDITIONS_MET:
+                    qry_handler = QryHandlerFactory.get_qry_handler()
+                    cmd_handler = CmdHandlerFactory.get_cmd_handler()
+
                     try:
                         self._log.debug("Conditions met. Continuing ...")
                         break_mgr.check_breakpoint("view_job_init")
-                        doc_args = self.document.getArgs()
-                        args_dic = Props.props_to_dot_dict(doc_args)
-                        if hasattr(args_dic, "MacroExecutionMode"):
-                            self._log.debug("MacroExecutionMode: %s", args_dic.MacroExecutionMode)
-                            macros_enabled = args_dic.MacroExecutionMode == 4
+                        doc = CalcDoc.get_doc_from_component(self.document)
+
+                        qry_macro_mode = QryIsMacroEnabled(doc=doc)
+                        macros_enabled = qry_handler.handle(qry_macro_mode)
+                        if macros_enabled:
+                            self._log.debug("Macros are enabled.")
                         else:
-                            macros_enabled = False
-                        self._log.debug("Macros Enabled: %s", macros_enabled)
-                        if not macros_enabled:
                             self._log.debug("Macros are not enabled. Exiting.")
+                            return
+
+                        qry = QryIsCalcView(doc=doc)
+                        if qry_handler.handle(qry):
+                            self._log.debug("Document is a Calc view.")
+                            cmd = CmdRegisterDispatchInterceptor(doc=doc)
+                            cmd_handler.handle(cmd)
+                            if cmd.success:
+                                self._log.debug("Successfully registered dispatch interceptor.")
+                            else:
+                                self._log.warning("Failed to register dispatch interceptor.")
+                        else:
+                            self._log.debug("Document is not a Calc view. Returning.")
+                            cmd = CmdUnRegisterDispatchInterceptor(doc=doc)
+                            cmd_handler.handle(cmd)
+                            if cmd.success:
+                                self._log.debug("Successfully unregistered dispatch interceptor.")
+                            else:
+                                self._log.warning("Failed to unregister dispatch interceptor.")
                             return
 
                     except Exception:

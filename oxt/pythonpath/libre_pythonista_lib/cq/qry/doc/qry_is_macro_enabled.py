@@ -34,5 +34,5 @@ class QryIsMacroEnabled(QryBase, LogMixin, QryOfficeDocT[bool]):
             self.log.debug("Macros enabled: %s", macros_enabled)
             return macros_enabled
         except Exception:
-            self.log.exception("Error getting script url")
+            self.log.exception("Error executing query.")
         return False

@@ -3,6 +3,7 @@ import contextlib
 
 from ooodev.calc import CalcDoc
 from ooodev.loader.inst.doc_type import DocType
+from ooodev.exceptions import ex as mEx  # noqa: N812
 
 
 if TYPE_CHECKING:
@@ -36,22 +37,19 @@ def register_interceptor(doc_comp: Any) -> None:  # noqa: ANN401
     log = None
     with contextlib.suppress(Exception):
         log = LogInst()
-        with log.indent(True):
-            log.debug("Registering Dispatch Provider Interceptor")
+        log.debug("Registering Dispatch Provider Interceptor")
 
     if CalcSheetCellDispatchProvider.has_instance(doc):
         if log:
-            with log.indent(True):
-                log.debug("Dispatch Provider Interceptor already registered.")
+            log.debug("Dispatch Provider Interceptor already registered.")
         return
+    view = doc.get_view()  # get view early just in case it is not a Calc view
     inst = CalcSheetCellDispatchProvider(doc)  # singleton
     frame = doc.get_frame()
     frame.registerDispatchProviderInterceptor(inst)  # type: ignore
-    view = doc.get_view()
     view.add_event_notify_context_menu_execute(ci.on_menu_intercept)  # type: ignore
     if log:
-        with log.indent(True):
-            log.debug("Dispatch Provider Interceptor registered.")
+        log.debug("Dispatch Provider Interceptor registered.")
 
 
 def unregister_interceptor(doc_comp: Any) -> None:  # noqa: ANN401
@@ -74,20 +72,22 @@ def unregister_interceptor(doc_comp: Any) -> None:  # noqa: ANN401
     log = None
     with contextlib.suppress(Exception):
         log = LogInst()
-        with log.indent(True):
-            log.debug("UnRegistering Dispatch Provider Interceptor")
+        log.debug("UnRegistering Dispatch Provider Interceptor")
 
     if not CalcSheetCellDispatchProvider.has_instance(doc):
         if log:
-            with log.indent(True):
-                log.debug("Dispatch Provider Interceptor was not registered.")
+            log.debug("Dispatch Provider Interceptor was not registered.")
         return
     inst = CalcSheetCellDispatchProvider(doc)  # singleton
-    frame = doc.get_frame()
-    frame.releaseDispatchProviderInterceptor(inst)  # type: ignore
-    view = doc.get_view()
-    view.remove_event_notify_context_menu_execute(ci.on_menu_intercept)  # type: ignore
+    try:
+        frame = doc.get_frame()
+        frame.releaseDispatchProviderInterceptor(inst)  # type: ignore
+        view = doc.get_view()
+        view.remove_event_notify_context_menu_execute(ci.on_menu_intercept)  # type: ignore
+    except mEx.MissingInterfaceError as e:
+        if log:
+            log.debug("View is not a Calc view: %s", e)
+        return
     inst.dispose()  # type: ignore
     if log:
-        with log.indent(True):
-            log.debug("Dispatch Provider Interceptor unregistered.")
+        log.debug("Dispatch Provider Interceptor unregistered.")

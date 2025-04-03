@@ -26,7 +26,6 @@ if TYPE_CHECKING:
     # just for design time
     _CONDITIONS_MET = True
     from ooodev.calc import CalcDoc
-    from ooodev.utils.props import Props
     from oxt.___lo_pip___.debug.break_mgr import BreakMgr
     from oxt.___lo_pip___.events.args.event_args import EventArgs
     from oxt.___lo_pip___.events.lo_events import LoEvents
@@ -37,6 +36,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_doc_init import QryDocInit
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_is_doc_pythonista import QryIsDocPythonista
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.doc.qry_is_macro_enabled import QryIsMacroEnabled
     from oxt.pythonpath.libre_pythonista_lib.doc.doc_globals import GET_CURRENT_EVENT
     from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
 
@@ -53,7 +53,6 @@ else:
     _CONDITIONS_MET = _conditions_met()
     if _CONDITIONS_MET:
         from ooodev.calc import CalcDoc
-        from ooodev.utils.props import Props
         from ___lo_pip___.debug.break_mgr import BreakMgr
         from ___lo_pip___.events.args.event_args import EventArgs
         from ___lo_pip___.events.lo_events import LoEvents
@@ -63,6 +62,7 @@ else:
         from libre_pythonista_lib.cq.qry.calc.doc.qry_doc_init import QryDocInit
         from libre_pythonista_lib.cq.qry.calc.doc.qry_is_doc_pythonista import QryIsDocPythonista
         from libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
+        from libre_pythonista_lib.cq.qry.doc.qry_is_macro_enabled import QryIsMacroEnabled
         from libre_pythonista_lib.doc.doc_globals import GET_CURRENT_EVENT
         from libre_pythonista_lib.utils.result import Result
 
@@ -141,6 +141,7 @@ class LoadFinishedJob(unohelper.Base, XJob):
                 self._lo_load(self.document)
 
             if self.document.supportsService("com.sun.star.sheet.SpreadsheetDocument"):
+                self._log.debug("Document is a spreadsheet")
                 run_id = self.document.RuntimeUID
                 key = f"LIBRE_PYTHONISTA_DOC_{run_id}"
                 os.environ[key] = "1"
@@ -149,22 +150,19 @@ class LoadFinishedJob(unohelper.Base, XJob):
                     try:
                         self._log.debug("Conditions met. Continuing ...")
                         break_mgr.check_breakpoint("load_finished_job_init")
-                        doc_args = self.document.getArgs()
-                        args_dic = Props.props_to_dot_dict(doc_args)
-                        if hasattr(args_dic, "MacroExecutionMode"):
-                            self._log.debug("MacroExecutionMode: %s", args_dic.MacroExecutionMode)
-                            macros_enabled = args_dic.MacroExecutionMode == 4
-                        else:
-                            macros_enabled = False
-                        self._log.debug("Macros Enabled: %s", macros_enabled)
-                        if not macros_enabled:
-                            self._log.debug("Macros are not enabled. Exiting.")
-                            return
-
                         qry_handler = QryHandlerFactory.get_qry_handler()
                         cmd_handler = CmdHandlerFactory.get_cmd_handler()
 
                         doc = CalcDoc.get_doc_from_component(self.document)
+
+                        qry_macro_mode = QryIsMacroEnabled(doc=doc)
+                        macros_enabled = qry_handler.handle(qry_macro_mode)
+                        if macros_enabled:
+                            self._log.debug("Macros are enabled.")
+                        else:
+                            self._log.debug("Macros are not enabled. Exiting.")
+                            return
+
                         qry = QryIsDocPythonista(doc=doc)
                         qry_result = qry_handler.handle(qry)
                         if Result.is_failure(qry_result):
