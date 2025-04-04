@@ -42,6 +42,7 @@ class CmdAddr(CmdBase, LogMixin, CmdCellCtlT):
             self._ctl.cell = cell
         self._current_state = NULL_OBJ
         self._current_ctl: Dict[str, Any] | None = None
+        self.log.debug("init done for cell %s", cell.cell_obj)
 
     def _get_current_state(self) -> str:
         qry = QryAddr(cell=self.cell)

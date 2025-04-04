@@ -119,13 +119,12 @@ class StateRules(LogMixin):
         Raises:
             ValueError: If an error occurs
         """
-        with self.log.indent(True):
-            try:
-                self._rules.remove(rule)
-                self.log.debug("remove_rule_at() Rule %s removed.", rule)
-            except ValueError as e:
-                msg = f"{self.__class__.__name__}.unregister_rule() Unable to unregister rule."
-                raise ValueError(msg) from e
+        try:
+            self._rules.remove(rule)
+            self.log.debug("remove_rule_at() Rule %s removed.", rule)
+        except ValueError as e:
+            msg = f"{self.__class__.__name__}.unregister_rule() Unable to unregister rule."
+            raise ValueError(msg) from e
 
     def remove_rule_at(self, index: int) -> None:
         """
@@ -137,14 +136,13 @@ class StateRules(LogMixin):
         Raises:
             ValueError: If an error occurs
         """
-        with self.log.indent(True):
-            try:
-                del self._rules[index]
-                self.log.debug("remove_rule_at() Rule at index %i removed.", index)
-            except IndexError as e:
-                msg = f"{self.__class__.__name__}.unregister_rule() Unable to unregister rule."
-                self.log.error(msg, exc_info=True)
-                raise ValueError(msg) from e
+        try:
+            del self._rules[index]
+            self.log.debug("remove_rule_at() Rule at index %i removed.", index)
+        except IndexError as e:
+            msg = f"{self.__class__.__name__}.unregister_rule() Unable to unregister rule."
+            self.log.error(msg, exc_info=True)
+            raise ValueError(msg) from e
 
     def _reg_rule(self, rule: Type[StateRuleT]) -> None:
         self._rules.append(rule)
@@ -176,26 +174,25 @@ class StateRules(LogMixin):
         Returns:
             List[StateRuleT]: Matched rule. Defaults to ``default_rule`` value.
         """
-        with self.log.indent(True):
-            is_db = self.log.is_debug
-            if is_db:
-                self.log.debug("get_matched_rule() cell: %s. Data Type %s", cell.cell_obj, type(data).__name__)
-            result = None
-            for rule in self._rules:
-                inst = rule(cell, data)
-                if inst.is_match:
-                    if is_db:
-                        self.log.debug("get_matched_rule() Rule %s matched.", inst)
-                    result = inst
-                    break
-            if result is not None:
-                return result
-            if self._default_rule is not None:
-                self.log.warning("get_matched_rule() No rule matched. Using default rule.")
-                return self._default_rule(cell, data)
-            # this should never happen LastDict is always a match
-            self.log.warning("get_matched_rule() No rule matched.")
-            return None
+        is_db = self.log.is_debug
+        if is_db:
+            self.log.debug("get_matched_rule() cell: %s. Data Type %s", cell.cell_obj, type(data).__name__)
+        result = None
+        for rule in self._rules:
+            inst = rule(cell, data)
+            if inst.is_match:
+                if is_db:
+                    self.log.debug("get_matched_rule() Rule %s matched.", inst)
+                result = inst
+                break
+        if result is not None:
+            return result
+        if self._default_rule is not None:
+            self.log.warning("get_matched_rule() No rule matched. Using default rule.")
+            return self._default_rule(cell, data)
+        # this should never happen LastDict is always a match
+        self.log.warning("get_matched_rule() No rule matched.")
+        return None
 
     # endregion Methods
 

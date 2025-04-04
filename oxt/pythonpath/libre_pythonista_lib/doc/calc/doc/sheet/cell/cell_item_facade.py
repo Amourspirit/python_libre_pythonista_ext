@@ -174,7 +174,8 @@ class CellItemFacade(LogMixin):
         self._append_code("")
         try:
             self._cache.clear()
-            return self.get_value()
+            # return self.get_value()
+            return (("",),)
         except Exception:
             self.log.exception("add_default_control() Failed to get module state.")
             return ((None,),)
@@ -213,15 +214,21 @@ class CellItemFacade(LogMixin):
         if rule is None:
             self.log.error("Failed to get matched rule.")
             return
-        rule.rule_kind
         ctl_kind_qry = QryCtlKindFromRuleNameKind(rule.rule_kind)
         ctl_kind = self.qry_handler.handle(ctl_kind_qry)
         if ctl_kind == current_control.control_kind:
             return
-        if not self.remove_control():
+        if self.remove_control():
+            self.log.debug("Control removed.")
+        else:
             self.log.error("Failed to remove control.")
             return
-        _ = ctl_director.create_control(self._cell, ctl_kind)
+
+        ctl = ctl_director.create_control(self._cell, ctl_kind)
+        if ctl is not None:
+            self.log.debug("Control created.")
+        else:
+            self.log.error("Failed to create control.")
 
     def auto_update(self) -> None:
         self.log.debug("Auto Updating Code")

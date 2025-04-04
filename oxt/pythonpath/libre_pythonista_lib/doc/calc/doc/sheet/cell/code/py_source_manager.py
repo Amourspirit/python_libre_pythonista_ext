@@ -197,6 +197,7 @@ class PySourceManager(LogMixin):
         self._se = None
 
     def _init_sources(self) -> None:  # type: ignore
+        self.log.debug("_init_sources() Entered.")
         sources: List[Tuple[PySource, CalcCell]] = []
         code_cells = self._qry_lp_cells()
         for sheet in self._doc.sheets:
@@ -223,6 +224,8 @@ class PySourceManager(LogMixin):
                 self.set_global_var("CURRENT_CELL_ID", py_src.uri_info.unique_id)
                 self.set_global_var("CURRENT_CELL_OBJ", calc_cell.cell_obj)
                 _ = self._mod_state.update_with_result(cell=calc_cell, code=py_src.source_code)
+
+        self.log.debug("_init_sources() Leaving.")
 
     # endregion Init
 
@@ -652,7 +655,7 @@ class PySourceManager(LogMixin):
         calc_cell = sheet[cell_obj]
 
         self.log.debug("_update_item() Entered.")
-        self.log.debug(f"_update_item() sheet index: {sheet_idx} col: {col}, row: {row}")
+        self.log.debug("_update_item() sheet index: %i col: %i, row: %i", sheet_idx, col, row)
         cargs.event_data = DotDict(
             source=self,
             sheet_idx=sheet_idx,

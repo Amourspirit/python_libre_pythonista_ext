@@ -31,7 +31,7 @@ class RuleBase:
     def _get_rule_kind(self) -> RuleNameKind: ...
 
     def __repr__(self) -> str:
-        return f"<{self.__class__.__name__}({self.cell.cell_obj}, {self.data})>"
+        return f"<{self.__class__.__name__}({self.cell.cell_obj}, DotDict)>"
 
     @property
     def cell(self) -> CalcCell:
