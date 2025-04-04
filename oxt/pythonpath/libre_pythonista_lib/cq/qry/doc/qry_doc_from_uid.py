@@ -38,6 +38,7 @@ class QryDocFromUid(QryBase, LogMixin, QryT[OfficeDocumentT | None]):
         QryBase.__init__(self)
         LogMixin.__init__(self)
         self._uid = uid
+        self.log.debug("init done for uid %s", uid)
 
     def execute(self) -> OfficeDocumentT | None:
         """

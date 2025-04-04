@@ -46,6 +46,7 @@ class QryRowCols(QryBase, LogMixin, QryCellT[Result[List[int], None] | Result[No
         LogMixin.__init__(self)
         self._cell = cell
         self._mod = cast(PyModuleT, mod)
+        self.log.debug("init done for cell %s", cell.cell_obj)
 
     def _qry_rule_kind(self) -> RuleNameKind:
         """Queries the rule kind for the cell"""

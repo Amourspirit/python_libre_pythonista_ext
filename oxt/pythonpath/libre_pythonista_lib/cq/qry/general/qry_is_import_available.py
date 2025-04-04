@@ -26,6 +26,7 @@ class QryIsImportAvailable(QryBase, LogMixin, QryT[bool]):
         QryBase.__init__(self)
         LogMixin.__init__(self)
         self._module_name = module_name
+        self.log.debug("init done for module %s", module_name)
 
     def execute(self) -> bool:
         """

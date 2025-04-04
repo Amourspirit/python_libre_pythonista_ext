@@ -48,6 +48,7 @@ class CmdLpDocProps(CmdBase, LogMixin, CmdCacheT):
         self._json_file = cast(DocJsonFile | None, NULL_OBJ)
         self._ensured = False
         self._current_state = cast(dict | None, NULL_OBJ)
+        self.log.debug("init done for doc %s", doc.runtime_uid)
 
     def _ensure_json_file(self) -> bool:
         qry = QryLpDocJsonFile(self._doc)

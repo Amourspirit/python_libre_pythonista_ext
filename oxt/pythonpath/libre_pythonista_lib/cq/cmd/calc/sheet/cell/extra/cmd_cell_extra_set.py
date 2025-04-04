@@ -42,6 +42,7 @@ class CmdCellExtraSet(CmdBase, LogMixin, CmdCellT):
         self._value = value
         self._null = object()
         self._current_value = self._null
+        self.log.debug("init done for cell %s", cell.cell_obj)
 
     def _get_current_value(self) -> Any:  # noqa: ANN401
         # can return NULL_OBJ

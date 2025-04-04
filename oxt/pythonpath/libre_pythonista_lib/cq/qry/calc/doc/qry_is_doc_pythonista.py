@@ -32,6 +32,7 @@ class QryIsDocPythonista(QryBase, LogMixin, QryDocT[Result[bool, None] | Result[
         LogMixin.__init__(self)
         self._doc = doc
         self._sfa = Sfa()
+        self.log.debug("init done for doc %s", doc.runtime_uid)
 
     def _qry_cell_cp_code_name(self) -> str:
         """

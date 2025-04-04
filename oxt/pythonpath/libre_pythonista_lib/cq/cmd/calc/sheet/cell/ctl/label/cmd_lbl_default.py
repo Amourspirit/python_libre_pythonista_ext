@@ -34,6 +34,7 @@ class CmdLblDefault(CmdBase, LogMixin, CmdCellCtlT):
         if not self._ctl.cell:
             self._ctl.cell = cell
         self._current_state = None
+        self.log.debug("init done for cell %s", cell.cell_obj)
 
     def _qry_label(self) -> str:
         qry = QryLblDefault(cell=self.cell)

@@ -68,6 +68,7 @@ class CmdRefreshControl(CmdBase, LogMixin, CmdCellT):
         self._force_refresh = force_refresh
         self._state_changed = False
         self._current_control = cast(CtlKind, None)
+        self.log.debug("init done for cell %s", cell.cell_obj)
 
     def _qry_mod(self) -> PyModuleT:
         """Gets the default Python module via query"""

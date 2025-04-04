@@ -46,6 +46,7 @@ class QryCtlStorageLocation(QryBase, LogMixin, QryCellT[Result[str, None] | Resu
         self.kind = CalcQryKind.CELL
         self._cell = cell
         self._ctl = ctl
+        self.log.debug("init done for cell %s", cell.cell_obj)
 
     def _qry_module_state(self) -> Result[ModuleStateItem, None] | Result[None, Exception]:
         """Gets the module state via query"""

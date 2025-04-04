@@ -49,6 +49,7 @@ class CmdCellPropsDel(CmdBase, LogMixin, CmdCellT):
         self._current_value = None
         self._null = object()
         self._removed: List[str] = []
+        self.log.debug("init done for cell %s", cell.cell_obj)
 
     def _get_current_dot_dict(self) -> DotDict[Any]:
         """

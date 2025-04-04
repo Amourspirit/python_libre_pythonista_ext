@@ -33,6 +33,7 @@ class CmdCellPropSet(CmdBase, LogMixin, CmdCellT):
         self._name = name
         self._value = value
         self._current_value = NULL_OBJ
+        self.log.debug("init done for cell %s", cell.cell_obj)
 
     def _get_current_value(self) -> Any:  # noqa: ANN401
         qry = QryCellPropValue(cell=self._cell, name=self._name, default=NULL)

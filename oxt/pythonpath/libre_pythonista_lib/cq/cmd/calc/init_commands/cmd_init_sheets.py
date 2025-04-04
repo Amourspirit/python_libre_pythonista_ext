@@ -33,6 +33,7 @@ class CmdInitSheets(CmdBase, List[Type[CmdDocT]], LogMixin, CmdDocT):
         self._doc = doc
         self.append(CmdSheetsModified)
         self.append(CmdSheetActivation)
+        self.log.debug("init done for doc %s", doc.runtime_uid)
 
     @override
     def execute(self) -> None:

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import Any, TYPE_CHECKING
+import contextlib
 
 if TYPE_CHECKING:
     from com.sun.star.sheet import SheetCell  # service
@@ -28,6 +29,7 @@ class QryCellIsPycArrayFormula(QryBase, LogMixin, QryUnoCellT[bool]):
         QryBase.__init__(self)
         LogMixin.__init__(self)
         self._cell = cell
+        self.log.debug("init done")
 
     def _qry_cell_array_formula(self) -> bool:
         """Check if the cell formula is a array formula."""
@@ -44,12 +46,18 @@ class QryCellIsPycArrayFormula(QryBase, LogMixin, QryUnoCellT[bool]):
 
         try:
             if not self._qry_cell_array_formula():
+                if self.log.is_debug:
+                    with contextlib.suppress(Exception):
+                        # just in case is a deleted cell.
+                        self.log.debug("Cell %s is not an array formula.", self.cell.AbsoluteName)
                 return False
 
             formula = self.cell.getFormula()
             s = formula.lstrip("{")
             s = s.lstrip("=")  # formula may start with one or two equal signs
-            return s.startswith(FORMULA_PYC)
+            result = s.startswith(FORMULA_PYC)
+            self.log.debug("Cell %s is pyc array formula: %s", self.cell.AbsoluteName, result)
+            return result
 
         except Exception:
             self.log.exception("Error executing query")

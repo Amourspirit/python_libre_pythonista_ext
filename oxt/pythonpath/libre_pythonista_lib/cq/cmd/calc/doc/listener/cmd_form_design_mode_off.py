@@ -25,6 +25,7 @@ class CmdFormDesignModeOff(CmdBase, LogMixin, CmdDocT):
         LogMixin.__init__(self)
         self._doc = doc
         self._current_state = self._get_form_design_mode()
+        self.log.debug("init done for doc %s", doc.runtime_uid)
 
     def _get_form_design_mode(self) -> bool | None:
         view = self._get_view()

@@ -26,6 +26,7 @@ class QryCellIsFormula(QryBase, LogMixin, QryUnoCellT[bool]):
         QryBase.__init__(self)
         LogMixin.__init__(self)
         self._cell = cell
+        self.log.debug("init done")
 
     def execute(self) -> bool:
         """
@@ -41,7 +42,10 @@ class QryCellIsFormula(QryBase, LogMixin, QryUnoCellT[bool]):
                 self.log.debug("Cell is deleted. Not checking for array formula.")
                 return False
             formula = self.cell.getFormula()
-            return formula.startswith("=")
+            self.log.debug("Cell %s is formula: %s", self.cell.AbsoluteName, formula.startswith("="))
+            result = formula.startswith("=")
+            self.log.debug("Cell %s is formula: %s", self.cell.AbsoluteName, result)
+            return result
 
         except Exception:
             self.log.exception("Error executing query")

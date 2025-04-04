@@ -42,6 +42,7 @@ class CmdCtlShapeName(CmdBase, LogMixin, CmdCellCtlT):
             self._ctl.cell = cell
         self._current_state = self._ctl.ctl_shape_name
         self._current_ctl: Dict[str, Any] | None = None
+        self.log.debug("init done for cell %s", cell.cell_obj)
 
     def _validate(self) -> bool:
         """Validates the ctl"""

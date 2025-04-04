@@ -44,6 +44,7 @@ class CmdCellPropsSet(CmdBase, LogMixin, CmdCellT):
         self._props = props
         self._current_values = None
         self._success_props: List[str] = []
+        self.log.debug("init done for cell %s", cell.cell_obj)
 
     def _get_current_values(self) -> DotDict[Any]:
         """

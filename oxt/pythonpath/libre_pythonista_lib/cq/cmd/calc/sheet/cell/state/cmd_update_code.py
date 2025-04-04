@@ -53,6 +53,7 @@ class CmdUpdateCode(CmdBase, LogMixin, CmdCellT):
         self._py_src_mgr = cast(PySourceManager, None)
         self._state_changed = False
         self._current_state = cast(str | None, None)
+        self.log.debug("init done for cell %s", cell.cell_obj)
 
     def _qry_mod(self) -> PyModuleT:
         """

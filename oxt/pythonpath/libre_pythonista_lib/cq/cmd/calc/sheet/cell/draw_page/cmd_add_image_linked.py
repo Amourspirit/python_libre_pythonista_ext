@@ -75,6 +75,7 @@ class CmdAddImageLinked(CmdBase, LogMixin, CmdCellT):
         self._success_cmds: List[CmdCellT] = []
         self._current_shape = cast(DrawShape[SpreadsheetDrawPage[CalcSheet]] | None, NULL_OBJ)
         self._new_shape: DrawShape[SpreadsheetDrawPage[CalcSheet]] | None = None
+        self.log.debug("init done for cell %s", cell.cell_obj)
 
     def _validate(self) -> bool:
         if not self._fnm:

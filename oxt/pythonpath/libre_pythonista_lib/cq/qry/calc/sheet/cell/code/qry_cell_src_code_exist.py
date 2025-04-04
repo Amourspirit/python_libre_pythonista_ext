@@ -35,6 +35,7 @@ class QryCellSrcCodeExist(QryBase, LogMixin, QryCellCacheT[bool]):
         self.kind = CalcQryKind.CELL_CACHE
         self._uri = uri
         self._cell = cell
+        self.log.debug("init done for cell %s", cell.cell_obj)
 
     def execute(self) -> bool:
         """

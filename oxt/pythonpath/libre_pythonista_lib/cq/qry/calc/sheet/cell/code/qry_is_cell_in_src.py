@@ -35,6 +35,7 @@ class QryIsCellInSrc(QryBase, LogMixin, QryCellT[bool]):
         self.kind = CalcQryKind.CELL
         self._cell = cell
         self._mod = mod
+        self.log.debug("init done for cell %s", cell.cell_obj)
 
     def _qry_py_src_mgr(self) -> PySourceManager:
         """

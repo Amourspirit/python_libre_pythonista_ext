@@ -85,6 +85,7 @@ class CmdInitDoc(CmdBase, List[CmdT], LogMixin, CmdDocT):
         self.append(CmdDocInit(doc=doc))  # must be last in the list
         self._success_cmds: List[CmdT] = []
         self._doc = doc
+        self.log.debug("init done for doc %s", doc.runtime_uid)
 
     def _get_globals(self) -> DocGlobals | None:
         qry = QryDocGlobals()

@@ -31,6 +31,7 @@ class QryPyModuleState(QryBase, LogMixin, QryT[PyModuleState]):
         QryBase.__init__(self)
         LogMixin.__init__(self)
         self._mod = mod
+        self.log.debug("init done")
 
     def _qry_mod(self) -> PyModuleT:
         """Gets the Python module"""

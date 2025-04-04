@@ -24,6 +24,7 @@ class QryCellHasProp(QryBase, LogMixin, QryCellT[bool]):
         self.kind = CalcQryKind.CELL
         self._cell = cell
         self._name = name
+        self.log.debug("init done for cell %s", cell.cell_obj)
 
     def execute(self) -> bool:
         """

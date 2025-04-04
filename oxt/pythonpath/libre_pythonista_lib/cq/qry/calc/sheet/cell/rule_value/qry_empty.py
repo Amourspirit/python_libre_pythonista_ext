@@ -6,18 +6,16 @@ from ooodev.utils.helper.dot_dict import DotDict
 if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_base import QryBase
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_t import QryT
-    from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
 else:
     from libre_pythonista_lib.cq.qry.qry_base import QryBase
     from libre_pythonista_lib.cq.qry.qry_t import QryT
-    from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.utils.result import Result
 
 # tested in: tests/test_cmd/test_cmd_py_src.py
 
 
-class QryEmpty(QryBase, LogMixin, QryT[Result[Iterable[Iterable[object]], None] | Result[None, Exception]]):
+class QryEmpty(QryBase, QryT[Result[Iterable[Iterable[object]], None] | Result[None, Exception]]):
     """Gets the empty result value"""
 
     def __init__(self, data: DotDict) -> None:
@@ -27,7 +25,6 @@ class QryEmpty(QryBase, LogMixin, QryT[Result[Iterable[Iterable[object]], None] 
             data (DotDict): Data to query.
         """
         QryBase.__init__(self)
-        LogMixin.__init__(self)
         self._data = data
 
     def execute(self) -> Result[Iterable[Iterable[object]], None] | Result[None, Exception]:

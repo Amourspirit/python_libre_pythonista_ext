@@ -33,6 +33,7 @@ class CmdPyModuleDefault(CmdBase, LogMixin, CmdDocT):
 
         self._doc = doc
         self._mod = mod
+        self.log.debug("init done for doc %s", doc.runtime_uid)
 
     def _get_globals(self) -> DocGlobals | None:
         qry = QryDocGlobals(self._doc.runtime_uid)

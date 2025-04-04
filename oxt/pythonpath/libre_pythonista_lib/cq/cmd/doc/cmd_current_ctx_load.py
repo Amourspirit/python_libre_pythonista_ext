@@ -48,6 +48,7 @@ class CmdCurrentCtxLoad(CmdBase, LogMixin, CmdT):
         self._current_state = cast(XComponentContext | None, NULL_OBJ)
         self._current_lo_inst = cast(LoInst | None, NULL_OBJ)
         self._current_options = cast(Options | None, NULL_OBJ)
+        self.log.debug("init done")
 
     def _qry_globals(self) -> Result[DocGlobals, None] | Result[None, Exception]:
         """

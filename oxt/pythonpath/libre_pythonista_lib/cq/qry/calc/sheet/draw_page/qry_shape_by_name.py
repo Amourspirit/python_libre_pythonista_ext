@@ -28,6 +28,7 @@ class QryShapeByName(
         self.kind = CalcQryKind.SHEET
         self._shape_name = shape_name
         self._sheet = sheet
+        self.log.debug("init done for sheet %s for shape %s", sheet.name, shape_name)
 
     def execute(self) -> Result[DrawShape[SpreadsheetDrawPage[CalcSheet]], None] | Result[None, Exception]:
         """

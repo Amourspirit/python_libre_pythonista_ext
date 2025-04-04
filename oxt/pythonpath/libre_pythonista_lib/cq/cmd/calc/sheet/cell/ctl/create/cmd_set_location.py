@@ -31,6 +31,7 @@ class CmdSetLocation(CmdBase, LogMixin, CmdCellCtlT):
         LogMixin.__init__(self)
         self._ctl = ctl
         self._cell = cell
+        self.log.debug("init done for cell %s", cell.cell_obj)
 
     def _get_script_loc(self) -> str:
         qry = QryCtlScriptLoc(cell=self.cell)

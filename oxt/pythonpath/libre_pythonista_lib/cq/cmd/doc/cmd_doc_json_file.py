@@ -54,6 +54,7 @@ class CmdDocJsonFile(CmdBase, LogMixin, CmdCacheT):
             file_name = f"{file_name}.{ext}"
         self.name = file_name
         self._current_state = cast(DocJsonFile | None, NULL_OBJ)
+        self.log.debug("init done for doc %s", doc.runtime_uid)
 
     def _get_current_value(self) -> DocJsonFile | None:
         qry = QryDocJsonFile(doc=self.doc, file_name=self.file_name, root_dir=self.root_dir, ext=self.ext)

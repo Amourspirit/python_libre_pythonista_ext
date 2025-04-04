@@ -46,6 +46,7 @@ class QryRowsColsTbl(QryBase, LogMixin, QryCellT[Result[List[int], None] | Resul
         LogMixin.__init__(self)
         self._cell = cell
         self._mod = cast(PyModuleT, mod)
+        self.log.debug("init done for cell %s", cell.cell_obj)
 
     def _qry_mod(self) -> PyModuleT:
         """Gets the Python module via query"""

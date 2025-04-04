@@ -16,3 +16,4 @@ class QryLpDocJsonFile(QryDocJsonFile):
         cfg = BasicConfig()
         file_name = f"{cfg.general_code_name}{cfg.calc_props_json_name}"
         super().__init__(doc=doc, file_name=file_name)
+        self.log.debug("init done for doc %s", doc.runtime_uid)

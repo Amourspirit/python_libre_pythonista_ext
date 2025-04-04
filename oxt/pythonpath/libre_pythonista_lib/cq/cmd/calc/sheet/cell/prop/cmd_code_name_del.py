@@ -51,6 +51,7 @@ class CmdCodeNameDel(CmdBase, LogMixin, CmdCellT):
         self._keys = cast(KeyMaker, None)
         self._code_name_removed = False
         self._current_code_name = cast(str, NULL_OBJ)
+        self.log.debug("init done for cell %s", cell.cell_obj)
 
     def _get_keys(self) -> KeyMaker:
         """Gets KeyMaker instance through query execution"""

@@ -33,6 +33,7 @@ class QryCellPySource(QryBase, LogMixin, QryCellT[PySource]):
         self.kind = CalcQryKind.CELL
         self._uri = uri
         self._cell = cell
+        self.log.debug("init done for cell %s", cell.cell_obj)
 
     def execute(self) -> PySource:
         """Executes the query to get the PySource"""

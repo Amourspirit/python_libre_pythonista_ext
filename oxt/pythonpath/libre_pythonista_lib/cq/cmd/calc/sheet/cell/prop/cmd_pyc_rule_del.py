@@ -44,6 +44,7 @@ class CmdPycRuleDel(CmdBase, LogMixin, CmdCellT):
         self.kind = CalcCmdKind.CELL
         self._keys = cast("KeyMaker", NULL_OBJ)
         self._current_state = cast(RuleNameKind, NULL_OBJ)
+        self.log.debug("init done for cell %s", cell.cell_obj)
 
     def _get_keys(self) -> KeyMaker:
         qry = QryKeyMaker()

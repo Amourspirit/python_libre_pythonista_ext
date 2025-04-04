@@ -36,6 +36,7 @@ class CmdArrayAbilityDel(CmdBase, LogMixin, CmdCellT):
         self._keys = cast("KeyMaker", NULL_OBJ)
         self._current_state = cast(bool | None, NULL_OBJ)
         self._state_changed = False
+        self.log.debug("init done for cell %s", cell.cell_obj)
 
     def _get_keys(self) -> KeyMaker:
         qry = QryKeyMaker()

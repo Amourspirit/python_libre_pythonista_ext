@@ -32,6 +32,7 @@ class CmdCellAddBorderStyle(CmdBase, LogMixin, CmdCellCtlT):
             style = DefaultStyle()
         self._style = style
         self._cell = cell
+        self.log.debug("init done for cell %s", cell.cell_obj)
 
     def _get_border_side(self) -> Side:
         side = Side(color=self._style.color_border, width=LineSize.VERY_THIN)

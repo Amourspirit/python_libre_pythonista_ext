@@ -28,6 +28,7 @@ class QryCellIsArrayFormula(QryBase, LogMixin, QryUnoCellT[bool]):
         QryBase.__init__(self)
         LogMixin.__init__(self)
         self._cell = cell
+        self.log.debug("init done")
 
     def execute(self) -> bool:
         """
@@ -44,8 +45,11 @@ class QryCellIsArrayFormula(QryBase, LogMixin, QryUnoCellT[bool]):
                 return False
             formula = self.cell.getFormula()
             if not formula:
+                self.log.debug("Cell %s has no formula. Not checking for array formula.", self.cell.AbsoluteName)
                 return False
-            return formula.startswith("{") and formula.endswith("}")
+            result = formula.startswith("{") and formula.endswith("}")
+            self.log.debug("Cell %s is array formula: %s", self.cell.AbsoluteName, result)
+            return result
 
         except Exception:
             self.log.exception("Error executing query")

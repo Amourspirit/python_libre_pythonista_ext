@@ -27,6 +27,7 @@ class CmdSheetActivation(CmdBase, LogMixin, CmdDocT):
         self._doc = doc
         self._listener = None
         self._undo_listener = None
+        self.log.debug("init done for doc %s", doc.runtime_uid)
 
     def _get_view(self) -> CalcSheetView | None:
         try:

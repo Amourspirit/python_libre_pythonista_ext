@@ -27,6 +27,7 @@ class QryCache(QryBase, LogMixin, QryT[MemCache | None]):
         QryBase.__init__(self)
         LogMixin.__init__(self)
         self.kind = CalcQryKind.SIMPLE
+        self.log.debug("init done")
 
     def execute(self) -> MemCache | None:
         """

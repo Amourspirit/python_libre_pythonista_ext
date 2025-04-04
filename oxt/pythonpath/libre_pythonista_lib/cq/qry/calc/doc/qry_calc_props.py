@@ -35,6 +35,7 @@ class QryCalcProps(QryBase, LogMixin, QryCacheT[Result[CalcProps2, None] | Resul
         LogMixin.__init__(self)
         self.kind = CalcQryKind.SIMPLE_CACHE
         self._doc = doc
+        self.log.debug("init done for doc %s", doc.runtime_uid)
 
     def _get_data(self) -> dict | None:
         qry = QryLpDocProps(self._doc)

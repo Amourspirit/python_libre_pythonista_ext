@@ -32,6 +32,7 @@ class CmdBatch(CmdBase, List[CmdT], LogMixin, CmdT):
         if command:
             self.extend(command)
         self._success_cmds: List[CmdT] = []
+        self.log.debug("init done")
 
     @override
     def execute(self) -> None:

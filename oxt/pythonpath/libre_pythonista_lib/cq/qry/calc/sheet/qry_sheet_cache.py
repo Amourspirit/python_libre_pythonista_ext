@@ -27,6 +27,7 @@ class QrySheetCache(QryBase, LogMixin, QrySheetT[MemCache | None]):
         LogMixin.__init__(self)
         self.kind = CalcQryKind.SHEET
         self._sheet = sheet
+        self.log.debug("init done for sheet %s", sheet.name)
 
     def execute(self) -> MemCache | None:
         """

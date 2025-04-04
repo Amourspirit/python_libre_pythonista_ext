@@ -55,6 +55,7 @@ class CmdAddr(CmdBase, LogMixin, CmdCellT):
                 return
         self._errors = False
         self._state_changed = False
+        self.log.debug("init done for cell %s", cell.cell_obj)
 
     def _get_addr(self) -> Addr:
         """Gets the current cell address"""

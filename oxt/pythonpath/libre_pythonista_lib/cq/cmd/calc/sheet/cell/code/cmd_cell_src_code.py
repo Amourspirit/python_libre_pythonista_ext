@@ -42,6 +42,7 @@ class CmdCellSrcCode(CmdBase, LogMixin, CmdCellCacheT):
         self._code = code
         self._current_src = cast(str | None, NULL_OBJ)
         self._current_exist = cast(bool, NULL_OBJ)
+        self.log.debug("init done for cell %s", cell.cell_obj)
 
     def _get_current_src_code(self) -> str:
         qry = QryCellSrcCode(cell=self.cell, uri=self._uri)

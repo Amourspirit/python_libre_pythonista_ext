@@ -16,3 +16,4 @@ class CmdLpDocJsonFileDel(CmdDocJsonFileDel):
         cfg = BasicConfig()
         file_name = f"{cfg.general_code_name}{cfg.calc_props_json_name}"
         CmdDocJsonFileDel.__init__(self, doc=doc, file_name=file_name)
+        self.log.debug("init done for doc %s", doc.runtime_uid)

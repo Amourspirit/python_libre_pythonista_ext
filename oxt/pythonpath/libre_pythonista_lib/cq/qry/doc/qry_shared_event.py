@@ -20,6 +20,7 @@ class QrySharedEvent(QryBase, LogMixin, QryT[SharedEvent | None]):
     def __init__(self) -> None:
         QryBase.__init__(self)
         LogMixin.__init__(self)
+        self.log.debug("init done")
 
     def execute(self) -> SharedEvent | None:
         """

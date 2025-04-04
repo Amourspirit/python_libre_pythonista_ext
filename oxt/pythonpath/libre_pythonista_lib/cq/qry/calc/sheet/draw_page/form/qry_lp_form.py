@@ -28,6 +28,7 @@ class QryLpForm(QryBase, LogMixin, QrySheetT[CalcForm | None]):
         LogMixin.__init__(self)
         self.kind = CalcQryKind.SHEET
         self._sheet = sheet
+        self.log.debug("init done for sheet %s", sheet.name)
 
     def _get_form_name(self) -> str:
         qry = QryFormName()

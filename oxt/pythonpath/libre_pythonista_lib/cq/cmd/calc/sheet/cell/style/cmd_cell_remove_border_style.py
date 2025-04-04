@@ -31,6 +31,7 @@ class CmdCellRemoveBorderStyle(CmdBase, LogMixin, CmdCellCtlT):
             style = DefaultStyle()
         self._style = style
         self._cell = cell
+        self.log.debug("init done for cell %s", cell.cell_obj)
 
     @override
     def execute(self) -> None:

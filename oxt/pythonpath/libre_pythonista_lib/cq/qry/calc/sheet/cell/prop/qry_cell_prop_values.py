@@ -40,6 +40,7 @@ class QryCellPropValues(QryBase, LogMixin, QryCellT[DotDict[Any]]):
         self._cell = cell
         self._default = default
         self._prop_names = prop_names
+        self.log.debug("init done for cell %s", cell.cell_obj)
 
     def _get_prop_value(self, name: str) -> Any:  # noqa: ANN401
         qry = QryCellPropValue(cell=self._cell, name=name, default=self._default)

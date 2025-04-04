@@ -62,6 +62,7 @@ class CmdCellSrcDel(CmdBase, LogMixin, CmdCellCacheT):
         self._current_exist = None
         self._current_src = ""
         self._cell_code_name = NULL
+        self.log.debug("init done for cell %s", cell.cell_obj)
 
     def _qry_is_deleted(self) -> bool:
         """Check if the cell has been deleted."""

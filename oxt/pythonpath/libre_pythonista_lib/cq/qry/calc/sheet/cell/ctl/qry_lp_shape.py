@@ -41,6 +41,7 @@ class QryLpShape(
         self._cell = cell
         self.kind = CalcQryKind.CELL
         self._ctl = ctl
+        self.log.debug("init done for cell %s", cell.cell_obj)
 
     def _get_shape_name(self) -> Result[str, None] | Result[None, Exception]:
         qry_shape = QryShapeName(cell=self.cell)

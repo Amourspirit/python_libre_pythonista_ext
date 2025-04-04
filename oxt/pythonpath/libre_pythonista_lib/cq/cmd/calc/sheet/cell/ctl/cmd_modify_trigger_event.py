@@ -47,6 +47,7 @@ class CmdModifyTriggerEvent(CmdBase, LogMixin, CmdCellCtlT):
         self._config = BasicConfig()
         self._current = self._ctl.ctl_rule_kind
         self._current_ctl: Dict[str, Any] | None = None
+        self.log.debug("init done for cell %s", cell.cell_obj)
 
     @override
     def execute(self) -> None:

@@ -60,6 +60,7 @@ class CmdPycRule(CmdBase, LogMixin, CmdCellT):
 
         self._state = rule_name
         self._errors = False
+        self.log.debug("init done for cell %s", cell.cell_obj)
 
     def _get_state(self) -> str:
         # use method to make possible to mock for testing

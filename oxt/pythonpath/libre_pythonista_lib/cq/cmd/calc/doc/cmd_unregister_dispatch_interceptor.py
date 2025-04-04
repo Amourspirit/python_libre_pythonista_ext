@@ -36,6 +36,7 @@ class CmdUnRegisterDispatchInterceptor(CmdBase, LogMixin, CmdDocT):
         LogMixin.__init__(self)
         self._doc = doc
         self._has_instance = CalcSheetCellDispatchProvider.has_instance(doc)
+        self.log.debug("init done for doc %s", doc.runtime_uid)
 
     @override
     def execute(self) -> None:

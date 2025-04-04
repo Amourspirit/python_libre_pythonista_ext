@@ -40,6 +40,7 @@ class QryValue(QryBase, LogMixin, QryCellT[Result[Iterable[Iterable[object]], No
         self._cell = cell
         self._rule_kind = rule_kind
         self._data = data
+        self.log.debug("init done for cell %s for rule_kind %s", cell.cell_obj, rule_kind)
 
     def qry_empty(self) -> Result[Iterable[Iterable[object]], None] | Result[None, Exception]:
         qry = QryEmpty(data=self._data)

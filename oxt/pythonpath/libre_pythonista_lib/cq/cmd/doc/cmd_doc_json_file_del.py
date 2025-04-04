@@ -37,6 +37,7 @@ class CmdDocJsonFileDel(CmdBase, LogMixin, CmdCacheT):
         self.name = file_name
         self._current_state = cast(DocJsonFile | None, NULL_OBJ)
         self._current_value = cast(Any, NULL_OBJ)
+        self.log.debug("init done for doc %s", doc.runtime_uid)
 
     def _get_current_state(self) -> DocJsonFile | None:
         qry = QryDocJsonFile(doc=self.doc, file_name=self.file_name, ext=self.ext)

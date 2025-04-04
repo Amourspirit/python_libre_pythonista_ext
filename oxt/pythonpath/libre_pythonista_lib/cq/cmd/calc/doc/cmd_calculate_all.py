@@ -22,6 +22,7 @@ class CmdCalculateAll(CmdBase, LogMixin, CmdDocT):
         CmdBase.__init__(self)
         LogMixin.__init__(self)
         self._doc = doc
+        self.log.debug("init done for doc %s", doc.runtime_uid)
 
     @override
     def execute(self) -> None:

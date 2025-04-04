@@ -35,6 +35,7 @@ class CmdDocInit(CmdBase, LogMixin, CmdDocT):
         # doc is not needed, Just here to satisfy the CmdDocT interface
         # see: libre_pythonista_lib.cq.cmd.calc.init_commands.cmd_init_doc.CmdInitDoc
         self._doc = doc
+        self.log.debug("init done for doc %s", doc.runtime_uid)
 
     def _get_globals(self) -> DocGlobals | None:
         qry = QryDocGlobals(self._doc.runtime_uid)

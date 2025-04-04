@@ -38,6 +38,7 @@ class QryCtlOrigRuleName(QryBase, LogMixin, QryCellT[Result[str, None] | Result[
         self._cell = cell
         self._ctl = ctl
         self.kind = CalcQryKind.CELL
+        self.log.debug("init done for cell %s", cell.cell_obj)
 
     def execute(self) -> Result[str, None] | Result[None, Exception]:
         """

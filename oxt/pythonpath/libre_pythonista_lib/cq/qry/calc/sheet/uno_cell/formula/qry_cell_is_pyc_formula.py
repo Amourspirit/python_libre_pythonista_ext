@@ -26,6 +26,7 @@ class QryCellIsPycFormula(QryBase, LogMixin, QryUnoCellT[bool]):
         QryBase.__init__(self)
         LogMixin.__init__(self)
         self._cell = cell
+        self.log.debug("init done")
 
     def execute(self) -> bool:
         """
@@ -42,10 +43,13 @@ class QryCellIsPycFormula(QryBase, LogMixin, QryUnoCellT[bool]):
                 return False
             formula = self.cell.getFormula()
             if not formula:
+                self.log.debug("Cell %s has no formula. Not checking for pyc formula.", self.cell.AbsoluteName)
                 return False
             s = formula.lstrip("{")  # could be a array formula
             s = s.lstrip("=")  # formula may start with one or two equal signs
-            return s.startswith(FORMULA_PYC)
+            result = s.startswith(FORMULA_PYC)
+            self.log.debug("Cell %s is pyc formula: %s", self.cell.AbsoluteName, result)
+            return result
 
         except Exception:
             self.log.exception("Error executing query")

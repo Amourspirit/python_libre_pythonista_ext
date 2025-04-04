@@ -55,6 +55,7 @@ class CmdShapeProp(CmdBase, LogMixin, CmdCellCtlT):
             props = self._get_default_props()
         self._props = props
         self._current_state: dict | None = None
+        self.log.debug("init done for cell %s", cell.cell_obj)
 
     def _get_default_props(self) -> dict:
         d = {

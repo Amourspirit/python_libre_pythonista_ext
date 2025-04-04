@@ -36,6 +36,7 @@ class CmdLpVersion(CmdBase, LogMixin, CmdOfficeDocT):
         self.doc = doc
         self._config = BasicConfig()
         self._current_state = cast(str | None, NULL_OBJ)
+        self.log.debug("init done for doc %s", doc.runtime_uid)
 
     def _get_current_state(self) -> str | None:  # noqa: ANN401
         qry = QryLpVersion(doc=self.doc)

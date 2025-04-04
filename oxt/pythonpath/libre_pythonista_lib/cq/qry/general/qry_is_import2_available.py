@@ -25,6 +25,7 @@ class QryIsImport2Available(QryBase, LogMixin, QryT[bool]):
         QryBase.__init__(self)
         LogMixin.__init__(self)
         self._cfg = BasicConfig()
+        self.log.debug("init done")
 
     def _is_import_available(self, module_name: str) -> bool:
         """

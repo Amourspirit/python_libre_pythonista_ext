@@ -40,6 +40,7 @@ class CmdSheetEnsureForms(CmdBase, LogMixin, CmdSheetT):
         self._current_form = cast(CalcForm | None, NULL_OBJ)
         self._added_form1 = False
         self._added_form_lp = False
+        self.log.debug("init done for sheet %s", sheet.name)
 
     def _get_current_form(self) -> CalcForm | None:
         qry = QryLpForm(sheet=self._sheet)

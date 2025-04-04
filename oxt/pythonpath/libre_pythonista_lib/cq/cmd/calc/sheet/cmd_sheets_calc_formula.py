@@ -27,6 +27,7 @@ class CmdSheetsCalcFormula(CmdBase, LogMixin, CmdT):
         LogMixin.__init__(self)
         self._doc = cast("CalcDoc", Lo.current_doc)
         self._success_cmds: List[CmdSheetCacheT] = []
+        self.log.debug("init done")
 
     @override
     def execute(self) -> None:

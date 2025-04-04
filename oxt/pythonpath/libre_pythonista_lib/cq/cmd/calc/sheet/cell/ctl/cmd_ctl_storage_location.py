@@ -42,6 +42,7 @@ class CmdCtlStorageLocation(CmdBase, LogMixin, CmdCellCtlT):
         if not self._ctl.cell:
             self._ctl.cell = cell
         self._current_state = cast(Dict[str, Any], None)
+        self.log.debug("init done for cell %s", cell.cell_obj)
 
     def _qry_storage_location(self) -> str:
         """

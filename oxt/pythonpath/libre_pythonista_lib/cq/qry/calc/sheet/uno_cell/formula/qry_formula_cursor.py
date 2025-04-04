@@ -39,6 +39,7 @@ class QryFormulaCursor(QryBase, LogMixin, QryUnoCellT[Result[SheetCellCursor, No
         QryBase.__init__(self)
         LogMixin.__init__(self)
         self._cell = cell
+        self.log.debug("init done")
 
     def execute(self) -> Result[SheetCellCursor, None] | Result[None, Exception]:
         """
@@ -58,10 +59,12 @@ class QryFormulaCursor(QryBase, LogMixin, QryUnoCellT[Result[SheetCellCursor, No
 
             cursor = cast("SheetCellCursor", self._cell.getSpreadsheet().createCursorByRange(self._cell))  # type: ignore
             if cursor is None:
+                self.log.debug("Cursor is None for cell %s", self.cell.AbsoluteName)
                 result = Result.failure(Exception("Cursor is None."))
                 return result
             cursor.collapseToCurrentArray()
             result = Result.success(cursor)
+            self.log.debug("Formula Cursor created for cell %s", self.cell.AbsoluteName)
             return result
 
         except Exception as e:

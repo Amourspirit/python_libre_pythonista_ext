@@ -24,6 +24,7 @@ class QryLpCodeDir(QryBase, LogMixin, QryDocT[str]):
         LogMixin.__init__(self)
         self._cfg = BasicConfig()
         self._doc = doc
+        self.log.debug("init done for doc %s", doc.runtime_uid)
 
     def execute(self) -> str:
         """

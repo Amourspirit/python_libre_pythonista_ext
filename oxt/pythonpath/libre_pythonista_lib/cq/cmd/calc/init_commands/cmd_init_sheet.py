@@ -34,6 +34,7 @@ class CmdInitSheet(CmdBase, List[Type[CmdSheetT]], LogMixin, CmdSheetT):
         self._cache = get_sheet_cache(self._sheet)
         self.append(CmdSheetCalcFormula)
         self.append(CmdSheetEnsureForms)
+        self.log.debug("init done for sheet %s", sheet.name)
 
     @override
     def execute(self) -> None:

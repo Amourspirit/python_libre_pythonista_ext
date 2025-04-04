@@ -44,6 +44,7 @@ class CmdCalcProps(CmdBase, LogMixin, CmdCacheT):
         self._doc = doc
         self._props = props
         self._current_props = cast(CalcProps2, NULL_OBJ)
+        self.log.debug("init done for doc %s", doc.runtime_uid)
 
     def _get_current_props(self) -> CalcProps2:
         qry = QryCalcProps(self._doc)

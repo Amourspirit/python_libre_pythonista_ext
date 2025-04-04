@@ -37,6 +37,7 @@ class QryCellUri(QryBase, LogMixin, QryCellT[Result[str, None] | Result[None, Ex
         QryBase.__init__(self)
         LogMixin.__init__(self)
         self._cell = cell
+        self.log.debug("init done for cell %s", cell.cell_obj)
 
     def _get_code_name(self) -> str:
         qry = QryCodeName(cell=self._cell)

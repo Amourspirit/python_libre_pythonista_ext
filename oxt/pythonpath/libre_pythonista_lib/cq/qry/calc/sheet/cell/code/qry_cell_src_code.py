@@ -38,6 +38,7 @@ class QryCellSrcCode(QryBase, LogMixin, QryCellT[Result[str, None] | Result[None
         self.kind = CalcQryKind.CELL
         self._uri = uri
         self._cell = cell
+        self.log.debug("init done for cell %s", cell.cell_obj)
 
     def _qry_cell_uri(self) -> str:
         """Get the URI identifier for the cell."""

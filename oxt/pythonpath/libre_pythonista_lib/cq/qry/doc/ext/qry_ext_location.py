@@ -20,6 +20,7 @@ class QryExtLocation(QryBase, LogMixin, QryT[str]):
     def __init__(self) -> None:
         QryBase.__init__(self)
         LogMixin.__init__(self)
+        self.log.debug("init done")
 
     def _get_config(self) -> Config:
         # for testing

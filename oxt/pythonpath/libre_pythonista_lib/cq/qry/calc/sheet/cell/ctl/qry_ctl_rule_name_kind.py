@@ -38,6 +38,7 @@ class QryCtlRuleNameKind(QryBase, LogMixin, QryCellT[Result[RuleNameKind, None] 
         self._cell = cell
         self._ctl = ctl
         self.kind = CalcQryKind.CELL
+        self.log.debug("init done for cell %s", cell.cell_obj)
 
     def execute(self) -> Result[RuleNameKind, None] | Result[None, Exception]:
         """

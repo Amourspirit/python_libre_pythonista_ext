@@ -40,6 +40,7 @@ class QryCellCode(QryBase, LogMixin, QryCellT[Result[str, None] | Result[None, E
         self._cell = cell
         self._mod = mod
         self._py_src_mgr = cast(PySourceManager, None)
+        self.log.debug("init done for cell %s", cell.cell_obj)
 
     def _qry_mod(self) -> PyModuleT:
         """

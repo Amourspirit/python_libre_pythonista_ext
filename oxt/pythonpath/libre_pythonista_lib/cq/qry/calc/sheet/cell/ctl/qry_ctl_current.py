@@ -42,6 +42,7 @@ class QryCtlCurrent(QryBase, LogMixin, QryCellT[Result[FormCtlBase, None] | Resu
         self._cell = cell
         self._ctl = ctl
         self.kind = CalcQryKind.CELL
+        self.log.debug("init done for cell %s", cell.cell_obj)
 
     def _get_shape(self) -> Result[DrawShape[SpreadsheetDrawPage[CalcSheet]], None] | Result[None, Exception]:
         """Gets the control shape or None."""

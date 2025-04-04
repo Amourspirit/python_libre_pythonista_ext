@@ -47,6 +47,7 @@ class CmdSheetCalcFormula(CmdBase, LogMixin, CmdSheetCacheT):
         self._sheet = sheet
         self._has_calc_event = cast(bool, NULL_OBJ)
         self._current_script = cast(str | None, NULL_OBJ)
+        self.log.debug("init done for sheet %s", sheet.name)
 
     def _get_current_script(self) -> str | None:
         qry = QrySheetCalculationEvent(sheet=self._sheet)

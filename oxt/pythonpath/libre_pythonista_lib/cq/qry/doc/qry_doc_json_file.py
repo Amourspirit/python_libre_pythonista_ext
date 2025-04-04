@@ -32,6 +32,7 @@ class QryDocJsonFile(QryBase, LogMixin, QryCacheT[Result[DocJsonFile, None] | Re
         if ext and not file_name.endswith(ext):
             file_name = f"{file_name}.{ext}"
         self.file_name = file_name
+        self.log.debug("init done for doc %s", doc.runtime_uid)
 
     def execute(self) -> Result[DocJsonFile, None] | Result[None, Exception]:
         """

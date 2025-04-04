@@ -34,6 +34,7 @@ class QryCellEventMgr(QryBase, LogMixin, QryDocT[CellEventMgr]):
         LogMixin.__init__(self)
         self._doc = doc
         self._mod = mod
+        self.log.debug("init done for doc %s", doc.runtime_uid)
 
     def _qry_py_src_mgr(self) -> PySourceManager:
         """Gets the PySourceManager via query"""

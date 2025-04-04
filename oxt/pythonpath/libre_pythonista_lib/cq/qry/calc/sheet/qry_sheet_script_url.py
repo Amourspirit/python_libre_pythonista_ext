@@ -18,6 +18,7 @@ class QrySheetScriptUrl(QryBase, LogMixin, QryT[str | None]):
     def __init__(self) -> None:
         QryBase.__init__(self)
         LogMixin.__init__(self)
+        self.log.debug("init done")
 
     def execute(self) -> str | None:
         """

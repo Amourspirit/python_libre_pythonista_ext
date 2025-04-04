@@ -46,6 +46,7 @@ class CmdModifyTriggerEventDel(CmdBase, LogMixin, CmdCellT):
         self._cell = cell
         self._keys = cast("KeyMaker", NULL_OBJ)
         self._current_state = cast(str, NULL_OBJ)
+        self.log.debug("init done for cell %s", cell.cell_obj)
 
     def _get_keys(self) -> KeyMaker:
         qry = QryKeyMaker()

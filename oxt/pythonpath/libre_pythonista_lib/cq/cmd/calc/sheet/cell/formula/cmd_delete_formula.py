@@ -61,6 +61,7 @@ class CmdDeleteFormula(CmdBase, LogMixin, CmdCellT):
         self._is_formula = cast(bool, None)
         self._current_col_rows = (0, 0)
         self.log.debug("init done for cell %s", self.cell.cell_obj)
+        self.log.debug("init done for cell %s", cell.cell_obj)
 
     def _qry_is_array_formula(self) -> bool:
         """Check if the cell contains an array formula."""

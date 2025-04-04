@@ -50,6 +50,7 @@ class QrySimple(QryBase, LogMixin, QryCellT[Result[FormCtlBase, None] | Result[N
         self._cell = cell
         self._ctl = ctl
         self.kind = CalcQryKind.CELL
+        self.log.debug("init done for cell %s", cell.cell_obj)
 
     def _get_shape_name(self) -> Result[str, None] | Result[None, Exception]:
         qry_shape = QryShapeName(cell=self.cell)

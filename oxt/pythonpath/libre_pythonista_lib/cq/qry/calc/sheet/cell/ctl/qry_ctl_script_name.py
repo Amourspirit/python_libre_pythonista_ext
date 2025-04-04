@@ -33,6 +33,7 @@ class QryCtlScriptName(QryBase, LogMixin, QryCellT[str]):
         self._cell = cell
         self._ctl = ctl
         self._cfg = BasicConfig()
+        self.log.debug("init done for cell %s", cell.cell_obj)
 
     def execute(self) -> str:
         """

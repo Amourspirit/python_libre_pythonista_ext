@@ -28,6 +28,7 @@ class CmdCodeNameDel(CmdBase, LogMixin, CmdCellCtlT):
             self._ctl.cell = cell
         self._current_dict_code_name = self.cell.extra_data.get("code_name", "")
         self._current_ctl: Dict[str, Any] | None = None
+        self.log.debug("init done for cell %s", cell.cell_obj)
 
     @override
     def execute(self) -> None:

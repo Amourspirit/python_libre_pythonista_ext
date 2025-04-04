@@ -32,6 +32,7 @@ class CmdRngRemoveBorderStyle(CmdBase, LogMixin, CmdRangeT):
             style = DefaultStyle()
         self._style = style
         self._rng = rng
+        self.log.debug("init done for range %s", rng.range_obj)
 
     @override
     def execute(self) -> None:

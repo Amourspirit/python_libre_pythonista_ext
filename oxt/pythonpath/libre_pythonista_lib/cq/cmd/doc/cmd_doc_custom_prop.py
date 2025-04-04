@@ -27,6 +27,7 @@ class CmdDocCustomProp(CmdBase, LogMixin, CmdOfficeDocT):
         self.value = value
         self._null = object()
         self._current_state = cast(Any, NULL_OBJ)
+        self.log.debug("init done for doc %s and name %s", doc.runtime_uid, name)
 
     def _get_current_state(self) -> Any:  # noqa: ANN401
         qry = QryDocCustomProp(doc=self.doc, name=self.name, default=self._null)

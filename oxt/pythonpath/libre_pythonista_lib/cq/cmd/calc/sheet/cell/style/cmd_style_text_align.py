@@ -43,6 +43,7 @@ class CmdStyleTextAlign(CmdBase, LogMixin, CmdCellCtlT):
         self._hori_align = hori_align
         self._indent = UnitPT(indent)
         self._current_state = cast(TextAlignT, NULL_OBJ)
+        self.log.debug("init done for cell %s", cell.cell_obj)
 
     def _get_script_loc(self) -> str:
         qry = QryCtlScriptLoc(cell=self.cell)

@@ -22,6 +22,7 @@ class QryFormDesignMode(QryBase, LogMixin, QryDocT[bool | None]):
         QryBase.__init__(self)
         LogMixin.__init__(self)
         self._doc = doc
+        self.log.debug("init done for doc %s", doc.runtime_uid)
 
     def _get_view(self) -> CalcSheetView | None:
         try:

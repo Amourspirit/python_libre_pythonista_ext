@@ -51,6 +51,7 @@ class CmdAppendCode(CmdBase, LogMixin, CmdCellT):
         self._code = code
         self._py_src_mgr = cast(PySourceManager, None)
         self._state_changed = False
+        self.log.debug("init done for cell %s", cell.cell_obj)
 
     def _qry_py_src_mgr(self) -> PySourceManager:
         """

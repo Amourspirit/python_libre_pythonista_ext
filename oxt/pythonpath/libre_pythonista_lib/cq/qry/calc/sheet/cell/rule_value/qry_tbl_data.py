@@ -42,6 +42,7 @@ class QryTblData(QryBase, LogMixin, QryCellT[Result[Iterable[Iterable[object]], 
         LogMixin.__init__(self)
         self._cell = cell
         self._data = data
+        self.log.debug("init done for cell %s", cell.cell_obj)
 
     def _qry_state(self) -> Result[StateKind, None] | Result[None, Exception]:
         """

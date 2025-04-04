@@ -32,6 +32,7 @@ class QryPySrcMgr(QryBase, LogMixin, QryDocT[PySourceManager]):
         LogMixin.__init__(self)
         self._doc = doc
         self._mod = mod
+        self.log.debug("init done for doc %s", doc.runtime_uid)
 
     def _qry_mod(self) -> PyModuleT:
         """Gets the Python module"""

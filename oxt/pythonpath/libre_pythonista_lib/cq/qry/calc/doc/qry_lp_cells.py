@@ -44,6 +44,7 @@ class QryLpCells(QryBase, LogMixin, QryDocT[Dict[int, Dict[CellObj, IndexCellPro
         QryBase.__init__(self)
         LogMixin.__init__(self)
         self._doc = doc
+        self.log.debug("init done for doc %s", doc.runtime_uid)
 
     def _qry_cell_cp_code_name(self) -> str:
         """

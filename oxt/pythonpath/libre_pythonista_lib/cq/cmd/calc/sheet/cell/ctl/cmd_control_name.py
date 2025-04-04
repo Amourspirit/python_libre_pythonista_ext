@@ -44,6 +44,7 @@ class CmdControlName(CmdBase, LogMixin, CmdCellCtlT):
         self._code_name = None
         self._current_control_name = cast(Union[str, None], NULL_OBJ)
         self._current_ctl: Dict[str, Any] | None = None
+        self.log.debug("init done for cell %s", cell.cell_obj)
 
     def _qry_control_name(self) -> str:
         """Queries the control name for the cell"""

@@ -53,6 +53,7 @@ class CmdCodeName(CmdBase, LogMixin, CmdCellT):
         self._code_name = None
         self._keys = cast(KeyMaker, None)
         self._current_dict_code_name = self.cell.extra_data.get("code_name", "")
+        self.log.debug("init done for cell %s", cell.cell_obj)
 
     def get_gen_code_name(self) -> str:
         """

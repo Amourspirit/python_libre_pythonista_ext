@@ -30,6 +30,7 @@ class QryCellCache(QryBase, LogMixin, QryT[MemCache | None]):
         LogMixin.__init__(self)
         self.kind = CalcQryKind.SIMPLE
         self._cell = cell
+        self.log.debug("init done for cell %s", cell.cell_obj)
 
     def execute(self) -> MemCache | None:
         """

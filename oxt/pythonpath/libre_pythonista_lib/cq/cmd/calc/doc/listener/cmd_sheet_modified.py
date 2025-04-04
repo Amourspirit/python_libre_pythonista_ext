@@ -25,6 +25,7 @@ class CmdSheetsModified(CmdBase, LogMixin, CmdDocT):
         LogMixin.__init__(self)
         self._doc = doc
         self._unique_ids = set()
+        self.log.debug("init done for doc %s", doc.runtime_uid)
 
     @override
     def execute(self) -> None:

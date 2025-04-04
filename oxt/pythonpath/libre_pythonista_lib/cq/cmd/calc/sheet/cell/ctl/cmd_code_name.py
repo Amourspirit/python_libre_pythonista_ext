@@ -53,6 +53,7 @@ class CmdCodeName(CmdBase, LogMixin, CmdCellCtlT):
             self._current_code_name = cast(Union[str, None], self._ctl.ctl_code_name)
         else:
             self._current_code_name = None
+        self.log.debug("init done for cell %s", cell.cell_obj)
 
     def _validate(self) -> bool:
         """

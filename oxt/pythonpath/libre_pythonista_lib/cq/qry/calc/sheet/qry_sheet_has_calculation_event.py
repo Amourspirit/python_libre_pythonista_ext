@@ -30,6 +30,7 @@ class QrySheetHasCalculationEvent(QryBase, LogMixin, QrySheetCacheT[bool]):
         LogMixin.__init__(self)
         self.kind = CalcQryKind.SHEET_CACHE
         self._sheet = sheet
+        self.log.debug("init done for sheet %s", sheet.name)
 
     def execute(self) -> bool:
         """

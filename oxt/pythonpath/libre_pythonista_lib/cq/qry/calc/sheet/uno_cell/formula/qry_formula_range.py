@@ -34,7 +34,7 @@ class QryFormulaRange(QryBase, LogMixin, QryUnoCellT[Result[RangeObj, None] | Re
         QryBase.__init__(self)
         LogMixin.__init__(self)
         self._cell = cell
-        self.log.debug("init done for cell %s", self.cell.AbsoluteName)
+        self.log.debug("init done")
 
     def _qry_formula_cursor(self) -> SheetCellCursor:
         """Get the cursor for the cell's array formula range."""
@@ -63,6 +63,7 @@ class QryFormulaRange(QryBase, LogMixin, QryUnoCellT[Result[RangeObj, None] | Re
             ca = cursor.getRangeAddress()
             ro = RangeObj.from_range(ca)
             result = Result.success(ro)
+            self.log.debug("Formula range created for cell %s", self.cell.AbsoluteName)
             return result
 
         except Exception as e:

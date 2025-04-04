@@ -29,6 +29,7 @@ class QryDirectData(QryBase, LogMixin, QryT[Result[Iterable[Iterable[object]], N
         QryBase.__init__(self)
         LogMixin.__init__(self)
         self._data = data
+        self.log.debug("init done")
 
     def execute(self) -> Result[Iterable[Iterable[object]], None] | Result[None, Exception]:
         """

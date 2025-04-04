@@ -38,6 +38,7 @@ class CmdCellPropDel(CmdBase, LogMixin, CmdCellT):
         self._name = name
         self._kind = CalcCmdKind.CELL
         self._current_value = NULL_OBJ
+        self.log.debug("init done for cell %s", cell.cell_obj)
 
     def _get_current_value(self) -> Any:  # noqa: ANN401
         """

@@ -54,6 +54,7 @@ class CmdSimple(CmdBase, LogMixin, CmdCellCtlT):
         if opt is None:
             opt = CtlOptions()
         self._opt = opt
+        self.log.debug("init done for cell %s", cell.cell_obj)
 
     def _validate(self) -> bool:
         """Validates the ctl"""

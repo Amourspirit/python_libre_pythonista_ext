@@ -9,7 +9,6 @@ if __name__ == "__main__":
 
 def test_cell_code(loader, py_src_uri) -> None:
     from ooodev.calc import CalcDoc
-    from ooodev.utils.cache import MemCache
 
     if TYPE_CHECKING:
         from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
@@ -36,8 +35,7 @@ def test_cell_code(loader, py_src_uri) -> None:
 
         qry = QryCellSrcCode(cell=cell, uri=uri)
         result = qry_handler.handle(qry)
-        assert Result.is_success(result)
-        assert result.data == ""
+        assert Result.is_failure(result)
 
         code = "print('Hello World')"
         cmd = CmdCellSrcCode(uri=uri, cell=cell, code=code)
