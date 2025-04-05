@@ -202,33 +202,34 @@ class CellItemFacade(LogMixin):
         """
         current_control = self.get_control()
         if current_control is None:
-            self.log.error("update_code() No control found.")
+            self.log.error("update_code() No control found for cell: %s", self._cell.cell_obj)
             return
+        self.log.debug("update_code() Control  %s found for cell: %s", current_control, self._cell.cell_obj)
         cmd = CmdUpdateCode(cell=self._cell, mod=self._py_mod, code=code)
         self.cmd_handler.handle(cmd)
         if not cmd.success:
-            self.log.error("Failed to update code.")
+            self.log.error("Failed to update code for cell: %s", self._cell.cell_obj)
             return
         self._cache.clear()
         rule = self.get_matched_rule()
         if rule is None:
-            self.log.error("Failed to get matched rule.")
+            self.log.error("Failed to get matched rule for cell: %s", self._cell.cell_obj)
             return
         ctl_kind_qry = QryCtlKindFromRuleNameKind(rule.rule_kind)
         ctl_kind = self.qry_handler.handle(ctl_kind_qry)
-        if ctl_kind == current_control.control_kind:
+        if ctl_kind != CtlKind.MAT_PLT_FIGURE and ctl_kind == current_control.control_kind:
             return
         if self.remove_control():
-            self.log.debug("Control removed.")
+            self.log.debug("Control removed for cell: %s", self._cell.cell_obj)
         else:
-            self.log.error("Failed to remove control.")
+            self.log.error("Failed to remove control for cell: %s", self._cell.cell_obj)
             return
 
         ctl = ctl_director.create_control(self._cell, ctl_kind)
         if ctl is not None:
-            self.log.debug("Control created.")
+            self.log.debug("Control created for cell: %s", self._cell.cell_obj)
         else:
-            self.log.error("Failed to create control.")
+            self.log.error("Failed to create control for cell: %s", self._cell.cell_obj)
 
     def auto_update(self) -> None:
         self.log.debug("Auto Updating Code")

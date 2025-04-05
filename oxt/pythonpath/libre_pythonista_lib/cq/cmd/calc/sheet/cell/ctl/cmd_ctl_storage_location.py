@@ -70,13 +70,17 @@ class CmdCtlStorageLocation(CmdBase, LogMixin, CmdCellCtlT):
         self._state_changed = False
         if self._current_state is None:
             self._current_state = self._ctl.copy_dict()
+        storage_loc = None
         try:
-            self._ctl.ctl_storage_location = self._qry_storage_location()
+            storage_loc = self._qry_storage_location()
+            self._ctl.ctl_storage_location = storage_loc
             self._state_changed = True
         except Exception:
             self.log.exception("Error setting control name")
             return
-        self.log.debug("Successfully executed command.")
+        self.log.debug(
+            "Successfully executed command for cell %s. Storage location: %s", self.cell.cell_obj, storage_loc
+        )
         self.success = True
 
     def _undo(self) -> None:

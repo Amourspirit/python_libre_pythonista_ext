@@ -21,6 +21,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl_empty import CtlEmpty
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl_error import CtlError
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl_none import CtlNone
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl_mat_plot_fig import CtlMatPlotFig
     from oxt.pythonpath.libre_pythonista_lib.kind.ctl_kind import CtlKind
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.builder.build_director import get_builder
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.reader.read_director import get_reader
@@ -70,6 +71,7 @@ def _get_control_class(ctl_kind: CtlKind) -> Type[CtlBase] | None:
         from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl_empty import CtlEmpty
         from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl_error import CtlError
         from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl_none import CtlNone
+        from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl_mat_plot_fig import CtlMatPlotFig
 
     control_map = {
         CtlKind.STRING: CtlStr,
@@ -81,6 +83,7 @@ def _get_control_class(ctl_kind: CtlKind) -> Type[CtlBase] | None:
         CtlKind.EMPTY: CtlEmpty,
         CtlKind.ERROR: CtlError,
         CtlKind.NONE: CtlNone,
+        CtlKind.MAT_PLT_FIGURE: CtlMatPlotFig,
     }
     return control_map.get(ctl_kind)
 
@@ -121,6 +124,8 @@ def create_control(calc_cell: CalcCell, ctl_kind: Literal[CtlKind.EMPTY]) -> Ctl
 def create_control(calc_cell: CalcCell, ctl_kind: Literal[CtlKind.ERROR]) -> CtlError: ...
 @overload
 def create_control(calc_cell: CalcCell, ctl_kind: Literal[CtlKind.NONE]) -> CtlNone: ...
+@overload
+def create_control(calc_cell: CalcCell, ctl_kind: Literal[CtlKind.MAT_PLT_FIGURE]) -> CtlMatPlotFig: ...
 @overload
 def create_control(calc_cell: CalcCell, ctl_kind: CtlKind) -> CtlBase | None: ...
 

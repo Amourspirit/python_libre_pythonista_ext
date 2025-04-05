@@ -70,7 +70,8 @@ def test_ctl_builder_mat_plot_figure(loader, build_setup, copy_fix_img, mocker: 
         assert result.ctl_code_name.startswith("id_")
         assert result.addr == f"sheet_index={sheet.sheet_index}&cell_addr={cell.cell_obj}"
 
-        assert result.ctl_shape_name == f"SHAPE_{config.general_code_name}_cell_{result.ctl_code_name}"
+        ctl_shape_name = f"SHAPE_{config.general_code_name}_cell_{result.ctl_code_name}"
+        assert result.ctl_shape_name == ctl_shape_name
         # endregion CtlBuilder
 
         # region CtlBuilder

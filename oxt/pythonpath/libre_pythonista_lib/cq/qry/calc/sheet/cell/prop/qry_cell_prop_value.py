@@ -35,7 +35,7 @@ class QryCellPropValue(QryBase, LogMixin, QryCellT[Any]):
         self._cell = cell
         self._name = name
         self._default = default
-        self.log.debug("init done for cell %s", cell.cell_obj)
+        self.log.debug("init done for cell %s for name %s", cell.cell_obj, name)
 
     def execute(self) -> Any:  # noqa: ANN401
         """

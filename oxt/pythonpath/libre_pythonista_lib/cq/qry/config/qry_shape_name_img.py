@@ -3,12 +3,12 @@ from typing import TYPE_CHECKING
 
 
 if TYPE_CHECKING:
-    from oxt.___lo_pip___.basic_config import BasicConfig
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_base import QryBase
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.config.qry_control_name_img import QryControlNameImg
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_t import QryT
 else:
-    from ___lo_pip___.basic_config import BasicConfig
     from libre_pythonista_lib.cq.qry.qry_base import QryBase
+    from libre_pythonista_lib.cq.qry.config.qry_control_name_img import QryControlNameImg
     from libre_pythonista_lib.cq.qry.qry_t import QryT
 
 
@@ -28,19 +28,6 @@ class QryShapeNameImg(QryBase, QryT[str]):
         """
         QryBase.__init__(self)
         self._code_name = code_name
-        self._config = BasicConfig()
-
-    def _get_control_name(self, code_name: str) -> str:
-        """
-        Generates a control name by combining the general code name prefix with the provided code name.
-
-        Args:
-            code_name (str): The unique code identifier
-
-        Returns:
-            str: The full control name in format: {general_code_name}_cell_{code_name}
-        """
-        return f"{self._config.general_code_name}_cell_{code_name}"
 
     def execute(self) -> str:
         """
@@ -49,4 +36,6 @@ class QryShapeNameImg(QryBase, QryT[str]):
         Returns:
             str: The generated shape name for the image control
         """
-        return self._get_control_name(self._code_name)
+        qry = QryControlNameImg(code_name=self._code_name)
+        qry_result = self._execute_qry(qry)
+        return f"SHAPE_{qry_result}"

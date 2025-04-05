@@ -79,18 +79,21 @@ class QryCtlStorageLocation(QryBase, LogMixin, QryCellT[Result[str, None] | Resu
                 self.log.warning("Failed to get module state")
                 return qry_state
             if not self._validate_is_image(qry_state.data):
-                self.log.warning("Cell is not an image")
-                return Result.failure(Exception("Cell is not an image"))
+                self.log.warning("Cell %s is not an image", self.cell.cell_obj)
+                return Result.failure(Exception("Cell %s is not an image", self.cell.cell_obj))
 
             location = qry_state.data.dd_data.get("data")
             if not location:
-                return Result.failure(Exception("Failed to get location"))
+                return Result.failure(Exception("Failed to get location for cell %s", self.cell.cell_obj))
             if not isinstance(location, str):
-                return Result.failure(Exception("Location is not a string"))
+                return Result.failure(Exception("Location for cell %s is not a string", self.cell.cell_obj))
             if self._ctl is not None:
                 self._ctl.ctl_storage_location = location
                 if not self._ctl.cell:
                     self._ctl.cell = self.cell
+            self.log.debug(
+                "Successfully executed query for cell %s. Storage location: %s", self.cell.cell_obj, location
+            )
             return Result.success(location)
 
         except Exception:

@@ -41,7 +41,6 @@ class CmdControlImgName(CmdBase, LogMixin, CmdCellCtlT):
         if not self._ctl.cell:
             self._ctl.cell = cell
         self._config = BasicConfig()
-        self._valid = self._validate()
         self._code_name = None
         self._current_control_name = cast(Union[str, None], NULL_OBJ)
         self._current_ctl: Dict[str, Any] | None = None
@@ -55,24 +54,6 @@ class CmdControlImgName(CmdBase, LogMixin, CmdCellCtlT):
             return result.data
         raise result.error
 
-    def _validate(self) -> bool:
-        """
-        Validates that the control has required attributes.
-
-        Returns:
-            bool: True if validation passes, False otherwise
-        """
-        required_attributes = {"cell", "ctl_code_name"}
-
-        # make a copy of the ctl dictionary because will always return True
-        # when checking for an attribute directly.
-        ctl_dict = self._ctl.copy_dict()
-        for attrib in required_attributes:
-            if not attrib in ctl_dict:
-                self.log.error("Validation error. %s attribute is missing.", attrib)
-                return False
-        return True
-
     @override
     def execute(self) -> None:
         """
@@ -83,15 +64,16 @@ class CmdControlImgName(CmdBase, LogMixin, CmdCellCtlT):
         self._state_changed = False
         if self._current_control_name is NULL_OBJ:
             self._current_control_name = self._ctl.ctl_name
+        ctl_name = None
         try:
             if self._current_ctl is None:
                 self._current_ctl = self._ctl.copy_dict()
-            _ = self._qry_control_name()
+            ctl_name = self._qry_control_name()
             self._state_changed = True
         except Exception:
             self.log.exception("Error setting control name")
             return
-        self.log.debug("Successfully executed command.")
+        self.log.debug("Successfully executed command for cell %s. Control name: %s", self.cell.cell_obj, ctl_name)
         self.success = True
 
     def _undo(self) -> None:

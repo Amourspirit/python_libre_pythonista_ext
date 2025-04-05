@@ -8,6 +8,9 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.options.feature_kind import FeatureKind
+    from oxt.pythonpath.libre_pythonista_lib.kind.ctl_kind import CtlKind
+    from oxt.pythonpath.libre_pythonista_lib.kind.ctl_prop_kind import CtlPropKind
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_t import CmdT
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.cmd_cell_ctl_t import CmdCellCtlT
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl import Ctl
@@ -22,6 +25,9 @@ else:
     from libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
+    from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.options.feature_kind import FeatureKind
+    from libre_pythonista_lib.kind.ctl_kind import CtlKind
+    from libre_pythonista_lib.kind.ctl_prop_kind import CtlPropKind
     from libre_pythonista_lib.cq.cmd.cmd_t import CmdT
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.cmd_cell_ctl_t import CmdCellCtlT
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl import Ctl
@@ -39,7 +45,6 @@ class CmdMatPlotFigureImg(CmdBase, LogMixin, CmdCellCtlT):
         self._ctl = ctl
         if not self._ctl.cell:
             self._ctl.cell = cell
-        self._current_shape_name = self._ctl.ctl_shape_name
         self._success_cmds: List[CmdT] = []
         self._current_ctl: Dict[str, Any] | None = None
         if opt is None:
@@ -49,7 +54,7 @@ class CmdMatPlotFigureImg(CmdBase, LogMixin, CmdCellCtlT):
 
     def _validate(self) -> bool:
         """Validates the ctl"""
-        required_attributes = {"cell", "ctl_code_name", "ctl_storage_location"}
+        required_attributes = {"cell", "ctl_code_name", "ctl_storage_location", "ctl_shape_name"}
 
         # make a copy of the ctl dictionary because will always return True
         # when checking for an attribute directly.
@@ -88,6 +93,25 @@ class CmdMatPlotFigureImg(CmdBase, LogMixin, CmdCellCtlT):
         qry = QryShapeNameImg(code_name=code_name)
         return self._execute_qry(qry)
 
+    def _set_control_props(self) -> None:
+        """Sets the control properties"""
+        self._ctl.ctl_props = (
+            CtlPropKind.CTL_ORIG,
+            CtlPropKind.PYC_RULE,
+            CtlPropKind.MODIFY_TRIGGER_EVENT,
+        )
+
+    def _set_control_kind(self) -> None:
+        self._ctl.control_kind = CtlKind.MAT_PLT_FIGURE
+
+    def _set_control_features(self) -> None:
+        """Sets the control features"""
+        self._ctl.supported_features = set()
+        self._ctl.supported_features.add(FeatureKind.ADD_CTL)
+        self._ctl.supported_features.add(FeatureKind.REMOVE_CTL)
+        self._ctl.supported_features.add(FeatureKind.GET_RULE_NAME)
+        self._ctl.supported_features.add(FeatureKind.GET_CELL_POS_SIZE)
+
     def _on_executing(self, ctl: Ctl) -> None:
         pass
 
@@ -104,7 +128,7 @@ class CmdMatPlotFigureImg(CmdBase, LogMixin, CmdCellCtlT):
                 self._current_ctl = self._ctl.copy_dict()
             if not self._cmd_add_image_linked():
                 raise Exception("Error adding image linked")
-            self._ctl.ctl_shape_name = "SHAPE_" + self._qry_shape_img_name(self._ctl.ctl_code_name)
+            # self._ctl.ctl_shape_name = self._qry_shape_img_name(self._ctl.ctl_code_name)
 
             cmd_shape = CmdShape(cell=self.cell, name=self._ctl.ctl_shape_name)
             self._execute_cmd(cmd_shape)
@@ -114,6 +138,9 @@ class CmdMatPlotFigureImg(CmdBase, LogMixin, CmdCellCtlT):
                 raise Exception("Error setting cell shape name")
 
             self._on_executing(self._ctl)
+            self._set_control_props()
+            self._set_control_kind()
+            self._set_control_features()
             self._state_changed = True
         except Exception as e:
             self.log.exception("Error inserting control: %s", e)

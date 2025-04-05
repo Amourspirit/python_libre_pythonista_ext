@@ -257,6 +257,7 @@ class CmdAddImageLinked(CmdBase, LogMixin, CmdCellT):
                 self._current_shape = self._qry_shape_by_name()
                 if self._current_shape:
                     # if there is a shape remove it before adding a new one.
+                    self.log.debug("Removing cell image for %s", self.cell.cell_obj)
                     self._remove_known_cell_image_linked(self._current_shape)
 
             self._new_shape = self._add_cell_image_linked()
@@ -268,7 +269,7 @@ class CmdAddImageLinked(CmdBase, LogMixin, CmdCellT):
                 self._execute_cmd_undo(cmd)
             self._success_cmds.clear()
             return
-        self.log.debug("Successfully executed command.")
+        self.log.debug("Successfully executed command for cell %s.", self.cell.cell_obj)
         self.success = True
 
     def _undo(self) -> None:

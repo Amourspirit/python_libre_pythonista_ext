@@ -133,8 +133,7 @@ class CmdSimple(CmdBase, LogMixin, CmdCellCtlT):
             if self.__current_ctl is None:
                 self.__current_ctl = self._ctl.copy_dict()
             self._insert_control()
-            if self._ctl is not None:
-                self._on_executing(self._ctl)
+            self._on_executing(self._ctl)
             self._set_control_kind()
             self._set_control_props()
             self._state_changed = True

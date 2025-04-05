@@ -33,7 +33,7 @@ class CmdCellPropSet(CmdBase, LogMixin, CmdCellT):
         self._name = name
         self._value = value
         self._current_value = NULL_OBJ
-        self.log.debug("init done for cell %s", cell.cell_obj)
+        self.log.debug("init done for cell %s  for name %s", cell.cell_obj, name)
 
     def _get_current_value(self) -> Any:  # noqa: ANN401
         qry = QryCellPropValue(cell=self._cell, name=self._name, default=NULL)
@@ -50,7 +50,7 @@ class CmdCellPropSet(CmdBase, LogMixin, CmdCellT):
         except Exception:
             self.log.exception("Error setting custom property %s", self._name)
             return
-        self.log.debug("Successfully executed command.")
+        self.log.debug("Successfully executed command for %s with %s", self.cell.cell_obj, self._name)
         self.success = True
 
     def _undo(self) -> None:
@@ -61,9 +61,9 @@ class CmdCellPropSet(CmdBase, LogMixin, CmdCellT):
                         self._cell.remove_custom_property(self._name)
                 else:
                     self._cell.set_custom_property(self._name, self._current_value)
-                self.log.debug("Successfully executed undo command.")
+                self.log.debug("Successfully executed undo command for %s with %s", self.cell.cell_obj, self._name)
             except Exception:
-                self.log.exception("Error undoing cell Code")
+                self.log.exception("Error executing undo for cell: %s", self._cell.cell_obj)
         else:
             self.log.debug("Undo not needed.")
 

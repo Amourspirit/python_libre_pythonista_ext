@@ -67,6 +67,9 @@ class CtlBase(LogMixin, CalcCellMixin):
             return self.control_kind == other.control_kind
         return False
 
+    def __repr__(self) -> str:
+        return f"<{self.__class__.__name__}(Ctl)>"
+
     # region Properties
     @property
     def ctl(self) -> Ctl:

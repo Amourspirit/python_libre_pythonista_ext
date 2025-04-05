@@ -43,10 +43,6 @@ class QryLpShape(
         self._ctl = ctl
         self.log.debug("init done for cell %s", cell.cell_obj)
 
-    def _get_shape_name(self) -> Result[str, None] | Result[None, Exception]:
-        qry_shape = QryShapeName(cell=self.cell)
-        return self._execute_qry(qry_shape)
-
     def execute(self) -> Result[DrawShape[SpreadsheetDrawPage[CalcSheet]], None] | Result[None, Exception]:
         """
         Executes the query to get control shape
@@ -64,6 +60,7 @@ class QryLpShape(
             qry_shape = QryShapeByName(sheet=self.cell.calc_sheet, shape_name=shape_name)
             qry_result = self._execute_qry(qry_shape)
             if Result.is_failure(qry_result):
+                self.log.debug("Shape not found: %s", shape_name)
                 return qry_result
             result = qry_result.data
             self.log.debug("Found shape for : %s", shape_name)
