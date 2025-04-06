@@ -142,71 +142,11 @@ class LoadFinishedJob(unohelper.Base, XJob):
             if _CONDITIONS_MET:
                 self._lo_load(self.document)
 
+            run_id = self.document.RuntimeUID
             if self.document.supportsService("com.sun.star.sheet.SpreadsheetDocument"):
-                self._log.debug("Document is a spreadsheet")
-                return
-                run_id = self.document.RuntimeUID
-                key = f"LIBRE_PYTHONISTA_DOC_{run_id}"
-                os.environ[key] = "1"
-                self._log.debug("Added %s to environment variables", key)
-                if _CONDITIONS_MET:
-                    try:
-                        self._log.debug("Conditions met. Continuing ...")
-                        break_mgr.check_breakpoint("load_finished_job_init")
-                        qry_handler = QryHandlerFactory.get_qry_handler()
-                        cmd_handler = CmdHandlerFactory.get_cmd_handler()
-
-                        doc = CalcDoc.get_doc_from_component(self.document)
-
-                        qry_macro_mode = QryIsMacroEnabled(doc=doc)
-                        macros_enabled = qry_handler.handle(qry_macro_mode)
-                        if macros_enabled:
-                            self._log.debug("Macros are enabled.")
-                        else:
-                            self._log.debug("Macros are not enabled. Exiting.")
-                            return
-
-                        qry = QryIsDocPythonista(doc=doc)
-                        qry_result = qry_handler.handle(qry)
-                        if Result.is_failure(qry_result):
-                            self._log.error(
-                                "Error checking if document is a LibrePythonista. Error: %s", qry_result.error
-                            )
-                            return
-                        if not qry_result.data:
-                            self._log.debug("Document is not a LibrePythonista. Returning.")
-                            return
-
-                        qry_calc_all = QryInitCalculate(uid=run_id)
-                        if qry_handler.handle(qry_calc_all):
-                            self._log.debug("Document has been calculated.")
-                            return
-
-                        self._log.debug("Document has not been calculated.")
-
-                        cmd_calc_all = CmdCalculateAll(doc=doc)
-                        cmd_handler.handle(cmd_calc_all)
-                        if cmd_calc_all.success:
-                            self._log.debug("Successfully calculated all formulas.")
-                            cmd_init_calc = CmdInitCalculate(uid=run_id)
-                            cmd_handler.handle(cmd_init_calc)
-                            if cmd_init_calc.success:
-                                self._log.debug("Successfully executed command.")
-                            else:
-                                self._log.error("Error executing command.")
-                        else:
-                            self._log.error("Error calculating all formulas.")
-                        return
-
-                    except Exception:
-                        self._log.error("Error setting components on view.", exc_info=True)
-
-                    # no longer needs to listen for the DocGlobals.get_current event.
-                    self._events.remove(GET_CURRENT_EVENT, self._fn_on_get_current)
-                else:
-                    self._log.debug("Conditions not met to register dispatch manager")
+                self._log.debug("Document %s is a spreadsheet", run_id)
             else:
-                self._log.debug("Document is not a spreadsheet")
+                self._log.debug("Document %s is not a spreadsheet", run_id)
 
         except Exception:
             self._log.error("Error getting current document", exc_info=True)

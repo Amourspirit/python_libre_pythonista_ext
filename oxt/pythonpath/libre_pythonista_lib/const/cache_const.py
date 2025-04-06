@@ -13,5 +13,3 @@ DOC_INIT_CALCULATED = "DocInitCalculated"
 DOC_STATE_RULES_DEFAULT = "DocStateRulesDefault"
 
 DOC_CTX_LOADED = "DocCtxLoaded"
-
-CMD_INIT_SHEETS_KEY = "libre_pythonista_lib.init.init_sheet.InitSheet"

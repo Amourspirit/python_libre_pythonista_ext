@@ -102,6 +102,7 @@
       </node>
     </node>
     <node oor:name="OnLoad" oor:op="fuse">
+      <!-- OnLoad happens after OnLoadFinished -->
       <node oor:name="JobList">
         <node oor:name="LoadingJob" oor:op="fuse" />
       </node>
@@ -128,6 +129,7 @@
       </node>
     </node>
     <node oor:name="OnLoadFinished" oor:op="fuse">
+      <!-- OnLoadFinished happens before OnLoad -->
       <node oor:name="JobList">
         <node oor:name="LoadFinishedJob" oor:op="fuse" />
       </node>
