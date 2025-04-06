@@ -3,17 +3,20 @@ from typing import Any, cast, TYPE_CHECKING
 
 from com.sun.star.sheet import CellFlags
 
+from ooodev.calc import CalcCell, CalcCellRange
 from ooodev.utils.data_type.range_obj import RangeObj
 
 if TYPE_CHECKING:
     from com.sun.star.sheet import SheetCellCursor  # service
-    from ooodev.calc import CalcCell
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_t import CmdT
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.cmd_cell_t import CmdCellT
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.formula.qry_cell_is_formula import QryCellIsFormula
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
     from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
+    from oxt.pythonpath.libre_pythonista_lib.style.default_style import DefaultStyle
+    from oxt.pythonpath.libre_pythonista_lib.style.style_t import StyleT
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.uno_cell.formula.qry_formula_cursor import (
         QryFormulaCursor,
     )
@@ -23,8 +26,17 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.uno_cell.formula.qry_formula_range import (
         QryFormulaRange,
     )
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.style.cmd_cell_remove_border_style import (
+        CmdCellRemoveBorderStyle,
+    )
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.range.style.cmd_rng_remove_border_style import (
+        CmdRngRemoveBorderStyle,
+    )
 else:
+    from libre_pythonista_lib.cq.cmd.cmd_t import CmdT
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.cmd_cell_t import CmdCellT
+    from libre_pythonista_lib.cq.cmd.calc.sheet.cell.style.cmd_cell_remove_border_style import CmdCellRemoveBorderStyle
+    from libre_pythonista_lib.cq.cmd.calc.sheet.range.style.cmd_rng_remove_border_style import CmdRngRemoveBorderStyle
     from libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.formula.qry_cell_is_array_formula import QryCellIsArrayFormula
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.formula.qry_cell_is_formula import QryCellIsFormula
@@ -33,6 +45,8 @@ else:
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.utils.custom_ext import override
     from libre_pythonista_lib.utils.result import Result
+    from libre_pythonista_lib.style.default_style import DefaultStyle
+    from libre_pythonista_lib.style.style_t import StyleT
 
     SheetCellCursor = Any
 
@@ -45,7 +59,7 @@ class CmdDeleteFormula(CmdBase, LogMixin, CmdCellT):
 
     """
 
-    def __init__(self, cell: CalcCell) -> None:
+    def __init__(self, cell: CalcCell, style: StyleT | None = None) -> None:
         """
         Initialize the command with a target cell.
 
@@ -60,8 +74,12 @@ class CmdDeleteFormula(CmdBase, LogMixin, CmdCellT):
         self._is_array_formula = cast(bool, None)
         self._is_formula = cast(bool, None)
         self._current_col_rows = (0, 0)
+        self._success_cmds: list[CmdT] = []
+        if style is None:
+            self._style = DefaultStyle()
+        else:
+            self._style = style
         self.log.debug("init done for cell %s", self.cell.cell_obj)
-        self.log.debug("init done for cell %s", cell.cell_obj)
 
     def _qry_is_array_formula(self) -> bool:
         """Check if the cell contains an array formula."""
@@ -88,6 +106,22 @@ class CmdDeleteFormula(CmdBase, LogMixin, CmdCellT):
         if Result.is_success(qry_result):
             return qry_result.data
         raise qry_result.error
+
+    def _cmd_remove_cell_border_style(self) -> bool:
+        """Remove the cell border style."""
+        cmd = CmdCellRemoveBorderStyle(cell=self.cell, style=self._style)
+        self._execute_cmd(cmd)
+        if cmd.success:
+            self._success_cmds.append(cmd)
+        return cmd.success
+
+    def _cmd_remove_range_border(self, cell_rng: CalcCellRange) -> bool:
+        """Remove the range border style."""
+        cmd = CmdRngRemoveBorderStyle(rng=cell_rng, style=self._style)
+        self._execute_cmd(cmd)
+        if cmd.success:
+            self._success_cmds.append(cmd)
+        return cmd.success
 
     def _get_cols_rows(self) -> tuple[int, int]:
         """Get the range object of the cell."""
@@ -159,6 +193,7 @@ class CmdDeleteFormula(CmdBase, LogMixin, CmdCellT):
         """
         self.success = False
         self._undo_available = True
+        self._success_cmds.clear()
 
         try:
             if self._is_array_formula is None:
@@ -179,13 +214,29 @@ class CmdDeleteFormula(CmdBase, LogMixin, CmdCellT):
                     self._current_formula = None
                     self._undo_available = False
 
-            if self._is_formula and not self._remove_formula():
-                return
-            if self._is_array_formula and not self._remove_array_formula():
-                return
+            if self._is_formula:
+                success = self._cmd_remove_cell_border_style()
+                success = success and self._remove_formula()
+                if not success:
+                    self._undo_available = False
+                    self._undo()
+                    return
+
+            if self._is_array_formula:
+                ro = self._qry_formula_range()
+                cell_rng = self.cell.calc_sheet.get_range(range_obj=ro)
+                success = self._cmd_remove_range_border(cell_rng)
+
+                success = success and self._remove_array_formula()
+                if not success:
+                    self._undo_available = False
+                    self._undo()
+                    return
 
         except Exception:
             self.log.exception("Error deleting formula for cell: %s", self.cell.cell_obj)
+            self._undo_available = False
+            self._undo()
             return
         self.log.debug("Successfully executed command.")
         self.success = True
@@ -232,14 +283,14 @@ class CmdDeleteFormula(CmdBase, LogMixin, CmdCellT):
         self.cell.component.setFormula("")
         self.log.debug("Successfully executed undo command for cell %s.", self.cell.cell_obj)
 
-    @override
-    def undo(self) -> None:
+    def _undo(self) -> None:
         """
         Public undo method that executes only if the command was successful.
         """
-        if not self.success:
-            self.log.debug("Command not successful. Undo not needed.")
-            return
+        for cmd in reversed(self._success_cmds):
+            self._execute_cmd_undo(cmd)
+        self._success_cmds.clear()
+
         if not self._undo_available:
             self.log.debug("Undo not available.")
             return
@@ -250,6 +301,16 @@ class CmdDeleteFormula(CmdBase, LogMixin, CmdCellT):
             self._undo_set_formula()
         else:
             self._undo_no_formula()
+
+    @override
+    def undo(self) -> None:
+        """
+        Public undo method that executes only if the command was successful.
+        """
+        if self.success:
+            self._undo()
+        else:
+            self.log.debug("Undo not needed.")
 
     @property
     def cell(self) -> CalcCell:
