@@ -28,7 +28,8 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.cmd_calculate_all import CmdCalculateAll
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.doc.cmd_current_ctx_load import CmdCurrentCtxLoad
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.doc.qry_is_macro_enabled import QryIsMacroEnabled
-    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_doc_init import QryDocInit
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.cmd_init_calculate import CmdInitCalculate
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_init_calculate import QryInitCalculate
 else:
 
     def override(func):  # noqa: ANN001, ANN201
@@ -42,7 +43,8 @@ else:
         from libre_pythonista_lib.cq.cmd.calc.doc.cmd_calculate_all import CmdCalculateAll
         from libre_pythonista_lib.cq.cmd.doc.cmd_current_ctx_load import CmdCurrentCtxLoad
         from libre_pythonista_lib.cq.qry.doc.qry_is_macro_enabled import QryIsMacroEnabled
-        from libre_pythonista_lib.cq.qry.calc.doc.qry_doc_init import QryDocInit
+        from libre_pythonista_lib.cq.cmd.calc.doc.cmd_init_calculate import CmdInitCalculate
+        from libre_pythonista_lib.cq.qry.calc.doc.qry_init_calculate import QryInitCalculate
 # endregion imports
 
 
@@ -101,6 +103,7 @@ class LoadingJob(XJob, unohelper.Base):
 
             if self.document.supportsService("com.sun.star.sheet.SpreadsheetDocument"):
                 self._log.debug("Document Loading is a spreadsheet")
+                run_id = self.document.RuntimeUID
                 doc = CalcDoc.get_doc_from_component(self.document)
                 qry_handler = QryHandlerFactory.get_qry_handler()
                 cmd_handler = CmdHandlerFactory.get_cmd_handler()
@@ -113,17 +116,26 @@ class LoadingJob(XJob, unohelper.Base):
                     self._log.debug("Macros are not enabled. Exiting.")
                     return
 
-                qry_doc_init = QryDocInit()
-
-                if not qry_handler.handle(qry_doc_init):
-                    self._log.debug("Document is not initialized. .")
-                    cmd = CmdCalculateAll(doc=doc)
-                    cmd_handler.handle(cmd)
-                    if cmd.success:
-                        self._log.debug("Successfully calculated all formulas.")
-                    else:
-                        self._log.error("Error calculating all formulas.")
+                qry_calc_all = QryInitCalculate(uid=run_id)
+                if qry_handler.handle(qry_calc_all):
+                    self._log.debug("Document has been calculated.")
                     return
+
+                self._log.debug("Document has not been calculated.")
+
+                cmd_calc_all = CmdCalculateAll(doc=doc)
+                cmd_handler.handle(cmd_calc_all)
+                if cmd_calc_all.success:
+                    self._log.debug("Successfully calculated all formulas.")
+                    cmd_init_calc = CmdInitCalculate(uid=run_id)
+                    cmd_handler.handle(cmd_init_calc)
+                    if cmd_init_calc.success:
+                        self._log.debug("Successfully executed command.")
+                    else:
+                        self._log.error("Error executing command.")
+                else:
+                    self._log.error("Error calculating all formulas.")
+                return
             else:
                 self._log.debug("Document Loading not a spreadsheet")
 

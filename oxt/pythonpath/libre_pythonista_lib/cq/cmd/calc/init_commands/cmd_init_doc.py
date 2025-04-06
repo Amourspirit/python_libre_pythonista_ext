@@ -73,6 +73,7 @@ class CmdInitDoc(CmdBase, List[CmdT], LogMixin, CmdDocT):
         CmdBase.__init__(self)
         list.__init__(self)
         LogMixin.__init__(self)
+        self.log.debug("init entered for doc %s", doc.runtime_uid)
         self.append(CmdDocCustomProp(doc=doc, name=LP_DOCUMENT, value=True))
         self.append(CmdDocEvent(doc=doc))
         self.append(CmdCodeSheetActivation(doc=doc))

@@ -8,7 +8,10 @@ DOC_CALC_PROPS = "DocCalcProps"
 
 # See libre_pythonista_lib.cq.qry.calc.doc.qry_is_doc_init.QryIsDocInit
 DOC_INIT_COMPLETED = "DocInitCompleted"
+DOC_INIT_CALCULATED = "DocInitCalculated"
 
 DOC_STATE_RULES_DEFAULT = "DocStateRulesDefault"
 
 DOC_CTX_LOADED = "DocCtxLoaded"
+
+CMD_INIT_SHEETS_KEY = "libre_pythonista_lib.init.init_sheet.InitSheet"

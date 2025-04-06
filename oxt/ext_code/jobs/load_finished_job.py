@@ -33,8 +33,9 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.cmd_calculate_all import CmdCalculateAll
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.doc.cmd_current_ctx_load import CmdCurrentCtxLoad
-    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_doc_init import QryDocInit
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.cmd_init_calculate import CmdInitCalculate
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_is_doc_pythonista import QryIsDocPythonista
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_init_calculate import QryInitCalculate
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.doc.qry_is_macro_enabled import QryIsMacroEnabled
     from oxt.pythonpath.libre_pythonista_lib.doc.doc_globals import GET_CURRENT_EVENT
@@ -59,8 +60,9 @@ else:
         from libre_pythonista_lib.cq.cmd.calc.doc.cmd_calculate_all import CmdCalculateAll
         from libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
         from libre_pythonista_lib.cq.cmd.doc.cmd_current_ctx_load import CmdCurrentCtxLoad
-        from libre_pythonista_lib.cq.qry.calc.doc.qry_doc_init import QryDocInit
+        from libre_pythonista_lib.cq.cmd.calc.doc.cmd_init_calculate import CmdInitCalculate
         from libre_pythonista_lib.cq.qry.calc.doc.qry_is_doc_pythonista import QryIsDocPythonista
+        from libre_pythonista_lib.cq.qry.calc.doc.qry_init_calculate import QryInitCalculate
         from libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
         from libre_pythonista_lib.cq.qry.doc.qry_is_macro_enabled import QryIsMacroEnabled
         from libre_pythonista_lib.doc.doc_globals import GET_CURRENT_EVENT
@@ -142,6 +144,7 @@ class LoadFinishedJob(unohelper.Base, XJob):
 
             if self.document.supportsService("com.sun.star.sheet.SpreadsheetDocument"):
                 self._log.debug("Document is a spreadsheet")
+                return
                 run_id = self.document.RuntimeUID
                 key = f"LIBRE_PYTHONISTA_DOC_{run_id}"
                 os.environ[key] = "1"
@@ -174,16 +177,26 @@ class LoadFinishedJob(unohelper.Base, XJob):
                             self._log.debug("Document is not a LibrePythonista. Returning.")
                             return
 
-                        qry = QryDocInit()
-                        if not qry_handler.handle(qry):
-                            self._log.debug("Document is not initialized. .")
-                            cmd = CmdCalculateAll(doc=doc)
-                            cmd_handler.handle(cmd)
-                            if cmd.success:
-                                self._log.debug("Successfully calculated all formulas.")
-                            else:
-                                self._log.error("Error calculating all formulas.")
+                        qry_calc_all = QryInitCalculate(uid=run_id)
+                        if qry_handler.handle(qry_calc_all):
+                            self._log.debug("Document has been calculated.")
                             return
+
+                        self._log.debug("Document has not been calculated.")
+
+                        cmd_calc_all = CmdCalculateAll(doc=doc)
+                        cmd_handler.handle(cmd_calc_all)
+                        if cmd_calc_all.success:
+                            self._log.debug("Successfully calculated all formulas.")
+                            cmd_init_calc = CmdInitCalculate(uid=run_id)
+                            cmd_handler.handle(cmd_init_calc)
+                            if cmd_init_calc.success:
+                                self._log.debug("Successfully executed command.")
+                            else:
+                                self._log.error("Error executing command.")
+                        else:
+                            self._log.error("Error calculating all formulas.")
+                        return
 
                     except Exception:
                         self._log.error("Error setting components on view.", exc_info=True)

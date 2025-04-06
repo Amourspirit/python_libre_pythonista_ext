@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, List, Type, TYPE_CHECKING
+from typing import List, Tuple, Type, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcDoc
@@ -9,6 +9,8 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.listener.cmd_sheet_modified import CmdSheetsModified
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.listener.cmd_sheet_activation import CmdSheetActivation
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.cmd_doc_t import CmdDocT
+    from oxt.pythonpath.libre_pythonista_lib.const.cache_const import CMD_INIT_SHEETS_KEY
+    from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
 else:
     from libre_pythonista_lib.utils.custom_ext import override
@@ -18,17 +20,17 @@ else:
     from libre_pythonista_lib.cq.cmd.calc.doc.listener.cmd_sheet_activation import CmdSheetActivation
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.cq.cmd.calc.doc.cmd_doc_t import CmdDocT
+    from libre_pythonista_lib.const.cache_const import CMD_INIT_SHEETS_KEY
+    from libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind
 
 
-_KEY = "libre_pythonista_lib.init.init_sheet.InitSheet"
-
-
-# Composite Command
+# See Also: cq.qry.calc.doc.qry_sheets_init.QrySheetsInit
 class CmdInitSheets(CmdBase, List[Type[CmdDocT]], LogMixin, CmdDocT):
     def __init__(self, doc: CalcDoc) -> None:
         CmdBase.__init__(self)
         list.__init__(self)
         LogMixin.__init__(self)
+        self.kind = CalcCmdKind.SIMPLE_CACHE
         self._success_commands: List[CmdDocT] = []
         self._doc = doc
         self.append(CmdSheetsModified)
@@ -51,7 +53,7 @@ class CmdInitSheets(CmdBase, List[Type[CmdDocT]], LogMixin, CmdDocT):
         """
 
         doc_globals = DocGlobals.get_current()
-        key_val = doc_globals.mem_cache[_KEY]
+        key_val = doc_globals.mem_cache[CMD_INIT_SHEETS_KEY]
         if key_val == "1":
             self.success = True
             return
@@ -67,7 +69,7 @@ class CmdInitSheets(CmdBase, List[Type[CmdDocT]], LogMixin, CmdDocT):
                     self.success = False  # Composite command failed.
                     return
             self.success = True  # Composite command succeeded.
-            doc_globals.mem_cache[_KEY] = "1"
+            doc_globals.mem_cache[CMD_INIT_SHEETS_KEY] = "1"
         except Exception as e:
             self.log.exception("An unexpected error occurred: %s", e)
             self.undo()
@@ -82,7 +84,7 @@ class CmdInitSheets(CmdBase, List[Type[CmdDocT]], LogMixin, CmdDocT):
         self._success_commands = []  # Clear executed commands
         self.success = False  # Reset success flag.
         doc_globals = DocGlobals.get_current()
-        doc_globals.mem_cache[_KEY] = "0"
+        doc_globals.mem_cache[CMD_INIT_SHEETS_KEY] = "0"
 
     @override
     def undo(self) -> None:

@@ -11,6 +11,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.state.cmd_append_code import CmdAppendCode
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.state.cmd_update_code import CmdUpdateCode
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler_t import CmdHandlerT
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_init_calculate import QryInitCalculate
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.code.qry_cell_src_code import QryCellSrcCode
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_ctl_kind import QryCtlKind
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_pyc_rule import QryPycRule
@@ -26,7 +27,6 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.kind.ctl_kind import CtlKind
     from oxt.pythonpath.libre_pythonista_lib.kind.rule_name_kind import RuleNameKind
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
-    from oxt.pythonpath.libre_pythonista_lib.utils.null import NULL
     from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.state.qry_state_rules_default import (
         QryStateRulesDefault,
@@ -34,6 +34,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.common.map.qry_ctl_kind_from_rule_name_kind import (
         QryCtlKindFromRuleNameKind,
     )
+
 else:
     from libre_pythonista_lib.code.module_state_item import ModuleStateItem
     from libre_pythonista_lib.code.py_module import PyModule
@@ -41,6 +42,7 @@ else:
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.state.cmd_append_code import CmdAppendCode
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.state.cmd_update_code import CmdUpdateCode
     from libre_pythonista_lib.cq.qry.calc.common.map.qry_ctl_kind_from_rule_name_kind import QryCtlKindFromRuleNameKind
+    from libre_pythonista_lib.cq.qry.calc.doc.qry_init_calculate import QryInitCalculate
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.code.qry_cell_src_code import QryCellSrcCode
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_ctl_kind import QryCtlKind
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_pyc_rule import QryPycRule
@@ -54,7 +56,6 @@ else:
     from libre_pythonista_lib.kind.ctl_kind import CtlKind
     from libre_pythonista_lib.kind.rule_name_kind import RuleNameKind
     from libre_pythonista_lib.log.log_mixin import LogMixin
-    from libre_pythonista_lib.utils.null import NULL
     from libre_pythonista_lib.utils.result import Result
 
     StateRuleT = Any
@@ -85,6 +86,8 @@ class CellItemFacade(LogMixin):
         self._uri = None
         self._py_src_mgr = PySourceManager(doc=self._cell.calc_doc, mod=self._py_mod)
         self._cache = {}
+        self._doc_init = None
+        self._init_calculate = None
         self.log.debug("CellItemFacade.__init__() for cell: %s", self._cell.cell_obj)
 
     def _ensure_code_name(self) -> None:
@@ -93,6 +96,11 @@ class CellItemFacade(LogMixin):
         self.cmd_handler.handle(cmd)
         if not cmd.success:
             self.log.error("Failed to set code name.")
+
+    def _qry_init_calculate(self) -> bool:
+        """Queries if the document has been initialized for calculation"""
+        qry = QryInitCalculate(uid=self._cell.calc_doc.runtime_uid)
+        return self.qry_handler.handle(qry)
 
     def _qry_state_rules(self) -> StateRules:
         """Queries the default state rules for the cell"""
@@ -232,13 +240,18 @@ class CellItemFacade(LogMixin):
             self.log.error("Failed to create control for cell: %s", self._cell.cell_obj)
 
     def auto_update(self) -> None:
-        self.log.debug("Auto Updating Code")
+        self.log.debug("auto_update() - Auto Updating Code")
         try:
+            if self.init_calculate:
+                self.log.debug("auto_update() - Document init CalculateAll has been called. Continuing.")
+            else:
+                self.log.debug("auto_update() - Document init CalculateAll not yet called. Skipping auto-update.")
+                return
             code = self._qry_src_code()
             self.update_code(code)
-            self.log.debug("Code Auto Updated")
+            self.log.debug("auto_update() - Code Auto Updated")
         except Exception as e:
-            self.log.debug("Failed to auto-update %s", e)
+            self.log.debug("auto_update() -Failed to auto-update %s", e)
 
     def get_matched_rule(self) -> StateRuleT | None:
         """Gets the matching state rule for the cell's current state"""
@@ -307,3 +320,10 @@ class CellItemFacade(LogMixin):
     def qry_handler(self) -> QryHandlerT:
         """Gets the query handler from the Python source manager"""
         return self._py_src_mgr.qry_handler
+
+    @property
+    def init_calculate(self) -> bool:
+        """Gets the initialization calculate status"""
+        if self._init_calculate is None:
+            self._init_calculate = self._qry_init_calculate()
+        return self._init_calculate
