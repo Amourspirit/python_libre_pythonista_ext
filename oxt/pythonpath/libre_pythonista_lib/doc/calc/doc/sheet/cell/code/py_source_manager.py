@@ -13,28 +13,29 @@ from ooodev.utils.string.str_list import StrList
 
 
 if TYPE_CHECKING:
-    from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_t import QryHandlerT
-    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler_t import CmdHandlerT
-    from oxt.pythonpath.libre_pythonista_lib.doc.doc_globals import DocGlobals
-    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source import PySource
-    from oxt.pythonpath.libre_pythonista_lib.event.shared_event import SharedEvent
-    from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.code.module_state_item import ModuleStateItem
-    from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
-    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
-    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_uri import QryCellUri
-    from oxt.pythonpath.libre_pythonista_lib.cq.qry.doc.qry_lp_root_uri import QryLpRootUri
-    from oxt.pythonpath.libre_pythonista_lib.cq.qry.config.qry_cell_cp_codename import QryCellCpCodeName
+    from oxt.pythonpath.libre_pythonista_lib.code.py_module_state import PyModuleState
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.code.cmd_cell_src_code import CmdCellSrcCode
-    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.code.qry_cell_py_source import QryCellPySource
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.code.cmd_cell_src_del import CmdCellSrcDel
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_code_name import CmdCodeName
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_code_name_del import CmdCodeNameDel
-    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.code.cmd_cell_src_del import CmdCellSrcDel
-    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.index_cell_props import IndexCellProps
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler_t import CmdHandlerT
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_lp_cells import QryLpCells
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.code.qry_cell_py_source import QryCellPySource
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_is_deleted import QryCellIsDeleted
-    from oxt.pythonpath.libre_pythonista_lib.code.py_module_state import PyModuleState
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_uri import QryCellUri
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.state.qry_module_state import QryModuleState
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.config.qry_cell_cp_codename import QryCellCpCodeName
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.doc.qry_lp_root_uri import QryLpRootUri
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_t import QryHandlerT
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.index_cell_props import IndexCellProps
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source import PySource
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source_data import PySourceData
+    from oxt.pythonpath.libre_pythonista_lib.doc.doc_globals import DocGlobals
+    from oxt.pythonpath.libre_pythonista_lib.event.shared_event import SharedEvent
+    from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.state.qry_module_state_last_item import (
         QryModuleStateLastItem,
     )
@@ -52,28 +53,29 @@ if TYPE_CHECKING:
     )
 
 else:
-    from libre_pythonista_lib.doc.doc_globals import DocGlobals
-    from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source import PySource
-    from libre_pythonista_lib.event.shared_event import SharedEvent
-    from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.code.module_state_item import ModuleStateItem
-    from libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
-    from libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
-    from libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_uri import QryCellUri
-    from libre_pythonista_lib.cq.qry.doc.qry_lp_root_uri import QryLpRootUri
-    from libre_pythonista_lib.cq.qry.config.qry_cell_cp_codename import QryCellCpCodeName
+    from libre_pythonista_lib.code.py_module_state import PyModuleState
+    from libre_pythonista_lib.code.py_module_t import PyModuleT
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.code.cmd_cell_src_code import CmdCellSrcCode
-    from libre_pythonista_lib.cq.qry.calc.sheet.cell.code.qry_cell_py_source import QryCellPySource
+    from libre_pythonista_lib.cq.cmd.calc.sheet.cell.code.cmd_cell_src_del import CmdCellSrcDel
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_code_name import CmdCodeName
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_code_name_del import CmdCodeNameDel
-    from libre_pythonista_lib.cq.cmd.calc.sheet.cell.code.cmd_cell_src_del import CmdCellSrcDel
-    from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.index_cell_props import IndexCellProps
+    from libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
     from libre_pythonista_lib.cq.qry.calc.doc.qry_lp_cells import QryLpCells
+    from libre_pythonista_lib.cq.qry.calc.sheet.cell.code.qry_cell_py_source import QryCellPySource
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_is_deleted import QryCellIsDeleted
-    from libre_pythonista_lib.code.py_module_state import PyModuleState
+    from libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_uri import QryCellUri
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.state.qry_module_state import QryModuleState
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.state.qry_module_state_last_item import QryModuleStateLastItem
-    from libre_pythonista_lib.code.py_module_t import PyModuleT
+    from libre_pythonista_lib.cq.qry.config.qry_cell_cp_codename import QryCellCpCodeName
+    from libre_pythonista_lib.cq.qry.doc.qry_lp_root_uri import QryLpRootUri
+    from libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
+    from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.index_cell_props import IndexCellProps
+    from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source import PySource
+    from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source_data import PySourceData
+    from libre_pythonista_lib.doc.doc_globals import DocGlobals
+    from libre_pythonista_lib.event.shared_event import SharedEvent
+    from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.utils.result import Result
     from libre_pythonista_lib.doc.calc.const import (
         PYTHON_BEFORE_ADD_SRC_CODE,
@@ -198,7 +200,7 @@ class PySourceManager(LogMixin):
 
     def _init_sources(self) -> None:  # type: ignore
         self.log.debug("_init_sources() Entered.")
-        sources: List[Tuple[PySource, CalcCell]] = []
+        sources: List[Tuple[PySource, CalcCell, str]] = []
         code_cells = self._qry_lp_cells()
         for sheet in self._doc.sheets:
             if sheet.sheet_index not in code_cells:
@@ -214,13 +216,16 @@ class PySourceManager(LogMixin):
                     continue
                 uri = qry_cell_result.data
                 py_src = self._qry_py_source(uri=uri, cell=calc_cell)
-                sources.append((py_src, calc_cell))
+                sources.append((py_src, calc_cell, uri))
 
             sources.sort(key=lambda x: x[0])  # Sort by PySource object only
             for src in sources:
                 py_src = src[0]
                 calc_cell = src[1]
-                self._data[py_src.sheet_idx, py_src.row, py_src.col] = py_src
+                uri = src[2]
+                self._data[py_src.sheet_idx, py_src.row, py_src.col] = PySourceData(
+                    uri=uri, cell=calc_cell.cell_obj.copy()
+                )
                 self.set_global_var("CURRENT_CELL_ID", py_src.uri_info.unique_id)
                 self.set_global_var("CURRENT_CELL_OBJ", calc_cell.cell_obj)
                 _ = self._mod_state.update_with_result(cell=calc_cell, code=py_src.source_code)
@@ -241,7 +246,8 @@ class PySourceManager(LogMixin):
         """
         sb = StrList(sep="\n")
         sb.append(f"# Source code for doc: vnd.sun.star.tdoc:/{self._doc.runtime_uid}/")
-        for py_src in self._data.values():
+        for py_src_data in self._data.values():
+            py_src = PySource(uri=py_src_data.uri, cell=py_src_data.cell)
             cell_obj = CellObj.from_idx(col_idx=py_src.col, row_idx=py_src.row, sheet_idx=py_src.sheet_idx)
             if max_cell is not None:
                 if include_max:
@@ -268,6 +274,23 @@ class PySourceManager(LogMixin):
         )
         return src_code
 
+    def _getitem_py_src_data(self, key: CellObj | Tuple[int, int, int]) -> PySourceData:
+        """
+        Gets an Item
+
+        Args:
+            key (CellObj, Tuple[int, int]): CellObj or Tuple of Sheet, Column and Row
+
+        Returns:
+            PySourceData: Source object
+        """
+        is_db = self.log.is_debug
+        code_cell = self.convert_cell_obj_to_tuple(key) if isinstance(key, CellObj) else (key[0], key[2], key[1])
+        if is_db:
+            self.log.debug("__getitem__() - Code Cell: %s", code_cell)
+        py_data = cast(PySourceData, self._data[code_cell])
+        return py_data
+
     # region Dunder Methods
 
     def __len__(self) -> int:
@@ -283,24 +306,23 @@ class PySourceManager(LogMixin):
         Returns:
             PySource: Source object
         """
-        is_db = self.log.is_debug
-        code_cell = self.convert_cell_obj_to_tuple(key) if isinstance(key, CellObj) else (key[0], key[2], key[1])
-        if is_db:
-            self.log.debug("__getitem__() - Code Cell: %s", code_cell)
-        result = cast(PySource, self._data[code_cell])
-        if is_db:
-            self.log.debug("__getitem__() - Result Unique Id: %s", result.uri_info.unique_id)
+        py_data = self._getitem_py_src_data(key)
+        result = PySource(uri=py_data.uri, cell=py_data.cell)
+        self.log.debug("__getitem__() - Result Unique Id: %s", result.uri_info.unique_id)
         return result
 
-    def __setitem__(self, key: CellObj | Tuple[int, int, int], value: PySource) -> None:
+    def __setitem__(self, key: CellObj | Tuple[int, int, int], value: PySource | PySourceData) -> None:
         """
         Sets an Item
 
         Args:
             key (CellObj, Tuple[int, int]): CellObj or Tuple of sheet, Column and Row
-            value (PySource): Source object
+            value (PySource, PySourceData): Source object
         """
         code_cell = self.convert_cell_obj_to_tuple(key) if isinstance(key, CellObj) else (key[0], key[2], key[1])
+        if isinstance(value, PySource):
+            value = PySourceData(uri=value.uri, cell=value.cell_obj.copy())
+
         self._data[code_cell] = value
 
     def __delitem__(self, key: CellObj | Tuple[int, int, int]) -> None:
@@ -327,19 +349,32 @@ class PySourceManager(LogMixin):
         return code_cell in self._data
 
     def __iter__(self):  # noqa: ANN204
-        return iter(self._data.values())
+        # return iterable of PySource objects
+        for key in self._data:
+            py_data = self._getitem_py_src_data(key)
+            yield PySource(uri=py_data.uri, cell=py_data.cell)
 
     # endregion Dunder Methods
+
     def _is_last_index(self, index: int) -> bool:
         """Checks if index is the last index."""
         return index == len(self) - 1
+
+    def get_first_item(self) -> PySource | None:
+        """Returns the first item in the source manager or None if empty."""
+        # get the first item in self._data
+        if len(self) == 0:
+            return None
+        py_data = cast(PySourceData, self[list(self._data.keys())[0]])
+        return PySource(uri=py_data.uri, cell=py_data.cell)
 
     def get_last_item(self) -> PySource | None:
         """Returns the last item in the source manager or None if empty."""
         # get the last item in self._data
         if len(self) == 0:
             return None
-        return self[list(self._data.keys())[-1]]
+        py_data = cast(PySourceData, self[list(self._data.keys())[-1]])
+        return PySource(uri=py_data.uri, cell=py_data.cell)
 
     def convert_cell_obj_to_tuple(self, cell: CellObj) -> Tuple[int, int, int]:
         """
@@ -446,7 +481,7 @@ class PySourceManager(LogMixin):
 
         py_src = self._qry_py_source(uri=uri, cell=calc_cell)
 
-        self._data[code_cell] = py_src
+        self._data[code_cell] = PySourceData(uri=uri, cell=calc_cell.cell_obj.copy())
         index = self.get_index(cell_obj)
         if index < 0:
             self.log.error("add_source() - Cell %s not found.", cell_obj)
@@ -551,7 +586,7 @@ class PySourceManager(LogMixin):
         self._shared_event.trigger_event(f"{PYTHON_BEFORE_REMOVE_SOURCE_CODE}_{col}_{row}", cargs)
         if cargs.cancel:
             return
-        self._data[code_cell].del_source()
+        self[code_cell].del_source()
         del self._data[code_cell]
         sheet = self._doc.sheets[sheet_idx]
         calc_cell = sheet[cell_obj]
@@ -645,7 +680,9 @@ class PySourceManager(LogMixin):
         """
         return len(self) > 0
 
-    def _update_item(self, py_src: PySource) -> bool:
+    def _update_item(self, py_src: PySource | PySourceData) -> bool:
+        if isinstance(py_src, PySourceData):
+            py_src = PySource(uri=py_src.uri, cell=py_src.cell)
         cargs = CancelEventArgs(self)
         sheet_idx = py_src.sheet_idx
         row = py_src.row
@@ -701,8 +738,8 @@ class PySourceManager(LogMixin):
         self._mod_state.reset_module()
         for key in self._data:
             co = CellObj.from_idx(col_idx=key[2], row_idx=key[1], sheet_idx=key[0])
-            py_src = self[co]
-            self._update_item(py_src)
+            py_src_data = self._getitem_py_src_data(co)
+            self._update_item(py_src_data)
         self.log.debug("update_all() Leaving.")
 
     def get_calc_cells(self) -> List[CalcCell]:
@@ -757,7 +794,7 @@ class PySourceManager(LogMixin):
         keys = list(self._data.keys())
         key = keys[index]  # row, col format
         co = CellObj.from_idx(col_idx=key[2], row_idx=key[1], sheet_idx=key[0])
-        py_src = self[co]
+        # py_src = self[co]
         if self._is_last_index(index):
             self.log.debug("update_from_index(%i). Is last index.", index)
         else:
@@ -767,8 +804,8 @@ class PySourceManager(LogMixin):
         for i in range(index, length):
             key = keys[i]  # tuple in row, col format
             cell_obj = CellObj.from_idx(col_idx=key[2], row_idx=key[1], sheet_idx=key[0])
-            py_src = self[cell_obj]
-            self._update_item(py_src)
+            py_src_data = self._getitem_py_src_data(cell_obj)
+            self._update_item(py_src_data)
         self.log.debug("update_from_index(%i) Leaving.", index)
 
     # region Properties

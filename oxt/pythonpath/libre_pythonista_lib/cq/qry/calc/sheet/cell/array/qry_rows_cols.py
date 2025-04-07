@@ -8,10 +8,14 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_base import QryBase
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_t import QryCellT
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_py_module_default import QryPyModuleDefault
+
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_pyc_rule import QryPycRule
     from oxt.pythonpath.libre_pythonista_lib.kind.rule_name_kind import RuleNameKind
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.formula.qry_cell_is_array_formula import (
+        QryCellIsArrayFormula,
+    )
 else:
     from libre_pythonista_lib.cq.qry.qry_base import QryBase
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_t import QryCellT
@@ -21,6 +25,7 @@ else:
     from libre_pythonista_lib.utils.result import Result
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_pyc_rule import QryPycRule
     from libre_pythonista_lib.kind.rule_name_kind import RuleNameKind
+    from libre_pythonista_lib.cq.qry.calc.sheet.cell.formula.qry_cell_is_array_formula import QryCellIsArrayFormula
 
     PyModuleT = Any
 
@@ -48,9 +53,27 @@ class QryRowCols(QryBase, LogMixin, QryCellT[Result[List[int], None] | Result[No
         self._mod = cast(PyModuleT, mod)
         self.log.debug("init done for cell %s", cell.cell_obj)
 
+    def _qry_is_array_formula(self) -> bool:
+        """Check if the cell contains an array formula."""
+        qry = QryCellIsArrayFormula(cell=self.cell)
+        return self._execute_qry(qry)
+
     def _qry_rule_kind(self) -> RuleNameKind:
         """Queries the rule kind for the cell"""
         qry = QryPycRule(self.cell)
+        result = self._execute_qry(qry)
+        if Result.is_success(result):
+            return result.data
+        raise result.error
+
+    def _qry_rows_cols_formula(self) -> List[int]:
+        if TYPE_CHECKING:
+            from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.array.qry_rows_cols_formula import (
+                QryRowsColsFormula,
+            )
+        else:
+            from libre_pythonista_lib.cq.qry.calc.sheet.cell.array.qry_rows_cols_formula import QryRowsColsFormula
+        qry = QryRowsColsFormula(cell=self._cell)
         result = self._execute_qry(qry)
         if Result.is_success(result):
             return result.data
@@ -122,7 +145,14 @@ class QryRowCols(QryBase, LogMixin, QryCellT[Result[List[int], None] | Result[No
                 return Result.success(self._qry_rows_cols_pd_series())
             if kind == RuleNameKind.CELL_DATA_TYPE_TBL_DATA:
                 return Result.success(self._qry_rows_cols_tbl())
-            return Result.failure(NotImplementedError("Not implemented rule kind: %s", kind))
+
+            is_array_formula = self._qry_is_array_formula()
+
+            if is_array_formula:
+                return Result.success(self._qry_rows_cols_formula())
+            else:
+                return Result.success([1, 1])
+
         except Exception as e:
             return Result.failure(e)
 
