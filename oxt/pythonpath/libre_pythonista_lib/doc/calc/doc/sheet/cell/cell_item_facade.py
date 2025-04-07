@@ -13,6 +13,8 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler_t import CmdHandlerT
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_init_calculate import QryInitCalculate
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.code.qry_cell_src_code import QryCellSrcCode
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.lp_cell.qry_is_first import QryIsFirst
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.lp_cell.qry_is_last import QryIsLast
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_ctl_kind import QryCtlKind
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_pyc_rule import QryPycRule
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_uri import QryCellUri
@@ -44,6 +46,8 @@ else:
     from libre_pythonista_lib.cq.qry.calc.common.map.qry_ctl_kind_from_rule_name_kind import QryCtlKindFromRuleNameKind
     from libre_pythonista_lib.cq.qry.calc.doc.qry_init_calculate import QryInitCalculate
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.code.qry_cell_src_code import QryCellSrcCode
+    from libre_pythonista_lib.cq.qry.calc.sheet.cell.lp_cell.qry_is_first import QryIsFirst
+    from libre_pythonista_lib.cq.qry.calc.sheet.cell.lp_cell.qry_is_last import QryIsLast
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_ctl_kind import QryCtlKind
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_pyc_rule import QryPycRule
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_uri import QryCellUri
@@ -162,6 +166,22 @@ class CellItemFacade(LogMixin):
         rule_kind = self._qry_ctl_rule_name_kind()
         state = self._qry_module_state()
         qry = QryValue(cell=self._cell, rule_kind=rule_kind, data=state.dd_data)
+        result = self.qry_handler.handle(qry)
+        if Result.is_success(result):
+            return result.data
+        raise result.error
+
+    def qry_is_first(self) -> bool:
+        """Queries if the cell is the first cell in the sheet"""
+        qry = QryIsFirst(self._cell)
+        result = self.qry_handler.handle(qry)
+        if Result.is_success(result):
+            return result.data
+        raise result.error
+
+    def qry_is_last(self) -> bool:
+        """Queries if the cell is the last cell in the sheet"""
+        qry = QryIsLast(self._cell)
         result = self.qry_handler.handle(qry)
         if Result.is_success(result):
             return result.data

@@ -32,6 +32,9 @@ class QryLpCells(QryBase, LogMixin, QryDocT[Dict[int, Dict[CellObj, IndexCellPro
     Returns:
         Dict[int, Dict[CellObj, IndexCellProps]]: A dictionary mapping sheet indices to another dictionary
         that maps CellObj instances to their corresponding IndexCellProps.
+
+    Note:
+        The return value is sorted by sheet index. Each item ist sorted by CellObj.
     """
 
     def __init__(self, doc: CalcDoc) -> None:
@@ -69,13 +72,19 @@ class QryLpCells(QryBase, LogMixin, QryDocT[Dict[int, Dict[CellObj, IndexCellPro
             that maps CellObj instances to their corresponding IndexCellProps.
         """
         filter_key = self._qry_cell_cp_code_name()
-        code_cells = {}
+        code_cells: Dict[int, Dict[CellObj, IndexCellProps]] = {}
+        sheet_indexes = []
         for sheet in self._doc.sheets:
-            code_index = {}
+            sheet_indexes.append(sheet.sheet_index)
+        sheet_indexes.sort()
+
+        for idx in sheet_indexes:
+            sheet = self._doc.sheets[idx]
+            code_index: Dict[CellObj, IndexCellProps] = {}
             index = sheet.sheet_index
             # deleted cells will not be in the custom properties
 
-            code_cell = sheet.custom_cell_properties.get_cell_properties(filter_key)
+            code_cell = sheet.custom_cell_properties.get_cell_properties(filter_key)  # sorted order
             i = -1
             for key, value in code_cell.items():
                 i += 1
@@ -96,4 +105,8 @@ class QryLpCells(QryBase, LogMixin, QryDocT[Dict[int, Dict[CellObj, IndexCellPro
             Dict[int, Dict[CellObj, IndexCellProps]]: A dictionary mapping sheet indices to another dictionary
             that maps CellObj instances to their corresponding IndexCellProps.
         """
-        return self._get_cells()
+        try:
+            return self._get_cells()
+        except Exception:
+            self.log.exception("Error executing query")
+        return {}

@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Tuple, TYPE_CHECKING, cast
 
 from sortedcontainers import SortedDict
 
-from ooodev.calc import CalcDoc, CalcCell
+from ooodev.calc import CalcDoc, CalcSheet, CalcCell
 from ooodev.events.args.cancel_event_args import CancelEventArgs
 from ooodev.events.args.event_args import EventArgs
 from ooodev.io.sfa import Sfa
@@ -360,20 +360,34 @@ class PySourceManager(LogMixin):
         """Checks if index is the last index."""
         return index == len(self) - 1
 
-    def get_first_item(self) -> PySource | None:
+    def _get_first_item(self) -> PySourceData | None:
         """Returns the first item in the source manager or None if empty."""
         # get the first item in self._data
         if len(self) == 0:
             return None
         py_data = cast(PySourceData, self[list(self._data.keys())[0]])
+        return py_data
+
+    def get_first_item(self) -> PySource | None:
+        """Returns the first item in the source manager or None if empty."""
+        py_data = self._get_first_item()
+        if py_data is None:
+            return None
         return PySource(uri=py_data.uri, cell=py_data.cell)
 
-    def get_last_item(self) -> PySource | None:
+    def _get_last_item(self) -> PySourceData | None:
         """Returns the last item in the source manager or None if empty."""
         # get the last item in self._data
         if len(self) == 0:
             return None
         py_data = cast(PySourceData, self[list(self._data.keys())[-1]])
+        return py_data
+
+    def get_last_item(self) -> PySource | None:
+        """Returns the last item in the source manager or None if empty."""
+        py_data = self._get_last_item()
+        if py_data is None:
+            return None
         return PySource(uri=py_data.uri, cell=py_data.cell)
 
     def convert_cell_obj_to_tuple(self, cell: CellObj) -> Tuple[int, int, int]:
