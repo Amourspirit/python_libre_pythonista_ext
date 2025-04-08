@@ -152,7 +152,7 @@ class PyModule(LogMixin, PyModuleT):
         """Returns a copy of the module dictionary."""
         return self.mod.__dict__.copy()
 
-    def _execute_init_code(self, code_snippet: str, globals: dict | None = None) -> Any:  # noqa: ANN401
+    def _execute_init_code(self, code_snippet: str, globals_dict: dict | None = None) -> Any:  # noqa: ANN401
         """
         Compiles and executes the given code snippet.
         - If the last statement is an expression, returns its value.
@@ -160,9 +160,9 @@ class PyModule(LogMixin, PyModuleT):
         """
 
         try:
-            if globals is None:
-                globals = {}
-            globals["_"] = None
+            if globals_dict is None:
+                globals_dict = {}
+            globals_dict["_"] = None
             locals = {}
 
             # Parse the code as a full module
@@ -174,7 +174,7 @@ class PyModule(LogMixin, PyModuleT):
             # Execute statements
             # do not use locals here or the module values will be assigned to locals
             # exec(exec_code, globals, locals)
-            exec(exec_code, globals)
+            exec(exec_code, globals_dict)
 
             # If there was a final expression node, evaluate it
 
@@ -187,7 +187,7 @@ class PyModule(LogMixin, PyModuleT):
             # traceback.print_exc()
             return None
 
-    def execute_code(self, code_snippet: str, globals: dict | None = None) -> Any:  # noqa: ANN401
+    def execute_code(self, code_snippet: str, globals_dict: dict | None = None) -> Any:  # noqa: ANN401
         """
         Compiles and executes the given code snippet.
         - If the last statement is an expression, returns its value.
@@ -197,9 +197,9 @@ class PyModule(LogMixin, PyModuleT):
             break_mgr.check_breakpoint("libre_pythonista_lib.code.py_module.execute_code")
 
         try:
-            if globals is None:
-                globals = {}
-            globals["_"] = None
+            if globals_dict is None:
+                globals_dict = {}
+            globals_dict["_"] = None
 
             # Parse the code as a full module
             tree = ast.parse(code_snippet, mode="exec")
@@ -236,7 +236,7 @@ class PyModule(LogMixin, PyModuleT):
 
             # Execute statements
             local_dict = {}
-            exec(exec_code, globals, local_dict)
+            exec(exec_code, globals_dict, local_dict)
 
             if self._private_enabled:
                 filtered_dict = {k: v for k, v in local_dict.items() if not k.startswith("_")}
@@ -249,7 +249,7 @@ class PyModule(LogMixin, PyModuleT):
                 expr = ast.Expression(last_expr.value)
                 expr = ast.fix_missing_locations(expr)
                 eval_code = compile(expr, "<string>", "eval")
-                result = eval(eval_code, globals, local_dict)
+                result = eval(eval_code, globals_dict, local_dict)
                 if assign_name:
                     if self._private_enabled:
                         if not assign_name.startswith("_"):
@@ -258,10 +258,10 @@ class PyModule(LogMixin, PyModuleT):
                         filtered_dict[assign_name] = result
                 filtered_dict["_"] = result
 
-            globals.update(filtered_dict)
+            globals_dict.update(filtered_dict)
 
             # If there's no final expression, fallback to returning locals["_"], if present
-            return globals.get("_")
+            return globals_dict.get("_")
 
         except SyntaxError as e:
             self.log.exception("Syntax error executing code: \n%s", code_snippet)
