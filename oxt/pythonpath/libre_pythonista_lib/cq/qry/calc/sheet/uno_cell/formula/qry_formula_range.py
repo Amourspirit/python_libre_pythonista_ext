@@ -63,7 +63,7 @@ class QryFormulaRange(QryBase, LogMixin, QryUnoCellT[Result[RangeObj, None] | Re
             ca = cursor.getRangeAddress()
             ro = RangeObj.from_range(ca)
             result = Result.success(ro)
-            self.log.debug("Formula range created for cell %s", self.cell.AbsoluteName)
+            self.log.debug("Formula range %s, for cell %s", ro, self.cell.AbsoluteName)
             return result
 
         except Exception as e:

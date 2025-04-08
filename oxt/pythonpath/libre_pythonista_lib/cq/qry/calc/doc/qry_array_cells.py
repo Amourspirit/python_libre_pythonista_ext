@@ -64,6 +64,7 @@ class QryArrayCells(QryBase, LogMixin, QryDocT[Result[List[CalcCell], None] | Re
             qry = QryArrayAbility(cell=cell)
             result = self._execute_qry(qry)
             if Result.is_success(result):
+                self.log.debug("_has_array_ability() - %s", result.data)
                 return result.data
             raise result.error
         except Exception as e:
@@ -77,23 +78,27 @@ class QryArrayCells(QryBase, LogMixin, QryDocT[Result[List[CalcCell], None] | Re
         Returns:
             List[CalcCell]: A list of CalcCell objects that have array formulas.
         """
-        cells: List[CellObj] = []
-        py_src_mgr = self._qry_py_src_mgr()
-        for py_src_data in py_src_mgr.py_src_date_items():
-            cells.append(py_src_data.cell)
-
-        cells.sort()
         results: List[CalcCell] = []
+        try:
+            cells: List[CellObj] = []
+            py_src_mgr = self._qry_py_src_mgr()
+            for py_src_data in py_src_mgr.py_src_date_items():
+                cells.append(py_src_data.cell)
 
-        for cell_obj in cells:
-            sheet = self._doc.sheets[cell_obj.sheet_idx]
-            calc_cell = sheet[cell_obj]
-            if not self._has_array_ability(calc_cell):
-                continue
-            results.append(sheet[cell_obj])
+            cells.sort()
 
-        if self.log.is_debug:
-            self.log.debug("get_array_cells() - %i", len(results))
+            for cell_obj in cells:
+                sheet = self._doc.sheets[cell_obj.sheet_idx]
+                calc_cell = sheet[cell_obj]
+                if not self._has_array_ability(calc_cell):
+                    continue
+                results.append(sheet[cell_obj])
+
+            if self.log.is_debug:
+                self.log.debug("get_array_cells() - %i", len(results))
+        except Exception as e:
+            self.log.exception("get_array_cells() getting array cells: %s", e)
+            raise e
         return results
 
     def execute(self) -> Result[List[CalcCell], None] | Result[None, Exception]:

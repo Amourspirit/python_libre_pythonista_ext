@@ -361,7 +361,7 @@ class PySourceManager(LogMixin):
     def py_src_date_items(self) -> Iterable[PySourceData]:
         """Returns an iterable of PySourceData objects."""
         for key in self._data:
-            yield self._getitem_py_src_data(key)
+            yield self._data[key]
 
     # endregion Dunder Methods
 

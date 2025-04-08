@@ -16,6 +16,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_array_cells import QryArrayCells
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_init_calculate import QryInitCalculate
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.formula.cmd_update_array_formula import (
         CmdUpdateArrayFormula,
     )
@@ -28,6 +29,7 @@ else:
     from libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
     from libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
     from libre_pythonista_lib.cq.qry.calc.doc.qry_array_cells import QryArrayCells
+    from libre_pythonista_lib.cq.qry.calc.doc.qry_init_calculate import QryInitCalculate
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.formula.cmd_update_array_formula import CmdUpdateArrayFormula
     from libre_pythonista_lib.utils.result import Result
     from libre_pythonista_lib.const.event_const import PYC_RULE_MATCH_DONE
@@ -64,10 +66,15 @@ class ArrayEventMgr(LogMixin):
         self._se = SharedEvent(self._doc)
         self._cmd_handler = CmdHandlerFactory.get_cmd_handler()
         self._qry_handler = QryHandlerFactory.get_qry_handler()
+        self._is_init_calculate = False
         self._init_events()
         self._se.subscribe_event(PYC_RULE_MATCH_DONE, self._fn_on_pyc_rule_matched)
         self.log.debug("Init done for doc: %s", doc.runtime_uid)
         self._is_init = True
+
+    def _qry_init_calculate(self) -> bool:
+        qry = QryInitCalculate(uid=self._doc.runtime_uid)
+        return self._qry_handler.handle(qry)
 
     def _init_events(self) -> None:
         self._fn_on_pyc_rule_matched = self._on_pyc_rule_matched
@@ -78,6 +85,11 @@ class ArrayEventMgr(LogMixin):
         # So, basically every call to PY.C will raise this event.
         try:
             self.log.debug("_on_pyc_rule_matched() Entering.")
+            if not self._is_init_calculate:
+                self._is_init_calculate = self._qry_init_calculate()
+                if not self._is_init_calculate:
+                    self.log.debug("_on_pyc_rule_matched()Document init CalculateAll not yet called. returning.")
+                    return
             dd = cast(DotDict, event.event_data)
             if self.log.is_debug:
                 self.log.debug("Is First Cell: %s", dd.is_first_cell)
