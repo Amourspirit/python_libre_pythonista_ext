@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing import Any, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from ....___lo_pip___.oxt_logger import OxtLogger
+    from oxt.___lo_pip___.oxt_logger import OxtLogger
     from oxt.pythonpath.libre_pythonista_lib.doc.doc_globals import DocGlobals
 else:
     from ___lo_pip___.oxt_logger import OxtLogger

@@ -11,6 +11,7 @@ class CalcQryKind(IntEnum):
     CELL_CACHE = 4
     SHEET = 5
     SHEET_CACHE = 6
+    SHEET_MANAGED_CACHE = 7
 
     def __repr__(self) -> str:
         if self.name is None:

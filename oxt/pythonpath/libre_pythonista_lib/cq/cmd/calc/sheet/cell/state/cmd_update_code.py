@@ -76,7 +76,7 @@ class CmdUpdateCode(CmdBase, LogMixin, CmdCellT):
             from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.state.qry_py_src_mgr import QryPySrcMgrCode
         else:
             from libre_pythonista_lib.cq.qry.calc.sheet.cell.state.qry_py_src_mgr import QryPySrcMgrCode
-        qry = QryPySrcMgrCode(cell=self.cell, mod=self._mod)
+        qry = QryPySrcMgrCode(doc=self.cell.calc_doc, mod=self._mod)
         return self._execute_qry(qry)
 
     @override

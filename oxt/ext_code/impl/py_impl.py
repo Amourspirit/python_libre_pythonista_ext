@@ -30,10 +30,17 @@ if TYPE_CHECKING:
     from com.sun.star.frame import Desktop
     from ooodev.loader import Lo
     from ooodev.calc import CalcDoc
+    from ooodev.events.args.event_args import EventArgs
+    from ooodev.utils.helper.dot_dict import DotDict
     from oxt.___lo_pip___.oxt_logger.oxt_logger import OxtLogger
     from oxt.___lo_pip___.debug.break_mgr import BreakMgr
     from oxt.pythonpath.libre_pythonista_lib.doc.doc_init import DocInit
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.cell_item_facade import CellItemFacade
+    from oxt.pythonpath.libre_pythonista_lib.event.shared_event import SharedEvent
+    from oxt.pythonpath.libre_pythonista_lib.const.event_const import (
+        PYC_RULE_MATCH_DONE,
+        PYC_FORMULA_ENTER,
+    )
 
     break_mgr = BreakMgr()
 else:
@@ -42,9 +49,16 @@ else:
     if _CONDITIONS_MET:
         from ooodev.loader import Lo
         from ooodev.calc import CalcDoc
+        from ooodev.events.args.event_args import EventArgs
+        from ooodev.utils.helper.dot_dict import DotDict
         from ___lo_pip___.debug.break_mgr import BreakMgr
         from libre_pythonista_lib.doc.doc_init import DocInit
         from libre_pythonista_lib.doc.calc.doc.sheet.cell.cell_item_facade import CellItemFacade
+        from libre_pythonista_lib.event.shared_event import SharedEvent
+        from libre_pythonista_lib.const.event_const import (
+            PYC_RULE_MATCH_DONE,
+            PYC_FORMULA_ENTER,
+        )
 
         # Initialize the breakpoint manager
         break_mgr = BreakMgr()
@@ -129,14 +143,33 @@ class PyImpl(unohelper.Base, XPy):
             sheet = doc.sheets[sheet_idx]
             x_cell = sheet.component.getCellRangeByName(cell_address)
             cell = sheet.get_cell(x_cell)
+            shared_event = SharedEvent(doc)
+
+            dd = DotDict(sheet=sheet, cell=cell, event_name=PYC_FORMULA_ENTER)
+            eargs = EventArgs(self)
+            eargs.event_data = dd
+            shared_event.trigger_event(PYC_FORMULA_ENTER, eargs)
+
             ci = CellItemFacade(cell)
+
+            # calling the action method of the matched rule will return the data for the cell and
+
             if ci.is_source_cell():
                 self._log.debug("pyc - Cell is source cell")
+
                 # if auto_update is not call then get value will act as a cached version
                 # This can be uses as a static option for cell latter on.
                 # see https://github.com/Amourspirit/python_libre_pythonista_ext/issues/61
                 ci.auto_update()
                 value = ci.get_value()
+                matched_rule = ci.get_matched_rule()
+                if matched_rule:
+                    dd = DotDict(matched_rule=matched_rule, rule_result=value, calc_cell=cell)
+                    dd.is_first_cell = ci.qry_is_first()
+                    dd.is_last_cell = ci.qry_is_last()
+                    eargs = EventArgs(self)
+                    eargs.event_data = dd
+                    shared_event.trigger_event(PYC_RULE_MATCH_DONE, eargs)
                 # self._log.debug("pyc - Cell has Value %s", value)
             else:
                 self._log.debug("pyc - Not a source cell. Creating Default.")

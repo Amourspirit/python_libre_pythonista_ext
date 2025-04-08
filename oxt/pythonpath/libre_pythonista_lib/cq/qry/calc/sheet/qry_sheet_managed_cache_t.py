@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Protocol, TYPE_CHECKING
+from typing import Protocol, TYPE_CHECKING, Tuple
 
 
 if TYPE_CHECKING:
@@ -10,6 +10,8 @@ else:
     from libre_pythonista_lib.cq.qry.calc.sheet.qry_sheet_t import QrySheetT
 
 
-class QrySheetCacheT(QrySheetT[TResult], Protocol):
+class QrySheetManagedCacheT(QrySheetT[TResult], Protocol):
     @property
-    def cache_key(self) -> str: ...
+    def cache_key_events(self) -> Tuple[str, Tuple[str, ...]]:
+        """Gets the cache key and event names."""
+        ...

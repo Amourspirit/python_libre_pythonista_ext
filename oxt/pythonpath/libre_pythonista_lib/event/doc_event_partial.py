@@ -21,6 +21,8 @@ class DocEventPartial(EventsPartial):
     def __init__(self, doc: OfficeDocumentT | None = None) -> None:
         if doc is None:
             doc = Lo.current_doc
+        if doc is None:
+            raise ValueError("doc cannot be None")
         self.__runtime_uid = doc.runtime_uid
         self.__omit_events: Set[str] = set()
         EventsPartial.__init__(self)
@@ -31,6 +33,8 @@ class DocEventPartial(EventsPartial):
         LoEvents().trigger("LibrePythonistaDocEventPartialCheckUid", eargs)
         if eargs.event_data.doc_uid:
             return eargs.event_data.doc_uid == self.__runtime_uid
+        if Lo.current_doc is None:
+            return False
         return Lo.current_doc.runtime_uid == self.__runtime_uid
 
     # region EventsPartial Overrides

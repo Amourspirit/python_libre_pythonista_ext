@@ -65,7 +65,7 @@ class QryModuleState(QryBase, QryCellT[Result[ModuleStateItem, None] | Result[No
             from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.state.qry_py_src_mgr import QryPySrcMgrCode
         else:
             from libre_pythonista_lib.cq.qry.calc.sheet.cell.state.qry_py_src_mgr import QryPySrcMgrCode
-        qry = QryPySrcMgrCode(cell=self.cell, mod=self.mod)
+        qry = QryPySrcMgrCode(doc=self.cell.calc_doc, mod=self.mod)
         return self._execute_qry(qry)
 
     def execute(self) -> Result[ModuleStateItem, None] | Result[None, Exception]:

@@ -1,16 +1,16 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
-from ooodev.calc import CalcCell
+from ooodev.calc import CalcDoc
 
 if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.code.py_module_t import PyModuleT
-    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_t import QryCellT
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_t import QryT
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_base import QryBase
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_py_module_default import QryPyModuleDefault
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source_manager import PySourceManager
 else:
-    from libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_t import QryCellT
+    from libre_pythonista_lib.cq.qry.qry_t import QryT
     from libre_pythonista_lib.cq.qry.qry_base import QryBase
     from libre_pythonista_lib.cq.qry.calc.doc.qry_py_module_default import QryPyModuleDefault
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source_manager import PySourceManager
@@ -18,8 +18,10 @@ else:
 
 # tested in: tests/test_cmd/test_cmd_append_code.py
 
+# TODO: Move this class to cq/qry/calc/doc/
 
-class QryPySrcMgrCode(QryBase, QryCellT[PySourceManager]):
+
+class QryPySrcMgrCode(QryBase, QryT[PySourceManager]):
     """
     Query class that retrieves a PySourceManager instance for a given cell.
 
@@ -27,16 +29,16 @@ class QryPySrcMgrCode(QryBase, QryCellT[PySourceManager]):
     in a LibreOffice Calc document.
     """
 
-    def __init__(self, cell: CalcCell, mod: PyModuleT | None = None) -> None:
+    def __init__(self, doc: CalcDoc, mod: PyModuleT | None = None) -> None:
         """
         Initialize the query with a cell and optional Python module.
 
         Args:
-            cell: (CalcCell) The CalcCell instance to query
+            doc: (CalcDoc) The CalcDoc instance to query
             mod: (PyModuleT, optional) Optional Python module. If not provided, will be queried when needed
         """
         QryBase.__init__(self)
-        self._cell = cell
+        self._doc = doc
         self._mod = mod
 
     def _qry_mod(self) -> PyModuleT:
@@ -56,7 +58,7 @@ class QryPySrcMgrCode(QryBase, QryCellT[PySourceManager]):
         Returns:
             PySourceManager: A new source manager instance for the cell's document
         """
-        return PySourceManager(doc=self.cell.calc_doc, mod=self.mod)
+        return PySourceManager(doc=self._doc, mod=self.mod)
 
     @property
     def mod(self) -> PyModuleT:
@@ -69,13 +71,3 @@ class QryPySrcMgrCode(QryBase, QryCellT[PySourceManager]):
         if self._mod is None:
             self._mod = self._qry_mod()
         return self._mod
-
-    @property
-    def cell(self) -> CalcCell:
-        """
-        Get the cell associated with this query.
-
-        Returns:
-            CalcCell: The cell instance provided during initialization
-        """
-        return self._cell

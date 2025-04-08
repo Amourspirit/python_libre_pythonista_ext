@@ -8,9 +8,11 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_cache import QryCellCache
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_cache_t import QryCellCacheT
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.qry_sheet_cache import QrySheetCache
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.qry_sheet_managed_cache_t import QrySheetManagedCacheT
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_cache_t import QryCacheT
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.qry_sheet_cache_t import QrySheetCacheT
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_t import QryHandlerT
+    from oxt.pythonpath.libre_pythonista_lib.cache.calc.sheet.sheet_cache_mgr import SheetCacheMgr
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_t import QryT, TResult
 else:
     from libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
@@ -18,9 +20,11 @@ else:
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_cache import QryCellCache
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_cache_t import QryCellCacheT
     from libre_pythonista_lib.cq.qry.calc.sheet.qry_sheet_cache import QrySheetCache
+    from libre_pythonista_lib.cq.qry.calc.sheet.qry_sheet_managed_cache_t import QrySheetManagedCacheT
     from libre_pythonista_lib.cq.qry.qry_cache_t import QryCacheT
     from libre_pythonista_lib.cq.qry.calc.sheet.qry_sheet_cache_t import QrySheetCacheT
     from libre_pythonista_lib.cq.qry.qry_handler_t import QryHandlerT
+    from libre_pythonista_lib.cache.calc.sheet.sheet_cache_mgr import SheetCacheMgr
     from libre_pythonista_lib.cq.qry.qry_t import QryT, TResult
 
     MemCache = Any
@@ -36,6 +40,8 @@ class QryHandler(QryHandlerT):
             return cast(TResult, self._handle_cell_cache(cast(QryCellCacheT, query)))
         elif query.kind == CalcQryKind.SHEET_CACHE:
             return cast(TResult, self._handle_sheet_cache(cast(QrySheetCacheT, query)))
+        elif query.kind == CalcQryKind.SHEET_MANAGED_CACHE:
+            return cast(TResult, self._handle_sheet_managed_cache(cast(QrySheetManagedCacheT, query)))
         else:
             raise NotImplementedError
 
@@ -79,4 +85,25 @@ class QryHandler(QryHandlerT):
         # if result is None:
         #     return None
         cache[query.cache_key] = result
+        return result
+
+    def _handle_sheet_managed_cache(self, query: QrySheetManagedCacheT) -> object:  # noqa: ANN401
+        """Handle sheet managed cache query"""
+
+        # see cq.qry.calc.sheet.lp_cells.qry_lp_cells_by_sheet.QryLpCellsBySheet
+
+        # The sheet_cache_mgr is a singleton.
+        # It registers keys with event names.
+        # When those events are triggered the key is removed from the sheet cache.
+        sheet_cache_mgr = SheetCacheMgr(query.sheet)
+        key, event_names = query.cache_key_events
+        cache = sheet_cache_mgr.sheet_cache
+        if not cache:
+            return None
+        if key in cache:
+            return cache[key]
+        result = query.execute()
+        for event_name in event_names:
+            sheet_cache_mgr.register_key(key, event_name)
+        cache[key] = result
         return result

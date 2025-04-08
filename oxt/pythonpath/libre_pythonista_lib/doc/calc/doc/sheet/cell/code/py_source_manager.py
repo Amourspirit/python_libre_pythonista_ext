@@ -1,9 +1,9 @@
 from __future__ import annotations
-from typing import Any, Dict, List, Tuple, TYPE_CHECKING, cast
+from typing import Any, Dict, List, Tuple, Iterable, TYPE_CHECKING, cast
 
 from sortedcontainers import SortedDict
 
-from ooodev.calc import CalcDoc, CalcSheet, CalcCell
+from ooodev.calc import CalcDoc, CalcCell
 from ooodev.events.args.cancel_event_args import CancelEventArgs
 from ooodev.events.args.event_args import EventArgs
 from ooodev.io.sfa import Sfa
@@ -50,6 +50,7 @@ if TYPE_CHECKING:
         PYTHON_AFTER_REMOVE_SOURCE_CODE,
         PYTHON_AFTER_SOURCE_UPDATE,
         PYTHON_BEFORE_SOURCE_UPDATE,
+        PYTHON_SOURCE_MODIFIED,
     )
 
 else:
@@ -86,6 +87,7 @@ else:
         PYTHON_AFTER_REMOVE_SOURCE_CODE,
         PYTHON_AFTER_SOURCE_UPDATE,
         PYTHON_BEFORE_SOURCE_UPDATE,
+        PYTHON_SOURCE_MODIFIED,
     )
 
     QryHandlerT = Any
@@ -322,8 +324,10 @@ class PySourceManager(LogMixin):
         code_cell = self.convert_cell_obj_to_tuple(key) if isinstance(key, CellObj) else (key[0], key[2], key[1])
         if isinstance(value, PySource):
             value = PySourceData(uri=value.uri, cell=value.cell_obj.copy())
-
         self._data[code_cell] = value
+        eargs = EventArgs(self)
+        eargs.event_data = DotDict(source=self, value=value, cell_obj=value.cell.copy(), sheet_idx=code_cell[0])
+        self._shared_event.trigger_event(PYTHON_SOURCE_MODIFIED, eargs)
 
     def __delitem__(self, key: CellObj | Tuple[int, int, int]) -> None:
         """
@@ -353,6 +357,11 @@ class PySourceManager(LogMixin):
         for key in self._data:
             py_data = self._getitem_py_src_data(key)
             yield PySource(uri=py_data.uri, cell=py_data.cell)
+
+    def py_src_date_items(self) -> Iterable[PySourceData]:
+        """Returns an iterable of PySourceData objects."""
+        for key in self._data:
+            yield self._getitem_py_src_data(key)
 
     # endregion Dunder Methods
 
@@ -592,7 +601,9 @@ class PySourceManager(LogMixin):
         if code_cell not in self._data:
             raise Exception(f"Cell {cell_obj} does not exist.")
         cargs = CancelEventArgs(self)
-        cargs.event_data = DotDict(source=self, sheet_idx=sheet_idx, cell=cell, row=row, col=col, doc=self._doc)
+        cargs.event_data = DotDict(
+            source=self, sheet_idx=sheet_idx, cell=cell, row=row, col=col, doc=self._doc, cell_obj=cell_obj.copy()
+        )
         self._shared_event.trigger_event(PYTHON_BEFORE_REMOVE_SOURCE_CODE, cargs)
         if cargs.cancel:
             return
@@ -618,6 +629,9 @@ class PySourceManager(LogMixin):
         self._shared_event.trigger_event(PYTHON_AFTER_REMOVE_SOURCE_CODE, eargs)
         # triggers are in col row format
         self._shared_event.trigger_event(f"{PYTHON_AFTER_REMOVE_SOURCE_CODE}_{col}_{row}", eargs)
+
+        self._shared_event.trigger_event(PYTHON_SOURCE_MODIFIED, eargs)
+
         self.log.debug("remove_source() Leaving.")
 
     def remove_source_by_calc_cell(self, cell: CalcCell) -> None:
@@ -715,6 +729,7 @@ class PySourceManager(LogMixin):
             code=py_src.source_code,
             doc=self._doc,
             py_src=py_src,
+            cell_obj=cell_obj.copy(),
         )
         # triggers are in col row format
         self._shared_event.trigger_event(f"{PYTHON_BEFORE_SOURCE_UPDATE}_{col}_{row}", cargs)
@@ -738,7 +753,7 @@ class PySourceManager(LogMixin):
         eargs.event_data["result"] = result
         # triggers are in col row format
         self._shared_event.trigger_event(f"{PYTHON_AFTER_SOURCE_UPDATE}_{col}_{row}", eargs)
-        self._shared_event.trigger_event(PYTHON_AFTER_SOURCE_UPDATE, eargs)
+        self._shared_event.trigger_event(PYTHON_SOURCE_MODIFIED, eargs)
         self.log.debug("_update_item() Leaving.")
         return True
 

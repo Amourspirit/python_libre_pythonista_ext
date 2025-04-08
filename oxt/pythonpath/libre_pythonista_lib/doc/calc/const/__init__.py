@@ -16,3 +16,5 @@ PYTHON_AFTER_REMOVE_SOURCE_CODE = (
 
 PYTHON_BEFORE_SOURCE_UPDATE = "doc.calc.doc.sheet.cell.code.py_source_manager.PySourceManager.PythonBeforeSourceUpdate"
 PYTHON_AFTER_SOURCE_UPDATE = "doc.calc.doc.sheet.cell.code.py_source_manager.PySourceManager.PythonAfterSourceUpdate"
+
+PYTHON_SOURCE_MODIFIED = "doc.calc.doc.sheet.cell.code.py_source_manager.PySourceManager.SourceModified"

@@ -59,7 +59,7 @@ class QryCellCode(QryBase, LogMixin, QryCellT[Result[str, None] | Result[None, E
         Returns:
             PySourceManager: A singleton instance keyed by module
         """
-        qry = QryPySrcMgrCode(cell=self.cell, mod=self._mod)
+        qry = QryPySrcMgrCode(doc=self.cell.calc_doc, mod=self._mod)
         return self._execute_qry(qry)
 
     def execute(self) -> Result[str, None] | Result[None, Exception]:
