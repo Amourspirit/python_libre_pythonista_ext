@@ -287,7 +287,7 @@ class PySourceManager(LogMixin):
             PySourceData: Source object
         """
         is_db = self.log.is_debug
-        code_cell = self.convert_cell_obj_to_tuple(key) if isinstance(key, CellObj) else (key[0], key[2], key[1])
+        code_cell = self.convert_cell_obj_to_tuple(key) if isinstance(key, CellObj) else key
         if is_db:
             self.log.debug("__getitem__() - Code Cell: %s", code_cell)
         py_data = cast(PySourceData, self._data[code_cell])

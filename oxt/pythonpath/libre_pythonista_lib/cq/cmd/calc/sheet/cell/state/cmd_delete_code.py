@@ -110,14 +110,14 @@ class CmdDeleteCode(CmdBase, LogMixin, CmdCellT):
             self._src_code_removed = True
             if self.cell.cell_obj in self._py_src_mgr:
                 del self._py_src_mgr[self.cell.cell_obj]
-                self.log.debug("Successfully removed source code from source manager.")
+                self.log.debug("Successfully removed source code from source manager for cell %s", self.cell.cell_obj)
             else:
-                self.log.debug("Source code not found in source manager.")
+                self.log.debug("Source code not found in source manager for cell %s", self.cell.cell_obj)
             self._state_changed = True
         except Exception:
-            self.log.exception("Error setting cell address")
+            self.log.exception("Error deleting source code for cell %s", self.cell.cell_obj)
             return
-        self.log.debug("Successfully executed command.")
+        self.log.debug("Successfully executed command for cell %s", self.cell.cell_obj)
         self.success = True
 
     def _undo(self) -> None:
@@ -149,7 +149,7 @@ class CmdDeleteCode(CmdBase, LogMixin, CmdCellT):
             self._current_source = cast(str | None, NULL_OBJ)
             self._state_changed = False
             self._src_code_removed = False
-            self.log.debug("Successfully executed undo command.")
+            self.log.debug("Successfully executed undo command for cell %s", self.cell.cell_obj)
         except Exception as e:
             self.log.exception("Error undoing command: %s", e)
 
