@@ -35,9 +35,9 @@ if TYPE_CHECKING:
     except ImportError:
         from typing_extensions import override
 
-    from ...___lo_pip___.lo_util.resource_resolver import ResourceResolver
-    from ...pythonpath.libre_pythonista_lib.code.py_source_mgr import PyInstance
-    from ...pythonpath.libre_pythonista_lib.log.py_logger import PyLogger
+    from oxt.___lo_pip___.lo_util.resource_resolver import ResourceResolver
+    from oxt.pythonpath.libre_pythonista_lib.code.py_source_mgr import PyInstance
+    from oxt.pythonpath.libre_pythonista_lib.log.py_logger import PyLogger
 
     from ooodev.loader import Lo
     from ooodev.calc import CalcDoc
@@ -46,7 +46,7 @@ if TYPE_CHECKING:
     from ooo.dyn.awt.message_box_buttons import MessageBoxButtonsEnum
     from ooo.dyn.awt.message_box_type import MessageBoxType
     from ooodev.dialog.msgbox import MsgBox
-    from ...___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from oxt.___lo_pip___.oxt_logger.oxt_logger import OxtLogger
 
 else:
 

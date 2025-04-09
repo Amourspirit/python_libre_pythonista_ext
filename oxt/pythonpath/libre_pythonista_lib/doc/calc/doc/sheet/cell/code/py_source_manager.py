@@ -392,6 +392,121 @@ class PySourceManager(LogMixin):
         py_data = cast(PySourceData, self[list(self._data.keys())[-1]])
         return py_data
 
+    def get_next_item_py_src_data(self, cell: CellObj, require_exist: bool = False) -> PySourceData | None:
+        """
+        Returns the next item in the source manager or None if empty.
+
+        Args:
+            cell (CellObj): Cell object.
+            require_exist (bool, optional): If True, the cell must exist in the source manager. Defaults to False.
+
+        Returns:
+            PySourceData | None: Source data or None if not found.
+        """
+        if len(self) == 0:
+            self.log.debug("get_next_item_py_src_data() - No items in source manager.")
+            return None
+        index = self.get_index(cell)
+        if require_exist and index < 0:
+            self.log.debug("get_next_item_py_src_data() - Cell %s not found.", cell)
+            return None
+        if index == len(self) - 1:
+            return None
+        if index > 0:
+            self.log.debug("get_next_item_py_src_data() - Cell %s is the next item.", cell)
+            py_data = cast(PySourceData, self[list(self._data.keys())[index + 1]])
+            return py_data
+        # negative index means the cell is not in this instance.
+        found = None
+        for key in self._data:
+            itm = cast(PySourceData, self._data[key])
+            if self.log.is_debug:
+                self.log.debug(
+                    "get_next_item_py_src_data() - Item cell %s > cell %s is %s", itm.cell, cell, itm.cell > cell
+                )
+            if itm.cell > cell:
+                break
+            found = itm
+        if found is None:
+            self.log.debug("get_next_item_py_src_data() - Cell %s not found.", cell)
+        else:
+            self.log.debug("get_next_item_py_src_data() - Found cell %s after current cell %s.", found.cell, cell)
+        return found
+
+    def get_next_item(self, cell: CellObj, require_exist: bool = False) -> PySource | None:
+        """
+        Returns the next item in the source manager or None if empty.
+
+        Args:
+            cell (CellObj): Cell object.
+            require_exist (bool, optional): If True, the cell must exist in the source manager. Defaults to False.
+
+        Returns:
+            PySource | None: Source data or None if not found.
+        """
+        py_data = self.get_next_item_py_src_data(cell=cell, require_exist=require_exist)
+        if py_data is None:
+            return None
+        return PySource(uri=py_data.uri, cell=py_data.cell)
+
+    def get_prev_item_py_src_data(self, cell: CellObj, require_exist: bool = False) -> PySourceData | None:
+        """
+        Returns the previous item in the source manager or None if empty.
+
+        Args:
+            cell (CellObj): Cell object.
+            require_exist (bool, optional): If True, the cell must exist in the source manager. Defaults to False.
+
+        Returns:
+            PySourceData | None: Source data or None if not found.
+        """
+        if len(self) == 0:
+            self.log.debug("get_prev_item_py_src_data() - No items in source manager.")
+            return None
+        index = self.get_index(cell)
+        if require_exist and index < 0:
+            self.log.debug("get_prev_item_py_src_data() - Cell %s not found and require_exist is True.", cell)
+            return None
+        if index == 0:
+            self.log.debug("get_prev_item_py_src_data() - Cell %s is the first item.", cell)
+            return None
+        if index > 0:
+            self.log.debug("get_prev_item_py_src_data() - Cell %s is the previous item.", cell)
+            py_data = cast(PySourceData, self[list(self._data.keys())[index - 1]])
+            return py_data
+        # negative index means the cell is not in this instance.
+        found = None
+        for key in reversed(self._data):
+            itm = cast(PySourceData, self._data[key])
+            if self.log.is_debug:
+                self.log.debug(
+                    "get_prev_item_py_src_data() - Item cell %s < cell %s is %s", itm.cell, cell, itm.cell < cell
+                )
+            if itm.cell < cell:
+                found = itm
+                break
+        if found is None:
+            self.log.debug("get_prev_item_py_src_data() - Cell %s not found.", cell)
+        else:
+            self.log.debug("get_prev_item_py_src_data() - Found cell %s before current cell %s.", found.cell, cell)
+        return found
+
+    def get_prev_item(self, cell: CellObj, require_exist: bool = False) -> PySource | None:
+        """
+        Returns the previous item in the source manager or None if empty.
+
+        Args:
+            cell (CellObj): Cell object.
+            require_exist (bool, optional): If True, the cell must exist in the source manager. Defaults to False.
+
+        Returns:
+            PySource | None: Source data or None if not found.
+        """
+        py_data = self.get_prev_item_py_src_data(cell=cell, require_exist=require_exist)
+        if py_data is None:
+            return None
+        return PySource(uri=py_data.uri, cell=py_data.cell)
+
     def get_last_item(self) -> PySource | None:
         """Returns the last item in the source manager or None if empty."""
         py_data = self._get_last_item()
@@ -694,7 +809,7 @@ class PySourceManager(LogMixin):
             code_cell = self.convert_cell_obj_to_tuple(cell)
             return list(self._data.keys()).index(code_cell)
         except Exception:
-            self.log.warning("get_index() - Cell %s not found.", cell)
+            self.log.debug("get_index() - Cell %s not found.", cell)
             return -1
 
     # endregion Source Management

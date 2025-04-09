@@ -1,39 +1,31 @@
 from __future__ import annotations
 from typing import Any, Dict, Tuple, TYPE_CHECKING
 
-import uno
 import unohelper
 from com.sun.star.frame import XDispatch
 from com.sun.star.beans import PropertyValue
 from com.sun.star.util import URL
 from ooo.dyn.frame.feature_state_event import FeatureStateEvent
 
-from ooodev.loader import Lo
-
-from ..cell.formula.insert_pyc_formula import InsertPycFormula
 
 if TYPE_CHECKING:
-    try:
-        # python 3.12+
-        from typing import override  # type: ignore
-    except ImportError:
-        from typing_extensions import override
+    from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
+    from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from com.sun.star.frame import XStatusListener
-    from ....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.formula.insert_pyc_formula import InsertPycFormula
 else:
-    from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from libre_pythonista_lib.utils.custom_ext import override
+    from libre_pythonista_lib.log.log_mixin import LogMixin
+    from libre_pythonista_lib.doc.calc.doc.sheet.cell.formula.insert_pyc_formula import InsertPycFormula
 
-    def override(func):  # noqa: ANN001, ANN201
-        return func
 
-
-class DispatchPycFormulaDep(XDispatch, unohelper.Base):
+class DispatchPycFormulaDep(XDispatch, LogMixin, unohelper.Base):
     """Inserts PYC formula with dependent cells."""
 
     def __init__(self, ctx: Any) -> None:  # noqa: ANN401
         XDispatch.__init__(self)
+        LogMixin.__init__(self)
         unohelper.Base.__init__(self)
-        self._log = OxtLogger(log_name=self.__class__.__name__)
         self._status_listeners: Dict[str, XStatusListener] = {}
         self.ctx = ctx
 
@@ -48,16 +40,15 @@ class DispatchPycFormulaDep(XDispatch, unohelper.Base):
         Note: Notifications can't be guaranteed! This will be a part of interface XNotifyingDispatch.
         """
         # https://wiki.openoffice.org/wiki/Documentation/DevGuide/WritingUNO/Implementation
-        with self._log.indent(True):
-            if URL.Complete in self._status_listeners:
-                self._log.debug(f"addStatusListener(): url={URL.Main} already exists.")
-            else:
-                # setting IsEnable=False here does not disable the dispatch command
-                # setting State will affect how the control is displayed in menus.
-                # State=True may cause the menu items to be displayed as checked.
-                fe = FeatureStateEvent(FeatureURL=URL, IsEnabled=True, State=None)
-                Control.statusChanged(fe)
-                self._status_listeners[URL.Complete] = Control
+        if URL.Complete in self._status_listeners:
+            self.log.debug(f"addStatusListener(): url={URL.Main} already exists.")
+        else:
+            # setting IsEnable=False here does not disable the dispatch command
+            # setting State will affect how the control is displayed in menus.
+            # State=True may cause the menu items to be displayed as checked.
+            fe = FeatureStateEvent(FeatureURL=URL, IsEnabled=True, State=None)
+            Control.statusChanged(fe)
+            self._status_listeners[URL.Complete] = Control
 
     @override
     def dispatch(self, URL: URL, Arguments: Tuple[PropertyValue, ...]) -> None:  # noqa: N803
@@ -72,15 +63,14 @@ class DispatchPycFormulaDep(XDispatch, unohelper.Base):
         But when set to ``True``, dispatch() processes the request synchronously.
         """
         try:
-            self._log.debug(f"dispatch(): url={URL.Main}")
-            _ = Lo.current_doc
+            self.log.debug("dispatch(): url=%s", URL.Main)
             ipf = InsertPycFormula()
             ipf.formula_with_dependent()
 
         except Exception as e:
             # log the error and do not re-raise it.
             # re-raising the error may crash the entire LibreOffice app.
-            self._log.error(f"Error: {e}", exc_info=True)
+            self.log.exception("Error: %s", e)
             return
 
     @override
