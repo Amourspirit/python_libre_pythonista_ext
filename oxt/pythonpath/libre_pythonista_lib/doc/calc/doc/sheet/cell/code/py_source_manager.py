@@ -321,7 +321,7 @@ class PySourceManager(LogMixin):
             key (CellObj, Tuple[int, int]): CellObj or Tuple of sheet, Column and Row
             value (PySource, PySourceData): Source object
         """
-        code_cell = self.convert_cell_obj_to_tuple(key) if isinstance(key, CellObj) else (key[0], key[2], key[1])
+        code_cell = self.convert_cell_obj_to_tuple(key) if isinstance(key, CellObj) else key
         if isinstance(value, PySource):
             value = PySourceData(uri=value.uri, cell=value.cell_obj.copy())
         self._data[code_cell] = value
@@ -349,7 +349,7 @@ class PySourceManager(LogMixin):
         Returns:
             bool: True if key exists in the data.
         """
-        code_cell = self.convert_cell_obj_to_tuple(key) if isinstance(key, CellObj) else (key[0], key[2], key[1])
+        code_cell = self.convert_cell_obj_to_tuple(key) if isinstance(key, CellObj) else key
         return code_cell in self._data
 
     def __iter__(self):  # noqa: ANN204
