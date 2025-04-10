@@ -425,8 +425,8 @@ class PySourceManager(LogMixin):
                     "get_next_item_py_src_data() - Item cell %s > cell %s is %s", itm.cell, cell, itm.cell > cell
                 )
             if itm.cell > cell:
+                found = itm
                 break
-            found = itm
         if found is None:
             self.log.debug("get_next_item_py_src_data() - Cell %s not found.", cell)
         else:
