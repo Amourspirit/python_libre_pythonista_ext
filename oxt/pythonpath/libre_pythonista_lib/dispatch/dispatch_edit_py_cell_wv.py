@@ -33,7 +33,7 @@ class DispatchEditPyCellWv(unohelper.Base, XDispatch):
         self._sheet = sheet
         self._cell = cell
         self._log = OxtLogger(log_name=self.__class__.__name__)
-        self._log.debug(f"init: sheet={sheet}, cell={cell}")
+        self._log.debug("init: sheet=%s, cell=%s", sheet, cell)
         self._in_thread = in_thread
         self._status_listeners: Dict[str, XStatusListener] = {}
 
@@ -49,7 +49,7 @@ class DispatchEditPyCellWv(unohelper.Base, XDispatch):
         """
         with self._log.indent(True):
             if URL.Complete in self._status_listeners:
-                self._log.debug(f"addStatusListener(): url={URL.Main} already exists.")
+                self._log.debug("addStatusListener(): url=%s already exists.", URL.Main)
             else:
                 # setting IsEnable=False here does not disable the dispatch command
                 # State=True may cause the menu items to be displayed as checked.
@@ -71,12 +71,10 @@ class DispatchEditPyCellWv(unohelper.Base, XDispatch):
         """
         with self._log.indent(True):
             try:
-                self._log.debug(f"dispatch(): url={URL.Main}")
+                self._log.debug("dispatch(): url=%s", URL.Main)
                 serv = cast(
                     Any,
-                    Lo.create_instance_mcf(
-                        XInterface, "___lo_identifier___.py_edit_cell_job"
-                    ),
+                    Lo.create_instance_mcf(XInterface, "___lo_identifier___.py_edit_cell_job"),
                 )
                 nv_cell = NamedValue("cell", self._cell)
                 nv_sheet = NamedValue("sheet", self._sheet)
@@ -86,7 +84,7 @@ class DispatchEditPyCellWv(unohelper.Base, XDispatch):
             except Exception as e:
                 # log the error and do not re-raise it.
                 # re-raising the error may crash the entire LibreOffice app.
-                self._log.error(f"Error: {e}", exc_info=True)
+                self._log.error("Error: %s", e, exc_info=True)
                 return
 
     @override

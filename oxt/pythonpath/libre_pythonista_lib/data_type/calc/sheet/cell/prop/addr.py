@@ -7,11 +7,9 @@ from ooodev.utils.validation import check
 from ooodev.utils.decorator import enforce
 
 if TYPE_CHECKING:
-    from typing_extensions import override
+    from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
 else:
-
-    def override(func):  # noqa: ANN001, ANN201
-        return func
+    from libre_pythonista_lib.utils.custom_ext import override
 
 
 # Note that from __future__ import annotations converts annotations to string.

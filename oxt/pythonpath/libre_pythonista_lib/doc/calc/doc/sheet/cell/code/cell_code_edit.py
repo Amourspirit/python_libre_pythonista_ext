@@ -1,21 +1,18 @@
 # region Imports
 from __future__ import annotations
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any
 from abc import ABC, abstractmethod
 
 from ooodev.calc import CalcCell
 from ooodev.events.args.cancel_event_args import CancelEventArgs
-from ooodev.events.args.event_args import EventArgs
-from ooodev.utils.helper.dot_dict import DotDict
 
 
 if TYPE_CHECKING:
-    from com.sun.star.sheet import SheetCellCursor
-    from oxt.___lo_pip___.oxt_logger.oxt_logger import OxtLogger
     from oxt.pythonpath.libre_pythonista_lib.event.shared_event import SharedEvent
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.cell_item_facade import CellItemFacade
     from oxt.pythonpath.libre_pythonista_lib.const.event_const import CONTROL_ADDING
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.code.qry_is_cell_in_src import QryIsCellInSrc
+    from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.listen.code_cell_listeners import (
         CodeCellListeners,
     )
@@ -27,11 +24,11 @@ if TYPE_CHECKING:
     )
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.formula.cmd_set_formula import CmdSetFormula
 else:
-    from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
     from libre_pythonista_lib.event.shared_event import SharedEvent
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.cell_item_facade import CellItemFacade
     from libre_pythonista_lib.const.event_const import CONTROL_ADDING
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.code.qry_is_cell_in_src import QryIsCellInSrc
+    from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.listen.code_cell_listeners import CodeCellListeners
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.formula.qry_cell_is_pyc_array_formula import (
         QryCellIsPycArrayFormula,
@@ -42,7 +39,7 @@ else:
 # endregion Imports
 
 
-class CellCodeEdit(ABC):
+class CellCodeEdit(LogMixin, ABC):
     """Cell code edit class."""
 
     def __init__(self, inst_id: str, cell: CalcCell, url_str: str = "", src_code: str = "") -> None:
@@ -55,7 +52,7 @@ class CellCodeEdit(ABC):
             url_str (str, optional): The url string. Defaults to "".
             src_code (str, optional): Source Code. Usually when provided it will take precedent or showing a dialog to get code. Defaults to "".
         """
-        self.log = OxtLogger(log_name=self.__class__.__name__)
+        super().__init__()
         self.log.debug("init: inst_id=%s, cell=%s, url=%s", inst_id, cell, url_str)
         self.cell = cell
         self._facade = CellItemFacade(cell=self.cell)
