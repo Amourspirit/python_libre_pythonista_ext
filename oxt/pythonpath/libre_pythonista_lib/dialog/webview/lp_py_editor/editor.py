@@ -21,9 +21,11 @@ if TYPE_CHECKING:
     from oxt.___lo_pip___.oxt_logger.oxt_logger import OxtLogger
     from oxt.___lo_pip___.oxt_logger.logger_config import LoggerConfig
     from oxt.___lo_pip___.config import Config
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_py_src_mgr import QryPySrcMgr
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source_manager import PySourceManager
     from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
-    from oxt.pythonpath.libre_pythonista_lib.cell.code_edit.cell_code_edit import CellCodeEdit
-    from oxt.pythonpath.libre_pythonista_lib.code.py_source_mgr import PyInstance
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.cell_code_edit import CellCodeEdit
     from oxt.pythonpath.libre_pythonista_lib.const import DISPATCH_SEL_RNG
     from oxt.pythonpath.libre_pythonista_lib.multi_process.process_mgr import ProcessMgr
     from oxt.pythonpath.libre_pythonista_lib.multi_process.socket_manager import SocketManager
@@ -37,9 +39,11 @@ else:
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger  # noqa: F401
     from ___lo_pip___.oxt_logger.logger_config import LoggerConfig  # noqa: F401
     from ___lo_pip___.config import Config  # noqa: F401
+    from libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
+    from libre_pythonista_lib.cq.qry.calc.doc.qry_py_src_mgr import QryPySrcMgr
+    from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source_manager import PySourceManager
     from libre_pythonista_lib.utils.custom_ext import override
-    from libre_pythonista_lib.cell.code_edit.cell_code_edit import CellCodeEdit
-    from libre_pythonista_lib.code.py_source_mgr import PyInstance
+    from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.cell_code_edit import CellCodeEdit
     from libre_pythonista_lib.const import DISPATCH_SEL_RNG
     from libre_pythonista_lib.multi_process.process_mgr import ProcessMgr
     from libre_pythonista_lib.multi_process.socket_manager import SocketManager
@@ -62,14 +66,19 @@ _MANAGERS: Dict[str, PyCellEditProcessMgr] = {}
 
 class PyCellCodeEdit(CellCodeEdit):
     def __init__(self, inst_id: str, cell: CalcCell, url_str: str = "", src_code: str = "") -> None:
-        CellCodeEdit.__init__(self, inst_id, cell, url_str, src_code)
+        super().__init__(inst_id, cell, url_str, src_code)
+        self._qry_handler = QryHandlerFactory.get_qry_handler()
+
+    def _qry_pyc_instance(self) -> PySourceManager:
+        qry = QryPySrcMgr(doc=self.cell.calc_doc)
+        return self._qry_handler.handle(qry)
 
     @override
     def edit_code(self) -> bool:
         try:
             self.log.debug("Editing code for cell: %s", self.cell)
-            py_inst = PyInstance(self.cell.calc_doc)  # singleton
-            py_inst.update_source(code=self.src_code, cell=self.cell.cell_obj)
+            py_inst = self._qry_pyc_instance()
+            py_inst.update_source(code=self.src_code, cell_obj=self.cell.cell_obj)
             py_inst.update_all()
             return True
         except Exception:
@@ -105,7 +114,8 @@ class PyCellEditProcessMgr(ProcessMgr):
         self.cell = cell
         self.doc = CalcDoc.from_current_doc()
         self.cache_key = f"doc_{self.doc.runtime_uid}_sheet_{self.sheet}_cell_{self.cell}"
-        self.py_instance = PyInstance(self.doc)
+        self._qry_handler = QryHandlerFactory.get_qry_handler()
+        self._py_instance = None
         self.log.debug("Sheet: %s, Cell: %s", self.sheet, self.cell)
         calc_sheet = self.doc.sheets[sheet]
         self.calc_cell = calc_sheet[cell]
@@ -597,6 +607,8 @@ class PyCellEditProcessMgr(ProcessMgr):
 
     # endregion Range Selection
 
+    # region Static methods
+
     @classmethod
     def terminate_instance(cls, key: Any) -> None:  # noqa: ANN401
         global _MANAGERS
@@ -605,6 +617,18 @@ class PyCellEditProcessMgr(ProcessMgr):
             inst.terminate_all_subprocesses()
             inst.terminate_server()
             del _MANAGERS[key]
+
+    # endregion Static methods
+
+    # region Properties
+    @property
+    def py_instance(self) -> PySourceManager:
+        if self._py_instance is None:
+            qry = QryPySrcMgr(doc=self.doc)
+            self._py_instance = self._qry_handler.handle(qry)
+        return self._py_instance
+
+    # endregion Properties
 
 
 def main(sheet: str, cell: str) -> None:

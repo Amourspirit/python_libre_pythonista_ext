@@ -70,13 +70,13 @@ class PyEditCellJob(XJob, unohelper.Base):
         try:
             if TYPE_CHECKING:
                 from oxt.pythonpath.libre_pythonista_lib.dialog.webview.lp_py_editor import (
-                    editor2,
+                    editor,
                 )  # type: ignore
             else:
-                from libre_pythonista_lib.dialog.webview.lp_py_editor import editor2  # type: ignore
+                from libre_pythonista_lib.dialog.webview.lp_py_editor import editor  # type: ignore
             data_args = Props.data_to_dict(Arguments)
             self._log.debug(f"data_args: {data_args}")
-            editor2.main(
+            editor.main(
                 sheet=cast(str, data_args.get("sheet")),
                 cell=cast(str, data_args.get("cell")),
             )
