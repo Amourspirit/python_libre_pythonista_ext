@@ -23,7 +23,7 @@
             "titleBar.activeForeground": "#e49df4"
         }
     },
-    "workbench.colorTheme": "Monokai",
+    "workbench.colorTheme": "Visual Studio 2017 Light - C++",
     "python.testing.pytestArgs": [
         "tests"
     ],
