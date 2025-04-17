@@ -39,7 +39,11 @@ class LpLog(SingletonBase):
 
     @property
     def log(self) -> PyLogger:
-        return PyLogger(Lo.current_doc)
+        """Gets the logger"""
+        doc = cast(OfficeDocumentT, Lo.current_doc)
+        if doc is None:
+            raise RuntimeError("Current document is None")
+        return PyLogger(doc)
 
     @property
     def log_path(self) -> Path:
@@ -52,7 +56,6 @@ class LpLog(SingletonBase):
 
 
 class StaticLpLog:
-
     @staticmethod
     def _get_logger() -> PyLogger:
         return LpLog().log
