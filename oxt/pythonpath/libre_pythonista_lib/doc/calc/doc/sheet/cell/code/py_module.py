@@ -13,7 +13,7 @@ from ooodev.utils.helper.dot_dict import DotDict
 if TYPE_CHECKING:
     from oxt.___lo_pip___.debug.break_mgr import BreakMgr
     from oxt.pythonpath.libre_pythonista_lib.doc.doc_globals import DocGlobals
-    from oxt.pythonpath.libre_pythonista_lib.cell.errors.general_error import GeneralError
+    from oxt.pythonpath.libre_pythonista_lib.ex.general_error import GeneralError
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.mod_helper.lplog import (
         LpLog as LibrePythonistaLog,
     )
@@ -26,7 +26,7 @@ if TYPE_CHECKING:
 else:
     from ___lo_pip___.debug.break_mgr import BreakMgr
     from libre_pythonista_lib.doc.doc_globals import DocGlobals
-    from libre_pythonista_lib.cell.errors.general_error import GeneralError
+    from libre_pythonista_lib.ex.general_error import GeneralError
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.mod_helper.lplog import LpLog as LibrePythonistaLog
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module_t import PyModuleT
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.rules.code_rules import CodeRules
