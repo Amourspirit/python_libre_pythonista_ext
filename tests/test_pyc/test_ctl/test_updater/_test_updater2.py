@@ -25,10 +25,10 @@ from ooodev.utils.kind.language_kind import LanguageKind
 @pytest.fixture(scope="function")
 def control_props():  # noqa: ANN201
     if TYPE_CHECKING:
-        from oxt.pythonpath.libre_pythonista_lib.pyc.cell.ctl.ctl_prop_kind import CtlPropKind
+        from oxt.pythonpath.libre_pythonista_lib.kind.ctl_prop_kind import CtlPropKind
         from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.kind.ctl_kind import CtlKind
     else:
-        from libre_pythonista_lib.pyc.cell.ctl.ctl_prop_kind import CtlPropKind
+        from libre_pythonista_lib.kind.ctl_prop_kind import CtlPropKind
         from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.kind.ctl_kind import CtlKind
     return (
         CtlPropKind.CTL_SHAPE,
@@ -41,10 +41,10 @@ def control_props():  # noqa: ANN201
 @pytest.fixture(scope="function")
 def config():  # noqa: ANN001, ANN201
     if TYPE_CHECKING:
-        from oxt.pythonpath.libre_pythonista_lib.pyc.cell.ctl.ctl_prop_kind import CtlPropKind
+        from oxt.pythonpath.libre_pythonista_lib.kind.ctl_prop_kind import CtlPropKind
         from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.kind.ctl_kind import CtlKind
     else:
-        from libre_pythonista_lib.pyc.cell.ctl.ctl_prop_kind import CtlPropKind
+        from libre_pythonista_lib.kind.ctl_prop_kind import CtlPropKind
         from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.kind.ctl_kind import CtlKind
 
     class Config:
@@ -64,10 +64,10 @@ def config():  # noqa: ANN001, ANN201
 @pytest.fixture(scope="function")
 def cell_control():  # noqa: ANN001, ANN201
     if TYPE_CHECKING:
-        from oxt.pythonpath.libre_pythonista_lib.pyc.cell.ctl.ctl_prop_kind import CtlPropKind
+        from oxt.pythonpath.libre_pythonista_lib.kind.ctl_prop_kind import CtlPropKind
         from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.kind.ctl_kind import CtlKind
     else:
-        from libre_pythonista_lib.pyc.cell.ctl.ctl_prop_kind import CtlPropKind
+        from libre_pythonista_lib.kind.ctl_prop_kind import CtlPropKind
         from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.kind.ctl_kind import CtlKind
 
     class CellControl:
@@ -140,9 +140,9 @@ def calc_sheet(calc_draw_page):  # noqa: ANN001, ANN201
 @pytest.fixture(scope="function")
 def calc_cell(control_props, config, calc_sheet, build_setup, loader):  # noqa: ANN001, ANN201
     if TYPE_CHECKING:
-        from oxt.pythonpath.libre_pythonista_lib.pyc.cell.ctl.ctl_prop_kind import CtlPropKind
+        from oxt.pythonpath.libre_pythonista_lib.kind.ctl_prop_kind import CtlPropKind
     else:
-        from libre_pythonista_lib.pyc.cell.ctl.ctl_prop_kind import CtlPropKind
+        from libre_pythonista_lib.kind.ctl_prop_kind import CtlPropKind
 
     class CalcCell:
         def __init__(self) -> None:
@@ -186,10 +186,10 @@ def calc_cell(control_props, config, calc_sheet, build_setup, loader):  # noqa: 
 @pytest.fixture(scope="function")
 def control_class(calc_cell, control_props):  # noqa: ANN001, ANN201
     if TYPE_CHECKING:
-        from oxt.pythonpath.libre_pythonista_lib.pyc.cell.ctl.ctl_prop_kind import CtlPropKind
+        from oxt.pythonpath.libre_pythonista_lib.kind.ctl_prop_kind import CtlPropKind
         from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.kind.ctl_kind import CtlKind
     else:
-        from libre_pythonista_lib.pyc.cell.ctl.ctl_prop_kind import CtlPropKind
+        from libre_pythonista_lib.kind.ctl_prop_kind import CtlPropKind
         from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.kind.ctl_kind import CtlKind
 
     class Ctl:
@@ -219,7 +219,7 @@ def control_class(calc_cell, control_props):  # noqa: ANN001, ANN201
 @pytest.fixture(scope="function")
 def provider(control_class, config, cell_control):  # noqa: ANN001, ANN201
     if TYPE_CHECKING:
-        from oxt.pythonpath.libre_pythonista_lib.pyc.cell.ctl.ctl_prop_kind import CtlPropKind
+        from oxt.pythonpath.libre_pythonista_lib.kind.ctl_prop_kind import CtlPropKind
         from oxt.pythonpath.libre_pythonista_lib.pyc.cell.ctl.mixin.calc_cell_mixin import CalcCellMixin
         from oxt.pythonpath.libre_pythonista_lib.pyc.cell.ctl.updater.ctl_provider import CtlProvider
         from typing_extensions import override
@@ -237,7 +237,7 @@ def provider(control_class, config, cell_control):  # noqa: ANN001, ANN201
             CONTROL_UPDATED,
         )
     else:
-        from libre_pythonista_lib.pyc.cell.ctl.ctl_prop_kind import CtlPropKind
+        from libre_pythonista_lib.kind.ctl_prop_kind import CtlPropKind
 
         from libre_pythonista_lib.pyc.cell.ctl.mixin.calc_cell_mixin import CalcCellMixin
         from libre_pythonista_lib.pyc.cell.ctl.updater.ctl_provider import CtlProvider
