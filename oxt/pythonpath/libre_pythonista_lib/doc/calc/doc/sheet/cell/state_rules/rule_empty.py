@@ -3,7 +3,7 @@ from typing import cast, TYPE_CHECKING
 
 
 if TYPE_CHECKING:
-    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source_mgr import PySource
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source import PySource
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.state_rules.state_rule_t import StateRuleT
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.state_rules.rule_base import RuleBase
     from oxt.pythonpath.libre_pythonista_lib.kind.rule_name_kind import RuleNameKind
