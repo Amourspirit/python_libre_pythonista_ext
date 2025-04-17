@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 from ooodev.calc import CalcCell
 
 if TYPE_CHECKING:
-    from oxt.pythonpath.libre_pythonista_lib.cell.props.key_maker import KeyMaker
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.props.key_maker import KeyMaker
     from oxt.pythonpath.libre_pythonista_lib.cell.state.state_kind import StateKind
     from oxt.pythonpath.libre_pythonista_lib.cell.state.ctl_state import CtlState
     from oxt.pythonpath.libre_pythonista_lib.const import (
@@ -16,7 +16,7 @@ if TYPE_CHECKING:
         DISPATCH_CODE_DEL,
     )
 else:
-    from libre_pythonista_lib.cell.props.key_maker import KeyMaker
+    from libre_pythonista_lib.doc.calc.doc.sheet.cell.props.key_maker import KeyMaker
     from libre_pythonista_lib.cell.state.state_kind import StateKind
     from libre_pythonista_lib.cell.state.ctl_state import CtlState
     from libre_pythonista_lib.const import (

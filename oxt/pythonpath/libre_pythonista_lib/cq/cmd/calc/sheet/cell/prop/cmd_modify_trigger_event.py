@@ -7,7 +7,7 @@ if TYPE_CHECKING:
     from ooodev.calc import CalcCell
     from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
-    from oxt.pythonpath.libre_pythonista_lib.cell.props.key_maker import KeyMaker
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.props.key_maker import KeyMaker
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.cmd_cell_t import CmdCellT
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_cell_prop_set import CmdCellPropSet
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_cmd_kind import CalcCmdKind

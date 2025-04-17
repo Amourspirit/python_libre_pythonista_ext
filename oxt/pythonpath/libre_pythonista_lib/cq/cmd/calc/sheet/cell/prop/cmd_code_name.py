@@ -5,7 +5,7 @@ from ooodev.utils import gen_util
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcCell
-    from oxt.pythonpath.libre_pythonista_lib.cell.props.key_maker import KeyMaker
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.props.key_maker import KeyMaker
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.cmd_cell_t import CmdCellT
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.extra.cmd_cell_extra_set import CmdCellExtraSet
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_cell_prop_set import CmdCellPropSet
@@ -18,7 +18,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
     from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
 else:
-    from libre_pythonista_lib.cell.props.key_maker import KeyMaker
+    from libre_pythonista_lib.doc.calc.doc.sheet.cell.props.key_maker import KeyMaker
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.cmd_cell_t import CmdCellT
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.extra.cmd_cell_extra_set import CmdCellExtraSet
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_cell_prop_set import CmdCellPropSet

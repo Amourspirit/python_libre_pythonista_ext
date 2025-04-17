@@ -8,7 +8,7 @@ if TYPE_CHECKING:
     from oxt.___lo_pip___.basic_config import BasicConfig
     from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
-    from oxt.pythonpath.libre_pythonista_lib.cell.props.key_maker import KeyMaker
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.props.key_maker import KeyMaker
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.ctl.cmd_cell_ctl_t import CmdCellCtlT
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_shape import CmdShape
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_t import CmdT

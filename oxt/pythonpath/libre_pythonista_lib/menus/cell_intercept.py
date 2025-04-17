@@ -18,7 +18,7 @@ from ooodev.gui.menu.context.action_trigger_container import ActionTriggerContai
 
 if TYPE_CHECKING:
     from com.sun.star.table import CellAddress
-    from oxt.pythonpath.libre_pythonista_lib.cell.props.key_maker import KeyMaker
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.props.key_maker import KeyMaker
     from oxt.pythonpath.libre_pythonista_lib.cell.state.ctl_state import CtlState
     from oxt.pythonpath.libre_pythonista_lib.cell.state.state_kind import StateKind
     from oxt.pythonpath.libre_pythonista_lib.dispatch.cell_dispatch_state import CellDispatchState
@@ -31,7 +31,7 @@ if TYPE_CHECKING:
         DISPATCH_CELL_SELECT_RECALC,
     )
 else:
-    from libre_pythonista_lib.cell.props.key_maker import KeyMaker
+    from libre_pythonista_lib.doc.calc.doc.sheet.cell.props.key_maker import KeyMaker
     from libre_pythonista_lib.cell.state.ctl_state import CtlState
     from libre_pythonista_lib.cell.state.state_kind import StateKind
     from libre_pythonista_lib.dispatch.cell_dispatch_state import CellDispatchState

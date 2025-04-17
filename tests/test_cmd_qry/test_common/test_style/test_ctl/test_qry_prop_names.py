@@ -10,11 +10,11 @@ if __name__ == "__main__":
 def test_qry_prop_names_single(build_setup, mocker: MockerFixture) -> None:
     if TYPE_CHECKING:
         from oxt.pythonpath.libre_pythonista_lib.kind.ctl_prop_kind import CtlPropKind
-        from oxt.pythonpath.libre_pythonista_lib.cell.props.key_maker import KeyMaker
+        from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.props.key_maker import KeyMaker
         from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.common.prop.qry_prop_names import QryPropNames
     else:
         from libre_pythonista_lib.kind.ctl_prop_kind import CtlPropKind
-        from libre_pythonista_lib.cell.props.key_maker import KeyMaker
+        from libre_pythonista_lib.doc.calc.doc.sheet.cell.props.key_maker import KeyMaker
         from libre_pythonista_lib.cq.qry.calc.common.prop.qry_prop_names import QryPropNames
     # Mock KeyMaker
     key_maker = mocker.Mock(spec=KeyMaker)
@@ -38,11 +38,11 @@ def test_qry_prop_names_single(build_setup, mocker: MockerFixture) -> None:
 def test_qry_prop_names_multiple(build_setup, mocker: MockerFixture) -> None:
     if TYPE_CHECKING:
         from oxt.pythonpath.libre_pythonista_lib.kind.ctl_prop_kind import CtlPropKind
-        from oxt.pythonpath.libre_pythonista_lib.cell.props.key_maker import KeyMaker
+        from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.props.key_maker import KeyMaker
         from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.common.prop.qry_prop_names import QryPropNames
     else:
         from libre_pythonista_lib.kind.ctl_prop_kind import CtlPropKind
-        from libre_pythonista_lib.cell.props.key_maker import KeyMaker
+        from libre_pythonista_lib.doc.calc.doc.sheet.cell.props.key_maker import KeyMaker
         from libre_pythonista_lib.cq.qry.calc.common.prop.qry_prop_names import QryPropNames
     # Mock KeyMaker
     key_maker = mocker.Mock(spec=KeyMaker)
@@ -65,11 +65,11 @@ def test_qry_prop_names_multiple(build_setup, mocker: MockerFixture) -> None:
 def test_qry_prop_names_all(build_setup, mocker: MockerFixture) -> None:
     if TYPE_CHECKING:
         from oxt.pythonpath.libre_pythonista_lib.kind.ctl_prop_kind import CtlPropKind
-        from oxt.pythonpath.libre_pythonista_lib.cell.props.key_maker import KeyMaker
+        from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.props.key_maker import KeyMaker
         from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.common.prop.qry_prop_names import QryPropNames
     else:
         from libre_pythonista_lib.kind.ctl_prop_kind import CtlPropKind
-        from libre_pythonista_lib.cell.props.key_maker import KeyMaker
+        from libre_pythonista_lib.doc.calc.doc.sheet.cell.props.key_maker import KeyMaker
         from libre_pythonista_lib.cq.qry.calc.common.prop.qry_prop_names import QryPropNames
     # Mock KeyMaker
     key_maker = mocker.Mock(spec=KeyMaker)
@@ -100,11 +100,11 @@ def test_qry_prop_names_all(build_setup, mocker: MockerFixture) -> None:
 def test_qry_prop_names_empty(build_setup, mocker: MockerFixture) -> None:
     if TYPE_CHECKING:
         from oxt.pythonpath.libre_pythonista_lib.kind.ctl_prop_kind import CtlPropKind
-        from oxt.pythonpath.libre_pythonista_lib.cell.props.key_maker import KeyMaker
+        from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.props.key_maker import KeyMaker
         from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.common.prop.qry_prop_names import QryPropNames
     else:
         from libre_pythonista_lib.kind.ctl_prop_kind import CtlPropKind
-        from libre_pythonista_lib.cell.props.key_maker import KeyMaker
+        from libre_pythonista_lib.doc.calc.doc.sheet.cell.props.key_maker import KeyMaker
         from libre_pythonista_lib.cq.qry.calc.common.prop.qry_prop_names import QryPropNames
     # Mock KeyMaker
     key_maker = mocker.Mock(spec=KeyMaker)

@@ -6,11 +6,11 @@ from ooodev.calc import CalcCell
 from ooodev.utils.helper.dot_dict import DotDict
 
 if TYPE_CHECKING:
-    from oxt.pythonpath.libre_pythonista_lib.cell.props.key_maker import KeyMaker
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.props.key_maker import KeyMaker
     from oxt.pythonpath.libre_pythonista_lib.kind.rule_name_kind import RuleNameKind
     from oxt.___lo_pip___.basic_config import BasicConfig
 else:
-    from libre_pythonista_lib.cell.props.key_maker import KeyMaker
+    from libre_pythonista_lib.doc.calc.doc.sheet.cell.props.key_maker import KeyMaker
     from libre_pythonista_lib.kind.rule_name_kind import RuleNameKind
     from ___lo_pip___.basic_config import BasicConfig
 

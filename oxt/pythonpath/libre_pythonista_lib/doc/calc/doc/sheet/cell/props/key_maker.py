@@ -4,11 +4,11 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from oxt.___lo_pip___.basic_config import BasicConfig
     from oxt.pythonpath.libre_pythonista_lib.meta.singleton import Singleton
-    from oxt.pythonpath.libre_pythonista_lib.cell.props.rule_names import RuleNames
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.props.rule_names import RuleNames
 else:
     from ___lo_pip___.basic_config import BasicConfig
     from libre_pythonista_lib.meta.singleton import Singleton
-    from libre_pythonista_lib.cell.props.rule_names import RuleNames
+    from libre_pythonista_lib.doc.calc.doc.sheet.cell.props.rule_names import RuleNames
 
 
 class KeyMaker(metaclass=Singleton):

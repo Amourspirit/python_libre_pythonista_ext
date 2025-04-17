@@ -4,11 +4,11 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_base import QryBase
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_t import QryT
-    from oxt.pythonpath.libre_pythonista_lib.cell.props.key_maker import KeyMaker
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.props.key_maker import KeyMaker
 else:
     from libre_pythonista_lib.cq.qry.qry_base import QryBase
     from libre_pythonista_lib.cq.qry.qry_t import QryT
-    from libre_pythonista_lib.cell.props.key_maker import KeyMaker
+    from libre_pythonista_lib.doc.calc.doc.sheet.cell.props.key_maker import KeyMaker
 
 
 class QryKeyMaker(QryBase, QryT[KeyMaker]):

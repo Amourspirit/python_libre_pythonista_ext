@@ -20,7 +20,7 @@ def test_ctl_builder_none(loader, build_setup, mocker: MockerFixture) -> None:
         from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.reader.read_director import (
             get_reader,
         )
-        from oxt.pythonpath.libre_pythonista_lib.cell.props.key_maker import KeyMaker
+        from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.props.key_maker import KeyMaker
         from oxt.pythonpath.libre_pythonista_lib.kind.rule_name_kind import RuleNameKind
         from oxt.___lo_pip___.basic_config import BasicConfig
         from oxt.___lo_pip___.config import Config
@@ -29,7 +29,7 @@ def test_ctl_builder_none(loader, build_setup, mocker: MockerFixture) -> None:
         from libre_pythonista_lib.kind.ctl_kind import CtlKind
         from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.builder.build_director import get_builder
         from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.reader.read_director import get_reader
-        from libre_pythonista_lib.cell.props.key_maker import KeyMaker
+        from libre_pythonista_lib.doc.calc.doc.sheet.cell.props.key_maker import KeyMaker
         from libre_pythonista_lib.kind.rule_name_kind import RuleNameKind
         from libre_pythonista.basic_config import BasicConfig
         from libre_pythonista.config import Config
@@ -120,7 +120,7 @@ def test_ctl_builder_empty(loader, build_setup, mocker: MockerFixture) -> None:
         from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.reader.read_director import (
             get_reader,
         )
-        from oxt.pythonpath.libre_pythonista_lib.cell.props.key_maker import KeyMaker
+        from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.props.key_maker import KeyMaker
         from oxt.pythonpath.libre_pythonista_lib.kind.rule_name_kind import RuleNameKind
         from oxt.___lo_pip___.basic_config import BasicConfig
         from oxt.___lo_pip___.config import Config
@@ -128,7 +128,7 @@ def test_ctl_builder_empty(loader, build_setup, mocker: MockerFixture) -> None:
         from libre_pythonista_lib.kind.ctl_kind import CtlKind
         from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.builder.build_director import get_builder
         from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.reader.read_director import get_reader
-        from libre_pythonista_lib.cell.props.key_maker import KeyMaker
+        from libre_pythonista_lib.doc.calc.doc.sheet.cell.props.key_maker import KeyMaker
         from libre_pythonista_lib.kind.rule_name_kind import RuleNameKind
         from libre_pythonista.basic_config import BasicConfig
         from libre_pythonista.config import Config
@@ -218,7 +218,7 @@ def test_ctl_builder_error(loader, build_setup, mocker: MockerFixture) -> None:
         from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.reader.read_director import (
             get_reader,
         )
-        from oxt.pythonpath.libre_pythonista_lib.cell.props.key_maker import KeyMaker
+        from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.props.key_maker import KeyMaker
         from oxt.pythonpath.libre_pythonista_lib.kind.rule_name_kind import RuleNameKind
         from oxt.___lo_pip___.basic_config import BasicConfig
         from oxt.___lo_pip___.config import Config
@@ -226,7 +226,7 @@ def test_ctl_builder_error(loader, build_setup, mocker: MockerFixture) -> None:
         from libre_pythonista_lib.kind.ctl_kind import CtlKind
         from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.builder.build_director import get_builder
         from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.reader.read_director import get_reader
-        from libre_pythonista_lib.cell.props.key_maker import KeyMaker
+        from libre_pythonista_lib.doc.calc.doc.sheet.cell.props.key_maker import KeyMaker
         from libre_pythonista_lib.kind.rule_name_kind import RuleNameKind
         from libre_pythonista.basic_config import BasicConfig
         from libre_pythonista.config import Config
@@ -313,14 +313,14 @@ def test_ctl_builder_str(loader, build_setup, mocker: MockerFixture) -> None:
             CtlBuilderStr,
         )
         from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.reader.ctl_reader_str import CtlReaderStr
-        from oxt.pythonpath.libre_pythonista_lib.cell.props.key_maker import KeyMaker
+        from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.props.key_maker import KeyMaker
         from oxt.pythonpath.libre_pythonista_lib.kind.rule_name_kind import RuleNameKind
         from oxt.___lo_pip___.basic_config import BasicConfig
         from oxt.___lo_pip___.config import Config
     else:
         from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.builder.ctl_builder_str import CtlBuilderStr
         from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.reader.ctl_reader_str import CtlReaderStr
-        from libre_pythonista_lib.cell.props.key_maker import KeyMaker
+        from libre_pythonista_lib.doc.calc.doc.sheet.cell.props.key_maker import KeyMaker
         from libre_pythonista_lib.kind.rule_name_kind import RuleNameKind
         from libre_pythonista.basic_config import BasicConfig
         from libre_pythonista.config import Config
@@ -409,14 +409,14 @@ def test_ctl_builder_pd_df(loader, build_setup, mocker: MockerFixture) -> None:
         from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.reader.ctl_reader_pd_df import (
             CtlReaderPdDf,
         )
-        from oxt.pythonpath.libre_pythonista_lib.cell.props.key_maker import KeyMaker
+        from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.props.key_maker import KeyMaker
         from oxt.pythonpath.libre_pythonista_lib.kind.rule_name_kind import RuleNameKind
         from oxt.___lo_pip___.basic_config import BasicConfig
         from oxt.___lo_pip___.config import Config
     else:
         from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.builder.ctl_builder_pd_df import CtlBuilderPdDf
         from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.reader.ctl_reader_pd_df import CtlReaderPdDf
-        from libre_pythonista_lib.cell.props.key_maker import KeyMaker
+        from libre_pythonista_lib.doc.calc.doc.sheet.cell.props.key_maker import KeyMaker
         from libre_pythonista_lib.kind.rule_name_kind import RuleNameKind
         from libre_pythonista.basic_config import BasicConfig
         from libre_pythonista.config import Config
@@ -508,13 +508,13 @@ def test_ctl_builder_pd_series(loader, build_setup, mocker: MockerFixture) -> No
         from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.reader.read_director import (
             get_reader,
         )
-        from oxt.pythonpath.libre_pythonista_lib.cell.props.key_maker import KeyMaker
+        from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.props.key_maker import KeyMaker
         from oxt.pythonpath.libre_pythonista_lib.kind.rule_name_kind import RuleNameKind
         from oxt.___lo_pip___.basic_config import BasicConfig
         from oxt.___lo_pip___.config import Config
     else:
         from libre_pythonista_lib.kind.ctl_kind import CtlKind
-        from libre_pythonista_lib.cell.props.key_maker import KeyMaker
+        from libre_pythonista_lib.doc.calc.doc.sheet.cell.props.key_maker import KeyMaker
         from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.builder.build_director import get_builder
         from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.reader.read_director import get_reader
         from libre_pythonista_lib.kind.rule_name_kind import RuleNameKind
@@ -608,13 +608,13 @@ def test_ctl_builder_data_tbl(loader, build_setup, mocker: MockerFixture) -> Non
         from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.reader.read_director import (
             get_reader,
         )
-        from oxt.pythonpath.libre_pythonista_lib.cell.props.key_maker import KeyMaker
+        from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.props.key_maker import KeyMaker
         from oxt.pythonpath.libre_pythonista_lib.kind.rule_name_kind import RuleNameKind
         from oxt.___lo_pip___.basic_config import BasicConfig
         from oxt.___lo_pip___.config import Config
     else:
         from libre_pythonista_lib.kind.ctl_kind import CtlKind
-        from libre_pythonista_lib.cell.props.key_maker import KeyMaker
+        from libre_pythonista_lib.doc.calc.doc.sheet.cell.props.key_maker import KeyMaker
         from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.builder.build_director import get_builder
         from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.reader.read_director import get_reader
         from libre_pythonista_lib.kind.rule_name_kind import RuleNameKind
