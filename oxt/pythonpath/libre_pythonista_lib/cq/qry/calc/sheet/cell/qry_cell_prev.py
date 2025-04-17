@@ -5,7 +5,7 @@ from ooodev.calc import CalcCell
 from ooodev.utils.data_type.cell_obj import CellObj
 
 if TYPE_CHECKING:
-    from oxt.pythonpath.libre_pythonista_lib.code.py_module_t import PyModuleT
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module_t import PyModuleT
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source_manager import PySourceManager
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_base import QryBase
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_t import QryCellT

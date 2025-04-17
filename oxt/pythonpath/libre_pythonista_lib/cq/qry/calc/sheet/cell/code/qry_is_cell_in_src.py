@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 from ooodev.calc import CalcCell
 
 if TYPE_CHECKING:
-    from oxt.pythonpath.libre_pythonista_lib.code.py_module_t import PyModuleT
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module_t import PyModuleT
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_t import QryCellT
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.state.qry_py_src_mgr import QryPySrcMgrCode
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_base import QryBase

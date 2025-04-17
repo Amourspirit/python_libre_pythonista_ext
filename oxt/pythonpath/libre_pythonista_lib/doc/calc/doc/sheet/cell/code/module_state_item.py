@@ -5,7 +5,7 @@ from ooodev.utils.helper.dot_dict import DotDict
 
 if TYPE_CHECKING:
     from ooodev.utils.data_type.cell_obj import CellObj
-    from oxt.pythonpath.libre_pythonista_lib.code.py_module_state import PyModuleState
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module_state import PyModuleState
 else:
     PyModuleState = Any
 

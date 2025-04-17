@@ -6,32 +6,32 @@ import types
 
 if TYPE_CHECKING:
     from oxt.___lo_pip___.debug.break_mgr import BreakMgr
-    from oxt.pythonpath.libre_pythonista_lib.code.rules.assign import Assign
-    from oxt.pythonpath.libre_pythonista_lib.code.rules.code_empty import CodeEmpty
-    from oxt.pythonpath.libre_pythonista_lib.code.rules.code_rule_t import CodeRuleT
-    from oxt.pythonpath.libre_pythonista_lib.code.rules.expr import Expr
-    from oxt.pythonpath.libre_pythonista_lib.code.rules.lp_fn_assign import LpFnAssign
-    from oxt.pythonpath.libre_pythonista_lib.code.rules.lp_fn_expr import LpFnExpr
-    from oxt.pythonpath.libre_pythonista_lib.code.rules.lp_fn_plot_assign import LpFnPlotAssign
-    from oxt.pythonpath.libre_pythonista_lib.code.rules.lp_fn_plot_expr import LpFnPlotExpr
-    from oxt.pythonpath.libre_pythonista_lib.code.rules.underscore import Underscore
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.rules.assign import Assign
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.rules.code_empty import CodeEmpty
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.rules.code_rule_t import CodeRuleT
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.rules.expr import Expr
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.rules.lp_fn_assign import LpFnAssign
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.rules.lp_fn_expr import LpFnExpr
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.rules.lp_fn_plot_assign import LpFnPlotAssign
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.rules.lp_fn_plot_expr import LpFnPlotExpr
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.rules.underscore import Underscore
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
 
     break_mgr = BreakMgr()
 else:
     from ___lo_pip___.debug.break_mgr import BreakMgr
-    from libre_pythonista_lib.code.rules.assign import Assign
-    from libre_pythonista_lib.code.rules.code_empty import CodeEmpty
-    from libre_pythonista_lib.code.rules.expr import Expr
-    from libre_pythonista_lib.code.rules.lp_fn_assign import LpFnAssign
-    from libre_pythonista_lib.code.rules.lp_fn_expr import LpFnExpr
-    from libre_pythonista_lib.code.rules.lp_fn_plot_assign import LpFnPlotAssign
-    from libre_pythonista_lib.code.rules.lp_fn_plot_expr import LpFnPlotExpr
-    from libre_pythonista_lib.code.rules.underscore import Underscore
+    from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.rules.assign import Assign
+    from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.rules.code_empty import CodeEmpty
+    from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.rules.expr import Expr
+    from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.rules.lp_fn_assign import LpFnAssign
+    from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.rules.lp_fn_expr import LpFnExpr
+    from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.rules.lp_fn_plot_assign import LpFnPlotAssign
+    from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.rules.lp_fn_plot_expr import LpFnPlotExpr
+    from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.rules.underscore import Underscore
     from libre_pythonista_lib.log.log_mixin import LogMixin
 
     break_mgr = BreakMgr()
-    break_mgr.add_breakpoint("libre_pythonista_lib.code.rules.code_rules.get_matched_rule")
+    break_mgr.add_breakpoint("libre_pythonista_lib.doc.calc.doc.sheet.cell.code.rules.code_rules.get_matched_rule")
 
 
 class CodeRules(LogMixin):
@@ -161,7 +161,9 @@ class CodeRules(LogMixin):
         Returns:
             List[CodeRuleT]: List of matched rules
         """
-        break_mgr.check_breakpoint("libre_pythonista_lib.code.rules.code_rules.get_matched_rule")
+        break_mgr.check_breakpoint(
+            "libre_pythonista_lib.doc.calc.doc.sheet.cell.code.rules.code_rules.get_matched_rule"
+        )
         with self.log.indent(True):
             found_rule = None
             for rule in self._rules:

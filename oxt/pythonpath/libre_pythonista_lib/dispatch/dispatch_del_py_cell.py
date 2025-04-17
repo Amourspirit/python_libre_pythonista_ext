@@ -31,7 +31,7 @@ if TYPE_CHECKING:
     from com.sun.star.frame import XStatusListener
     from com.sun.star.sheet import SheetCellCursor
     from oxt.___lo_pip___.oxt_logger.oxt_logger import OxtLogger
-    from oxt.pythonpath.libre_pythonista_lib.code.cell_cache import CellCache
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.cell_cache import CellCache
     from oxt.pythonpath.libre_pythonista_lib.cell.props.key_maker import KeyMaker
     from oxt.pythonpath.libre_pythonista_lib.cell.state.ctl_state import CtlState
     from oxt.pythonpath.libre_pythonista_lib.cell.state.state_kind import StateKind
@@ -39,7 +39,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.event.shared_event import SharedEvent
 else:
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
-    from libre_pythonista_lib.code.cell_cache import CellCache
+    from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.cell_cache import CellCache
     from libre_pythonista_lib.cell.props.key_maker import KeyMaker
     from libre_pythonista_lib.cell.state.ctl_state import CtlState
     from libre_pythonista_lib.cell.state.state_kind import StateKind

@@ -3,8 +3,8 @@ from typing import Any, List, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcDoc
-    from oxt.pythonpath.libre_pythonista_lib.code.py_module import PyModule
-    from oxt.pythonpath.libre_pythonista_lib.code.py_module_t import PyModuleT
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module import PyModule
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module_t import PyModuleT
     from oxt.pythonpath.libre_pythonista_lib.const import LP_DOCUMENT
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.cmd_doc_init import CmdDocInit
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.cmd_doc_t import CmdDocT
@@ -36,7 +36,7 @@ if TYPE_CHECKING:
     )
 
 else:
-    from libre_pythonista_lib.code.py_module import PyModule
+    from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module import PyModule
     from libre_pythonista_lib.const import LP_DOCUMENT
     from libre_pythonista_lib.cq.cmd.calc.doc.cmd_doc_init import CmdDocInit
     from libre_pythonista_lib.cq.cmd.calc.doc.cmd_doc_t import CmdDocT

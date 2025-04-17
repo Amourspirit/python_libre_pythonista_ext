@@ -13,7 +13,7 @@ from ooodev.exceptions import ex as mEx  # noqa: N812
 # from ___lo_pip___.debug.break_mgr import BreakMgr
 
 # break_mgr = BreakMgr()
-# break_mgr.add_breakpoint("pythonpath.libre_pythonista_lib.code.mod_helper.lp_mod.lp")
+# break_mgr.add_breakpoint("pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.mod_helper.lp_mod.lp")
 # endregion BreakManager
 
 
@@ -22,9 +22,11 @@ LAST_LP_RESULT = DotDict(data=None)
 if TYPE_CHECKING:
     from com.sun.star.sheet import SheetCellRange
     from oxt.___lo_pip___.oxt_logger.oxt_logger import OxtLogger
-    from oxt.pythonpath.libre_pythonista_lib.code.mod_helper.lp_enum import LpEnum
-    from oxt.pythonpath.libre_pythonista_lib.code.mod_helper.lp_rules.lp_rules_engine import LpRulesEngine
-    from oxt.pythonpath.libre_pythonista_lib.code.py_module_state import PyModuleState
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.mod_helper.lp_enum import LpEnum
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.mod_helper.lp_rules.lp_rules_engine import (
+        LpRulesEngine,
+    )
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module_state import PyModuleState
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_py_module_state import QryPyModuleState
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
     from oxt.pythonpath.libre_pythonista_lib.data.pandas_data_obj import PandasDataObj
@@ -33,9 +35,9 @@ if TYPE_CHECKING:
     CURRENT_CELL_OBJ: CellObj
 else:
     CURRENT_CELL_OBJ = None
-    from libre_pythonista_lib.code.mod_helper.lp_enum import LpEnum
-    from libre_pythonista_lib.code.mod_helper.lp_rules.lp_rules_engine import LpRulesEngine
-    from libre_pythonista_lib.code.py_module_state import PyModuleState
+    from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.mod_helper.lp_enum import LpEnum
+    from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.mod_helper.lp_rules.lp_rules_engine import LpRulesEngine
+    from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module_state import PyModuleState
     from libre_pythonista_lib.cq.qry.calc.doc.qry_py_module_state import QryPyModuleState
     from libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
     from libre_pythonista_lib.data.pandas_data_obj import PandasDataObj
@@ -271,7 +273,7 @@ def _handle_sheet_named_range_only(addr: str, log: OxtLogger, **kwargs) -> Any: 
 
 def lp(addr: str, **kwargs: Any) -> Any:  # noqa: ANN401
     global CURRENT_CELL_OBJ, _RULES_ENGINE
-    # break_mgr.check_breakpoint("pythonpath.libre_pythonista_lib.code.mod_helper.lp_mod.lp")
+    # break_mgr.check_breakpoint("pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.mod_helper.lp_mod.lp")
     log = LogInst()
     log.debug("lp - Current Cell Obj Global: %s", CURRENT_CELL_OBJ)
     log.debug("lp - Input Address: %s", addr)

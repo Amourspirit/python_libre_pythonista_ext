@@ -4,7 +4,7 @@ from typing import cast, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcCell
-    from oxt.pythonpath.libre_pythonista_lib.code.py_module_t import PyModuleT
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module_t import PyModuleT
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.cmd_cell_t import CmdCellT
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.formula.cmd_delete_formula import CmdDeleteFormula
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.state.cmd_delete_code import CmdDeleteCode
@@ -18,7 +18,7 @@ if TYPE_CHECKING:
         CmdCodeListenerDel,
     )
 else:
-    from libre_pythonista_lib.code.py_module_t import PyModuleT
+    from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module_t import PyModuleT
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.cmd_cell_t import CmdCellT
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.formula.cmd_delete_formula import CmdDeleteFormula
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.listener.cmd_code_listener_del import CmdCodeListenerDel

@@ -4,11 +4,11 @@ from typing import cast, List, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.array.qry_rows_cols_tbl import QryRowsColsTbl
-    from oxt.pythonpath.libre_pythonista_lib.code.module_state_item import ModuleStateItem
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.module_state_item import ModuleStateItem
     from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
 else:
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.array.qry_rows_cols_tbl import QryRowsColsTbl
-    from libre_pythonista_lib.code.module_state_item import ModuleStateItem
+    from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.module_state_item import ModuleStateItem
     from libre_pythonista_lib.utils.custom_ext import override
 
 

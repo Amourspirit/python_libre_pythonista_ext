@@ -13,19 +13,19 @@ def test_qry_module_state_last_item(loader, build_setup, mocker: MockerFixture) 
 
     if TYPE_CHECKING:
         from oxt.pythonpath.libre_pythonista_lib.doc.doc_globals import DocGlobals
-        from oxt.pythonpath.libre_pythonista_lib.code.py_module import PyModule
+        from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module import PyModule
         from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
-        from oxt.pythonpath.libre_pythonista_lib.code.py_module_state import PyModuleState
+        from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module_state import PyModuleState
         from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
         from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.state.qry_module_state_last_item import (
             QryModuleStateLastItem,
         )
     else:
         from libre_pythonista_lib.doc.doc_globals import DocGlobals
-        from libre_pythonista_lib.code.py_module import PyModule
+        from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module import PyModule
         from libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
         from libre_pythonista_lib.cq.qry.calc.sheet.cell.state.qry_module_state_last_item import QryModuleStateLastItem
-        from libre_pythonista_lib.code.py_module_state import PyModuleState
+        from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module_state import PyModuleState
         from libre_pythonista_lib.utils.result import Result
 
     doc = None
@@ -67,16 +67,16 @@ def test_qry_module_state_last_item_multiple_states(loader, build_setup) -> None
     from ooodev.calc import CalcDoc
 
     if TYPE_CHECKING:
-        from oxt.pythonpath.libre_pythonista_lib.code.py_module import PyModule
-        from oxt.pythonpath.libre_pythonista_lib.code.py_module_state import PyModuleState
+        from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module import PyModule
+        from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module_state import PyModuleState
         from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
         from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
         from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.state.qry_module_state_last_item import (
             QryModuleStateLastItem,
         )
     else:
-        from libre_pythonista_lib.code.py_module import PyModule
-        from libre_pythonista_lib.code.py_module_state import PyModuleState
+        from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module import PyModule
+        from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module_state import PyModuleState
         from libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
         from libre_pythonista_lib.utils.result import Result
         from libre_pythonista_lib.cq.qry.calc.sheet.cell.state.qry_module_state_last_item import QryModuleStateLastItem

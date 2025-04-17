@@ -10,7 +10,7 @@ from ooodev.loader import Lo
 LAST_LP_RESULT = DotDict(data=None)
 
 if TYPE_CHECKING:
-    from ...log.log_inst import LogInst
+    from oxt.pythonpath.libre_pythonista_lib.log.log_inst import LogInst
 else:
     from libre_pythonista_lib.log.log_inst import LogInst
 

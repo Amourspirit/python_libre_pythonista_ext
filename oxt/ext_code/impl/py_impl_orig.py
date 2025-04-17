@@ -37,7 +37,7 @@ if TYPE_CHECKING:
     from ...___lo_pip___.config import Config
     from ...___lo_pip___.debug.break_mgr import BreakMgr
     from ...pythonpath.libre_pythonista_lib.cell.cell_mgr import CellMgr
-    from ...pythonpath.libre_pythonista_lib.code.cell_cache import CellCache
+    from ...pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.cell_cache import CellCache
     from ...pythonpath.libre_pythonista_lib.cell.result_action.pyc.rules.pyc_rules import (
         PycRules,
     )
@@ -61,7 +61,7 @@ else:
         from libre_pythonista_lib.cell.cell_mgr import CellMgr
         from libre_pythonista_lib.cell.result_action.pyc.rules.pyc_rules import PycRules
         from libre_pythonista_lib.event.shared_event import SharedEvent
-        from libre_pythonista_lib.code.cell_cache import CellCache
+        from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.cell_cache import CellCache
         from libre_pythonista_lib.const.event_const import (
             PYC_RULE_MATCH_DONE,
             PYC_FORMULA_ENTER,

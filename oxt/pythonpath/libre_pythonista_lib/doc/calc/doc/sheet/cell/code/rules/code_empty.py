@@ -1,8 +1,13 @@
 from __future__ import annotations
+from typing import TYPE_CHECKING
 import ast
 import types
 from ooodev.utils.helper.dot_dict import DotDict
-from ...utils import str_util
+
+if TYPE_CHECKING:
+    from oxt.pythonpath.libre_pythonista_lib.utils import str_util
+else:
+    from libre_pythonista_lib.utils import str_util
 
 
 class CodeEmpty:

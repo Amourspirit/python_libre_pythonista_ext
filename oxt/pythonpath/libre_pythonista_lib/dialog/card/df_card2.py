@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.utils.pandas_util import PandasUtil
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
-    from oxt.pythonpath.libre_pythonista_lib.code.module_state_item import ModuleStateItem
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.module_state_item import ModuleStateItem
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.state.qry_module_state import QryModuleState
     from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
 else:
@@ -23,7 +23,7 @@ else:
     from libre_pythonista_lib.utils.pandas_util import PandasUtil
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
-    from libre_pythonista_lib.code.module_state_item import ModuleStateItem
+    from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.module_state_item import ModuleStateItem
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.state.qry_module_state import QryModuleState
     from libre_pythonista_lib.utils.result import Result
 

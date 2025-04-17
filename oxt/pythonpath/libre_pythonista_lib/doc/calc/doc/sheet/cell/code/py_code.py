@@ -24,7 +24,7 @@ if TYPE_CHECKING:
         SheetCell, Cell, CellProperties, CharacterProperties, ParagraphProperties, SheetCellRange, CellRange
     ]
     ScCellRangeObj = Union[SheetCellRange, CellRange, CellProperties, CharacterProperties, ParagraphProperties]
-    from ....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from oxt.___lo_pip___.oxt_logger.oxt_logger import OxtLogger
 else:
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
 

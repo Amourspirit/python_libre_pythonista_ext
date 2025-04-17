@@ -2,18 +2,18 @@ from __future__ import annotations
 from typing import Any, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from oxt.pythonpath.libre_pythonista_lib.code.py_module_t import PyModuleT
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module_t import PyModuleT
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_t import QryT
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_py_module_default import QryPyModuleDefault
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_base import QryBase
-    from oxt.pythonpath.libre_pythonista_lib.code.py_module_state import PyModuleState
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module_state import PyModuleState
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
 
 else:
     from libre_pythonista_lib.cq.qry.qry_t import QryT
     from libre_pythonista_lib.cq.qry.calc.doc.qry_py_module_default import QryPyModuleDefault
     from libre_pythonista_lib.cq.qry.qry_base import QryBase
-    from libre_pythonista_lib.code.py_module_state import PyModuleState
+    from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module_state import PyModuleState
     from libre_pythonista_lib.log.log_mixin import LogMixin
 
     PyModuleT = Any

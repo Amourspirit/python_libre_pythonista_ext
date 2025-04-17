@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 def py_source_manager(loader, build_setup) -> Any:
     from ooodev.calc import CalcDoc
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source_manager import PySourceManager  # type: ignore
-    from libre_pythonista_lib.code.py_module import PyModule  # type: ignore
+    from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module import PyModule  # type: ignore
 
     doc = None
     try:
@@ -233,10 +233,10 @@ def test_singleton_behavior(loader, build_setup) -> None:
 
     if TYPE_CHECKING:
         from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source_manager import PySourceManager  # type: ignore
-        from oxt.pythonpath.libre_pythonista_lib.code.py_module import PyModule  # type: ignore
+        from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module import PyModule  # type: ignore
     else:
         from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source_manager import PySourceManager  # type: ignore
-        from libre_pythonista_lib.code.py_module import PyModule  # type: ignore
+        from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module import PyModule  # type: ignore
 
     doc = None
     try:

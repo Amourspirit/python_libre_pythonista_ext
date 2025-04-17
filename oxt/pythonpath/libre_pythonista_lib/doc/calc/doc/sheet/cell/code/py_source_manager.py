@@ -13,8 +13,8 @@ from ooodev.utils.string.str_list import StrList
 
 
 if TYPE_CHECKING:
-    from oxt.pythonpath.libre_pythonista_lib.code.module_state_item import ModuleStateItem
-    from oxt.pythonpath.libre_pythonista_lib.code.py_module_state import PyModuleState
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.module_state_item import ModuleStateItem
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module_state import PyModuleState
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.code.cmd_cell_src_code import CmdCellSrcCode
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.code.cmd_cell_src_del import CmdCellSrcDel
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_code_name import CmdCodeName
@@ -39,7 +39,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.state.qry_module_state_last_item import (
         QryModuleStateLastItem,
     )
-    from oxt.pythonpath.libre_pythonista_lib.code.py_module_t import PyModuleT
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module_t import PyModuleT
     from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.const import (
         PYTHON_BEFORE_ADD_SRC_CODE,
@@ -54,9 +54,9 @@ if TYPE_CHECKING:
     )
 
 else:
-    from libre_pythonista_lib.code.module_state_item import ModuleStateItem
-    from libre_pythonista_lib.code.py_module_state import PyModuleState
-    from libre_pythonista_lib.code.py_module_t import PyModuleT
+    from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.module_state_item import ModuleStateItem
+    from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module_state import PyModuleState
+    from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module_t import PyModuleT
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.code.cmd_cell_src_code import CmdCellSrcCode
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.code.cmd_cell_src_del import CmdCellSrcDel
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_code_name import CmdCodeName

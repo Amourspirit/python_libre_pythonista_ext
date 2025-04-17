@@ -11,7 +11,7 @@ def test_cmd_append_code(loader, build_setup) -> None:
     from ooodev.calc import CalcDoc
 
     if TYPE_CHECKING:
-        from oxt.pythonpath.libre_pythonista_lib.code.py_module import PyModule
+        from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module import PyModule
         from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.state.cmd_append_code import CmdAppendCode
         from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.state.cmd_update_code import CmdUpdateCode
         from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.state.qry_cell_code import QryCellCode
@@ -19,7 +19,7 @@ def test_cmd_append_code(loader, build_setup) -> None:
         from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
         from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
     else:
-        from libre_pythonista_lib.code.py_module import PyModule
+        from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module import PyModule
         from libre_pythonista_lib.cq.cmd.calc.sheet.cell.state.cmd_append_code import CmdAppendCode
         from libre_pythonista_lib.cq.cmd.calc.sheet.cell.state.cmd_update_code import CmdUpdateCode
         from libre_pythonista_lib.cq.qry.calc.sheet.cell.state.qry_cell_code import QryCellCode
@@ -83,10 +83,10 @@ def test_cmd_append_code_error_handling(loader, build_setup, mocker: MockerFixtu
     from ooodev.calc import CalcDoc
 
     if TYPE_CHECKING:
-        from oxt.pythonpath.libre_pythonista_lib.code.py_module import PyModule
+        from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module import PyModule
         from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.state.cmd_append_code import CmdAppendCode
     else:
-        from libre_pythonista_lib.code.py_module import PyModule
+        from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module import PyModule
         from libre_pythonista_lib.cq.cmd.calc.sheet.cell.state.cmd_append_code import CmdAppendCode
 
     doc = None
@@ -115,14 +115,14 @@ def test_cmd_append_code_empty(loader, build_setup) -> None:
     from ooodev.calc import CalcDoc
 
     if TYPE_CHECKING:
-        from oxt.pythonpath.libre_pythonista_lib.code.py_module import PyModule
+        from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module import PyModule
         from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.state.cmd_append_code import CmdAppendCode
         from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.state.qry_cell_code import QryCellCode
         from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
         from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
         from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
     else:
-        from libre_pythonista_lib.code.py_module import PyModule
+        from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module import PyModule
         from libre_pythonista_lib.cq.cmd.calc.sheet.cell.state.cmd_append_code import CmdAppendCode
         from libre_pythonista_lib.cq.qry.calc.sheet.cell.state.qry_cell_code import QryCellCode
         from libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory

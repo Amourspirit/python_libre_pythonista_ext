@@ -14,9 +14,11 @@ if TYPE_CHECKING:
     from oxt.___lo_pip___.debug.break_mgr import BreakMgr
     from oxt.pythonpath.libre_pythonista_lib.doc.doc_globals import DocGlobals
     from oxt.pythonpath.libre_pythonista_lib.cell.errors.general_error import GeneralError
-    from oxt.pythonpath.libre_pythonista_lib.code.mod_helper.lplog import LpLog as LibrePythonistaLog
-    from oxt.pythonpath.libre_pythonista_lib.code.py_module_t import PyModuleT
-    from oxt.pythonpath.libre_pythonista_lib.code.rules.code_rules import CodeRules
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.mod_helper.lplog import (
+        LpLog as LibrePythonistaLog,
+    )
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module_t import PyModuleT
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.rules.code_rules import CodeRules
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.utils import str_util
 
@@ -25,17 +27,17 @@ else:
     from ___lo_pip___.debug.break_mgr import BreakMgr
     from libre_pythonista_lib.doc.doc_globals import DocGlobals
     from libre_pythonista_lib.cell.errors.general_error import GeneralError
-    from libre_pythonista_lib.code.mod_helper.lplog import LpLog as LibrePythonistaLog
-    from libre_pythonista_lib.code.py_module_t import PyModuleT
-    from libre_pythonista_lib.code.rules.code_rules import CodeRules
+    from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.mod_helper.lplog import LpLog as LibrePythonistaLog
+    from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module_t import PyModuleT
+    from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.rules.code_rules import CodeRules
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.utils import str_util
 
     break_mgr = BreakMgr()
-    # break_mgr.add_breakpoint("libre_pythonista_lib.code.py_module.init")
-    # break_mgr.add_breakpoint("libre_pythonista_lib.code.py_module.execute_code")
+    # break_mgr.add_breakpoint("libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module.init")
+    # break_mgr.add_breakpoint("libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module.execute_code")
 
-_KEY = "libre_pythonista_lib.code.py_module.PyModule"
+_KEY = "libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module.PyModule"
 
 
 def is_pytest_running() -> bool:
@@ -84,10 +86,10 @@ def get_module_init_code() -> str:
         "from ___lo_pip___.debug.break_mgr import BreakMgr",
         "from ___lo_pip___.debug.break_mgr import check_breakpoint",
         "from libre_pythonista_lib.log.log_inst import LogInst",
-        "from libre_pythonista_lib.code.mod_helper import lp_mod",
-        "from libre_pythonista_lib.code.mod_helper.lp_mod import lp",
-        "from libre_pythonista_lib.code.mod_helper.lplog import StaticLpLog as lp_log, LpLog as LibrePythonistaLog",
-        "from libre_pythonista_lib.code.mod_helper import lp_plot",
+        "from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.mod_helper import lp_mod",
+        "from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.mod_helper.lp_mod import lp",
+        "from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.mod_helper.lplog import StaticLpLog as lp_log, LpLog as LibrePythonistaLog",
+        "from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.mod_helper import lp_plot",
         "PY_ARGS = None",
         "CURRENT_CELL_OBJ = None",
         "CURRENT_CELL_ID = ''",
@@ -117,7 +119,7 @@ class PyModule(LogMixin, PyModuleT):
         if getattr(self, "_is_init", False):
             return
         LogMixin.__init__(self)
-        break_mgr.check_breakpoint("libre_pythonista_lib.code.py_module.init")
+        break_mgr.check_breakpoint("libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module.init")
         self._is_py_test_running = is_pytest_running()
 
         self.mod = types.ModuleType("PyMod")
@@ -194,7 +196,7 @@ class PyModule(LogMixin, PyModuleT):
         - Otherwise, returns the value of `result` if it exists in local variables.
         """
         if self._is_init:
-            break_mgr.check_breakpoint("libre_pythonista_lib.code.py_module.execute_code")
+            break_mgr.check_breakpoint("libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module.execute_code")
 
         try:
             if globals_dict is None:

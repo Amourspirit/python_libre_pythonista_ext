@@ -30,7 +30,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.multi_process.process_mgr import ProcessMgr
     from oxt.pythonpath.libre_pythonista_lib.multi_process.socket_manager import SocketManager
     from oxt.pythonpath.libre_pythonista_lib.res.res_resolver import ResResolver
-    from oxt.pythonpath.libre_pythonista_lib.code import py_module
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code import py_module
     from oxt.pythonpath.libre_pythonista_lib.const.event_const import GBL_DOC_CLOSING
     from oxt.pythonpath.libre_pythonista_lib.config.dialog.wv_code_cfg import WvCodeCfg
     from oxt.pythonpath.libre_pythonista_lib.py_pip.pkg_info import PkgInfo
@@ -48,7 +48,7 @@ else:
     from libre_pythonista_lib.multi_process.process_mgr import ProcessMgr
     from libre_pythonista_lib.multi_process.socket_manager import SocketManager
     from libre_pythonista_lib.res.res_resolver import ResResolver
-    from libre_pythonista_lib.code import py_module
+    from libre_pythonista_lib.doc.calc.doc.sheet.cell.code import py_module
     from libre_pythonista_lib.const.event_const import GBL_DOC_CLOSING
     from libre_pythonista_lib.config.dialog.wv_code_cfg import WvCodeCfg
     from libre_pythonista_lib.py_pip.pkg_info import PkgInfo

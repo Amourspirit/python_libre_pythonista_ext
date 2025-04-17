@@ -9,16 +9,16 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.doc.doc_globals import DocGlobals
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.event.shared_event import SharedEvent
-    from oxt.pythonpath.libre_pythonista_lib.code.py_module_t import PyModuleT
-    from oxt.pythonpath.libre_pythonista_lib.code.module_state_item import ModuleStateItem
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module_t import PyModuleT
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.module_state_item import ModuleStateItem
 else:
     from libre_pythonista_lib.doc.doc_globals import DocGlobals
-    from libre_pythonista_lib.code.py_module_t import PyModuleT
+    from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module_t import PyModuleT
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.event.shared_event import SharedEvent
-    from libre_pythonista_lib.code.module_state_item import ModuleStateItem
+    from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.module_state_item import ModuleStateItem
 
-_KEY = "libre_pythonista_lib.code.py_module_state.PyModuleState"
+_KEY = "libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module_state.PyModuleState"
 
 
 class PyModuleState(LogMixin):

@@ -38,7 +38,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.sheet.listen.code_sheet_activation_listener import (
         CodeSheetActivationListener,
     )
-    from oxt.pythonpath.libre_pythonista_lib.code.mod_helper.lplog import LpLog
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.mod_helper.lplog import LpLog
     from oxt.pythonpath.libre_pythonista_lib.cell.cell_mgr import CellMgr
     from oxt.pythonpath.libre_pythonista_lib.menus import cell_reg_interceptor
     from oxt.pythonpath.libre_pythonista_lib.const.event_const import GBL_DOC_CLOSING
@@ -67,7 +67,7 @@ else:
         from libre_pythonista_lib.sheet.listen.code_sheet_activation_listener import (
             CodeSheetActivationListener,
         )
-        from libre_pythonista_lib.code.mod_helper.lplog import LpLog
+        from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.mod_helper.lplog import LpLog
         from libre_pythonista_lib.cell.cell_mgr import CellMgr
         from libre_pythonista_lib.menus import cell_reg_interceptor
         from libre_pythonista_lib.const.event_const import GBL_DOC_CLOSING

@@ -6,14 +6,14 @@ if __name__ == "__main__":
     pytest.main([__file__])
 
 if TYPE_CHECKING:
-    from .....build.pythonpath.libre_pythonista_lib.code.py_module import PyModule
+    from .....build.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module import PyModule
 
 
 def test_sum_it(py_mod: PyModule) -> None:
     if TYPE_CHECKING:
-        from .....build.pythonpath.libre_pythonista_lib.code.rules.expr import Expr
+        from .....build.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.rules.expr import Expr
     else:
-        from libre_pythonista_lib.code.rules.expr import Expr
+        from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.rules.expr import Expr
     code = """
 def sum_it(a: int, b: int) -> int:
     return a + b

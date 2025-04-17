@@ -2,10 +2,10 @@ from __future__ import annotations
 from typing import Any, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from oxt.pythonpath.libre_pythonista_lib.code.py_module_t import PyModuleT
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module_t import PyModuleT
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_base import QryBase
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_t import QryT
-    from oxt.pythonpath.libre_pythonista_lib.code.py_module import PyModule
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module import PyModule
     from oxt.pythonpath.libre_pythonista_lib.doc.doc_globals import DocGlobals
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.doc.qry_doc_globals import QryDocGlobals
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.cmd_py_module_default import CmdPyModuleDefault
@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 else:
     from libre_pythonista_lib.cq.qry.qry_base import QryBase
     from libre_pythonista_lib.cq.qry.qry_t import QryT
-    from libre_pythonista_lib.code.py_module import PyModule
+    from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module import PyModule
     from libre_pythonista_lib.doc.doc_globals import DocGlobals
     from libre_pythonista_lib.cq.qry.doc.qry_doc_globals import QryDocGlobals
     from libre_pythonista_lib.cq.cmd.calc.doc.cmd_py_module_default import CmdPyModuleDefault

@@ -1,12 +1,16 @@
 from __future__ import annotations
-from typing import cast
+from typing import cast, TYPE_CHECKING
 import ast
 import types
 from ooodev.utils.helper.dot_dict import DotDict
-from ...log.log_inst import LogInst
+
+if TYPE_CHECKING:
+    from oxt.pythonpath.libre_pythonista_lib.log.log_inst import LogInst
+else:
+    from libre_pythonista_lib.log.log_inst import LogInst
 
 
-class LpFnAssign:
+class LpFnValue:
     """
     This is a special rule and is not added to the code_rules list.
     It is used to get the value of the last lp() function call. If it matches.
@@ -36,32 +40,27 @@ class LpFnAssign:
         self._result = None
         if not self.code:
             return False
-
-        if self.mod is None:
-            return False
-
         if not self.ast_mod:
             return False
-
         if len(self.ast_mod.body) < 1:
             return False
-        last = self.ast_mod.body[-1]
-        if not isinstance(last, (ast.Assign, ast.AnnAssign)):
-            return False
-
-        try:
-            if last.value.func.id != "lp":  # type: ignore
-                return False
-        except Exception:
+        if not isinstance(self.ast_mod.body[-1], ast.Expr):
             return False
 
         with self._log.indent(True):
+            if self.data is None:
+                self._log.debug("LpFnValue - get_is_match() self.data is None. Returning False.")
+                return False
+            # with contextlib.suppress(Exception):
             try:
-                self._result = cast(DotDict, self.mod.lp_mod.LAST_LP_RESULT)  # type: ignore
-                return True
+                result = cast(DotDict, self.mod.lp_mod.LAST_LP_RESULT)  # type: ignore
+                if self.data.data is result.data:
+                    self._result = result
+                    self._log.debug("LpFnValue - get_is_match() self.data.data is result.data. Returning True.")
+                    return True
             except Exception as e:
-                self._log.debug("LpFnAssign - get_is_match() Exception: %s", e)
-            self._log.debug("LpFnAssign - get_is_match() Not a match. Returning False.")
+                self._log.debug("LpFnValue - get_is_match() Exception: %s", e)
+            self._log.debug("LpFnValue - get_is_match() Not a match. Returning False.")
             return False
 
     def get_value(self) -> DotDict:
@@ -84,4 +83,4 @@ class LpFnAssign:
         self.ast_mod = None
 
     def __repr__(self) -> str:
-        return "<LpFnAssign()>"
+        return "<LpFnValue()>"

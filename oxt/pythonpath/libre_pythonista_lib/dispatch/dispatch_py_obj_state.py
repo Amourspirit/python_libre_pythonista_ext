@@ -32,7 +32,7 @@ if TYPE_CHECKING:
     from ....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
 else:
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
-    from libre_pythonista_lib.code.py_source_mgr import PyInstance
+    from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source_mgr import PyInstance
 
 
 class DispatchPyObjState(XDispatch, EventsPartial, unohelper.Base):

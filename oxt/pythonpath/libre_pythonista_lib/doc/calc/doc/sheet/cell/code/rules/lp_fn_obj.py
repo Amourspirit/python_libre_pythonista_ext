@@ -3,20 +3,22 @@ from typing import cast, TYPE_CHECKING
 import ast
 import types
 from ooodev.utils.helper.dot_dict import DotDict
-from ...utils import str_util
-from ...log.log_inst import LogInst
 
 if TYPE_CHECKING:
-    from .....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
-    from .....___lo_pip___.debug.break_mgr import BreakMgr
+    from oxt.___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from oxt.___lo_pip___.debug.break_mgr import BreakMgr
+    from oxt.pythonpath.libre_pythonista_lib.utils import str_util
+    from oxt.pythonpath.libre_pythonista_lib.log.log_inst import LogInst
 
     break_mgr = BreakMgr()
 else:
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
     from ___lo_pip___.debug.break_mgr import BreakMgr
+    from libre_pythonista_lib.utils import str_util
+    from libre_pythonista_lib.log.log_inst import LogInst
 
     break_mgr = BreakMgr()
-    # break_mgr.add_breakpoint("libre_pythonista_lib.code.rules.lp_fn_obj.get_is_match")
+    # break_mgr.add_breakpoint("libre_pythonista_lib.doc.calc.doc.sheet.cell.code.rules.lp_fn_obj.get_is_match")
 
 
 class LpFnObj:
@@ -62,7 +64,7 @@ class LpFnObj:
         except Exception:
             return False
 
-        break_mgr.check_breakpoint("libre_pythonista_lib.code.rules.lp_fn_obj.get_is_match")
+        break_mgr.check_breakpoint("libre_pythonista_lib.doc.calc.doc.sheet.cell.code.rules.lp_fn_obj.get_is_match")
 
         log = LogInst()
         log.debug("LpFnObj - get_is_match() Entered.")

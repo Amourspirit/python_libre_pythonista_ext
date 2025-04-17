@@ -18,7 +18,7 @@ if TYPE_CHECKING:
     from typing_extensions import override
     from com.sun.star.frame import XStatusListener
     from oxt.___lo_pip___.oxt_logger.oxt_logger import OxtLogger
-    from oxt.pythonpath.libre_pythonista_lib.code.cell_cache import CellCache
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.cell_cache import CellCache
     from oxt.pythonpath.libre_pythonista_lib.cell.cell_mgr import CellMgr
     from oxt.pythonpath.libre_pythonista_lib.cell.state.ctl_state import CtlState
     from oxt.pythonpath.libre_pythonista_lib.cell.state.state_kind import StateKind
@@ -26,7 +26,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cell.array.array_tbl import ArrayTbl
 else:
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
-    from libre_pythonista_lib.code.cell_cache import CellCache
+    from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.cell_cache import CellCache
     from libre_pythonista_lib.cell.cell_mgr import CellMgr
     from libre_pythonista_lib.cell.state.ctl_state import CtlState
     from libre_pythonista_lib.cell.state.state_kind import StateKind

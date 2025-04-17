@@ -1,15 +1,22 @@
 from __future__ import annotations
 from typing import Any, cast, TYPE_CHECKING
 from pathlib import Path
+
 from ooodev.loader import Lo
 from ooodev.events.args.event_args import EventArgs
-from ...log.py_logger import PyLogger
-from ...const.event_const import LOG_OPTIONS_CHANGED, LOG_PY_LOGGER_RESET
-from ...event.shared_event import SharedEvent
-from ...utils.singleton_base import SingletonBase
+
 
 if TYPE_CHECKING:
     from ooodev.proto.office_document_t import OfficeDocumentT
+    from oxt.pythonpath.libre_pythonista_lib.log.py_logger import PyLogger
+    from oxt.pythonpath.libre_pythonista_lib.const.event_const import LOG_OPTIONS_CHANGED
+    from oxt.pythonpath.libre_pythonista_lib.event.shared_event import SharedEvent
+    from oxt.pythonpath.libre_pythonista_lib.utils.singleton_base import SingletonBase
+else:
+    from libre_pythonista_lib.log.py_logger import PyLogger
+    from libre_pythonista_lib.const.event_const import LOG_OPTIONS_CHANGED
+    from libre_pythonista_lib.event.shared_event import SharedEvent
+    from libre_pythonista_lib.utils.singleton_base import SingletonBase
 
 
 class LpLog(SingletonBase):

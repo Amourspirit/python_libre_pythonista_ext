@@ -36,7 +36,7 @@ if TYPE_CHECKING:
         from typing_extensions import override
 
     from oxt.___lo_pip___.lo_util.resource_resolver import ResourceResolver
-    from oxt.pythonpath.libre_pythonista_lib.code.py_source_mgr import PyInstance
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source_mgr import PyInstance
     from oxt.pythonpath.libre_pythonista_lib.log.py_logger import PyLogger
 
     from ooodev.loader import Lo
@@ -62,7 +62,7 @@ else:
         from ooo.dyn.awt.message_box_buttons import MessageBoxButtonsEnum
         from ooo.dyn.awt.message_box_type import MessageBoxType
         from ooodev.dialog.msgbox import MsgBox
-        from libre_pythonista_lib.code.py_source_mgr import PyInstance
+        from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source_mgr import PyInstance
         from libre_pythonista_lib.log.py_logger import PyLogger
 
     from ___lo_pip___.lo_util.resource_resolver import ResourceResolver

@@ -1,21 +1,24 @@
 from __future__ import annotations
-from typing import cast
+from typing import cast, TYPE_CHECKING
 import ast
 import types
 from ooodev.utils.helper.dot_dict import DotDict
-from ...log.log_inst import LogInst
+
+if TYPE_CHECKING:
+    from oxt.pythonpath.libre_pythonista_lib.utils import str_util
+    from oxt.pythonpath.libre_pythonista_lib.log.log_inst import LogInst
+else:
+    from libre_pythonista_lib.utils import str_util
+    from libre_pythonista_lib.log.log_inst import LogInst
 
 
-class LpFnValue:
+class LpFnExpr:
     """
-    This is a special rule and is not added to the code_rules list.
-    It is used to get the value of the last lp() function call. If it matches.
+    A class to represent the last dictionary item in a module.
     """
 
     def __init__(self) -> None:
         self._result = None
-        self.data = None
-        self._log = LogInst()
 
     def set_values(self, mod: types.ModuleType, code: str, ast_mod: ast.Module | None) -> None:
         """
@@ -40,24 +43,34 @@ class LpFnValue:
             return False
         if len(self.ast_mod.body) < 1:
             return False
-        if not isinstance(self.ast_mod.body[-1], ast.Expr):
+        last = self.ast_mod.body[-1]
+        if not isinstance(last, ast.Expr):
+            return False
+        try:
+            if last.value.func.id != "lp":  # type: ignore
+                return False
+        except Exception:
             return False
 
-        with self._log.indent(True):
-            if self.data is None:
-                self._log.debug("LpFnValue - get_is_match() self.data is None. Returning False.")
-                return False
+        log = LogInst()
+        with log.indent(True):
+            log.debug("LpFn - get_is_match() Entered.")
+
+            result = None
             # with contextlib.suppress(Exception):
             try:
-                result = cast(DotDict, self.mod.lp_mod.LAST_LP_RESULT)  # type: ignore
-                if self.data.data is result.data:
-                    self._result = result
-                    self._log.debug("LpFnValue - get_is_match() self.data.data is result.data. Returning True.")
-                    return True
+                if "lp_mod" in self.mod.__dict__:
+                    log.debug("LpFn - get_is_match() lp_mod is in module")
+                    result = cast(DotDict, self.mod.lp_mod.LAST_LP_RESULT)  # type: ignore
+                    log.debug("LpFn - get_is_match() lp_mod.LAST_LP_RESULT %s", result)
+                    if "headers" in result:
+                        log.debug("LpFnObj - get_is_match() has headers: %s", result.headers)
+                else:
+                    log.debug("LpFn - get_is_match() lp_mod is NOT in module")
+                self._result = result
             except Exception as e:
-                self._log.debug("LpFnValue - get_is_match() Exception: %s", e)
-            self._log.debug("LpFnValue - get_is_match() Not a match. Returning False.")
-            return False
+                log.error("LpFn - get_is_match() Exception: %s", e, exc_info=True)
+            return self._result is not None
 
     def get_value(self) -> DotDict:
         """
@@ -75,8 +88,7 @@ class LpFnValue:
         self._result = None
         self.mod = None
         self.code = None
-        self.data = None
         self.ast_mod = None
 
     def __repr__(self) -> str:
-        return "<LpFnValue()>"
+        return "<LpFnExpr()>"

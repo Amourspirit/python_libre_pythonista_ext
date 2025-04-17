@@ -7,16 +7,16 @@ if __name__ == "__main__":
     pytest.main([__file__])
 
 if TYPE_CHECKING:
-    from oxt.pythonpath.libre_pythonista_lib.code.py_module import PyModule
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module import PyModule
 
 
 def test_plot_expr(py_mod: PyModule, mocker: MockerFixture) -> None:
     from ooodev.utils.helper.dot_dict import DotDict
 
     if TYPE_CHECKING:
-        from oxt.pythonpath.libre_pythonista_lib.code.rules.lp_fn_plot_expr import LpFnPlotExpr
+        from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.rules.lp_fn_plot_expr import LpFnPlotExpr
     else:
-        from libre_pythonista_lib.code.rules.lp_fn_plot_expr import LpFnPlotExpr
+        from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.rules.lp_fn_plot_expr import LpFnPlotExpr
 
     py_mod.mod.__dict__["plt"] = mocker.MagicMock()
     py_mod.mod.__dict__["lp_plot"] = mocker.MagicMock()
@@ -43,9 +43,11 @@ def test_plot_assign(py_mod: PyModule, mocker: MockerFixture) -> None:
     from ooodev.utils.helper.dot_dict import DotDict
 
     if TYPE_CHECKING:
-        from .....build.pythonpath.libre_pythonista_lib.code.rules.lp_fn_plot_assign import LpFnPlotAssign
+        from .....build.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.rules.lp_fn_plot_assign import (
+            LpFnPlotAssign,
+        )
     else:
-        from libre_pythonista_lib.code.rules.lp_fn_plot_assign import LpFnPlotAssign
+        from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.rules.lp_fn_plot_assign import LpFnPlotAssign
 
     py_mod.mod.__dict__["plt"] = mocker.MagicMock()
     py_mod.mod.__dict__["lp_plot"] = mocker.MagicMock()

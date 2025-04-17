@@ -20,7 +20,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.const import FORMULA_PYC
     from oxt.pythonpath.libre_pythonista_lib.event.shared_event import SharedEvent
     from oxt.pythonpath.libre_pythonista_lib.const.event_const import PYC_FORMULA_INSERTING, PYC_FORMULA_INSERTED
-    from oxt.pythonpath.libre_pythonista_lib.code.cell_cache import CellCache
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.cell_cache import CellCache
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_is_lp_cell import QryIsLpCell
@@ -37,7 +37,7 @@ else:
     from libre_pythonista_lib.const import FORMULA_PYC
     from libre_pythonista_lib.event.shared_event import SharedEvent
     from libre_pythonista_lib.const.event_const import PYC_FORMULA_INSERTING, PYC_FORMULA_INSERTED
-    from libre_pythonista_lib.code.cell_cache import CellCache
+    from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.cell_cache import CellCache
     from libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
     from libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_is_lp_cell import QryIsLpCell

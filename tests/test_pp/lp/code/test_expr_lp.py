@@ -6,16 +6,16 @@ if __name__ == "__main__":
     pytest.main([__file__])
 
 if TYPE_CHECKING:
-    from .....build.pythonpath.libre_pythonista_lib.code.py_module import PyModule
+    from .....build.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module import PyModule
 
 
 def test_lp_cell(py_mod: PyModule) -> None:
     from ooodev.utils.helper.dot_dict import DotDict
 
     if TYPE_CHECKING:
-        from .....build.pythonpath.libre_pythonista_lib.code.rules.lp_fn_expr import LpFnExpr
+        from .....build.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.rules.lp_fn_expr import LpFnExpr
     else:
-        from libre_pythonista_lib.code.rules.lp_fn_expr import LpFnExpr
+        from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.rules.lp_fn_expr import LpFnExpr
 
     def lp(x, headers=False) -> int:  # noqa: ANN001
         return 2
@@ -48,9 +48,9 @@ def test_lp_range(py_mod: PyModule) -> None:
     from ooodev.utils.helper.dot_dict import DotDict
 
     if TYPE_CHECKING:
-        from .....build.pythonpath.libre_pythonista_lib.code.rules.lp_fn_expr import LpFnExpr
+        from .....build.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.rules.lp_fn_expr import LpFnExpr
     else:
-        from libre_pythonista_lib.code.rules.lp_fn_expr import LpFnExpr
+        from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.rules.lp_fn_expr import LpFnExpr
 
     py_mod.mod.__dict__["lp"] = lambda x: 3
     py_mod.mod.lp_mod.LAST_LP_RESULT = DotDict(data=3, headers=False)
@@ -79,9 +79,9 @@ def test_lp_range_headers(py_mod: PyModule) -> None:
     from ooodev.utils.helper.dot_dict import DotDict
 
     if TYPE_CHECKING:
-        from .....build.pythonpath.libre_pythonista_lib.code.rules.lp_fn_expr import LpFnExpr
+        from .....build.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.rules.lp_fn_expr import LpFnExpr
     else:
-        from libre_pythonista_lib.code.rules.lp_fn_expr import LpFnExpr
+        from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.rules.lp_fn_expr import LpFnExpr
 
     def lp(x, headers=False) -> int:  # noqa: ANN001
         return 4
