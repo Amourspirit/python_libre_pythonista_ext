@@ -34,7 +34,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.const.event_const import GBL_DOC_CLOSING
     from oxt.pythonpath.libre_pythonista_lib.config.dialog.wv_code_cfg import WvCodeCfg
     from oxt.pythonpath.libre_pythonista_lib.py_pip.pkg_info import PkgInfo
-    from oxt.pythonpath.libre_pythonista_lib.menus import menu_util as mu
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.menus import menu_util as mu
 else:
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger  # noqa: F401
     from ___lo_pip___.oxt_logger.logger_config import LoggerConfig  # noqa: F401
@@ -52,7 +52,7 @@ else:
     from libre_pythonista_lib.const.event_const import GBL_DOC_CLOSING
     from libre_pythonista_lib.config.dialog.wv_code_cfg import WvCodeCfg
     from libre_pythonista_lib.py_pip.pkg_info import PkgInfo
-    from libre_pythonista_lib.menus import menu_util as mu
+    from libre_pythonista_lib.doc.calc.doc.menus import menu_util as mu
 
 
 if os.name == "nt":

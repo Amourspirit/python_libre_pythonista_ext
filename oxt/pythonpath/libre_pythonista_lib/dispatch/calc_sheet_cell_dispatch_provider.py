@@ -142,7 +142,10 @@ class CalcSheetCellDispatchProvider(XDispatchProviderInterceptor, LogMixin, unoh
         SearchFlags: int,  # noqa: N803
     ) -> XDispatch | None:  # type: ignore
         try:
-            from ..menus import menu_util as mu
+            if TYPE_CHECKING:
+                from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.menus import menu_util as mu
+            else:
+                from libre_pythonista_lib.doc.calc.doc.menus import menu_util as mu
         except ImportError:
             self.log.exception("menu_util import error")
             raise
