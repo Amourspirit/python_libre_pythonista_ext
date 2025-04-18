@@ -44,9 +44,9 @@ class QryRowsColsPdDf(QryRowsColsTbl):
             self.log.debug("get_rows_cols() - Has Headers: %s", has_headers)
             self.log.debug("get_rows_cols() - Has Index Names: %s", has_index_names)
 
-        if self.log.is_debug:
+        if self.log.is_debug and df is not None:
             self.log.debug("DataFrame Shape: %s", df.shape)
-        shape = df.shape
+        shape = df.shape if df is not None else (0, 0)
         shape_len = len(shape)
         lst = [0, 0]
         if shape_len == 0:

@@ -27,7 +27,10 @@ class PandasUtil:
     @staticmethod
     def has_headers(df: pd.DataFrame) -> bool:
         """Detects if a DataFrame has a header."""
-        return not df.columns.is_unique or not all(isinstance(col, (int, float)) for col in df.columns)
+        try:
+            return not df.columns.is_unique or not all(isinstance(col, (int, float)) for col in df.columns)
+        except Exception:
+            return False
 
     @classmethod
     def has_index_names(cls, df: pd.DataFrame) -> bool:
