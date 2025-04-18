@@ -30,7 +30,6 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
     from oxt.pythonpath.libre_pythonista_lib.const import (
         CS_CMD_START,
-        DISPATCH_CODE_EDIT,
         DISPATCH_CODE_EDIT_MB,
         DISPATCH_CODE_DEL,
         DISPATCH_CELL_SELECT,
@@ -39,8 +38,6 @@ if TYPE_CHECKING:
         DISPATCH_DATA_TBL_CARD,
         DISPATCH_CELL_CTl_UPDATE,
         PATH_DF_CARD,
-        PATH_CODE_EDIT,
-        PATH_CODE_EDIT_MB,
         PATH_CODE_EDIT_MB,
         PATH_DATA_TBL_CARD,
     )
@@ -60,7 +57,6 @@ else:
     from libre_pythonista_lib.utils.result import Result
     from libre_pythonista_lib.const import (
         CS_CMD_START,
-        DISPATCH_CODE_EDIT,
         DISPATCH_CODE_EDIT_MB,
         DISPATCH_CODE_DEL,
         DISPATCH_CELL_SELECT,
@@ -69,8 +65,6 @@ else:
         DISPATCH_DATA_TBL_CARD,
         DISPATCH_CELL_CTl_UPDATE,
         PATH_DF_CARD,
-        PATH_CODE_EDIT,
-        PATH_CODE_EDIT_MB,
         PATH_CODE_EDIT_MB,
         PATH_DATA_TBL_CARD,
     )
@@ -96,8 +90,7 @@ def on_menu_select(src: Any, event: EventArgs, menu: PopupMenu) -> None:  # noqa
         cmd_url = mu.get_url_from_command(command)
         in_thread_check = {
             PATH_DF_CARD,
-            PATH_CODE_EDIT,
-            PATH_CODE_EDIT_MB,
+            # PATH_CODE_EDIT,
             PATH_CODE_EDIT_MB,
             PATH_DATA_TBL_CARD,
         }
@@ -238,7 +231,7 @@ class CtlPopup:
         sel_name = self._res.resolve_string("mnuSelCell")  # Select Cell
         recalc_name = self._res.resolve_string("mnuRecalcCell")  # Recalculate
 
-        cmd_enabled = self._cps.is_dispatch_enabled(DISPATCH_CODE_EDIT)
+        cmd_enabled = self._cps.is_dispatch_enabled(DISPATCH_CODE_EDIT_MB)
         self._log.debug(f"_get_popup_menu() Edit Command Enabled: {cmd_enabled}")
         edit_url = f"{DISPATCH_CODE_EDIT_MB}?sheet={self._sheet_name}&cell={self._cell.cell_obj}&in_thread=1"
         del_url = f"{DISPATCH_CODE_DEL}?sheet={self._sheet_name}&cell={self._cell.cell_obj}"

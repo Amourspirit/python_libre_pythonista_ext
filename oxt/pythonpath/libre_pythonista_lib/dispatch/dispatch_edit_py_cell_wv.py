@@ -1,12 +1,6 @@
 from __future__ import annotations
 from typing import Any, cast, Dict, Tuple, TYPE_CHECKING
 
-try:
-    # python 3.12+
-    from typing import override  # type: ignore
-except ImportError:
-    from typing_extensions import override
-
 import unohelper
 from com.sun.star.uno import XInterface
 from com.sun.star.frame import XDispatch
@@ -15,14 +9,15 @@ from com.sun.star.util import URL
 
 from ooo.dyn.beans.named_value import NamedValue
 from ooo.dyn.frame.feature_state_event import FeatureStateEvent
-
 from ooodev.loader import Lo
 
 if TYPE_CHECKING:
     from com.sun.star.frame import XStatusListener
-    from ....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from oxt.___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
 else:
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from libre_pythonista_lib.utils.custom_ext import override
 
 
 class DispatchEditPyCellWv(unohelper.Base, XDispatch):
@@ -38,7 +33,7 @@ class DispatchEditPyCellWv(unohelper.Base, XDispatch):
         self._status_listeners: Dict[str, XStatusListener] = {}
 
     @override
-    def addStatusListener(self, Control: XStatusListener, URL: URL) -> None:
+    def addStatusListener(self, Control: XStatusListener, URL: URL) -> None:  # noqa: N802, N803
         """
         registers a listener of a control for a specific URL at this object to receive status events.
 
@@ -58,7 +53,7 @@ class DispatchEditPyCellWv(unohelper.Base, XDispatch):
                 self._status_listeners[URL.Complete] = Control
 
     @override
-    def dispatch(self, URL: URL, Arguments: Tuple[PropertyValue, ...]) -> None:
+    def dispatch(self, URL: URL, Arguments: Tuple[PropertyValue, ...]) -> None:  # noqa: N803
         """
         Dispatches (executes) a URL
 
@@ -88,7 +83,7 @@ class DispatchEditPyCellWv(unohelper.Base, XDispatch):
                 return
 
     @override
-    def removeStatusListener(self, Control: XStatusListener, URL: URL) -> None:
+    def removeStatusListener(self, Control: XStatusListener, URL: URL) -> None:  # noqa: N802, N803
         """
         Un-registers a listener from a control.
         """

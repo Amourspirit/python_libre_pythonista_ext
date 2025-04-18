@@ -10,19 +10,18 @@ from ooodev.events.args.cancel_event_args import CancelEventArgs
 from ooodev.utils.helper.dot_dict import DotDict
 
 from ..const import (
-    PATH_CODE_EDIT,
+    PATH_CELL_CTl_UPDATE,
+    PATH_CELL_SELECT_RECALC,
+    PATH_CELL_SELECT,
+    PATH_CODE_DEL,
     PATH_CODE_EDIT_MB,
+    PATH_DATA_TBL_CARD,
+    PATH_DATA_TBL_STATE,
+    PATH_DF_CARD,
     PATH_DF_STATE,
     PATH_DS_STATE,
-    PATH_DATA_TBL_STATE,
-    PATH_CODE_DEL,
     PATH_PY_OBJ_STATE,
-    PATH_CELL_SELECT,
-    PATH_CELL_SELECT_RECALC,
-    PATH_DF_CARD,
-    PATH_DATA_TBL_CARD,
     PATH_SEL_RNG,
-    PATH_CELL_CTl_UPDATE,
 )
 
 from ..const.event_const import LP_DISPATCHED_CMD, LP_DISPATCHING_CMD
@@ -57,38 +56,7 @@ class CalcSheetDispatchMgr:
         se = SharedEvent()
         doc = Lo.current_doc
 
-        # print("CalcSheetDispatchMgr: URL.Main", URL.Main)
-
-        if URL.Path == PATH_CODE_EDIT:
-            try:
-                from .dispatch_edit_py_cell import DispatchEditPyCell
-            except ImportError:
-                log.exception("DispatchEditPyCell import error")
-                raise
-
-            try:
-                args = self._convert_query_to_dict(URL.Arguments)
-
-                cargs = CancelEventArgs(self)
-                cargs.event_data = DotDict(url=URL, cmd=URL.Complete, doc=doc, **args)
-                se.trigger_event(LP_DISPATCHING_CMD, cargs)
-                if cargs.cancel is True and cargs.handled is False:
-                    return None
-
-                with log.indent(True):
-                    log.debug("CalcSheetDispatchMgr.dispatch: dispatching DispatchEditPyCell")
-                result = DispatchEditPyCell(sheet=args["sheet"], cell=args["cell"])
-                result.dispatch(URL, Arguments)
-
-                eargs = EventArgs.from_args(cargs)
-                eargs.event_data.dispatch = result
-                se.trigger_event(LP_DISPATCHED_CMD, eargs)
-                return
-            except Exception:
-                log.exception("Dispatch Error: %s", URL.Main)
-                return None
-
-        elif URL.Path == PATH_CODE_EDIT_MB:
+        if URL.Path == PATH_CODE_EDIT_MB:
             is_experiential = self._config.lp_settings.experimental_editor
             if is_experiential:
                 try:

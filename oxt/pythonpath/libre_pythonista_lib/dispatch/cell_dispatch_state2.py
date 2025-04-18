@@ -13,7 +13,6 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.kind.ctl_kind import CtlKind
     from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
     from oxt.pythonpath.libre_pythonista_lib.const import (
-        DISPATCH_CODE_EDIT,
         DISPATCH_CODE_EDIT_MB,
         DISPATCH_DF_STATE,
         DISPATCH_DS_STATE,
@@ -30,7 +29,6 @@ else:
     from libre_pythonista_lib.kind.ctl_kind import CtlKind
     from libre_pythonista_lib.utils.result import Result
     from libre_pythonista_lib.const import (
-        DISPATCH_CODE_EDIT,
         DISPATCH_CODE_EDIT_MB,
         DISPATCH_DF_STATE,
         DISPATCH_DS_STATE,
@@ -47,7 +45,6 @@ class CellDispatchState2:
         self._qry_handler = QryHandlerFactory.get_qry_handler()
         self._cmd_handler = CmdHandlerFactory.get_cmd_handler()
         self._dispatch_allowed = {
-            DISPATCH_CODE_EDIT,
             DISPATCH_CODE_EDIT_MB,
             DISPATCH_DF_STATE,
             DISPATCH_DS_STATE,
