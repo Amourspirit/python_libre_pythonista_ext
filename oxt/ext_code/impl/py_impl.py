@@ -29,7 +29,7 @@ if TYPE_CHECKING:
     _CONDITIONS_MET = True
     from com.sun.star.frame import Desktop
     from ooodev.loader import Lo
-    from ooodev.calc import CalcDoc
+    from ooodev.calc import CalcDoc, CalcCell
     from ooodev.events.args.event_args import EventArgs
     from ooodev.utils.helper.dot_dict import DotDict
     from oxt.___lo_pip___.oxt_logger.oxt_logger import OxtLogger
@@ -40,6 +40,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.const.event_const import (
         PYC_RULE_MATCH_DONE,
         PYC_FORMULA_ENTER,
+        SHEET_CELL_MOVED,
     )
 
     break_mgr = BreakMgr()
@@ -48,7 +49,7 @@ else:
 
     if _CONDITIONS_MET:
         from ooodev.loader import Lo
-        from ooodev.calc import CalcDoc
+        from ooodev.calc import CalcDoc, CalcCell
         from ooodev.events.args.event_args import EventArgs
         from ooodev.utils.helper.dot_dict import DotDict
         from ___lo_pip___.debug.break_mgr import BreakMgr
@@ -58,6 +59,7 @@ else:
         from libre_pythonista_lib.const.event_const import (
             PYC_RULE_MATCH_DONE,
             PYC_FORMULA_ENTER,
+            SHEET_CELL_MOVED,
         )
 
         # Initialize the breakpoint manager
@@ -157,6 +159,8 @@ class PyImpl(unohelper.Base, XPy):
             if ci.is_source_cell():
                 self._log.debug("pyc - Cell is source cell")
 
+                # self._do_source_cell(shared_event, ci, cell)
+
                 # if auto_update is not call then get value will act as a cached version
                 # This can be uses as a static option for cell latter on.
                 # see https://github.com/Amourspirit/python_libre_pythonista_ext/issues/61
@@ -170,11 +174,48 @@ class PyImpl(unohelper.Base, XPy):
                     eargs = EventArgs(self)
                     eargs.event_data = dd
                     shared_event.trigger_event(PYC_RULE_MATCH_DONE, eargs)
-                # self._log.debug("pyc - Cell has Value %s", value)
             else:
-                self._log.debug("pyc - Not a source cell. Creating Default.")
-                value = ci.add_default_control()
-                self._log.debug("pyc - Cell had no code, Created Default with value type: %s", type(value).__name__)
+                old_new = ci.qry_cell_moved_old_new()
+                if old_new:
+                    self._log.debug("pyc - Cell moved.")
+                    # ci_new = CellItemFacade.from_cell_addr_prop(cell)
+                    old = old_new[0]
+                    new = old_new[1]
+                    ci.py_src_mgr.update_key(old, new)
+
+                    dd = DotDict(
+                        sheet=sheet,
+                        calc_cell=cell,
+                        event_name=SHEET_CELL_MOVED,
+                        # is_first_cell=ci.qry_is_first(),
+                        # is_last_cell=ci.qry_is_last(),
+                        absolute_name=cell.component.AbsoluteName,
+                        old_cell_obj=old,
+                        new_cell_obj=new,
+                    )
+                    eargs = EventArgs(self)
+                    eargs.event_data = dd
+                    shared_event.trigger_event(SHEET_CELL_MOVED, eargs)
+                    # ci.update_code()
+                    if ci.is_source_cell():
+                        self._log.debug("pyc - Cell is source cell")
+                        # self._do_source_cell(shared_event, ci, cell)
+                        ci.auto_update()
+                        value = ci.get_value()
+                        matched_rule = ci.get_matched_rule()
+                        if matched_rule:
+                            dd = DotDict(matched_rule=matched_rule, rule_result=value, calc_cell=cell)
+                            dd.is_first_cell = ci.qry_is_first()
+                            dd.is_last_cell = ci.qry_is_last()
+                            eargs = EventArgs(self)
+                            eargs.event_data = dd
+                            shared_event.trigger_event(PYC_RULE_MATCH_DONE, eargs)
+                else:
+                    self._log.debug("pyc - Not a source cell. Creating Default.")
+                    value = ci.add_default_control()
+                    self._log.debug(
+                        "pyc - Cell had no code, Created Default with value type: %s", type(value).__name__
+                    )
         except Exception as e:
             self._log.exception("Error Init CellItem: %s", e)
 
@@ -182,6 +223,22 @@ class PyImpl(unohelper.Base, XPy):
         result = value
         self._log.debug("pyc - Done")
         return result
+
+    def _do_source_cell(self, shared_event: SharedEvent, ci: CellItemFacade, cell: CalcCell) -> None:
+        # if auto_update is not call then get value will act as a cached version
+        # This can be uses as a static option for cell latter on.
+        # see https://github.com/Amourspirit/python_libre_pythonista_ext/issues/61
+
+        ci.auto_update()
+        value = ci.get_value()
+        matched_rule = ci.get_matched_rule()
+        if matched_rule:
+            dd = DotDict(matched_rule=matched_rule, rule_result=value, calc_cell=cell)
+            dd.is_first_cell = ci.qry_is_first()
+            dd.is_last_cell = ci.qry_is_last()
+            eargs = EventArgs(self)
+            eargs.event_data = dd
+            shared_event.trigger_event(PYC_RULE_MATCH_DONE, eargs)
 
 
 g_ImplementationHelper = unohelper.ImplementationHelper()  # noqa: N816

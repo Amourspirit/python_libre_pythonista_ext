@@ -355,12 +355,14 @@ class PySourceManager(LogMixin):
     def __iter__(self):  # noqa: ANN204
         # return iterable of PySource objects
         for key in self._data:
+            key: Tuple[int, int, int]
             py_data = self._getitem_py_src_data(key)
             yield PySource(uri=py_data.uri, cell=py_data.cell)
 
     def py_src_date_items(self) -> Iterable[PySourceData]:
         """Returns an iterable of PySourceData objects."""
         for key in self._data:
+            key: Tuple[int, int, int]
             yield self._data[key]
 
     # endregion Dunder Methods
@@ -554,6 +556,29 @@ class PySourceManager(LogMixin):
         sheet_idx = cell.sheet_idx
         sheet = self._doc.sheets[sheet_idx]
         return sheet[cell]
+
+    def update_key(self, old_cell: CellObj, new_cell: CellObj) -> None:
+        """
+        Updates the key for a cell.
+
+        Args:
+            old_cell (CellObj): Old cell object.
+            new_cell (CellObj): New cell object.
+        """
+        self.log.debug("update_key() - Updating key for cell %s to %s", old_cell, new_cell)
+        old_key = self.convert_cell_obj_to_tuple(old_cell)
+        new_key = self.convert_cell_obj_to_tuple(new_cell)
+        # if self.log.is_debug:
+        #     self.log.debug(self._data.keys())
+        if old_key not in self:
+            self.log.warning("update_key() - Old key not found: %s", old_key)
+            return
+
+        old_data = cast(PySourceData, self._data.pop(old_key))
+        new_data = PySourceData(uri=old_data.uri, cell=new_cell.copy())
+        self._data[new_key] = new_data
+        self._mod_state.update_key(old_cell, new_cell)
+        self.log.debug("update_key() - Updated key for cell %s to %s", old_cell, new_cell)
 
     # region Source Management
 

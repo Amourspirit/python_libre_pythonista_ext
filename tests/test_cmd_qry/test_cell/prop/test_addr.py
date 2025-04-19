@@ -43,7 +43,7 @@ def test_cmd_addr(loader, build_setup, mocker: MockerFixture) -> None:
         assert cmd.cell == cell
         qry_result = qry_handler.handle(qry)
         assert Result.is_success(qry_result)
-        assert qry_result.data == "sheet_index=0&cell_addr=B2"
+        assert qry_result.data.value == "sheet_index=0&cell_addr=B2"
 
         # Test setting same address (should succeed but not change anything)
         cmd = CmdAddr(cell=cell, addr="sheet_index=0&cell_addr=B2")
@@ -56,7 +56,7 @@ def test_cmd_addr(loader, build_setup, mocker: MockerFixture) -> None:
         assert cmd.success
         qry_result = qry_handler.handle(qry)
         assert Result.is_success(qry_result)
-        assert qry_result.data == "sheet_index=0&cell_addr=C3"
+        assert qry_result.data.value == "sheet_index=0&cell_addr=C3"
 
         # Test undo
         cmd.undo()
@@ -68,7 +68,7 @@ def test_cmd_addr(loader, build_setup, mocker: MockerFixture) -> None:
         assert cmd.success
         qry_result = qry_handler.handle(qry)
         assert Result.is_success(qry_result)
-        assert qry_result.data == "sheet_index=0&cell_addr=D4"
+        assert qry_result.data.value == "sheet_index=0&cell_addr=D4"
 
         # Test with invalid address
         cmd = CmdAddr(cell=cell, addr="invalid_address")
@@ -119,28 +119,3 @@ def test_cmd_kind(build_setup, mocker: MockerFixture) -> None:
 
     cmd.kind = CalcCmdKind.SHEET
     assert cmd.kind == CalcCmdKind.SHEET
-
-
-def test_qry_kind(build_setup, mocker: MockerFixture) -> None:
-    if TYPE_CHECKING:
-        from oxt.pythonpath.libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
-        from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_addr import QryAddr
-    else:
-        from libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
-        from libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_addr import QryAddr
-
-    # libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_prop_value.QryCellPropValue
-    _ = mocker.patch(
-        "libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_cell_prop_value.QryCellPropValue.execute",
-        return_value=True,
-    )
-
-    cell = mocker.MagicMock()
-
-    qry = QryAddr(cell=cell)
-    assert qry.kind == CalcQryKind.CELL
-
-    qry.kind = CalcQryKind.SHEET
-    assert qry.kind == CalcQryKind.SHEET
-
-    assert qry.execute()

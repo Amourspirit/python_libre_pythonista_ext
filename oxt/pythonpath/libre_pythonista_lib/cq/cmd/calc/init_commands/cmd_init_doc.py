@@ -18,6 +18,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_cell_event_mgr import QryCellEventMgr
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_py_module_default import QryPyModuleDefault
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_py_src_mgr import QryPySrcMgr
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_cell_cache import QryCellCache
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.doc.qry_doc_globals import QryDocGlobals
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_array_event_mgr import QryArrayEventMgr
     from oxt.pythonpath.libre_pythonista_lib.doc.doc_globals import DocGlobals
@@ -54,6 +55,7 @@ else:
     from libre_pythonista_lib.cq.qry.calc.doc.qry_cell_event_mgr import QryCellEventMgr
     from libre_pythonista_lib.cq.qry.calc.doc.qry_py_module_default import QryPyModuleDefault
     from libre_pythonista_lib.cq.qry.calc.doc.qry_py_src_mgr import QryPySrcMgr
+    from libre_pythonista_lib.cq.qry.calc.doc.qry_cell_cache import QryCellCache
     from libre_pythonista_lib.cq.qry.doc.qry_doc_globals import QryDocGlobals
     from libre_pythonista_lib.cq.qry.calc.doc.qry_array_event_mgr import QryArrayEventMgr
     from libre_pythonista_lib.doc.doc_globals import DocGlobals
@@ -106,10 +108,11 @@ class CmdInitDoc(CmdBase, List[CmdT], LogMixin, CmdDocT):
         """
         mod = self._qry_default_mod()
         qry_py_src_mgr = QryPySrcMgr(doc=self._doc, mod=mod)
-
+        qry_cell_cache = QryCellCache(doc=self._doc)
         qry_cell_event_mgr = QryCellEventMgr(doc=self._doc, mod=mod)
         qry_array_event_mgr = QryArrayEventMgr(doc=self._doc)
         self._execute_qry(qry_py_src_mgr)
+        self._execute_qry(qry_cell_cache)
         self._execute_qry(qry_cell_event_mgr)
         self._execute_qry(qry_array_event_mgr)
 

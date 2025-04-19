@@ -12,18 +12,22 @@ from typing import TYPE_CHECKING
 # from ..ex.exceptions import SingletonKeyError
 
 if TYPE_CHECKING:
+    from ooodev.proto.office_document_t import OfficeDocumentT
+    from ooodev.events.args.event_args_t import EventArgsT
+    from ooodev.utils.type_var import EventCallback
     from oxt.pythonpath.libre_pythonista_lib.event.doc_event_partial import DocEventPartial
     from oxt.pythonpath.libre_pythonista_lib.doc.doc_globals import DocGlobals
-    from ooodev.proto.office_document_t import OfficeDocumentT
+    from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
 
 else:
     from libre_pythonista_lib.doc.doc_globals import DocGlobals
     from libre_pythonista_lib.event.doc_event_partial import DocEventPartial
+    from libre_pythonista_lib.log.log_mixin import LogMixin
 
 _KEY = "libre_pythonista_lib.event.shared_event.SharedEvent"
 
 
-class SharedEvent(DocEventPartial):
+class SharedEvent(DocEventPartial, LogMixin):
     def __new__(cls, doc: OfficeDocumentT | None = None) -> SharedEvent:
         gbl_cache = DocGlobals.get_current() if doc is None else DocGlobals.get_current(doc.runtime_uid)
         if _KEY in gbl_cache.mem_cache:
@@ -39,5 +43,57 @@ class SharedEvent(DocEventPartial):
         if getattr(self, "_is_init", True):
             return
         DocEventPartial.__init__(self, doc=doc)
-        # self._doc = doc
+        LogMixin.__init__(self)
+        self.log.debug("Init")
         self._is_init = True
+
+    def trigger_event(self, event_name: str, event_args: EventArgsT) -> None:
+        """
+        Trigger an event on current instance.
+
+        Args:
+            event_name (str): Event Name.
+            event_args (EventArgsT): Event Args.
+
+        Raises:
+            RuntimeUidError: If the runtime_uid check fails.
+
+        Returns:
+            None:
+        """
+        self.log.debug("trigger_event() event_name: %s", event_name)
+        DocEventPartial.trigger_event(self, event_name, event_args)
+
+    def subscribe_event(self, event_name: str, callback: EventCallback) -> None:
+        """
+        Add an event listener to current instance.
+
+        Args:
+            event_name (str): Event Name.
+            callback (EventCallback): Callback of the event listener.
+
+        Raises:
+            RuntimeUidError: If the runtime_uid check fails.
+
+        Returns:
+            None:
+        """
+        self.log.debug("subscribe_event() event_name: %s", event_name)
+        DocEventPartial.subscribe_event(self, event_name, callback)
+
+    def unsubscribe_event(self, event_name: str, callback: EventCallback) -> None:
+        """
+        Remove an event listener from current instance.
+
+        Args:
+            event_name (str): Event Name.
+            callback (EventCallback): Callback of the event listener.
+
+        Raises:
+            RuntimeUidError: If the runtime_uid check fails.
+
+        Returns:
+            None:
+        """
+        self.log.debug("unsubscribe_event() event_name: %s", event_name)
+        DocEventPartial.unsubscribe_event(self, event_name, callback)

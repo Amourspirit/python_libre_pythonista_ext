@@ -1,12 +1,12 @@
 # region Imports
 from __future__ import annotations
-from typing import Any, Iterable, TYPE_CHECKING
+from typing import Any, Iterable, Tuple, TYPE_CHECKING
 
+from ooodev.calc import CalcCell
+from ooodev.utils.data_type.cell_obj import CellObj
 
 if TYPE_CHECKING:
-    from ooodev.calc import CalcCell
-    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.module_state_item import ModuleStateItem
-    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module import PyModule
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_code_name import CmdCodeName
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.state.cmd_append_code import CmdAppendCode
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.state.cmd_update_code import CmdUpdateCode
@@ -15,12 +15,17 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.code.qry_cell_src_code import QryCellSrcCode
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.lp_cell.qry_is_first import QryIsFirst
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.lp_cell.qry_is_last import QryIsLast
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_addr import QryAddr
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_ctl_kind import QryCtlKind
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_pyc_rule import QryPycRule
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_moved import QryCellMoved
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_moved_old_new import QryCellMovedOldNew
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_uri import QryCellUri
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.rule_value.qry_value import QryValue
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.state.qry_module_state import QryModuleState
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_t import QryHandlerT
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.module_state_item import ModuleStateItem
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module import PyModule
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source_manager import PySourceManager
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl import ctl_director
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl.ctl_base import CtlBase
@@ -38,8 +43,7 @@ if TYPE_CHECKING:
     )
 
 else:
-    from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.module_state_item import ModuleStateItem
-    from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module import PyModule
+    from libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_code_name import CmdCodeName
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.state.cmd_append_code import CmdAppendCode
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.state.cmd_update_code import CmdUpdateCode
@@ -48,12 +52,17 @@ else:
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.code.qry_cell_src_code import QryCellSrcCode
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.lp_cell.qry_is_first import QryIsFirst
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.lp_cell.qry_is_last import QryIsLast
+    from libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_addr import QryAddr
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_ctl_kind import QryCtlKind
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_pyc_rule import QryPycRule
+    from libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_moved import QryCellMoved
+    from libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_moved_old_new import QryCellMovedOldNew
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_uri import QryCellUri
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.rule_value.qry_value import QryValue
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.state.qry_module_state import QryModuleState
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.state.qry_state_rules_default import QryStateRulesDefault
+    from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.module_state_item import ModuleStateItem
+    from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module import PyModule
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source_manager import PySourceManager
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.ctl import ctl_director
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.state_rules.state_rules import StateRules
@@ -187,6 +196,19 @@ class CellItemFacade(LogMixin):
             return result.data
         raise result.error
 
+    def qry_cell_moved(self) -> bool:
+        """Queries if the cell has moved"""
+        qry = QryCellMoved(self._cell)
+        return self.qry_handler.handle(qry)
+
+    def qry_cell_moved_old_new(self) -> Tuple[CellObj, CellObj] | None:
+        """Queries if the cell has moved and returns the old and new positions"""
+        qry = QryCellMovedOldNew(self._cell)
+        result = self.qry_handler.handle(qry)
+        if Result.is_success(result):
+            return result.data
+        return None
+
     def get_control_kind(self) -> CtlKind:
         """Gets the kind of control attached to the cell"""
         qry = QryCtlKind(self._cell)
@@ -309,6 +331,33 @@ class CellItemFacade(LogMixin):
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__}({self._cell.cell_obj})>"
 
+    # region Static Methods
+    @staticmethod
+    def from_cell_addr_prop(cell: CalcCell) -> CellItemFacade:
+        """
+        Creates a CellItemFacade instance for the given CalcCell
+
+        The cells address property is used to create the CellItemFacade instance.
+
+        Args:
+            cell (CalcCell): The CalcCell instance to create the CellItemFacade for.
+
+        Returns:
+            CellItemFacade: The created CellItemFacade instance.
+        """
+        qry_handler = QryHandlerFactory.get_qry_handler()
+        qry_addr = QryAddr(cell)
+        qry_result = qry_handler.handle(qry_addr)
+        if Result.is_failure(qry_result):
+            raise qry_result.error
+        doc = cell.calc_doc
+        sheet = cell.calc_sheet
+        cell = CalcCell(owner=sheet, cell=qry_result.data.cell_obj, lo_inst=doc.lo_inst)
+        return CellItemFacade(cell)
+
+    # endregion Static Methods
+
+    # region Properties
     @property
     def uri(self) -> str:
         """Gets the cell's URI"""
@@ -347,3 +396,5 @@ class CellItemFacade(LogMixin):
         if self._init_calculate is None:
             self._init_calculate = self._qry_init_calculate()
         return self._init_calculate
+
+    # endregion Properties

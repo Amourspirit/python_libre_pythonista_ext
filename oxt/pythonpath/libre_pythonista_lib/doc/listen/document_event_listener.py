@@ -51,6 +51,7 @@ class DocumentEventListener(XDocumentEventListener, LogMixin, unohelper.Base):
         LogMixin.__init__(self)
         unohelper.Base.__init__(self)
         self.log.debug("Init")
+        assert Lo.current_doc is not None
         self._uid = Lo.current_doc.runtime_uid
         self._trigger_events = True
         self._shared_event = SharedEvent()

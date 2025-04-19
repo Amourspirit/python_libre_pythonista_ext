@@ -48,7 +48,7 @@ class CmdAddrDel(CmdBase, LogMixin, CmdCellT):
         qry = QryAddr(cell=self.cell)
         result = self._execute_qry(qry)
         if Result.is_success(result):
-            return result.data
+            return result.data.value
         return ""
 
     @override

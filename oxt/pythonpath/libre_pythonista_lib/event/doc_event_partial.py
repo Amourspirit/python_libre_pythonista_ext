@@ -1,6 +1,6 @@
 from __future__ import annotations
 from contextlib import contextmanager
-from typing import Set, TYPE_CHECKING
+from typing import Generator, Set, TYPE_CHECKING
 
 from ooodev.loader import Lo
 from ooodev.events.partial.events_partial import EventsPartial
@@ -121,7 +121,7 @@ class DocEventPartial(EventsPartial):
         except Exception as e:
             raise RuntimeUidError(f"Error checking runtime_uid: {e}") from e
 
-    def trigger_event(self, event_name: str, event_args: EventArgsT):
+    def trigger_event(self, event_name: str, event_args: EventArgsT) -> None:
         """
         Trigger an event on current instance.
 
@@ -144,7 +144,7 @@ class DocEventPartial(EventsPartial):
 
     # endregion EventsPartial Overrides
     @contextmanager
-    def suspend_event_context(self, *event_names: str):
+    def suspend_event_context(self, *event_names: str) -> Generator[None, None, None]:
         """
         Context manager that on entry adds events to the omit list.
         On exit removes events from the omit list.

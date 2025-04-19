@@ -44,6 +44,7 @@ if TYPE_CHECKING:
         PYTHON_AFTER_ADD_SRC_CODE,
         PYTHON_AFTER_REMOVE_SOURCE_CODE,
     )
+    from oxt.pythonpath.libre_pythonista_lib.const.event_const import SHEET_CELL_MOVED
 else:
     from ___lo_pip___.basic_config import BasicConfig
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_addr import CmdAddr
@@ -59,6 +60,7 @@ else:
     from libre_pythonista_lib.utils.gen_util import GenUtil
     from libre_pythonista_lib.utils.result import Result
     from libre_pythonista_lib.doc.calc.const import PYTHON_AFTER_ADD_SRC_CODE, PYTHON_AFTER_REMOVE_SOURCE_CODE
+    from libre_pythonista_lib.const.event_const import SHEET_CELL_MOVED
 
 # endregion Imports
 
@@ -143,12 +145,37 @@ class CellCache(LogMixin):
     def _init_events(self) -> None:
         self._fn_on_python_src_code_removed = self.on_python_src_code_removed
         self._fn_on_python_src_code_inserted = self.on_python_src_code_inserted
+        self._fn_on_cell_moved = self.on_cell_moved
         self._shared_event.subscribe_event(PYTHON_AFTER_REMOVE_SOURCE_CODE, self._fn_on_python_src_code_removed)
         self._shared_event.subscribe_event(PYTHON_AFTER_ADD_SRC_CODE, self._fn_on_python_src_code_inserted)
+        self._shared_event.subscribe_event(SHEET_CELL_MOVED, self._fn_on_cell_moved)
 
     # endregion Events
 
     # region Event Handlers
+    def on_cell_moved(self, src: Any, event: EventArgs) -> None:  # noqa: ANN401
+        self.log.debug("on_cell_moved()")
+        dd = cast(DotDict, event.event_data)
+        absolute_name = dd.get("absolute_name", "UNKNOWN")
+        calc_cell = cast(CalcCell, dd.calc_cell)
+        sheet_idx = calc_cell.calc_sheet.sheet_index
+
+        old_cell_obj = cast(CellObj, dd.old_cell_obj)
+        if not self.has_cell(old_cell_obj, sheet_idx):
+            self.log.debug("on_cell_moved() Old Cell not in cache: %s", old_cell_obj)
+            return
+        new_cell_obj = cast(CellObj, dd.new_cell_obj)
+        if self.has_cell(new_cell_obj, sheet_idx):
+            self.log.error("on_cell_moved() New Cell already in cache: %s", new_cell_obj)
+
+            return
+        old = self.get_index_cell_props(cell=old_cell_obj, sheet_idx=sheet_idx)
+        self.remove_cell(cell=old_cell_obj, sheet_idx=sheet_idx)
+        self.insert(cell=new_cell_obj, code_name=old.code_name, props=old.props, sheet_idx=sheet_idx)
+
+        self.update_sheet_cell_addr_prop(sheet_idx=sheet_idx)
+        return
+
     def on_python_src_code_removed(self, src: Any, event: EventArgs) -> None:  # noqa: ANN401
         # triggered in : libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source_manager.PySourceManager.remove_source
         self.log.debug("on_python_src_code_removed()")
@@ -587,52 +614,49 @@ class CellCache(LogMixin):
             This method need to be run on a up to date cell cache.
             Usually ``reset_instance`` is call before running this method.
         """
-        with self.log.indent(True):
-            is_db = self.log.is_debug
+        is_db = self.log.is_debug
+        if is_db:
+            self.log.debug("update_sheet_cell_addr_prop() for Sheet Index: %i", sheet_idx)
+        if sheet_idx < 0:
+            sheet_idx = self.current_sheet_index
+        if sheet_idx < 0:
+            self.log.error("insert() Sheet index not set")
+            raise ValueError("Sheet index not set")
+
+        sheet = self._doc.sheets[sheet_idx]
+        for cell, icp in self._code[sheet_idx].items():
+            calc_cell = sheet[cell]
             if is_db:
-                self.log.debug("update_sheet_cell_addr_prop() for Sheet Index: %i", sheet_idx)
-            if sheet_idx < 0:
-                sheet_idx = self.current_sheet_index
-            if sheet_idx < 0:
-                self.log.error("insert() Sheet index not set")
-                raise ValueError("Sheet index not set")
+                self.log.debug("update_sheet_cell_addr_prop() for Cell: %s", cell)
+            addr_str = GenUtil.create_cell_addr_query_str(sheet_idx, str(calc_cell.cell_obj))
+            addr = Addr(addr_str)
 
-            sheet = self._doc.sheets[sheet_idx]
-            for cell, icp in self._code[sheet_idx].items():
-                calc_cell = sheet[cell]
-                if is_db:
-                    self.log.debug("update_sheet_cell_addr_prop() for Cell: %s", cell)
-                addr_str = GenUtil.create_cell_addr_query_str(sheet_idx, str(calc_cell.cell_obj))
-                addr = Addr(addr_str)
+            qry = QryAddr(calc_cell)
+            qry_result = self._qry_handler.handle(qry)
+            if Result.is_failure(qry_result):
+                self.log.error("update_sheet_cell_addr_prop() Failed to get cell address property for %s", cell)
+                continue
+            current = qry_result.data
 
-                qry = QryAddr(calc_cell)
-                qry_result = self._qry_handler.handle(qry)
-                if Result.is_failure(qry_result):
-                    self.log.error("update_sheet_cell_addr_prop() Failed to get cell address property for %s", cell)
+            if current != addr:
+                cmd = CmdAddr(calc_cell, addr)
+                self._cmd_handler.handle(cmd)
+                if not cmd.success:
+                    self.log.error("update_sheet_cell_addr_prop() Failed to update cell address property for %s", cell)
                     continue
-                current = qry_result.data
 
-                if current != addr:
-                    cmd = CmdAddr(calc_cell, addr)
-                    self._cmd_handler.handle(cmd)
-                    if not cmd.success:
-                        self.log.error(
-                            "update_sheet_cell_addr_prop() Failed to update cell address property for %s", cell
-                        )
-                        continue
-
-                    args = EventArgs(self)
-                    args.event_data = DotDict(
-                        calc_cell=calc_cell,
-                        sheet_idx=sheet_idx,
-                        old_addr=current,
-                        addr=addr,
-                        icp=icp,
-                    )
-                    self._events.trigger_event("update_sheet_cell_addr_prop()", args)
-            if is_db:
-                self.log.debug("update_sheet_cell_addr_prop() Done")
-            return None
+                args = EventArgs(self)
+                args.event_data = DotDict(
+                    calc_cell=calc_cell,
+                    sheet_idx=sheet_idx,
+                    old_addr=current,
+                    addr=addr,
+                    icp=icp,
+                )
+                self._events.trigger_event("update_sheet_cell_addr_prop()", args)
+        if is_db:
+            self.log.debug("update_sheet_cell_addr_prop() Done")
+        return None
 
     # endregion Public Methods
 

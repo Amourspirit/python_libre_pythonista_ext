@@ -9,6 +9,7 @@ LOG_OPTIONS_CHANGED = "log_options_changed"
 LOG_PY_LOGGER_RESET = "py_logger_reset"
 SHEET_MODIFIED = "calc_sheet_modified"
 SHEET_ACTIVATION = "calc_sheet_activation"
+SHEET_CELL_MOVED = "calc_sheet_cell_moved"
 CALC_FORMULAS_CALCULATED = "calc_formulas_calculated"
 """
 CALC_FORMULAS_CALCULATED event is triggered when the formulas are calculated.

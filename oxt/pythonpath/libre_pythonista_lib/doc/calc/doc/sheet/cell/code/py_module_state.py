@@ -1,9 +1,10 @@
 from __future__ import annotations
-from typing import Any, TYPE_CHECKING
+from typing import Any, Tuple, TYPE_CHECKING
 from collections import OrderedDict
 
 from ooodev.calc import CalcCell
 from ooodev.utils.helper.dot_dict import DotDict
+from ooodev.utils.data_type.cell_obj import CellObj
 
 if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.doc.doc_globals import DocGlobals
@@ -65,7 +66,7 @@ class PyModuleState(LogMixin):
         self._shared_event = SharedEvent()
         self._py_mod = mod
         self.runtime_uid: str
-        self._state_history: OrderedDict[str, ModuleStateItem] = OrderedDict()
+        self._state_history: OrderedDict[Tuple[int, int, int], ModuleStateItem] = OrderedDict()
         self._max_history_size = 250  # Configurable maximum history size.
         self._is_init = True
 
@@ -75,15 +76,18 @@ class PyModuleState(LogMixin):
 
     def __getitem__(self, cell: CalcCell) -> ModuleStateItem:
         """Gets state history for a cell using dictionary syntax."""
-        return self._state_history[cell.unique_id]
+        key = self.convert_cell_to_tuple(cell)
+        return self._state_history[key]
 
     def __setitem__(self, cell: CalcCell, value: ModuleStateItem) -> None:
         """Sets state history for a cell using dictionary syntax."""
-        self._state_history[cell.unique_id] = value
+        key = self.convert_cell_to_tuple(cell)
+        self._state_history[key] = value
 
     def __contains__(self, cell: CalcCell) -> bool:
         """Returns True if state history exists for the cell."""
-        return cell.unique_id in self._state_history
+        key = self.convert_cell_to_tuple(cell)
+        return key in self._state_history
 
     def __len__(self) -> int:
         """Returns the number of states in history."""
@@ -107,6 +111,65 @@ class PyModuleState(LogMixin):
             key = keys[i]
             del self._state_history[key]
 
+    def convert_cell_obj_to_tuple(self, cell: CellObj) -> Tuple[int, int, int]:
+        """
+        Converts a cell object to a tuple of (sheet index, row, column).
+
+        Args:
+            cell (CellObj): Cell object.
+
+        Returns:
+            Tuple[int, int, int]: Tuple of (sheet index, row, column).
+        """
+        col = cell.col_obj.index
+        row = cell.row - 1
+        sheet_idx = cell.sheet_idx
+        return (sheet_idx, row, col)
+
+    def convert_tuple_to_cell_obj(self, cell: Tuple[int, int, int]) -> CellObj:
+        """
+        Converts a tuple of (sheet index, row, column) to a cell object.
+
+        Args:
+            cell (Tuple[int, int, int]): Tuple of (sheet index, column, row).
+
+        Returns:
+            CellObj: Cell object.
+        """
+        return CellObj.from_idx(col_idx=cell[1], row_idx=cell[2], sheet_idx=cell[0])
+
+    def convert_cell_to_tuple(self, cell: CalcCell) -> Tuple[int, int, int]:
+        """
+        Converts a CalcCell to a tuple of (sheet index, row, column).
+
+        Args:
+            cell (CalcCell): CalcCell object.
+
+        Returns:
+            Tuple[int, int, int]: Tuple of (sheet index, row, column).
+        """
+        return self.convert_cell_obj_to_tuple(cell.cell_obj)
+
+    def update_key(self, old_cell: CellObj, new_cell: CellObj) -> None:
+        """
+        Updates the key for a cell.
+
+        Args:
+            old_cell (CellObj): Old cell object.
+            new_cell (CellObj): New cell object.
+        """
+        self.log.debug("update_key() - Updating key for cell %s to %s", old_cell, new_cell)
+        old_key = self.convert_cell_obj_to_tuple(old_cell)
+        new_key = self.convert_cell_obj_to_tuple(new_cell)
+        if old_key not in self._state_history:
+            self.log.warning("update_key() - Old key not found: %s", old_key)
+            return
+
+        old_data = self._state_history.pop(old_key)
+        new_data = ModuleStateItem(cell_obj=new_cell.copy(), mod_dict=old_data.mod_dict.copy(), owner=self)
+        self._state_history[new_key] = new_data
+        self.log.debug("update_key() - Updated key for cell %s to %s", old_cell, new_cell)
+
     def update_with_result(self, cell: CalcCell, code: str = "") -> DotDict[Any]:
         """
         Updates module with new code and saves the resulting state.
@@ -121,7 +184,7 @@ class PyModuleState(LogMixin):
         result = self._py_mod.update_with_result(code)
         state_item = ModuleStateItem(cell_obj=cell.cell_obj, mod_dict=self._py_mod.copy_dict(), owner=self)
         state_item.dd_data.update(result)
-        state_key = cell.unique_id
+        state_key = self.convert_cell_to_tuple(cell)
         self._state_history[state_key] = state_item
         popped = []
         while len(self._state_history) > self._max_history_size:

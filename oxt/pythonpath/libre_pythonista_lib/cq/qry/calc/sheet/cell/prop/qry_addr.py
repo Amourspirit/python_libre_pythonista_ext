@@ -8,6 +8,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_cell_prop_value import QryCellPropValue
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_key_maker import QryKeyMaker
+    from oxt.pythonpath.libre_pythonista_lib.data_type.calc.sheet.cell.prop.addr import Addr
     from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
 else:
     from libre_pythonista_lib.cq.qry.qry_base import QryBase
@@ -15,10 +16,11 @@ else:
     from libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_cell_prop_value import QryCellPropValue
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_key_maker import QryKeyMaker
+    from libre_pythonista_lib.data_type.calc.sheet.cell.prop.addr import Addr
     from libre_pythonista_lib.utils.result import Result
 
 
-class QryAddr(QryBase, QryCellT[Result[str, None] | Result[None, Exception]]):
+class QryAddr(QryBase, QryCellT[Result[Addr, None] | Result[None, Exception]]):
     """Gets the address of the cell such as ``sheet_index=0&cell_addr=A1"``"""
 
     def __init__(self, cell: CalcCell) -> None:
@@ -26,7 +28,7 @@ class QryAddr(QryBase, QryCellT[Result[str, None] | Result[None, Exception]]):
         self.kind = CalcQryKind.CELL
         self._cell = cell
 
-    def execute(self) -> Result[str, None] | Result[None, Exception]:
+    def execute(self) -> Result[Addr, None] | Result[None, Exception]:
         """
         Executes the query and gets the address of the cell.
 
@@ -39,7 +41,7 @@ class QryAddr(QryBase, QryCellT[Result[str, None] | Result[None, Exception]]):
         result = self._execute_qry(qry_state)
         if not result:
             return Result.failure(Exception("Address not found"))
-        return Result.success(result)
+        return Result.success(Addr(result))
 
     @property
     def cell(self) -> CalcCell:

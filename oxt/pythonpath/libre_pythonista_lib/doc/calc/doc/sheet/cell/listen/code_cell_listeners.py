@@ -260,7 +260,7 @@ class CodeCellListeners(LogMixin):
         code_name = code_name_qry.data
         try:
             if code_name in self:
-                self.log.error("Listener already exists: %s", code_name)
+                self.log.debug("Listener already exists: %s", code_name)
                 return Result.failure(Exception("Listener already exists"))
             listener = CodeCellListener(
                 absolute_name=cell.component.AbsoluteName,
@@ -270,7 +270,9 @@ class CodeCellListeners(LogMixin):
             )
             self[code_name] = listener
             cell.component.addModifyListener(listener)
-            return Result.success(listener)
+            result = Result.success(listener)
+            self.log.debug("Added listener for cell %s with codename: %s", cell.cell_obj, code_name)
+            return result
         except Exception:
             self.log.exception("Error adding listener for cell %s with codename: %s", cell.cell_obj, code_name)
             return Result.failure(Exception("Error adding listener"))

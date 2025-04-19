@@ -23,6 +23,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.state.cmd_delete_control import CmdDeleteControl
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.general.cmd_batch import CmdBatch
     from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
+    from oxt.pythonpath.libre_pythonista_lib.const.event_const import SHEET_CELL_MOVED
 else:
     from libre_pythonista_lib.event.shared_event import SharedEvent
     from libre_pythonista_lib.log.log_mixin import LogMixin
@@ -37,6 +38,7 @@ else:
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.state.cmd_delete_control import CmdDeleteControl
     from libre_pythonista_lib.cq.cmd.general.cmd_batch import CmdBatch
     from libre_pythonista_lib.utils.result import Result
+    from libre_pythonista_lib.const.event_const import SHEET_CELL_MOVED
 
 _KEY = "libre_pythonista_lib.doc.calc.doc.sheet.cell.code.cell_event_mgr.CellEventMgr"
 
@@ -70,6 +72,7 @@ class CellEventMgr(LogMixin):
         self._listeners = CodeCellListeners(src_mgr.doc)
         self._init_py_src_items()
         self._init_events()
+        self.log.debug("Init done for doc: %s", src_mgr.doc.runtime_uid)
         self._is_init = True
 
     def _init_py_src_items(self) -> None:
@@ -79,12 +82,19 @@ class CellEventMgr(LogMixin):
                 self.log.error("Failed to add listener for cell: %s", calc_cell.cell_obj)
             else:
                 self.log.debug("Added listener for cell: %s", calc_cell.cell_obj)
+                result.data.subscribe_cell_deleted(self._fn_on_cell_deleted)
+                result.data.subscribe_cell_moved(self._fn_on_cell_moved)
+                result.data.subscribe_cell_pyc_formula_removed(self._fn_on_cell_pyc_formula_removed)
+                result.data.subscribe_cell_modified(self._fn_on_cell_modified)
+                self.log.debug("Subscribed to events for cell: %s", calc_cell.cell_obj)
 
     def _init_events(self) -> None:
         self._fn_on_cell_deleted = self.on_cell_deleted
         self._fn_on_cell_moved = self.on_cell_moved
         self._fn_on_cell_pyc_formula_removed = self.on_cell_pyc_formula_removed
         self._fn_on_cell_modified = self.on_cell_modified
+
+        self._se.subscribe_event(SHEET_CELL_MOVED, self._fn_on_cell_moved)
 
     def _qry_is_pyc_formula(self, calc_cell: CalcCell) -> bool:
         qry = QryCellIsPycFormula(cell=calc_cell)
@@ -146,6 +156,7 @@ class CellEventMgr(LogMixin):
         - deleted: False
 
         """
+        self.log.debug("on_cell_moved() Entering.")
         dd = cast(DotDict, event.event_data)
         dd.absolute_name = dd.get("absolute_name", "UNKNOWN")
         calc_cell = cast(CalcCell, dd.calc_cell)
@@ -154,7 +165,11 @@ class CellEventMgr(LogMixin):
         if not cmd.success:
             self.log.error("Failed to update cell address property for %s", dd.absolute_name)
             return
+        for k, listener in self._listeners.items():
+            listener.update_absolute_name(name=dd.absolute_name, cell_obj=calc_cell.cell_obj)
+
         self.log.debug("Cell moved: %s", dd.absolute_name)
+        self.log.debug("on_cell_moved() Leaving.")
 
     def on_cell_pyc_formula_removed(self, src: Any, event: EventArgs) -> None:  # noqa: ANN401
         """
