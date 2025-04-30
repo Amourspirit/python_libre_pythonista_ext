@@ -20,6 +20,7 @@ from ..const import (
     PATH_PIP_PKG_UNLINK,
     PATH_PYC_FORMULA,
     PATH_PYC_FORMULA_DEP,
+    PATH_DUMP_SRC_LOG,
 )
 
 from ..const.event_const import LP_DISPATCHED_CMD, LP_DISPATCHING_CMD
@@ -283,6 +284,32 @@ class MainHandlerMgr:
                 with log.indent(True):
                     log.debug("DispatchProviderInterceptor.queryDispatch: returning DispatchPyUnlink")
                 result = DispatchPyUnlink(ctx=self.ctx)
+
+                eargs = EventArgs.from_args(cargs)
+                eargs.event_data.dispatch = result
+                se.trigger_event(LP_DISPATCHED_CMD, eargs)
+                return result
+            except Exception:
+                log.exception("Dispatch Error: %s", URL.Main)
+                return None
+
+        elif URL.Path == PATH_DUMP_SRC_LOG:
+            try:
+                from .dispatch_dump_src_log import DispatchDumpSrcLog
+            except ImportError:
+                log.exception("DispatchDumpSrcLog import error")
+                raise
+            try:
+                args = self._convert_query_to_dict(URL.Arguments)
+
+                cargs = CancelEventArgs(self)
+                cargs.event_data = DotDict(url=URL, cmd=URL.Complete, doc=doc, **args)
+                se.trigger_event(LP_DISPATCHING_CMD, cargs)
+                if cargs.cancel is True and cargs.handled is False:
+                    return None
+
+                log.debug("CalcSheetDispatchMgr.dispatch: dispatching DispatchDumpSrcLog")
+                result = DispatchDumpSrcLog(ctx=self.ctx)
 
                 eargs = EventArgs.from_args(cargs)
                 eargs.event_data.dispatch = result

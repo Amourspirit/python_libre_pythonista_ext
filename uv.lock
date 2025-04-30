@@ -463,7 +463,7 @@ wheels = [
 
 [[package]]
 name = "librepythonista"
-version = "0.9.0"
+version = "0.10.0"
 source = { editable = "." }
 dependencies = [
     { name = "ooo-dev-tools" },
@@ -490,7 +490,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "ooo-dev-tools", specifier = ">=0.52.1" },
+    { name = "ooo-dev-tools", specifier = ">=0.53.3" },
     { name = "oooenv", specifier = ">=0.2.4" },
     { name = "sortedcontainers", specifier = ">=2.4.0" },
     { name = "toml", specifier = ">=0.10.2" },
@@ -798,15 +798,15 @@ wheels = [
 
 [[package]]
 name = "ooo-dev-tools"
-version = "0.52.1"
+version = "0.53.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "ooouno" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/8a/05/566ab8dea855b8a48bca23a800a3151db88f7c8dff522eb6e84fc27914f4/ooo_dev_tools-0.52.1.tar.gz", hash = "sha256:aec2b1527e0b6deec19a43599b53fdff4e8a5586883bd869161252426564865d", size = 2591629 }
+sdist = { url = "https://files.pythonhosted.org/packages/9f/80/c95bd69f388d7b6d55ae31755e8355f15708987f24a9453ff7b6a6f2d663/ooo_dev_tools-0.53.3.tar.gz", hash = "sha256:4487483c5f4e290f70d8dd2188fa6a11c3e7ac084c7b399f97786890fdaa3c50", size = 2596791 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/3e/c3/b027cf4e598ac1e10fd2f3567892c8c2886babcd9e5a43a5e06d4cb76ab0/ooo_dev_tools-0.52.1-py3-none-any.whl", hash = "sha256:a666a47d900704590963ae0c74a6637b404efab503f31210d05abdc1d9a8f8f4", size = 4255565 },
+    { url = "https://files.pythonhosted.org/packages/16/7f/2b7bcde41f1e7e5884bbfae023b4f1401aae99d4cf323043ff03e2cc0b90/ooo_dev_tools-0.53.3-py3-none-any.whl", hash = "sha256:cf92c3e625ae7aaf9e84f9b0f88c5ecd39b736a043fbdcd20544e1b43c873944", size = 4262630 },
 ]
 
 [[package]]

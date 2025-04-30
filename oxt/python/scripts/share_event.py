@@ -6,9 +6,9 @@ import uno
 from ooodev.events.args.event_args import EventArgs
 
 if TYPE_CHECKING:
-    from ...pythonpath.libre_pythonista_lib.log.log_inst import LogInst
-    from ...pythonpath.libre_pythonista_lib.event.shared_event import SharedEvent
-    from ...pythonpath.libre_pythonista_lib.const.event_const import CALC_FORMULAS_CALCULATED
+    from oxt.pythonpath.libre_pythonista_lib.log.log_inst import LogInst
+    from oxt.pythonpath.libre_pythonista_lib.event.shared_event import SharedEvent
+    from oxt.pythonpath.libre_pythonista_lib.const.event_const import CALC_FORMULAS_CALCULATED
 
 else:
     from libre_pythonista_lib.log.log_inst import LogInst
@@ -16,7 +16,7 @@ else:
     from libre_pythonista_lib.const.event_const import CALC_FORMULAS_CALCULATED
 
 
-def formulas_calc(*args):
+def formulas_calc(*args) -> None:  # noqa: ANN002
     """
     Handle the button action event.
     """

@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, TYPE_CHECKING
 import os
 import sys
 import importlib.util
@@ -18,6 +18,10 @@ from ooodev.loader import Lo
 from ooodev.conn import connectors
 from ooodev.conn import cache as mCache  # noqa: N812
 from ooodev.loader.inst import Options as LoOptions
+import contextlib
+
+from tests.files.calc import __test__path__ as calc_fixture_path
+from tests.files.img import __test__path__ as img_fixture_path
 
 
 @pytest.fixture(scope="session")
@@ -73,6 +77,33 @@ def build_setup(root_dir, build_code) -> bool:  # noqa: ANN001
     return True
 
 
+@pytest.fixture(scope="session")
+def py_src_uri(build_setup) -> Any:  # noqa: ANN401
+    from ooodev.utils import gen_util
+
+    if TYPE_CHECKING:
+        from ooodev.calc import CalcCell
+        from oxt.___lo_pip___.basic_config import BasicConfig
+    else:
+        from libre_pythonista.basic_config import BasicConfig
+    cfg = BasicConfig()
+
+    def wrapper(cell: CalcCell) -> str:
+        nonlocal cfg, gen_util
+        runtime_uid = cell.calc_sheet.calc_doc.runtime_uid
+        code_prop_name = cfg.cell_cp_codename
+        if not cell.has_custom_property(code_prop_name):
+            value = gen_util.Util.generate_random_string(10)
+            cell.set_custom_property(code_prop_name, value)
+
+        code_id = cell.get_custom_property(code_prop_name)
+        root_uri = f"vnd.sun.star.tdoc:/{runtime_uid}/{cfg.lp_code_dir}"
+        uri = f"{root_uri}/{cell.calc_sheet.unique_id}/{code_id}.py"
+        return uri
+
+    return wrapper
+
+
 # region Soffice
 
 
@@ -124,7 +155,30 @@ def loader(build_setup, tmp_path_session, run_headless, soffice_path, soffice_en
     if connect_kind == "no_start":
         # only close office if it was started by the test
         return
-    Lo.close_office()
+    with contextlib.suppress(Exception):
+        Lo.close_office()
 
 
 # endregion soffice
+
+
+@pytest.fixture(scope="session")
+def copy_fix_calc(tmp_path_session):  # noqa: ANN001, ANN201
+    def copy_res(fnm):  # noqa: ANN202
+        src = Path(calc_fixture_path, fnm)
+        dst = Path(tmp_path_session, fnm)
+        shutil.copy2(src=src, dst=dst)
+        return dst
+
+    return copy_res
+
+
+@pytest.fixture(scope="session")
+def copy_fix_img(tmp_path_session):  # noqa: ANN001, ANN201
+    def copy_res(fnm):  # noqa: ANN202
+        src = Path(img_fixture_path, fnm)
+        dst = Path(tmp_path_session, fnm)
+        shutil.copy2(src=src, dst=dst)
+        return dst
+
+    return copy_res

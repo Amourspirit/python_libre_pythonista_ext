@@ -1,13 +1,13 @@
 from __future__ import annotations
 from pathlib import Path
-from typing import Any, Dict, List, Set, cast
+from typing import Dict, List, Set, cast
 import json
 
 
 class ConfigMeta(type):
     _instance = None
 
-    def __call__(cls, *args, **kwargs) -> Any:  # noqa: ANN002, ANN003, ANN401
+    def __call__(cls, *args, **kwargs):  # noqa: ANN002, ANN003, ANN204, ANN401
         if cls._instance is None:
             root = Path(__file__).parent
             config_file = Path(root, "config.json")
@@ -19,6 +19,7 @@ class ConfigMeta(type):
 
 
 class BasicConfig(metaclass=ConfigMeta):
+    # class BasicConfig(object):
     def __init__(self, **kwargs) -> None:  # noqa: ANN003
         self._author_names = cast(List[str], kwargs.get("author_names", []))
         self._py_pkg_dir = str(kwargs["py_pkg_dir"])
@@ -44,6 +45,7 @@ class BasicConfig(metaclass=ConfigMeta):
         self._unload_after_install = bool(kwargs["unload_after_install"])
         self._log_indent = int(kwargs.get("log_indent", 0))
         self._run_imports = set(kwargs["run_imports"])
+        self._debug_skip_events = set(kwargs["debug_skip_events"])
         self._run_imports2 = set(kwargs["run_imports2"])
         self._run_imports_linux = set(kwargs["run_imports_linux"])
         self._run_imports_macos = set(kwargs["run_imports_macos"])
@@ -120,6 +122,15 @@ class BasicConfig(metaclass=ConfigMeta):
         The value for this property can be set in pyproject.toml (tool.oxt.config.cmd_clean_file_prefix)
         """
         return self._cmd_clean_file_prefix
+
+    @property
+    def debug_skip_events(self) -> Set[str]:
+        """
+        Gets the list of events to skip when debugging.
+
+        The value for this property can be set in pyproject.toml (tool.libre_pythonista.config.debug_skip_events)
+        """
+        return self._debug_skip_events
 
     @property
     def default_locale(self) -> List[str]:
@@ -529,7 +540,7 @@ class BasicConfig(metaclass=ConfigMeta):
         """
         Gets the custom property code name for cells.
 
-        The value for this property can be set in pyproject.toml (tool.libre_pythonista.config)
+        The value for this property is generated in the build process.
         """
         return self._cell_cp_codename
 

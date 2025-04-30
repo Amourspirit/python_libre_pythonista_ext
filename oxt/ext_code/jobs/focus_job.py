@@ -30,13 +30,13 @@ if TYPE_CHECKING:
     from ooodev.utils.helper.dot_dict import DotDict
     from ooodev.loader.inst.lo_loader import LoLoader
     from ooodev.events.lo_events import LoEvents
-    from ...___lo_pip___.oxt_logger import OxtLogger
-    from ...pythonpath.libre_pythonista_lib.event.shared_event import SharedEvent
-    from ...pythonpath.libre_pythonista_lib.event.shared_cb import SharedCb
+    from oxt.___lo_pip___.oxt_logger import OxtLogger
+    from oxt.pythonpath.libre_pythonista_lib.event.shared_event import SharedEvent
+    from oxt.pythonpath.libre_pythonista_lib.event.shared_cb import SharedCb
 
     # from ...pythonpath.libre_pythonista_lib.state.calc_state_mgr import CalcStateMgr
-    from ...pythonpath.libre_pythonista_lib.doc.calc_doc_mgr import CalcDocMgr
-    from ...pythonpath.libre_pythonista_lib.const.event_const import (
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc_doc_mgr import CalcDocMgr
+    from oxt.pythonpath.libre_pythonista_lib.const.event_const import (
         DOCUMENT_FOCUS_GAINED,
         DOCUMENT_FOCUS_LOST,
         CB_DOC_FOCUS_GAINED,
@@ -125,9 +125,7 @@ class CalcDocFocusJob(XJob, unohelper.Base):
                 Lo.current_lo.current_doc = self.document
                 if self._log.is_debug:
                     lo_doc = cast(CalcDoc, Lo.current_doc)
-                    self._log.debug(
-                        f"Current Focus2 Lo Document Run ID: {lo_doc.runtime_uid}"
-                    )
+                    self._log.debug(f"Current Focus2 Lo Document Run ID: {lo_doc.runtime_uid}")
                     are_equal = lo_doc.component == self.document
                     self._log.debug(f"Are Equal: {are_equal}")
                 doc = CalcDoc.get_doc_from_component(self.document)
@@ -142,9 +140,7 @@ class CalcDocFocusJob(XJob, unohelper.Base):
                     self._log.debug("Imports2 is not ready. Returning.")
                     return
                 if not state_mgr.is_pythonista_doc:
-                    self._log.debug(
-                        "Document not currently a LibrePythonista. Returning."
-                    )
+                    self._log.debug("Document not currently a LibrePythonista. Returning.")
                     return
                 if not state_mgr.is_oxt_init:
                     self._log.debug("Oxt is not init. Returning.")
@@ -156,9 +152,7 @@ class CalcDocFocusJob(XJob, unohelper.Base):
 
                 se = SharedEvent(doc)
                 eargs = EventArgs(self)
-                eargs.event_data = DotDict(
-                    run_id=run_id, doc=doc, event="focus", doc_type=doc.DOC_TYPE
-                )
+                eargs.event_data = DotDict(run_id=run_id, doc=doc, event="focus", doc_type=doc.DOC_TYPE)
                 se.trigger_event(DOCUMENT_FOCUS_GAINED, eargs)
 
         except Exception as e:

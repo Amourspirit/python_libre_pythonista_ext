@@ -1,18 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <oor:component-data xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:oor="http://openoffice.org/2001/registry" oor:name="Accelerators" oor:package="org.openoffice.Office">
   <node oor:name="PrimaryKeys">
-    <!-- <node oor:name="Global">
-      <node oor:name="L_SHIFT_MOD1_MOD2" oor:op="fuse">
-        <prop oor:name="Command">
-          <value xml:lang="en-US">service:___lo_identifier___.impl?pyc_formula_with_dependent</value>
-        </prop>
-      </node>
-    </node> -->
     <node oor:name="Modules">
       <node oor:name="com.sun.star.sheet.SpreadsheetDocument">
         <node oor:name="L_SHIFT_MOD1_MOD2" oor:op="replace">
           <prop oor:name="Command">
-            <value xml:lang="en-US">service:___lo_identifier___.impl?pyc_formula_with_dependent</value>
+            <value xml:lang="en-US">___lo_identifier___.ProtocolHandler.ista:libre_pythonista.insert_pyc_formula_dep</value>
           </prop>
         </node>
       </node>

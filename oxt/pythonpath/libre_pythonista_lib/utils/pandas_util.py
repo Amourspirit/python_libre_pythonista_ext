@@ -1,26 +1,36 @@
 from __future__ import annotations
 import contextlib
-from typing import Any, Tuple, List
+from typing import Any, Tuple, List, TYPE_CHECKING
 from datetime import datetime, timedelta
 import pandas as pd
-from ..convert import array as convert_array
-from ..convert.array import rules as array_rules
-from ..convert import pandas as convert_pandas
-from ..convert.pandas import pd_rules as pandas_rules
+
+if TYPE_CHECKING:
+    from oxt.pythonpath.libre_pythonista_lib.convert import array as convert_array
+    from oxt.pythonpath.libre_pythonista_lib.convert import pandas as convert_pandas
+    from oxt.pythonpath.libre_pythonista_lib.convert.array import rules as array_rules
+    from oxt.pythonpath.libre_pythonista_lib.convert.pandas import pd_rules as pandas_rules
+else:
+    from libre_pythonista_lib.convert import array as convert_array
+    from libre_pythonista_lib.convert import pandas as convert_pandas
+    from libre_pythonista_lib.convert.array import rules as array_rules
+    from libre_pythonista_lib.convert.pandas import pd_rules as pandas_rules
 
 
 class PandasUtil:
     """Pandas utility class."""
 
     @staticmethod
-    def is_dataframe(data: Any) -> bool:
+    def is_dataframe(data: Any) -> bool:  # noqa: ANN401
         """Determines if the data is a pandas DataFrame."""
         return isinstance(data, pd.DataFrame)
 
     @staticmethod
     def has_headers(df: pd.DataFrame) -> bool:
         """Detects if a DataFrame has a header."""
-        return not df.columns.is_unique or not all(isinstance(col, (int, float)) for col in df.columns)
+        try:
+            return not df.columns.is_unique or not all(isinstance(col, (int, float)) for col in df.columns)
+        except Exception:
+            return False
 
     @classmethod
     def has_index_names(cls, df: pd.DataFrame) -> bool:
@@ -63,7 +73,7 @@ class PandasUtil:
     @classmethod
     def pandas_to_array(
         cls, df: pd.DataFrame, *, header_opt: int = 0, index_opt: int = 0, convert: bool = True
-    ) -> Any:
+    ) -> Any:  # noqa: ANN401
         """
         Converts a pandas DataFrame into a 2D list.
 

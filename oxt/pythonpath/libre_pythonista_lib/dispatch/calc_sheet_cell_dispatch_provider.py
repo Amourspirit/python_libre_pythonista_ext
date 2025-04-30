@@ -1,12 +1,8 @@
 from __future__ import annotations
-from typing import Any, cast, Dict, Tuple, TYPE_CHECKING
+from typing import cast, Dict, Tuple, TYPE_CHECKING
 from urllib.parse import parse_qs
+import contextlib
 
-try:
-    # python 3.12+
-    from typing import override  # type: ignore
-except ImportError:
-    from typing_extensions import override
 
 import unohelper
 from com.sun.star.frame import XDispatchProviderInterceptor
@@ -15,40 +11,63 @@ from com.sun.star.frame import XDispatch
 from com.sun.star.util import URL
 from com.sun.star.frame import DispatchDescriptor
 
-from ooodev.events.lo_events import LoEvents
 from ooodev.events.args.event_args import EventArgs
 from ooodev.events.args.cancel_event_args import CancelEventArgs
 from ooodev.utils.helper.dot_dict import DotDict
 
-# from ooodev.calc import CalcDoc
-from ..const import (
-    CS_PROTOCOL,
-    PATH_CODE_EDIT_MB,
-    PATH_CODE_DEL,
-    PATH_CELL_SELECT,
-    PATH_CELL_SELECT_RECALC,
-    PATH_DF_STATE,
-    PATH_DS_STATE,
-    PATH_DATA_TBL_STATE,
-    PATH_PY_OBJ_STATE,
-)
-
-from ..const.event_const import GBL_DOC_CLOSING, LP_DISPATCHED_CMD, LP_DISPATCHING_CMD
-from ..log.log_inst import LogInst
-from ..event.shared_event import SharedEvent
 
 if TYPE_CHECKING:
+    from typing_extensions import override
     from ooodev.proto.office_document_t import OfficeDocumentT
-    from ....___lo_pip___.config import Config
+    from oxt.___lo_pip___.config import Config
+    from oxt.pythonpath.libre_pythonista_lib.doc.doc_globals import DocGlobals
+    from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
+    from oxt.pythonpath.libre_pythonista_lib.event.shared_event import SharedEvent
+    from oxt.pythonpath.libre_pythonista_lib.const.event_const import (
+        GBL_DOC_CLOSING,
+        LP_DISPATCHED_CMD,
+        LP_DISPATCHING_CMD,
+    )
+    from oxt.pythonpath.libre_pythonista_lib.const import (
+        CS_PROTOCOL,
+        PATH_CODE_EDIT_MB,
+        PATH_CODE_DEL,
+        PATH_CELL_SELECT,
+        PATH_CELL_SELECT_RECALC,
+        PATH_DF_STATE,
+        PATH_DS_STATE,
+        PATH_DATA_TBL_STATE,
+        PATH_PY_OBJ_STATE,
+    )
 else:
     from ___lo_pip___.config import Config
+    from libre_pythonista_lib.doc.doc_globals import DocGlobals
+    from libre_pythonista_lib.log.log_mixin import LogMixin
+    from libre_pythonista_lib.event.shared_event import SharedEvent
+    from libre_pythonista_lib.const.event_const import GBL_DOC_CLOSING, LP_DISPATCHED_CMD, LP_DISPATCHING_CMD
+    from libre_pythonista_lib.const import (
+        CS_PROTOCOL,
+        PATH_CODE_EDIT_MB,
+        PATH_CODE_DEL,
+        PATH_CELL_SELECT,
+        PATH_CELL_SELECT_RECALC,
+        PATH_DF_STATE,
+        PATH_DS_STATE,
+        PATH_DATA_TBL_STATE,
+        PATH_PY_OBJ_STATE,
+    )
+
+    def override(func):  # noqa: ANN001, ANN201
+        return func
 
 # Imports are lazy imports to avoid potential failure, especially during startup when the secondary required modules may not be loaded.
 # If not lazy import then a failing import could cause all dispatches here to fail.
 # Also many commands import other modules that may not be common, so lazy import is used to avoid unnecessary imports.
 
+_KEY = "libre_pythonista_lib.dispatch.calc_sheet_cell_dispatch_provider.CalcSheetCellDispatchProvider"
 
-class CalcSheetCellDispatchProvider(unohelper.Base, XDispatchProviderInterceptor):
+
+class CalcSheetCellDispatchProvider(XDispatchProviderInterceptor, LogMixin, unohelper.Base):
     """
     Dispatch Provider Interceptor.
 
@@ -58,32 +77,27 @@ class CalcSheetCellDispatchProvider(unohelper.Base, XDispatchProviderInterceptor
     Calling the ``dispose()`` method will release the singleton instance.
     """
 
-    _instances = {}
+    def __new__(cls, doc: OfficeDocumentT, *args, **kwargs) -> CalcSheetCellDispatchProvider:  # noqa: ANN002, ANN003
+        gbl_cache = DocGlobals.get_current()
+        if _KEY in gbl_cache.mem_cache:
+            return gbl_cache.mem_cache[_KEY]
 
-    def __new__(cls, doc: OfficeDocumentT, *args, **kwargs) -> None:  # noqa: ANN002, ANN003
-        # doc = Lo.current_doc
-        # doc = CalcDoc.from_current_doc()
-        # sc = Lo.xscript_context
-        # doc = sc.getDocument()
-        # uid = doc.RuntimeUID
+        inst = super().__new__(cls)
+        inst._initialized = False
 
-        uid = doc.runtime_uid
-        key = f"dpi_{uid}"
-        if key not in cls._instances:
-            inst = super(CalcSheetCellDispatchProvider, cls).__new__(cls, *args, **kwargs)
-            inst._initialized = False
-            inst._key = key
-            cls._instances[key] = inst
-        return cls._instances[key]
+        gbl_cache.mem_cache[_KEY] = inst
+        return inst
 
     def __init__(self, doc: OfficeDocumentT) -> None:
         if getattr(self, "_initialized", False):
             return
+        XDispatchProviderInterceptor.__init__(self)
+        LogMixin.__init__(self)
+        unohelper.Base.__init__(self)
         self._master = cast(XDispatchProvider, None)
         self._slave = cast(XDispatchProvider, None)
         self._config = Config()
         self._initialized = True
-        self._key: str
         self._doc = doc
 
     # def _convert_query_to_dict(self, query: str):
@@ -94,28 +108,28 @@ class CalcSheetCellDispatchProvider(unohelper.Base, XDispatchProviderInterceptor
         return {k: v[0] for k, v in parsed_query.items()}
 
     @override
-    def getMasterDispatchProvider(self) -> XDispatchProvider:
+    def getMasterDispatchProvider(self) -> XDispatchProvider:  # noqa: N802
         """
         access to the master XDispatchProvider of this interceptor
         """
         return self._master
 
     @override
-    def getSlaveDispatchProvider(self) -> XDispatchProvider:
+    def getSlaveDispatchProvider(self) -> XDispatchProvider:  # noqa: N802
         """
         access to the slave XDispatchProvider of this interceptor
         """
         return self._slave
 
     @override
-    def setMasterDispatchProvider(self, NewSupplier: XDispatchProvider) -> None:  # noqa: N803
+    def setMasterDispatchProvider(self, NewSupplier: XDispatchProvider) -> None:  # noqa: N802, N803
         """
         sets the master XDispatchProvider, which may forward calls to its XDispatchProvider.queryDispatch() to this dispatch provider.
         """
         self._master = NewSupplier
 
     @override
-    def setSlaveDispatchProvider(self, NewDispatchProvider: XDispatchProvider) -> None:  # noqa: N803
+    def setSlaveDispatchProvider(self, NewDispatchProvider: XDispatchProvider) -> None:  # noqa: N802, N803
         """
         sets the slave XDispatchProvider to which calls to XDispatchProvider.queryDispatch() can be forwarded under control of this dispatch provider.
         """
@@ -126,17 +140,19 @@ class CalcSheetCellDispatchProvider(unohelper.Base, XDispatchProviderInterceptor
         URL: URL,  # noqa: N803
         TargetFrameName: str,  # noqa: N803
         SearchFlags: int,  # noqa: N803
-        log: LogInst,
     ) -> XDispatch | None:  # type: ignore
         try:
-            from ..menus import menu_util as mu
+            if TYPE_CHECKING:
+                from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.menus import menu_util as mu
+            else:
+                from libre_pythonista_lib.doc.calc.doc.menus import menu_util as mu
         except ImportError:
-            log.exception("menu_util import error")
+            self.log.exception("menu_util import error")
             raise
         cs_url = mu.get_url_from_command(URL.Complete)
-        if log.is_debug:
-            log.debug("_query_process_cs_protocol()")
-            log.debug(str(cs_url))
+        if self.log.is_debug:
+            self.log.debug("_query_process_cs_protocol()")
+            self.log.debug(str(cs_url))
         se = SharedEvent()
 
         if cs_url.Path == PATH_CODE_EDIT_MB:
@@ -147,15 +163,15 @@ class CalcSheetCellDispatchProvider(unohelper.Base, XDispatchProviderInterceptor
                         DispatchEditPyCellWv as DispatchEditPyCell,
                     )
                 except ImportError:
-                    log.exception("DispatchEditPyCellWv import error")
+                    self.log.exception("DispatchEditPyCellWv import error")
                     raise
             else:
                 try:
-                    from .dispatch_edit_py_cell_mb import (
-                        DispatchEditPyCellMb as DispatchEditPyCell,
+                    from .dispatch_edit_py_cell_mb2 import (
+                        DispatchEditPyCellMb2 as DispatchEditPyCell,
                     )
                 except ImportError:
-                    log.exception("DispatchEditPyCellMb import error")
+                    self.log.exception("DispatchEditPyCellMb2 import error")
                     raise
 
             try:
@@ -175,11 +191,11 @@ class CalcSheetCellDispatchProvider(unohelper.Base, XDispatchProviderInterceptor
                 if cargs.cancel is True and cargs.handled is False:
                     return None
 
-                with log.indent(True):
+                with self.log.indent(True):
                     if is_experiential:
-                        log.debug("CalcSheetCellDispatchProvider.queryDispatch: returning DispatchEditPyCellWv")
+                        self.log.debug("queryDispatch: returning DispatchEditPyCellWv")
                     else:
-                        log.debug("CalcSheetCellDispatchProvider.queryDispatch: returning DispatchEditPyCellMb")
+                        self.log.debug("queryDispatch: returning DispatchEditPyCellMb2")
                 result = DispatchEditPyCell(sheet=args["sheet"], cell=args["cell"], in_thread=in_thread)
 
                 eargs = EventArgs.from_args(cargs)
@@ -187,14 +203,14 @@ class CalcSheetCellDispatchProvider(unohelper.Base, XDispatchProviderInterceptor
                 se.trigger_event(LP_DISPATCHED_CMD, eargs)
                 return result
             except Exception:
-                log.exception("Dispatch Error: %s", URL.Main)
+                self.log.exception("Dispatch Error: %s", URL.Main)
                 return None
 
         elif cs_url.Path == PATH_CODE_DEL:
             try:
-                from .dispatch_del_py_cell import DispatchDelPyCell
+                from .dispatch_del_py_cell2 import DispatchDelPyCell2
             except ImportError:
-                log.exception("DispatchDelPyCell import error")
+                self.log.exception("DispatchDelPyCell2 import error")
                 raise
             try:
                 args = self._convert_query_to_dict(cs_url.Arguments)
@@ -205,23 +221,23 @@ class CalcSheetCellDispatchProvider(unohelper.Base, XDispatchProviderInterceptor
                 if cargs.cancel is True and cargs.handled is False:
                     return None
 
-                with log.indent(True):
-                    log.debug("CalcSheetCellDispatchProvider.queryDispatch: returning DispatchDelPyCell")
-                result = DispatchDelPyCell(sheet=args["sheet"], cell=args["cell"])
+                with self.log.indent(True):
+                    self.log.debug("queryDispatch: returning DispatchDelPyCell2")
+                result = DispatchDelPyCell2(sheet=args["sheet"], cell=args["cell"])
 
                 eargs = EventArgs.from_args(cargs)
                 eargs.event_data.dispatch = result
                 se.trigger_event(LP_DISPATCHED_CMD, eargs)
                 return result
             except Exception:
-                log.exception("Dispatch Error: %s", cs_url.Main)
+                self.log.exception("Dispatch Error: %s", cs_url.Main)
                 return None
 
         elif cs_url.Path == PATH_CELL_SELECT_RECALC:
             try:
                 from .dispatch_cell_select_recalc import DispatchCellSelectRecalc
             except ImportError:
-                log.exception("DispatchCellSelectRecalc import error")
+                self.log.exception("DispatchCellSelectRecalc import error")
                 raise
             try:
                 args = self._convert_query_to_dict(cs_url.Arguments)
@@ -232,8 +248,8 @@ class CalcSheetCellDispatchProvider(unohelper.Base, XDispatchProviderInterceptor
                 if cargs.cancel is True and cargs.handled is False:
                     return None
 
-                with log.indent(True):
-                    log.debug("CalcSheetCellDispatchProvider.queryDispatch: returning DispatchCellSelectRecalc")
+                with self.log.indent(True):
+                    self.log.debug("queryDispatch: returning DispatchCellSelectRecalc")
                 result = DispatchCellSelectRecalc(sheet=args["sheet"], cell=args["cell"])
 
                 eargs = EventArgs.from_args(cargs)
@@ -241,14 +257,14 @@ class CalcSheetCellDispatchProvider(unohelper.Base, XDispatchProviderInterceptor
                 se.trigger_event(LP_DISPATCHED_CMD, eargs)
                 return result
             except Exception:
-                log.exception(f"Dispatch Error: {cs_url.Main}")
+                self.log.exception(f"Dispatch Error: {cs_url.Main}")
                 return None
 
         elif cs_url.Path == PATH_CELL_SELECT:
             try:
                 from .dispatch_cell_select import DispatchCellSelect
             except ImportError:
-                log.exception("DispatchCellSelect import error")
+                self.log.exception("DispatchCellSelect import error")
                 raise
             try:
                 args = self._convert_query_to_dict(cs_url.Arguments)
@@ -259,8 +275,8 @@ class CalcSheetCellDispatchProvider(unohelper.Base, XDispatchProviderInterceptor
                 if cargs.cancel is True and cargs.handled is False:
                     return None
 
-                with log.indent(True):
-                    log.debug("CalcSheetCellDispatchProvider.queryDispatch: returning DispatchCellSelect")
+                with self.log.indent(True):
+                    self.log.debug("queryDispatch: returning DispatchCellSelect")
                 result = DispatchCellSelect(sheet=args["sheet"], cell=args["cell"])
 
                 eargs = EventArgs.from_args(cargs)
@@ -268,14 +284,14 @@ class CalcSheetCellDispatchProvider(unohelper.Base, XDispatchProviderInterceptor
                 se.trigger_event(LP_DISPATCHED_CMD, eargs)
                 return result
             except Exception:
-                log.exception("Dispatch Error: %s", cs_url.Main)
+                self.log.exception("Dispatch Error: %s", cs_url.Main)
                 return None
 
         if cs_url.Path == PATH_DF_STATE:
             try:
-                from .dispatch_toggle_df_state import DispatchToggleDfState
+                from .dispatch_toggle_df_state2 import DispatchToggleDfState2
             except ImportError:
-                log.exception("DispatchToggleDfState import error")
+                self.log.exception("DispatchToggleDfState2 import error")
                 raise
             try:
                 args = self._convert_query_to_dict(cs_url.Arguments)
@@ -286,9 +302,9 @@ class CalcSheetCellDispatchProvider(unohelper.Base, XDispatchProviderInterceptor
                 if cargs.cancel is True and cargs.handled is False:
                     return None
 
-                with log.indent(True):
-                    log.debug("CalcSheetCellDispatchProvider.queryDispatch: returning DispatchToggleDfState")
-                result = DispatchToggleDfState(sheet=args["sheet"], cell=args["cell"])
+                with self.log.indent(True):
+                    self.log.debug("queryDispatch: returning DispatchToggleDfState2")
+                result = DispatchToggleDfState2(sheet=args["sheet"], cell=args["cell"], uid=self._doc.runtime_uid)
 
                 eargs = EventArgs.from_args(cargs)
                 eargs.event_data.dispatch = result
@@ -296,14 +312,14 @@ class CalcSheetCellDispatchProvider(unohelper.Base, XDispatchProviderInterceptor
 
                 return result
             except Exception:
-                log.exception("Dispatch Error: %s", cs_url.Main)
+                self.log.exception("Dispatch Error: %s", cs_url.Main)
                 return None
 
         if cs_url.Path == PATH_DS_STATE:
             try:
                 from .dispatch_toggle_series_state import DispatchToggleSeriesState
             except ImportError:
-                log.exception("DispatchToggleSeriesState import error")
+                self.log.exception("DispatchToggleSeriesState import error")
                 raise
             try:
                 args = self._convert_query_to_dict(cs_url.Arguments)
@@ -313,8 +329,8 @@ class CalcSheetCellDispatchProvider(unohelper.Base, XDispatchProviderInterceptor
                 if cargs.cancel is True and cargs.handled is False:
                     return None
 
-                with log.indent(True):
-                    log.debug("CalcSheetCellDispatchProvider.queryDispatch: returning DispatchToggleSeriesState")
+                with self.log.indent(True):
+                    self.log.debug("queryDispatch: returning DispatchToggleSeriesState")
                 result = DispatchToggleSeriesState(sheet=args["sheet"], cell=args["cell"])
 
                 eargs = EventArgs.from_args(cargs)
@@ -322,14 +338,14 @@ class CalcSheetCellDispatchProvider(unohelper.Base, XDispatchProviderInterceptor
                 se.trigger_event(LP_DISPATCHED_CMD, eargs)
                 return result
             except Exception:
-                log.exception("Dispatch Error: %s", cs_url.Main)
+                self.log.exception("Dispatch Error: %s", cs_url.Main)
                 return None
 
         elif cs_url.Path == PATH_DATA_TBL_STATE:
             try:
-                from .dispatch_toggle_data_tbl_state import DispatchToggleDataTblState
+                from .dispatch_toggle_data_tbl_state2 import DispatchToggleDataTblState2
             except ImportError:
-                log.exception("DispatchToggleDataTblState import error")
+                self.log.exception("DispatchToggleDataTblState2 import error")
                 raise
             try:
                 args = self._convert_query_to_dict(cs_url.Arguments)
@@ -340,23 +356,23 @@ class CalcSheetCellDispatchProvider(unohelper.Base, XDispatchProviderInterceptor
                 if cargs.cancel is True and cargs.handled is False:
                     return None
 
-                with log.indent(True):
-                    log.debug("CalcSheetCellDispatchProvider.queryDispatch: returning DispatchToggleDataTblState")
-                result = DispatchToggleDataTblState(sheet=args["sheet"], cell=args["cell"])
+                with self.log.indent(True):
+                    self.log.debug("queryDispatch: returning DispatchToggleDataTblState2")
+                result = DispatchToggleDataTblState2(sheet=args["sheet"], cell=args["cell"], uid=self._doc.runtime_uid)
 
                 eargs = EventArgs.from_args(cargs)
                 eargs.event_data.dispatch = result
                 se.trigger_event(LP_DISPATCHED_CMD, eargs)
                 return result
             except Exception:
-                log.exception("Dispatch Error: %s", cs_url.Main)
+                self.log.exception("Dispatch Error: %s", cs_url.Main)
                 return None
 
         elif cs_url.Path == PATH_PY_OBJ_STATE:
             try:
                 from .dispatch_py_obj_state import DispatchPyObjState
             except ImportError:
-                log.exception("DispatchPyObjState import error")
+                self.log.exception("DispatchPyObjState import error")
                 raise
             try:
                 args = self._convert_query_to_dict(cs_url.Arguments)
@@ -367,8 +383,8 @@ class CalcSheetCellDispatchProvider(unohelper.Base, XDispatchProviderInterceptor
                 if cargs.cancel is True and cargs.handled is False:
                     return None
 
-                with log.indent(True):
-                    log.debug("DispatchProviderInterceptor.queryDispatch: returning DispatchPyObjState")
+                with self.log.indent(True):
+                    self.log.debug("queryDispatch: returning DispatchPyObjState")
                 result = DispatchPyObjState(sheet=args["sheet"], cell=args["cell"])
 
                 eargs = EventArgs.from_args(cargs)
@@ -376,11 +392,11 @@ class CalcSheetCellDispatchProvider(unohelper.Base, XDispatchProviderInterceptor
                 se.trigger_event(LP_DISPATCHED_CMD, eargs)
                 return result
             except Exception:
-                log.exception("Dispatch Error: %s", cs_url.Main)
+                self.log.exception("Dispatch Error: %s", cs_url.Main)
                 return None
 
     @override
-    def queryDispatch(  # type: ignore
+    def queryDispatch(  # type: ignore  # noqa: N802
         self,
         URL: URL,  # noqa: N803
         TargetFrameName: str,  # noqa: N803
@@ -395,9 +411,8 @@ class CalcSheetCellDispatchProvider(unohelper.Base, XDispatchProviderInterceptor
             return None
 
         if URL.Protocol == CS_PROTOCOL:
-            log = LogInst()
-            log.debug("CalcSheetCellDispatchProvider.queryDispatch: %s", URL.Complete)
-            return self._query_process_cs_protocol(URL, TargetFrameName, SearchFlags, log)
+            self.log.debug("queryDispatch: %s", URL.Complete)
+            return self._query_process_cs_protocol(URL, TargetFrameName, SearchFlags)
 
         return self._slave.queryDispatch(URL, TargetFrameName, SearchFlags)
 
@@ -413,24 +428,14 @@ class CalcSheetCellDispatchProvider(unohelper.Base, XDispatchProviderInterceptor
         return tuple(result)
 
     def dispose(self) -> None:
-        if self._key in CalcSheetCellDispatchProvider._instances:
-            del CalcSheetCellDispatchProvider._instances[self._key]
+        with contextlib.suppress(Exception):
+            gbl_cache = DocGlobals.get_current()
+            if _KEY in gbl_cache.mem_cache:
+                del gbl_cache.mem_cache[_KEY]
 
     @classmethod
     def has_instance(cls, doc: OfficeDocumentT) -> bool:
         # doc = Lo.current_doc
         # doc = CalcDoc.from_current_doc()
-        doc.runtime_uid
-        key = f"dpi_{doc.runtime_uid}"
-        return key in cls._instances
-
-
-def _on_doc_closing(src: Any, event: EventArgs) -> None:  # noqa: ANN401
-    # clean up singleton
-    uid = str(event.event_data.uid)
-    key = f"dpi_{uid}"
-    if key in CalcSheetCellDispatchProvider._instances:
-        del CalcSheetCellDispatchProvider._instances[key]
-
-
-LoEvents().on(GBL_DOC_CLOSING, _on_doc_closing)
+        gbl_cache = DocGlobals.get_current()
+        return _KEY in gbl_cache.mem_cache

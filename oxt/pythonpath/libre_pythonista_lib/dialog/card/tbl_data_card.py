@@ -9,16 +9,19 @@ from ooodev.dialog import BorderKind
 from ooodev.calc import CalcCell, RangeObj
 from ooodev.loader import Lo
 
-from ...cell.lpl_cell import LplCell
-from ...utils.pandas_util import PandasUtil
-from ...data.tbl_data_obj import TblDataObj
 
 if TYPE_CHECKING:
-    from .....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
-    from .....___lo_pip___.lo_util.resource_resolver import ResourceResolver
+    from oxt.___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from oxt.___lo_pip___.lo_util.resource_resolver import ResourceResolver
+    from oxt.pythonpath.libre_pythonista_lib.cell.lpl_cell import LplCell
+    from oxt.pythonpath.libre_pythonista_lib.utils.pandas_util import PandasUtil
+    from oxt.pythonpath.libre_pythonista_lib.data.tbl_data_obj import TblDataObj
 else:
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
     from ___lo_pip___.lo_util.resource_resolver import ResourceResolver
+    from libre_pythonista_lib.cell.lpl_cell import LplCell
+    from libre_pythonista_lib.utils.pandas_util import PandasUtil
+    from libre_pythonista_lib.data.tbl_data_obj import TblDataObj
 
 
 # endregion Imports
@@ -151,7 +154,6 @@ class TblDataCard:
         return head_data
 
     def _get_rows_cols(self, lst_data: List[List[Any]]) -> List[int]:
-
         rows = len(lst_data)
         if rows == 0:
             return [0, 0]
@@ -170,7 +172,7 @@ class TblDataCard:
             row_count = max(len(data), 10)
 
             if row_count < 2:
-                self._log.error(f"_get_table_data_head_tail() Row count is less than 2: {row_count}")
+                self._log.error("_get_table_data_head_tail() Row count is less than 2: %i", row_count)
                 raise ValueError("Row count is less than 2")
 
             end = row_count // 2

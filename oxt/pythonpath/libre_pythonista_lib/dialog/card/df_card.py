@@ -11,15 +11,16 @@ from ooodev.units import UnitAppFontWidth
 from ooodev.loader import Lo
 import pandas as pd
 
-from ...cell.lpl_cell import LplCell
-from ...utils.pandas_util import PandasUtil
-
 if TYPE_CHECKING:
-    from .....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
-    from .....___lo_pip___.lo_util.resource_resolver import ResourceResolver
+    from oxt.___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from oxt.___lo_pip___.lo_util.resource_resolver import ResourceResolver
+    from oxt.pythonpath.libre_pythonista_lib.cell.lpl_cell import LplCell
+    from oxt.pythonpath.libre_pythonista_lib.utils.pandas_util import PandasUtil
 else:
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
     from ___lo_pip___.lo_util.resource_resolver import ResourceResolver
+    from libre_pythonista_lib.cell.lpl_cell import LplCell
+    from libre_pythonista_lib.utils.pandas_util import PandasUtil
 
 
 # endregion Imports

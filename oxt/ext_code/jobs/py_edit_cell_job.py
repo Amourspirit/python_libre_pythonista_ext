@@ -1,6 +1,6 @@
 # region imports
-from __future__ import unicode_literals, annotations
-from typing import cast, Tuple, TYPE_CHECKING
+from __future__ import annotations
+from typing import Any, cast, Tuple, TYPE_CHECKING
 
 import unohelper
 import contextlib
@@ -21,20 +21,17 @@ def _conditions_met() -> bool:
 if TYPE_CHECKING:
     # just for design time
     _CONDITIONS_MET = True
-    try:
-        # python 3.12+
-        from typing import override  # type: ignore
-    except ImportError:
-        from typing_extensions import override
+    from typing_extensions import override
 
     from ooodev.utils.props import Props
-    from ...___lo_pip___.oxt_logger import OxtLogger
-    from ...pythonpath.libre_pythonista_lib.state.calc_state_mgr import CalcStateMgr
+    from oxt.___lo_pip___.oxt_logger import OxtLogger
 else:
-    override = lambda func: func  # noqa: E731
+
+    def override(func):  # noqa: ANN001, ANN201
+        return func
+
     _CONDITIONS_MET = _conditions_met()
     if _CONDITIONS_MET:
-        from libre_pythonista_lib.state.calc_state_mgr import CalcStateMgr  # noqa: F401
         from ooodev.utils.props import Props
 
 # endregion imports
@@ -48,12 +45,12 @@ class PyEditCellJob(XJob, unohelper.Base):
     SERVICE_NAMES = ("com.sun.star.task.Job",)
 
     @classmethod
-    def get_imple(cls):
+    def get_imple(cls) -> Tuple[Any, str, Tuple[str, ...]]:
         return (cls, cls.IMPLE_NAME, cls.SERVICE_NAMES)
 
     # region Init
 
-    def __init__(self, ctx):
+    def __init__(self, ctx: object) -> None:
         XJob.__init__(self)
         unohelper.Base.__init__(self)
         self.ctx = ctx
@@ -64,7 +61,7 @@ class PyEditCellJob(XJob, unohelper.Base):
 
     # region execute
     @override
-    def execute(self, Arguments: Tuple[NamedValue, ...]) -> None:  # type: ignore
+    def execute(self, Arguments: Tuple[NamedValue, ...]) -> None:  # type: ignore  # noqa: N803
         global _CONDITIONS_MET
         if not _CONDITIONS_MET:
             return
@@ -72,7 +69,7 @@ class PyEditCellJob(XJob, unohelper.Base):
         # called from dispatch/dispatch_edit_py_cell_wv.py
         try:
             if TYPE_CHECKING:
-                from ...pythonpath.libre_pythonista_lib.dialog.webview.lp_py_editor import (
+                from oxt.pythonpath.libre_pythonista_lib.dialog.webview.lp_py_editor import (
                     editor,
                 )  # type: ignore
             else:
@@ -104,8 +101,7 @@ class PyEditCellJob(XJob, unohelper.Base):
 
 # region Implementation
 
-g_TypeTable = {}
-g_ImplementationHelper = unohelper.ImplementationHelper()
+g_ImplementationHelper = unohelper.ImplementationHelper()  # noqa: N816
 g_ImplementationHelper.addImplementation(*PyEditCellJob.get_imple())
 
 # endregion Implementation
