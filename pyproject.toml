@@ -1,6 +1,6 @@
 [project]
 name = "LibrePythonista"
-version = "0.9.0"
+version = "0.10.0"
 description = "Python For LibreOffice Calc"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -42,7 +42,7 @@ debug_skip_events = [] # ["lp_cell_moved"]
 [tool.oxt.config]
 auto_install_in_site_packages = true # https://tinyurl.com/ymeh4c9j#auto_install_in_site_packages
 build_dir = "build" # https://tinyurl.com/ymeh4c9j#build_dir
-dist_dir = "tmp_dist" # "dist" https://tinyurl.com/ymeh4c9j#dist_dir should be changed to something like dist, tmp_dist is not included in git
+dist_dir = "tdist" # "dist" https://tinyurl.com/ymeh4c9j#dist_dir should be changed to something like dist, tmp_dist is not included in git
 install_wheel = true # https://tinyurl.com/ymeh4c9j#install_wheel
 oxt_name = "LibrePythonista" # https://tinyurl.com/ymeh4c9j#oxt_name
 py_pkg_dir = "py_pkgs" # https://tinyurl.com/ymeh4c9j#py_pkg_dir
