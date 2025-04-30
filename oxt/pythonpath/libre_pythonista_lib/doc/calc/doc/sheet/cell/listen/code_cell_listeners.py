@@ -27,6 +27,14 @@ else:
 _KEY = "libre_pythonista_lib.doc.calc.doc.sheet.cell.listen.code_cell_listeners.CodeCellListeners"
 
 
+# NOTE:
+# When removeModifyListener is called it seems the listener is not always removed.
+# This can be a major issue when a py cell is being deleted.
+# It may cause a recursive loop.
+# The fix is to make certain the listener is disabled by calling listener.set_trigger_state(False)
+# At least this way if the listener is not removed it will not trigger any events.
+
+
 class CodeCellListeners(LogMixin):
     """
     Singleton Class. Manages cell listeners for a LibreOffice Calc document.
@@ -108,6 +116,7 @@ class CodeCellListeners(LogMixin):
                 self.log.error("Key not found: %s", key)
                 return
             listener = self._listeners[key]
+            listener.set_trigger_state(False)
             cell = self._get_calc_cell(listener.cell_obj)
             if cell is not None:
                 cell.component.removeModifyListener(listener)
@@ -233,11 +242,13 @@ class CodeCellListeners(LogMixin):
         """
         if code_name in self:
             listener = self[code_name]
+            listener.set_trigger_state(False)
             cell = self._get_calc_cell(listener.cell_obj)
             if cell is not None:
                 cell.component.removeModifyListener(listener)
             else:
                 self.log.error("Cell not found: %s", listener.cell_obj)
+
             del self._listeners[code_name]
             return Result.success(listener)
         self.log.warning("Listener not found: %s", code_name)
@@ -283,6 +294,7 @@ class CodeCellListeners(LogMixin):
         for listener in self.values():
             cell = self._get_calc_cell(listener.cell_obj)
             if cell is not None:
+                listener.set_trigger_state(False)
                 cell.component.removeModifyListener(listener)
         self.clear()
         self.log.debug("Removed all listeners")
@@ -306,6 +318,7 @@ class CodeCellListeners(LogMixin):
 
             if code_name in self._listeners:
                 listener = self._listeners[code_name]
+                listener.set_trigger_state(False)
                 if not self.is_cell_deleted(cell.component):
                     cell.component.removeModifyListener(listener)
                     self.log.debug("Removed listener from cell with codename %s.", code_name)

@@ -92,8 +92,8 @@ class CodeSheetModifyListener(XModifyListener, LogMixin, TriggerStateMixin, unoh
         # event.Source: implementationName=ScTableSheetObj
         # event.Source: com.sun.star.sheet.Spreadsheet
         self.log.debug("Sheet Modified. Raising SHEET_MODIFIED event.")
-        # if self._log.is_debug:
-        #     self._log.debug(str(event.Source))
+        # if self.log.is_debug:
+        #     self.log.debug(aEvent)
         event_args = EventArgs(self)
         event_args.event_data = DotDict(src=self, event=aEvent)
         SharedEvent().trigger_event(SHEET_MODIFIED, event_args)

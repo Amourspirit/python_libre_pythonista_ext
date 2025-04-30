@@ -69,6 +69,13 @@ class QryPdDf(QryBase, LogMixin, QryCellT[Result[Iterable[Iterable[object]], Non
             Any: Array representation of DataFrame, with special handling for describe() output
         """
         df = cast(pd.DataFrame, self._data.data)
+        if not isinstance(df, pd.DataFrame):
+            self.log.warning(
+                "_df_headers_to_array() Data is not a DataFrame for cell: %s. Expected DataFrame got %s",
+                self._cell.cell_obj,
+                type(df).__name__,
+            )
+            return []
         if PandasUtil.is_describe_output(df):
             arr = PandasUtil.pandas_to_array(df, header_opt=1, index_opt=0, convert=False)
             PandasUtil.convert_array_to_lo(arr)
@@ -87,6 +94,13 @@ class QryPdDf(QryBase, LogMixin, QryCellT[Result[Iterable[Iterable[object]], Non
             Array format data suitable for LibreOffice Calc.
         """
         df = cast(pd.DataFrame, self._data.data)
+        if not isinstance(df, pd.DataFrame):
+            self.log.warning(
+                "_df_to_array() Data is not a DataFrame for cell: %s. Expected DataFrame got %s",
+                self._cell.cell_obj,
+                type(df).__name__,
+            )
+            return []
         if PandasUtil.is_describe_output(df):
             arr = PandasUtil.pandas_to_array(df, convert=False)
             PandasUtil.convert_array_to_lo(arr)

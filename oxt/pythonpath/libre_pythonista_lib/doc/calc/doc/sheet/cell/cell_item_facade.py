@@ -6,7 +6,6 @@ from ooodev.calc import CalcCell
 from ooodev.utils.data_type.cell_obj import CellObj
 
 if TYPE_CHECKING:
-    from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_code_name import CmdCodeName
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.state.cmd_append_code import CmdAppendCode
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.state.cmd_update_code import CmdUpdateCode
@@ -23,6 +22,8 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_uri import QryCellUri
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.rule_value.qry_value import QryValue
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.state.qry_module_state import QryModuleState
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.lp_cells.qry_lp_cells_moved import QryLpCellsMoved
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_t import QryHandlerT
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.module_state_item import ModuleStateItem
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module import PyModule
@@ -43,7 +44,6 @@ if TYPE_CHECKING:
     )
 
 else:
-    from libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_code_name import CmdCodeName
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.state.cmd_append_code import CmdAppendCode
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.state.cmd_update_code import CmdUpdateCode
@@ -61,6 +61,8 @@ else:
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.rule_value.qry_value import QryValue
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.state.qry_module_state import QryModuleState
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.state.qry_state_rules_default import QryStateRulesDefault
+    from libre_pythonista_lib.cq.qry.calc.sheet.lp_cells.qry_lp_cells_moved import QryLpCellsMoved
+    from libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.module_state_item import ModuleStateItem
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module import PyModule
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source_manager import PySourceManager
@@ -199,6 +201,11 @@ class CellItemFacade(LogMixin):
     def qry_cell_moved(self) -> bool:
         """Queries if the cell has moved"""
         qry = QryCellMoved(self._cell)
+        return self.qry_handler.handle(qry)
+
+    def qry_cells_moved(self) -> bool:
+        """Queries if the cell has moved"""
+        qry = QryLpCellsMoved(self.cell.calc_sheet)
         return self.qry_handler.handle(qry)
 
     def qry_cell_moved_old_new(self) -> Tuple[CellObj, CellObj] | None:

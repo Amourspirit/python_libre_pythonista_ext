@@ -46,6 +46,7 @@ class PyModuleState(LogMixin):
             return gbl_cache.mem_cache[key]
 
         inst = super().__new__(cls)
+        inst.cache_key = key
         inst._is_init = False
         inst.runtime_uid = gbl_cache.runtime_uid
 
@@ -63,6 +64,7 @@ class PyModuleState(LogMixin):
             return
         LogMixin.__init__(self)
         self.log.debug("Init")
+        self.cache_key: str
         self._shared_event = SharedEvent()
         self._py_mod = mod
         self.runtime_uid: str
@@ -254,6 +256,19 @@ class PyModuleState(LogMixin):
             return None
         last_key = list(self._state_history.keys())[-1]
         return self._state_history[last_key]
+
+    # region Cache
+    def clear_instance_cache(self) -> None:
+        """
+        Clears the instance cache.
+        """
+        gbl_cache = DocGlobals.get_current()
+
+        if self.cache_key in gbl_cache.mem_cache:
+            del gbl_cache.mem_cache[self.cache_key]
+            self.log.debug("clear_instance_cache() - Cleared instance cache.")
+
+    # endregion Cache
 
     @property
     def mod(self) -> PyModuleT:

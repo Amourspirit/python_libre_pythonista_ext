@@ -18,6 +18,8 @@ else:
     from libre_pythonista_lib.event.shared_event import SharedEvent
     from libre_pythonista_lib.utils.singleton_base import SingletonBase
 
+    OfficeDocumentT = Any
+
 
 class LpLog(SingletonBase):
     # _instances = {}

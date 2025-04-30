@@ -18,11 +18,13 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.event.doc_event_partial import DocEventPartial
     from oxt.pythonpath.libre_pythonista_lib.doc.doc_globals import DocGlobals
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
+    from oxt.___lo_pip___.basic_config import BasicConfig
 
 else:
     from libre_pythonista_lib.doc.doc_globals import DocGlobals
     from libre_pythonista_lib.event.doc_event_partial import DocEventPartial
     from libre_pythonista_lib.log.log_mixin import LogMixin
+    from libre_pythonista.basic_config import BasicConfig
 
 _KEY = "libre_pythonista_lib.event.shared_event.SharedEvent"
 
@@ -45,6 +47,7 @@ class SharedEvent(DocEventPartial, LogMixin):
         DocEventPartial.__init__(self, doc=doc)
         LogMixin.__init__(self)
         self.log.debug("Init")
+        self._config = BasicConfig()
         self._is_init = True
 
     def trigger_event(self, event_name: str, event_args: EventArgsT) -> None:
@@ -61,6 +64,9 @@ class SharedEvent(DocEventPartial, LogMixin):
         Returns:
             None:
         """
+        if self.log.is_debug and event_name in self._config.debug_skip_events:
+            self.log.warning("trigger_event() event_name: %s is in debug_skip_events. Skipping.", event_name)
+            return
         self.log.debug("trigger_event() event_name: %s", event_name)
         DocEventPartial.trigger_event(self, event_name, event_args)
 

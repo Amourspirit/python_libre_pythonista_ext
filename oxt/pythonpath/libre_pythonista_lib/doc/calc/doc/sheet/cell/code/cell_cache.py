@@ -44,7 +44,6 @@ if TYPE_CHECKING:
         PYTHON_AFTER_ADD_SRC_CODE,
         PYTHON_AFTER_REMOVE_SOURCE_CODE,
     )
-    from oxt.pythonpath.libre_pythonista_lib.const.event_const import SHEET_CELL_MOVED
 else:
     from ___lo_pip___.basic_config import BasicConfig
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.prop.cmd_addr import CmdAddr
@@ -60,7 +59,6 @@ else:
     from libre_pythonista_lib.utils.gen_util import GenUtil
     from libre_pythonista_lib.utils.result import Result
     from libre_pythonista_lib.doc.calc.const import PYTHON_AFTER_ADD_SRC_CODE, PYTHON_AFTER_REMOVE_SOURCE_CODE
-    from libre_pythonista_lib.const.event_const import SHEET_CELL_MOVED
 
 # endregion Imports
 
@@ -123,7 +121,7 @@ class CellCache(LogMixin):
         self._qry_handler = QryHandlerFactory.get_qry_handler()
         self._code_prop = self._cfg.cell_cp_codename
         self._doc = doc
-        self._code = self._qry_lp_cells()
+        self._code_cells = cast(Dict[int, Dict[CellObj, IndexCellProps]], None)
         self._cache = {}
         self._previous_cell = None
         self._current_cell = None
@@ -131,7 +129,7 @@ class CellCache(LogMixin):
         self._current_sheet_index = -1
         if self.log.is_debug:
             self.log.debug("__init__() for doc: %s", doc.runtime_uid)
-            for sheet_idx, items in self._code.items():
+            for sheet_idx, items in self.code_cells.items():
                 self.log.debug("Sheet Index: %i", sheet_idx)
                 for cell, props in items.items():
                     self.log.debug("Cell: %s - Props: %s", cell, props.props)
@@ -145,36 +143,12 @@ class CellCache(LogMixin):
     def _init_events(self) -> None:
         self._fn_on_python_src_code_removed = self.on_python_src_code_removed
         self._fn_on_python_src_code_inserted = self.on_python_src_code_inserted
-        self._fn_on_cell_moved = self.on_cell_moved
         self._shared_event.subscribe_event(PYTHON_AFTER_REMOVE_SOURCE_CODE, self._fn_on_python_src_code_removed)
         self._shared_event.subscribe_event(PYTHON_AFTER_ADD_SRC_CODE, self._fn_on_python_src_code_inserted)
-        self._shared_event.subscribe_event(SHEET_CELL_MOVED, self._fn_on_cell_moved)
 
     # endregion Events
 
     # region Event Handlers
-    def on_cell_moved(self, src: Any, event: EventArgs) -> None:  # noqa: ANN401
-        self.log.debug("on_cell_moved()")
-        dd = cast(DotDict, event.event_data)
-        absolute_name = dd.get("absolute_name", "UNKNOWN")
-        calc_cell = cast(CalcCell, dd.calc_cell)
-        sheet_idx = calc_cell.calc_sheet.sheet_index
-
-        old_cell_obj = cast(CellObj, dd.old_cell_obj)
-        if not self.has_cell(old_cell_obj, sheet_idx):
-            self.log.debug("on_cell_moved() Old Cell not in cache: %s", old_cell_obj)
-            return
-        new_cell_obj = cast(CellObj, dd.new_cell_obj)
-        if self.has_cell(new_cell_obj, sheet_idx):
-            self.log.error("on_cell_moved() New Cell already in cache: %s", new_cell_obj)
-
-            return
-        old = self.get_index_cell_props(cell=old_cell_obj, sheet_idx=sheet_idx)
-        self.remove_cell(cell=old_cell_obj, sheet_idx=sheet_idx)
-        self.insert(cell=new_cell_obj, code_name=old.code_name, props=old.props, sheet_idx=sheet_idx)
-
-        self.update_sheet_cell_addr_prop(sheet_idx=sheet_idx)
-        return
 
     def on_python_src_code_removed(self, src: Any, event: EventArgs) -> None:  # noqa: ANN401
         # triggered in : libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source_manager.PySourceManager.remove_source
@@ -198,10 +172,10 @@ class CellCache(LogMixin):
     # region Dunder Methods
 
     def __len__(self) -> int:
-        return len(self._code)
+        return len(self.code_cells)
 
     def __iter__(self) -> Iterator[int]:
-        return iter(self._code)
+        return iter(self.code_cells)
 
     # endregion Dunder Methods
 
@@ -268,10 +242,10 @@ class CellCache(LogMixin):
         Returns:
             int: Total number of cells in all the sheets.
         """
-        sheets_count = len(self._code)
+        sheets_count = len(self.code_cells)
         count = 0
         for i in range(sheets_count):
-            sheet = self._code[i]
+            sheet = self.code_cells[i]
             count += len(sheet)
         return count
 
@@ -361,7 +335,7 @@ class CellCache(LogMixin):
         if not self.has_cell(cell, sheet_idx):
             self.log.error("get_index_cell_props() Cell: %s not in sheet index: %i", cell, sheet_idx)
             raise ValueError(f"Cell: {cell} not in sheet index: {sheet_idx}")
-        return self._code[sheet_idx][cell]
+        return self.code_cells[sheet_idx][cell]
 
     def get_last_cell(self, sheet_idx: int = -1) -> CellObj:
         if sheet_idx < 0:
@@ -410,7 +384,7 @@ class CellCache(LogMixin):
         if sheet_idx < 0:
             self.log.error("get_sheet_cells() Sheet index not set")
             raise ValueError("Sheet index not set")
-        return self._code[sheet_idx]
+        return self.code_cells[sheet_idx]
 
     def has_cell(self, cell: CellObj, sheet_idx: int = -1) -> bool:
         """
@@ -437,7 +411,7 @@ class CellCache(LogMixin):
         if not self.has_sheet(sheet_idx):
             self.log.debug("has_cell() Sheet index %i not in code", sheet_idx)
             return False
-        return cell in self._code[sheet_idx]
+        return cell in self.code_cells[sheet_idx]
 
     def has_sheet(self, sheet_idx: int) -> bool:
         """
@@ -446,7 +420,7 @@ class CellCache(LogMixin):
         Args:
             sheet_idx (int): Sheet Index - Zero Based.
         """
-        return sheet_idx in self._code
+        return sheet_idx in self.code_cells
 
     def insert(self, cell: CellObj, code_name: str, props: Set[str], sheet_idx: int = -1) -> None:
         """
@@ -485,7 +459,7 @@ class CellCache(LogMixin):
             sheet_idx,
             code_name,
         )
-        self._code[sheet_idx][cell] = IndexCellProps(code_name, props)
+        self.code_cells[sheet_idx][cell] = IndexCellProps(code_name, props)
         self._update_indexes()
         self.log.debug(
             "insert() Inserted Cell: %s into Sheet Index: %i with Code Name: %s",
@@ -592,7 +566,7 @@ class CellCache(LogMixin):
         if not self.has_cell(cell, sheet_idx):
             self.log.error("remove_cell() Cell: %s not in sheet index: %i", cell, sheet_idx)
             return
-        del self._code[sheet_idx][cell]
+        del self.code_cells[sheet_idx][cell]
         self.log.debug(
             "remove_cell() Removed Cell: %s from sheet index: %i",
             cell,
@@ -624,7 +598,7 @@ class CellCache(LogMixin):
             raise ValueError("Sheet index not set")
 
         sheet = self._doc.sheets[sheet_idx]
-        for cell, icp in self._code[sheet_idx].items():
+        for cell, icp in self.code_cells[sheet_idx].items():
             calc_cell = sheet[cell]
             if is_db:
                 self.log.debug("update_sheet_cell_addr_prop() for Cell: %s", cell)
@@ -634,7 +608,7 @@ class CellCache(LogMixin):
             qry = QryAddr(calc_cell)
             qry_result = self._qry_handler.handle(qry)
             if Result.is_failure(qry_result):
-                self.log.error("update_sheet_cell_addr_prop() Failed to get cell address property for %s", cell)
+                self.log.warning("update_sheet_cell_addr_prop() Failed to get cell address property for %s", cell)
                 continue
             current = qry_result.data
 
@@ -684,7 +658,7 @@ class CellCache(LogMixin):
     def _update_indexes(self) -> None:
         self.log.debug("_update_indexes() Updating Indexes")
         count = 0
-        for sheet_idx in self._code:
+        for sheet_idx in self.code_cells:
             i = -1
             items = self.code_cells[sheet_idx]
             for itm in items.values():
@@ -705,7 +679,7 @@ class CellCache(LogMixin):
             raise ValueError("Sheet index not set")
         if not self.has_sheet(sheet_idx):
             self.log.debug("_ensure_sheet_index() Sheet index %i not in code. Adding.", sheet_idx)
-            self._code[sheet_idx] = {}
+            self.code_cells[sheet_idx] = {}
 
     # endregion Private Methods
 
@@ -749,7 +723,20 @@ class CellCache(LogMixin):
         """
         self._events.unsubscribe_event("update_sheet_cell_addr_prop", cb)
 
-    # endregion Events
+    # endregion Events_KEY
+
+    # region Cache
+    def clear_instance_cache(self) -> None:
+        """
+        Clears the instance cache.
+        """
+        gbl_cache = DocGlobals.get_current(uid=self._doc.runtime_uid)
+
+        if _KEY in gbl_cache.mem_cache:
+            del gbl_cache.mem_cache[_KEY]
+            self.log.debug("clear_instance_cache() - Cleared instance cache.")
+
+    # endregion Cache
 
     # region Properties
 
@@ -760,7 +747,9 @@ class CellCache(LogMixin):
 
         This is a dictionary of dictionaries. The key is the sheet index and the value is a dictionary of cells and their properties.
         """
-        return self._code
+        if self._code_cells is None:
+            self._code_cells = self._qry_lp_cells()
+        return self._code_cells
 
     @property
     def code_name_cell_map(self) -> Dict[str, CellObj]:
@@ -772,7 +761,7 @@ class CellCache(LogMixin):
         if "code_name_map" in self._cache:
             return self._cache["code_name_map"]
         result = {}
-        for _, items in self._code.items():
+        for _, items in self.code_cells.items():
             for cell, props in items.items():
                 result[props.code_name] = cell
         self._cache["code_name_map"] = result

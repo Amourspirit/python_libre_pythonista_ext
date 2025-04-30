@@ -112,8 +112,12 @@ class CmdDeleteControl(CmdBase, LogMixin, CmdCellT):
 
     def _get_control_kind(self) -> CtlKind:
         """Determines the appropriate control kind based on cell's Python code"""
-        rule_kind = self._qry_state_rule_kind()
-        return CtlKind.from_rule_name_kind(rule_kind)
+        try:
+            rule_kind = self._qry_state_rule_kind()
+            return CtlKind.from_rule_name_kind(rule_kind)
+        except Exception as e:
+            self.log.exception("Error getting control kind: %s", e)
+            return CtlKind.UNKNOWN
 
     @override
     def execute(self) -> None:

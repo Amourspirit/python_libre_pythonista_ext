@@ -93,6 +93,11 @@ class JsonConfig(metaclass=Singleton):
             self._run_imports = []
 
         try:
+            self._debug_skip_events = cast(list, self._cfg["tool"]["libre_pythonista"]["config"]["debug_skip_events"])
+        except Exception:
+            self._debug_skip_events = []
+
+        try:
             self._run_imports_linux = cast(list, self._cfg["tool"]["oxt"]["config"]["run_imports_linux"])
         except Exception:
             self._run_imports_linux = []
@@ -332,6 +337,7 @@ class JsonConfig(metaclass=Singleton):
         json_config["install_on_no_uninstall_permission"] = self._install_on_no_uninstall_permission
         json_config["unload_after_install"] = self._unload_after_install
         json_config["run_imports"] = self._run_imports
+        json_config["debug_skip_events"] = self._debug_skip_events
         json_config["run_imports2"] = self._run_imports2
         json_config["run_imports_linux"] = self._run_imports_linux
         json_config["run_imports_macos"] = self._run_imports_macos
@@ -438,6 +444,7 @@ class JsonConfig(metaclass=Singleton):
             "_install_on_no_uninstall_permission must be a bool"
         )
         assert isinstance(self._run_imports, list), "run_imports must be a list"
+        assert isinstance(self._debug_skip_events, list), "debug_skip_events must be a list"
         assert isinstance(self._run_imports2, list), "run_imports2 must be a list"
         assert isinstance(self._lp_debug_port, int), "lp_debug_port must be a int"
         assert isinstance(self._require_install_name_match, bool), "require_install_name_match must be a bool"
@@ -494,6 +501,10 @@ class JsonConfig(metaclass=Singleton):
         if self._lp_py_cell_edit_sock_timeout > 10:
             warnings.append(
                 f"'lp_py_cell_edit_sock_timeout' is set to '{self._lp_py_cell_edit_sock_timeout}'. Set to 10 for production."
+            )
+        if self._debug_skip_events:
+            warnings.append(
+                f"'tool.libre_pythonista.config.debug_skip_events' is set to '{self._debug_skip_events}'. This is for debugging. Remove for production."
             )
         if warnings:
             print("JsonConfig Warnings:")

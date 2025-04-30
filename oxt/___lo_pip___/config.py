@@ -920,6 +920,15 @@ class Config(metaclass=Singleton):
         """
         return self._lp_settings
 
+    @property
+    def debug_skip_events(self) -> Set[str]:
+        """
+        Gets the list of events to skip when debugging.
+
+        The value for this property can be set in pyproject.toml (tool.libre_pythonista.config.debug_skip_events)
+        """
+        return self._basic_config.debug_skip_events
+
     # endregion Properties
 
 

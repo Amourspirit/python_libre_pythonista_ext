@@ -53,11 +53,12 @@ class CmdDeleteLpCell(CmdBase, LogMixin, CmdCellT):
 
         try:
             if self._batch is None:
+                # make sure the listener is removed first.
+                cmd_del_listener = CmdCodeListenerDel(cell=self.cell)
                 cmd_del_control = CmdDeleteControl(cell=self.cell, mod=self._mod)
                 cmd_del_code = CmdDeleteCode(cell=self.cell, mod=self._mod)
                 cmd_del_formula = CmdDeleteFormula(cell=self.cell, style=self._style)
-                cmd_del_listener = CmdCodeListenerDel(cell=self.cell)
-                self._batch = CmdBatch(cmd_del_formula, cmd_del_control, cmd_del_code, cmd_del_listener)
+                self._batch = CmdBatch(cmd_del_listener, cmd_del_formula, cmd_del_control, cmd_del_code)
                 self._execute_cmd(self._batch)
                 if not self._batch.success:
                     self.log.error("Failed to execute batch command.")

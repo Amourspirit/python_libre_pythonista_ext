@@ -68,7 +68,7 @@ class QryArrayCells(QryBase, LogMixin, QryDocT[Result[List[CalcCell], None] | Re
                 return result.data
             raise result.error
         except Exception as e:
-            self.log.exception("_has_array_ability() error: %s", e)
+            self.log.debug("_has_array_ability() error: %s", e)
         return False
 
     def get_array_cells(self) -> List[CalcCell]:

@@ -52,7 +52,6 @@ if TYPE_CHECKING:
         PYTHON_BEFORE_SOURCE_UPDATE,
         PYTHON_SOURCE_MODIFIED,
     )
-
 else:
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.module_state_item import ModuleStateItem
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module_state import PyModuleState
@@ -114,6 +113,7 @@ class PySourceManager(LogMixin):
             return gbl_cache.mem_cache[key]
 
         inst = super().__new__(cls)
+        inst.cache_key = key
         inst._is_init = False
 
         gbl_cache.mem_cache[key] = inst
@@ -125,23 +125,26 @@ class PySourceManager(LogMixin):
             return
         LogMixin.__init__(self)
         # don't use CalcDoc.from_current_doc() because there many be multiple documents opened already.
+        self.cache_key: str
         self._doc = doc
-        self._shared_event = SharedEvent(doc)
+        self._se = SharedEvent(doc)
         self._qry_handler = QryHandlerFactory.get_qry_handler()
         self._cmd_handler = CmdHandlerFactory.get_cmd_handler()
 
         self.log.debug("Init")
         self._sfa = Sfa()
-
         self._root_uri = self._qry_root_uri()
-        self._data = SortedDict()
+        self._src_data = cast(SortedDict, None)
         self._mod_state = PyModuleState(mod)
-        self._se = SharedEvent(doc)
         self._init_sources()
         self._se.trigger_event("PySourceManagerCreated", EventArgs(self))
-        self.log.debug("Number of cells in manager: %i", len(self._data))
+        self.log.debug("Number of cells in manager: %i", len(self.src_data))
         self.log.debug("Init completed")
         self._is_init = True
+
+    # endregion Event Handlers
+
+    # region Qry Methods
 
     def _qry_root_uri(self) -> str:
         qry = QryLpRootUri(doc=self._doc)
@@ -186,6 +189,8 @@ class PySourceManager(LogMixin):
             return result.data
         return None
 
+    # endregion Qry Methods
+
     def is_src_folder_exists(self) -> bool:
         """Checks if the source folder exists."""
         return self._sfa.exists(self._root_uri)
@@ -198,9 +203,12 @@ class PySourceManager(LogMixin):
     def dispose(self) -> None:
         if self._se is not None:
             self._se.trigger_event("PySourceManagerDisposed", EventArgs(self))
-        self._se = None
+        self._se = cast(SharedEvent, None)
 
     def _init_sources(self) -> None:  # type: ignore
+        """Initializes the source code manager."""
+        self._src_data = SortedDict()
+        self._mod_state.reset_module()
         self.log.debug("_init_sources() Entered.")
         sources: List[Tuple[PySource, CalcCell, str]] = []
         code_cells = self._qry_lp_cells()
@@ -225,7 +233,7 @@ class PySourceManager(LogMixin):
                 py_src = src[0]
                 calc_cell = src[1]
                 uri = src[2]
-                self._data[py_src.sheet_idx, py_src.row, py_src.col] = PySourceData(
+                self.src_data[py_src.sheet_idx, py_src.row, py_src.col] = PySourceData(
                     uri=uri, cell=calc_cell.cell_obj.copy()
                 )
                 self.set_global_var("CURRENT_CELL_ID", py_src.uri_info.unique_id)
@@ -248,7 +256,7 @@ class PySourceManager(LogMixin):
         """
         sb = StrList(sep="\n")
         sb.append(f"# Source code for doc: vnd.sun.star.tdoc:/{self._doc.runtime_uid}/")
-        for py_src_data in self._data.values():
+        for py_src_data in self.src_data.values():
             py_src = PySource(uri=py_src_data.uri, cell=py_src_data.cell)
             cell_obj = CellObj.from_idx(col_idx=py_src.col, row_idx=py_src.row, sheet_idx=py_src.sheet_idx)
             if max_cell is not None:
@@ -290,13 +298,13 @@ class PySourceManager(LogMixin):
         code_cell = self.convert_cell_obj_to_tuple(key) if isinstance(key, CellObj) else key
         if is_db:
             self.log.debug("__getitem__() - Code Cell: %s", code_cell)
-        py_data = cast(PySourceData, self._data[code_cell])
+        py_data = cast(PySourceData, self.src_data[code_cell])
         return py_data
 
     # region Dunder Methods
 
     def __len__(self) -> int:
-        return len(self._data)
+        return len(self.src_data)
 
     def __getitem__(self, key: CellObj | Tuple[int, int, int]) -> PySource:
         """
@@ -324,10 +332,10 @@ class PySourceManager(LogMixin):
         code_cell = self.convert_cell_obj_to_tuple(key) if isinstance(key, CellObj) else key
         if isinstance(value, PySource):
             value = PySourceData(uri=value.uri, cell=value.cell_obj.copy())
-        self._data[code_cell] = value
+        self.src_data[code_cell] = value
         eargs = EventArgs(self)
         eargs.event_data = DotDict(source=self, value=value, cell_obj=value.cell.copy(), sheet_idx=code_cell[0])
-        self._shared_event.trigger_event(PYTHON_SOURCE_MODIFIED, eargs)
+        self._se.trigger_event(PYTHON_SOURCE_MODIFIED, eargs)
 
     def __delitem__(self, key: CellObj | Tuple[int, int, int]) -> None:
         """
@@ -350,20 +358,20 @@ class PySourceManager(LogMixin):
             bool: True if key exists in the data.
         """
         code_cell = self.convert_cell_obj_to_tuple(key) if isinstance(key, CellObj) else key
-        return code_cell in self._data
+        return code_cell in self.src_data
 
     def __iter__(self):  # noqa: ANN204
         # return iterable of PySource objects
-        for key in self._data:
+        for key in self.src_data:
             key: Tuple[int, int, int]
             py_data = self._getitem_py_src_data(key)
             yield PySource(uri=py_data.uri, cell=py_data.cell)
 
     def py_src_date_items(self) -> Iterable[PySourceData]:
         """Returns an iterable of PySourceData objects."""
-        for key in self._data:
+        for key in self.src_data:
             key: Tuple[int, int, int]
-            yield self._data[key]
+            yield self.src_data[key]
 
     # endregion Dunder Methods
 
@@ -376,7 +384,7 @@ class PySourceManager(LogMixin):
         # get the first item in self._data
         if len(self) == 0:
             return None
-        py_data = cast(PySourceData, self[list(self._data.keys())[0]])
+        py_data = self._getitem_py_src_data(list(self.src_data.keys())[0])
         return py_data
 
     def get_first_item(self) -> PySource | None:
@@ -391,7 +399,8 @@ class PySourceManager(LogMixin):
         # get the last item in self._data
         if len(self) == 0:
             return None
-        py_data = cast(PySourceData, self[list(self._data.keys())[-1]])
+
+        py_data = self._getitem_py_src_data(list(self.src_data.keys())[-1])
         return py_data
 
     def get_next_item_py_src_data(self, cell: CellObj, require_exist: bool = False) -> PySourceData | None:
@@ -416,12 +425,12 @@ class PySourceManager(LogMixin):
             return None
         if index > 0:
             self.log.debug("get_next_item_py_src_data() - Cell %s is the next item.", cell)
-            py_data = cast(PySourceData, self[list(self._data.keys())[index + 1]])
+            py_data = cast(PySourceData, self[list(self.src_data.keys())[index + 1]])
             return py_data
         # negative index means the cell is not in this instance.
         found = None
-        for key in self._data:
-            itm = cast(PySourceData, self._data[key])
+        for key in self.src_data:
+            itm = cast(PySourceData, self.src_data[key])
             if self.log.is_debug:
                 self.log.debug(
                     "get_next_item_py_src_data() - Item cell %s > cell %s is %s", itm.cell, cell, itm.cell > cell
@@ -474,12 +483,12 @@ class PySourceManager(LogMixin):
             return None
         if index > 0:
             self.log.debug("get_prev_item_py_src_data() - Cell %s is the previous item.", cell)
-            py_data = cast(PySourceData, self[list(self._data.keys())[index - 1]])
+            py_data = cast(PySourceData, self[list(self.src_data.keys())[index - 1]])
             return py_data
         # negative index means the cell is not in this instance.
         found = None
-        for key in reversed(self._data):
-            itm = cast(PySourceData, self._data[key])
+        for key in reversed(self.src_data):
+            itm = cast(PySourceData, self.src_data[key])
             if self.log.is_debug:
                 self.log.debug(
                     "get_prev_item_py_src_data() - Item cell %s < cell %s is %s", itm.cell, cell, itm.cell < cell
@@ -574,9 +583,19 @@ class PySourceManager(LogMixin):
             self.log.warning("update_key() - Old key not found: %s", old_key)
             return
 
-        old_data = cast(PySourceData, self._data.pop(old_key))
+        # try:
+        #     sheet = self._doc.sheets[old_cell.sheet_idx]
+        #     calc_cell = sheet[new_cell]
+        #     uri = self._qry_cell_uri(calc_cell)
+        # except Exception:
+        #     self.log.error("update_key() - Failed to get URI.")
+        #     return
+        old_data = cast(PySourceData, self.src_data.pop(old_key))
+        # if self.log.is_debug:
+        #     self.log.debug("old URI: %s", old_data.uri)
+        #     self.log.debug("new URI: %s", uri)
         new_data = PySourceData(uri=old_data.uri, cell=new_cell.copy())
-        self._data[new_key] = new_data
+        self.src_data[new_key] = new_data
         self._mod_state.update_key(old_cell, new_cell)
         self.log.debug("update_key() - Updated key for cell %s to %s", old_cell, new_cell)
 
@@ -602,7 +621,7 @@ class PySourceManager(LogMixin):
         row = code_cell[1]
         col = code_cell[2]
         self.log.debug("add_source() sheet index: %i col: %i, row: %i", sheet_idx, col, row)
-        if code_cell in self._data:
+        if code_cell in self.src_data:
             self.log.error("add_source() - Cell %s already exists.", cell_obj)
             raise Exception(f"Cell {cell_obj} already exists.")
         cargs = CancelEventArgs(self)
@@ -615,7 +634,7 @@ class PySourceManager(LogMixin):
             code=code,
             doc=self._doc,
         )
-        self._shared_event.trigger_event(PYTHON_BEFORE_ADD_SRC_CODE, cargs)
+        self._se.trigger_event(PYTHON_BEFORE_ADD_SRC_CODE, cargs)
         if cargs.cancel:
             return
         code = cargs.event_data.get("code", code)
@@ -644,7 +663,7 @@ class PySourceManager(LogMixin):
 
         py_src = self._qry_py_source(uri=uri, cell=calc_cell)
 
-        self._data[code_cell] = PySourceData(uri=uri, cell=calc_cell.cell_obj.copy())
+        self.src_data[code_cell] = PySourceData(uri=uri, cell=calc_cell.cell_obj.copy())
         index = self.get_index(cell_obj)
         if index < 0:
             self.log.error("add_source() - Cell %s not found.", cell_obj)
@@ -658,7 +677,7 @@ class PySourceManager(LogMixin):
         eargs = EventArgs.from_args(cargs)
         eargs.event_data.code_name = py_src.uri_info.unique_id
 
-        self._shared_event.trigger_event(PYTHON_AFTER_ADD_SRC_CODE, eargs)
+        self._se.trigger_event(PYTHON_AFTER_ADD_SRC_CODE, eargs)
         # see: doc.calc.doc.sheet.cell.code.cell_cache.CellCache.on_python_src_code_inserted()
         self.log.debug("Done Adding Source")
         return None
@@ -682,7 +701,7 @@ class PySourceManager(LogMixin):
         col = code_cell[2]
         self.log.debug("update_source() sheet index: %i col: %i, row: %i", sheet_idx, col, row)
 
-        if code_cell not in self._data:
+        if code_cell not in self.src_data:
             raise Exception(f"Cell {cell_obj} does not exists.")
         cargs = CancelEventArgs(self)
         cargs.event_data = DotDict(
@@ -693,7 +712,7 @@ class PySourceManager(LogMixin):
             code=code,
             doc=self._doc,
         )
-        self._shared_event.trigger_event(PYTHON_BEFORE_UPDATE_SOURCE_CODE, cargs)
+        self._se.trigger_event(PYTHON_BEFORE_UPDATE_SOURCE_CODE, cargs)
         if cargs.cancel:
             return
         code = cargs.event_data.get("code", code)
@@ -712,7 +731,7 @@ class PySourceManager(LogMixin):
             self.log.debug("update_source() not last index, Updating all")
             self.update_all()
         eargs = EventArgs.from_args(cargs)
-        self._shared_event.trigger_event(PYTHON_AFTER_UPDATE_SOURCE_CODE, eargs)
+        self._se.trigger_event(PYTHON_AFTER_UPDATE_SOURCE_CODE, eargs)
         return None
 
     def remove_source(self, cell_obj: CellObj) -> None:
@@ -738,21 +757,21 @@ class PySourceManager(LogMixin):
         col = code_cell[2]
         self.log.debug("remove_source() sheet index: %i col: %i, row: %i", sheet_idx, col, row)
 
-        if code_cell not in self._data:
+        if code_cell not in self.src_data:
             raise Exception(f"Cell {cell_obj} does not exist.")
         cargs = CancelEventArgs(self)
         cargs.event_data = DotDict(
             source=self, sheet_idx=sheet_idx, cell=cell, row=row, col=col, doc=self._doc, cell_obj=cell_obj.copy()
         )
-        self._shared_event.trigger_event(PYTHON_BEFORE_REMOVE_SOURCE_CODE, cargs)
+        self._se.trigger_event(PYTHON_BEFORE_REMOVE_SOURCE_CODE, cargs)
         if cargs.cancel:
             return
         # triggers are in col row format
-        self._shared_event.trigger_event(f"{PYTHON_BEFORE_REMOVE_SOURCE_CODE}_{col}_{row}", cargs)
+        self._se.trigger_event(f"{PYTHON_BEFORE_REMOVE_SOURCE_CODE}_{col}_{row}", cargs)
         if cargs.cancel:
             return
         self[code_cell].del_source()
-        del self._data[code_cell]
+        del self.src_data[code_cell]
         sheet = self._doc.sheets[sheet_idx]
         calc_cell = sheet[cell_obj]
 
@@ -766,11 +785,11 @@ class PySourceManager(LogMixin):
         self.update_all()
 
         eargs = EventArgs.from_args(cargs)
-        self._shared_event.trigger_event(PYTHON_AFTER_REMOVE_SOURCE_CODE, eargs)
+        self._se.trigger_event(PYTHON_AFTER_REMOVE_SOURCE_CODE, eargs)
         # triggers are in col row format
-        self._shared_event.trigger_event(f"{PYTHON_AFTER_REMOVE_SOURCE_CODE}_{col}_{row}", eargs)
+        self._se.trigger_event(f"{PYTHON_AFTER_REMOVE_SOURCE_CODE}_{col}_{row}", eargs)
 
-        self._shared_event.trigger_event(PYTHON_SOURCE_MODIFIED, eargs)
+        self._se.trigger_event(PYTHON_SOURCE_MODIFIED, eargs)
 
         self.log.debug("remove_source() Leaving.")
 
@@ -807,7 +826,7 @@ class PySourceManager(LogMixin):
         """Removes the source for the last item in the source manager."""
         if len(self) == 0:
             return
-        cell_obj = self.convert_tuple_to_cell_obj(list(self._data.keys())[-1])
+        cell_obj = self.convert_tuple_to_cell_obj(list(self.src_data.keys())[-1])
         self.remove_source(cell_obj)
 
     def set_global_var(self, name: str, value: Any) -> None:  # noqa: ANN401
@@ -832,7 +851,7 @@ class PySourceManager(LogMixin):
         """
         try:
             code_cell = self.convert_cell_obj_to_tuple(cell)
-            return list(self._data.keys()).index(code_cell)
+            return list(self.src_data.keys()).index(code_cell)
         except Exception:
             self.log.debug("get_index() - Cell %s not found.", cell)
             return -1
@@ -872,10 +891,10 @@ class PySourceManager(LogMixin):
             cell_obj=cell_obj.copy(),
         )
         # triggers are in col row format
-        self._shared_event.trigger_event(f"{PYTHON_BEFORE_SOURCE_UPDATE}_{col}_{row}", cargs)
+        self._se.trigger_event(f"{PYTHON_BEFORE_SOURCE_UPDATE}_{col}_{row}", cargs)
         if cargs.cancel:
             return False
-        self._shared_event.trigger_event(PYTHON_BEFORE_SOURCE_UPDATE, cargs)
+        self._se.trigger_event(PYTHON_BEFORE_SOURCE_UPDATE, cargs)
         if cargs.cancel:
             return False
         code = cargs.event_data.get("code", py_src.source_code)
@@ -892,8 +911,8 @@ class PySourceManager(LogMixin):
         eargs = EventArgs.from_args(cargs)
         eargs.event_data["result"] = result
         # triggers are in col row format
-        self._shared_event.trigger_event(f"{PYTHON_AFTER_SOURCE_UPDATE}_{col}_{row}", eargs)
-        self._shared_event.trigger_event(PYTHON_SOURCE_MODIFIED, eargs)
+        self._se.trigger_event(f"{PYTHON_AFTER_SOURCE_UPDATE}_{col}_{row}", eargs)
+        self._se.trigger_event(PYTHON_SOURCE_MODIFIED, eargs)
         self.log.debug("_update_item() Leaving.")
         return True
 
@@ -905,7 +924,7 @@ class PySourceManager(LogMixin):
         """
         self.log.debug("update_all() Entered.")
         self._mod_state.reset_module()
-        for key in self._data:
+        for key in self.src_data:
             co = CellObj.from_idx(col_idx=key[2], row_idx=key[1], sheet_idx=key[0])
             py_src_data = self._getitem_py_src_data(co)
             self._update_item(py_src_data)
@@ -921,7 +940,7 @@ class PySourceManager(LogMixin):
         self.log.debug("get_calc_cells() Entered.")
         cells = []
         sheet_idx = -1
-        for key in self._data:
+        for key in self.src_data:
             idx, row, col = key
             sheet = None
             if sheet is None or sheet_idx != idx:
@@ -960,7 +979,7 @@ class PySourceManager(LogMixin):
             return
 
         # reset the module dictionary to before index item changes
-        keys = list(self._data.keys())
+        keys = list(self.src_data.keys())
         key = keys[index]  # row, col format
         co = CellObj.from_idx(col_idx=key[2], row_idx=key[1], sheet_idx=key[0])
         # py_src = self[co]
@@ -976,6 +995,21 @@ class PySourceManager(LogMixin):
             py_src_data = self._getitem_py_src_data(cell_obj)
             self._update_item(py_src_data)
         self.log.debug("update_from_index(%i) Leaving.", index)
+
+    # region Cache
+    def clear_instance_cache(self) -> None:
+        """
+        Clears the instance cache.
+        """
+        gbl_cache = DocGlobals.get_current()
+
+        if self.cache_key in gbl_cache.mem_cache:
+            del gbl_cache.mem_cache[self.cache_key]
+            self.log.debug("clear_instance_cache() - Cleared instance cache.")
+
+        self._mod_state.clear_instance_cache()
+
+    # endregion Cache
 
     # region Properties
 
@@ -1002,5 +1036,11 @@ class PySourceManager(LogMixin):
     @property
     def qry_handler(self) -> QryHandlerT:
         return self._qry_handler
+
+    @property
+    def src_data(self) -> SortedDict:
+        if self._src_data is None:
+            self._init_sources()
+        return self._src_data
 
     # endregion Properties

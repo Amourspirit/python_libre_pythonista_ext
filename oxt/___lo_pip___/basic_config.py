@@ -45,6 +45,7 @@ class BasicConfig(metaclass=ConfigMeta):
         self._unload_after_install = bool(kwargs["unload_after_install"])
         self._log_indent = int(kwargs.get("log_indent", 0))
         self._run_imports = set(kwargs["run_imports"])
+        self._debug_skip_events = set(kwargs["debug_skip_events"])
         self._run_imports2 = set(kwargs["run_imports2"])
         self._run_imports_linux = set(kwargs["run_imports_linux"])
         self._run_imports_macos = set(kwargs["run_imports_macos"])
@@ -121,6 +122,15 @@ class BasicConfig(metaclass=ConfigMeta):
         The value for this property can be set in pyproject.toml (tool.oxt.config.cmd_clean_file_prefix)
         """
         return self._cmd_clean_file_prefix
+
+    @property
+    def debug_skip_events(self) -> Set[str]:
+        """
+        Gets the list of events to skip when debugging.
+
+        The value for this property can be set in pyproject.toml (tool.libre_pythonista.config.debug_skip_events)
+        """
+        return self._debug_skip_events
 
     @property
     def default_locale(self) -> List[str]:

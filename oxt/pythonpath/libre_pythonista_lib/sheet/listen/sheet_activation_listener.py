@@ -20,18 +20,20 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.const.event_const import SHEET_ACTIVATION
     from oxt.pythonpath.libre_pythonista_lib.doc.doc_globals import DocGlobals
     from oxt.pythonpath.libre_pythonista_lib.event.shared_event import SharedEvent
+    from oxt.pythonpath.libre_pythonista_lib.mixin.listener.trigger_state_mixin import TriggerStateMixin
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
 else:
     from libre_pythonista_lib.const.event_const import SHEET_ACTIVATION
     from libre_pythonista_lib.doc.doc_globals import DocGlobals
     from libre_pythonista_lib.event.shared_event import SharedEvent
+    from libre_pythonista_lib.mixin.listener.trigger_state_mixin import TriggerStateMixin
     from libre_pythonista_lib.log.log_mixin import LogMixin
 
 # is added when document view is complete.
 _KEY = "libre_pythonista_lib.sheet.listen.sheet_activation_listener.SheetActivationListener"
 
 
-class SheetActivationListener(XActivationEventListener, LogMixin, unohelper.Base):
+class SheetActivationListener(XActivationEventListener, LogMixin, TriggerStateMixin, unohelper.Base):
     """Singleton Class for Sheet Activation Listener."""
 
     def __new__(cls) -> SheetActivationListener:
@@ -50,33 +52,9 @@ class SheetActivationListener(XActivationEventListener, LogMixin, unohelper.Base
             return
         XActivationEventListener.__init__(self)
         LogMixin.__init__(self)
+        TriggerStateMixin.__init__(self)
         unohelper.Base.__init__(self)
-        self._trigger_events = True
         self._is_init = True
-
-    def set_trigger_state(self, trigger: bool) -> None:
-        """
-        Sets the state of the trigger events.
-
-        Args:
-            trigger (bool): The state to set for the trigger events. If True,
-                trigger events will be enabled. If False, they will be disabled.
-        Returns:
-            None
-        """
-        # removing this listener from the document does not seem to work.
-        # by setting the trigger to False, we can prevent the listener from firing.
-        self._trigger_events = trigger
-
-    def get_trigger_state(self) -> bool:
-        """
-        Returns the current state of the trigger events.
-
-        Returns:
-            bool: The state of the trigger events.
-        """
-
-        return self._trigger_events
 
     @override
     def activeSpreadsheetChanged(self, aEvent: ActivationEvent) -> None:  # noqa: N803
@@ -89,11 +67,11 @@ class SheetActivationListener(XActivationEventListener, LogMixin, unohelper.Base
 
             OOo 2.0
         """
-        if not self._trigger_events:
+        self.log.debug("activeSpreadsheetChanged")
+        if not self.is_trigger():
             self.log.debug("Trigger events is False. Not raising SHEET_ACTIVATION event.")
             return
 
-        self.log.debug("activeSpreadsheetChanged")
         eargs = EventArgs(self)
         eargs.event_data = DotDict(sheet=aEvent.ActiveSheet, event=aEvent)
         se = SharedEvent()

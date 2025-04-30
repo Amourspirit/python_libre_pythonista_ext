@@ -9,7 +9,7 @@ LOG_OPTIONS_CHANGED = "log_options_changed"
 LOG_PY_LOGGER_RESET = "py_logger_reset"
 SHEET_MODIFIED = "calc_sheet_modified"
 SHEET_ACTIVATION = "calc_sheet_activation"
-SHEET_CELL_MOVED = "calc_sheet_cell_moved"
+# SHEET_CELL_MOVED = "calc_sheet_cell_moved"
 CALC_FORMULAS_CALCULATED = "calc_formulas_calculated"
 """
 CALC_FORMULAS_CALCULATED event is triggered when the formulas are calculated.
@@ -42,3 +42,11 @@ CONTROL_INSERTED_CELL_IMG_LINKED = "control_inserted_cell_img_linked"
 DOC_GBL_DEL_INSTANCE = "doc_gbl_del_instance"
 
 GLB_MODULE_SET_GBL_VAR = "glb_module_set_gbl_var"
+
+CODE_CELL_EVENT_CELL_DELETED = "lp_cell_deleted"
+CODE_CELL_EVENT_CELL_PYC_FORMULA_REMOVED = "lp_cell_pyc_formula_removed"
+CODE_CELL_EVENT_CELL_CUSTOM_PROP_MODIFY = "lp_cell_custom_prop_modify"
+CODE_CELL_EVENT_CELL_MODIFIED = "lp_cell_modified"
+CODE_CELL_EVENT_CELL_MOVED = "lp_cell_moved"
+
+AFTER_CALCULATED_CELLS_MOVED = "AfterCalculatedCellsMoved"

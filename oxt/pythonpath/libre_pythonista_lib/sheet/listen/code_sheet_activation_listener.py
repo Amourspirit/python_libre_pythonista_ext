@@ -12,11 +12,13 @@ if TYPE_CHECKING:
     from com.sun.star.sheet import ActivationEvent
     from oxt.pythonpath.libre_pythonista_lib.sheet.listen.code_sheet_modify_listener import CodeSheetModifyListener
     from oxt.pythonpath.libre_pythonista_lib.doc.doc_globals import DocGlobals
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.sheet_event_mgr import SheetEventMgr
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.mixin.listener.trigger_state_mixin import TriggerStateMixin
 else:
     from libre_pythonista_lib.sheet.listen.code_sheet_modify_listener import CodeSheetModifyListener
     from libre_pythonista_lib.doc.doc_globals import DocGlobals
+    from libre_pythonista_lib.doc.calc.doc.sheet.sheet_event_mgr import SheetEventMgr
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.mixin.listener.trigger_state_mixin import TriggerStateMixin
 
@@ -65,13 +67,14 @@ class CodeSheetActivationListener(XActivationEventListener, LogMixin, TriggerSta
 
             OOo 2.0
         """
+        self.log.debug("activeSpreadsheetChanged")
         if not self.is_trigger():
             self.log.debug("activeSpreadsheetChanged() Trigger events is False. Returning.")
             return
-        self.log.debug("activeSpreadsheetChanged")
         doc = CalcDoc.from_current_doc()
         sheet = doc.sheets.get_sheet(aEvent.ActiveSheet)
         unique_id = sheet.unique_id
+        _ = SheetEventMgr(sheet)
         if not CodeSheetModifyListener.has_listener(unique_id):
             self.log.debug("Adding Modify Listener to sheet with unique id of: %s", unique_id)
             listener = CodeSheetModifyListener(unique_id)  # singleton

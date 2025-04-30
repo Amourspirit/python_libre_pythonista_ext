@@ -26,17 +26,24 @@ from ooodev.utils.helper.dot_dict import DotDict
 
 if TYPE_CHECKING:
     from com.sun.star.frame import XStatusListener
+    from oxt.___lo_pip___.debug.break_mgr import BreakMgr
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.state.cmd_delete_lp_cell import CmdDeleteLpCell
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
     from oxt.pythonpath.libre_pythonista_lib.event.shared_event import SharedEvent
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.res.res_resolver import ResResolver
+
 else:
+    from ___lo_pip___.debug.break_mgr import BreakMgr
     from libre_pythonista_lib.cq.cmd.calc.sheet.cell.state.cmd_delete_lp_cell import CmdDeleteLpCell
     from libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
     from libre_pythonista_lib.event.shared_event import SharedEvent
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.res.res_resolver import ResResolver
+
+break_mgr = BreakMgr()
+
+# break_mgr.add_breakpoint("libre_pythonista_lib.dispatch.dispatch_del_py_cell2.DispatchDelPyCell2.dispatch")
 
 
 class DispatchDelPyCell2(XDispatch, LogMixin, EventsPartial, unohelper.Base):
@@ -85,6 +92,9 @@ class DispatchDelPyCell2(XDispatch, LogMixin, EventsPartial, unohelper.Base):
         """
         try:
             self.log.debug("dispatch(): url=%s", URL.Main)
+            break_mgr.check_breakpoint(
+                "libre_pythonista_lib.dispatch.dispatch_del_py_cell2.DispatchDelPyCell2.dispatch"
+            )
             doc = CalcDoc.from_current_doc()
             sheet = doc.sheets[self._sheet]
             cell = sheet[self._cell]

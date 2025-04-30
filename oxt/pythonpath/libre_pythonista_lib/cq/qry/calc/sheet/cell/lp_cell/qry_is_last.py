@@ -7,13 +7,13 @@ from ooodev.utils.data_type.cell_obj import CellObj
 if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_base import QryBase
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_t import QryCellT
-    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.lp_cells.qry_lp_cell_last import QryLpCellsLast
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.lp_cells.qry_lp_cell_last import QryLpCellLast
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
 else:
     from libre_pythonista_lib.cq.qry.qry_base import QryBase
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_t import QryCellT
-    from libre_pythonista_lib.cq.qry.calc.sheet.lp_cells.qry_lp_cell_last import QryLpCellsLast
+    from libre_pythonista_lib.cq.qry.calc.sheet.lp_cells.qry_lp_cell_last import QryLpCellLast
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.utils.result import Result
 
@@ -26,16 +26,18 @@ class QryIsLast(QryBase, LogMixin, QryCellT[Result[bool, None] | Result[None, Ex
     a boolean success or None/Exception failure.
     """
 
-    def __init__(self, cell: CalcCell) -> None:
+    def __init__(self, cell: CalcCell, from_sheet: bool = False) -> None:
         """
         Initialize the query with a target cell.
 
         Args:
             cell (CalcCell): The cell to check if it's last
+            from_sheet (bool, optional): If True, gets cells directly from sheet. If False, gets from Python source manager. Defaults to False
         """
         QryBase.__init__(self)
         LogMixin.__init__(self)
         self._cell = cell
+        self._from_sheet = from_sheet
         self.log.debug("init done for cell %s", cell.cell_obj)
 
     def _qry_lp_cells_last(self) -> CellObj:
@@ -48,7 +50,7 @@ class QryIsLast(QryBase, LogMixin, QryCellT[Result[bool, None] | Result[None, Ex
         Raises:
             Exception: If query fails to find last cell
         """
-        qry = QryLpCellsLast(sheet=self._cell.calc_sheet)
+        qry = QryLpCellLast(sheet=self._cell.calc_sheet, from_sheet=self._from_sheet)
         result = self._execute_qry(qry)
         if Result.is_success(result):
             return result.data

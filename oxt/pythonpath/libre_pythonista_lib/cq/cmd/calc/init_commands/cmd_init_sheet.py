@@ -10,6 +10,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.cache.calc.sheet.sheet_cache import get_sheet_cache
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cmd_sheet_ensure_forms import CmdSheetEnsureForms
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.qry_sheet_event_mgr import QrySheetEventMgr
 else:
     from libre_pythonista_lib.utils.custom_ext import override
     from libre_pythonista_lib.cq.cmd.cmd_base import CmdBase
@@ -18,6 +19,7 @@ else:
     from libre_pythonista_lib.cache.calc.sheet.sheet_cache import get_sheet_cache
     from libre_pythonista_lib.cq.cmd.calc.sheet.cmd_sheet_t import CmdSheetT
     from libre_pythonista_lib.cq.cmd.calc.sheet.cmd_sheet_ensure_forms import CmdSheetEnsureForms
+    from libre_pythonista_lib.cq.qry.calc.sheet.qry_sheet_event_mgr import QrySheetEventMgr
 
     CalcSheet = Any
 
@@ -35,6 +37,15 @@ class CmdInitSheet(CmdBase, List[Type[CmdSheetT]], LogMixin, CmdSheetT):
         self.append(CmdSheetCalcFormula)
         self.append(CmdSheetEnsureForms)
         self.log.debug("init done for sheet %s", sheet.name)
+
+    def _init_queries(self) -> None:
+        """
+        Initializes the queries for the document.
+        """
+        # SheetEventMgr for new sheets are init via sheet.listen.code_sheet_activation_listener.CodeSheetActivationListener
+        qry_sheet_event_mgr = QrySheetEventMgr(sheet=self._sheet)
+        self._execute_qry(qry_sheet_event_mgr)
+        self.log.debug("Init QrySheetEventMgr done.")
 
     @override
     def execute(self) -> None:
@@ -66,6 +77,7 @@ class CmdInitSheet(CmdBase, List[Type[CmdSheetT]], LogMixin, CmdSheetT):
                     self._undo()  # Undo all successfully executed commands.
                     self.success = False  # Batch command failed.
                     return
+            self._init_queries()
             self.success = True  # Batch command succeeded.
             self._cache[_KEY] = "1"
         except Exception as e:

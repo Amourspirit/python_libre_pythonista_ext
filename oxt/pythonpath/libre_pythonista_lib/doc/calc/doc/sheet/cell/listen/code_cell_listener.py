@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, cast, Callable, TYPE_CHECKING
+from typing import cast, TYPE_CHECKING
 
 import unohelper
 from com.sun.star.util import XModifyListener
@@ -13,6 +13,7 @@ from ooodev.utils.helper.dot_dict import DotDict
 
 
 if TYPE_CHECKING:
+    from oxt.pythonpath.libre_pythonista_lib.event.shared_event import SharedEvent
     from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
     from com.sun.star.lang import EventObject
     from com.sun.star.sheet import SheetCell  # service
@@ -29,7 +30,15 @@ if TYPE_CHECKING:
     )
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.uno_cell.qry_cell_sheet_name import QryCellSheetName
+    from oxt.pythonpath.libre_pythonista_lib.const.event_const import (
+        CODE_CELL_EVENT_CELL_DELETED,
+        CODE_CELL_EVENT_CELL_PYC_FORMULA_REMOVED,
+        CODE_CELL_EVENT_CELL_CUSTOM_PROP_MODIFY,
+        CODE_CELL_EVENT_CELL_MODIFIED,
+        CODE_CELL_EVENT_CELL_MOVED,
+    )
 else:
+    from libre_pythonista_lib.event.shared_event import SharedEvent
     from libre_pythonista_lib.utils.custom_ext import override
     from ___lo_pip___.basic_config import BasicConfig as Config
     from libre_pythonista_lib.cq.qry.qry_handler import QryHandler
@@ -39,9 +48,16 @@ else:
     from libre_pythonista_lib.cq.qry.calc.sheet.uno_cell.qry_cell_sheet_name import QryCellSheetName
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.mixin.listener.trigger_state_mixin import TriggerStateMixin
+    from libre_pythonista_lib.const.event_const import (
+        CODE_CELL_EVENT_CELL_DELETED,
+        CODE_CELL_EVENT_CELL_PYC_FORMULA_REMOVED,
+        CODE_CELL_EVENT_CELL_CUSTOM_PROP_MODIFY,
+        CODE_CELL_EVENT_CELL_MODIFIED,
+        CODE_CELL_EVENT_CELL_MOVED,
+    )
 
 
-class CodeCellListener(XModifyListener, LogMixin, TriggerStateMixin, EventsPartial, unohelper.Base):
+class CodeCellListener(XModifyListener, LogMixin, TriggerStateMixin, unohelper.Base):
     """
     Code Cell Listener
 
@@ -61,7 +77,6 @@ class CodeCellListener(XModifyListener, LogMixin, TriggerStateMixin, EventsParti
         XModifyListener.__init__(self)
         LogMixin.__init__(self)
         TriggerStateMixin.__init__(self)
-        EventsPartial.__init__(self)
         unohelper.Base.__init__(self)
         self.log.debug("Init")
         self._absolute_name = absolute_name
@@ -83,12 +98,14 @@ class CodeCellListener(XModifyListener, LogMixin, TriggerStateMixin, EventsParti
             if not self.is_trigger():
                 self.log.debug("modified() Trigger events is False. Returning.")
                 return
+            se = SharedEvent()
+            self.log.debug("Modified Event for cell: %s", self.cell_obj)
 
             qry_cell_deleted = QryCellIsDeleted(cell=aEvent.Source)  # type: ignore
             is_cell_deleted = self._qry_handler.handle(qry_cell_deleted)
 
             if is_cell_deleted:
-                self.log.debug("modified: Cell is deleted")
+                self.log.debug("modified() Cell is deleted")
                 # cell is deleted
                 calc_cell = self._get_calc_cell(cell=aEvent.Source)  # type: ignore
                 eargs = EventArgs(self)
@@ -103,7 +120,7 @@ class CodeCellListener(XModifyListener, LogMixin, TriggerStateMixin, EventsParti
                 eargs.event_data = dd
                 for key, value in dd.items():
                     calc_cell.extra_data[key] = value
-                self.trigger_event("cell_deleted", eargs)
+                se.trigger_event(CODE_CELL_EVENT_CELL_DELETED, eargs)
                 # self.log.debug("modified: Cell is deleted")
                 return
             name = aEvent.Source.AbsoluteName  # type: ignore
@@ -121,14 +138,13 @@ class CodeCellListener(XModifyListener, LogMixin, TriggerStateMixin, EventsParti
                 eargs.event_data = dd
                 for key, value in dd.items():
                     calc_cell.extra_data[key] = value
-                trigger_name = "cell_pyc_formula_removed"
-                self.log.debug("modified: Triggering event: %s", trigger_name)
-                self.trigger_event(trigger_name, eargs)
+                trigger_name = CODE_CELL_EVENT_CELL_PYC_FORMULA_REMOVED
+                self.log.debug("modified() Triggering event: %s", trigger_name)
+                se.trigger_event(trigger_name, eargs)
                 return
             if name == self._absolute_name:
                 eargs = EventArgs(self)
                 calc_cell = self._get_calc_cell(cell=aEvent.Source)  # type: ignore
-                # cc = CellCache(calc_cell.calc_doc)
                 dd = DotDict(
                     absolute_name=self._absolute_name,
                     event_obj=aEvent,
@@ -140,12 +156,6 @@ class CodeCellListener(XModifyListener, LogMixin, TriggerStateMixin, EventsParti
                 try:
                     for key, value in dd.items():
                         calc_cell.extra_data[key] = value
-                    # doc = CalcDoc.from_current_doc()
-                    # sheet = doc.sheets[self._get_sheet_name(event.Source)]
-                    # cell = cast("SheetCell", event.Source)
-                    # cell_addr = cell.getCellAddress()
-                    # cell_obj = CellObj.from_idx(col_idx=cell_addr.Column, row_idx=cell_addr.Row, sheet_idx=cell_addr.Sheet)
-                    # calc_cell = CalcCell(owner=sheet, cell=cell_obj, lo_inst=sheet.lo_inst)
                     cfg = Config()
                     key = f"{cfg.cell_cp_prefix}modify_trigger_event"
                     if calc_cell.has_custom_property(key):
@@ -155,18 +165,22 @@ class CodeCellListener(XModifyListener, LogMixin, TriggerStateMixin, EventsParti
                         eargs.event_data.calc_cell = calc_cell
                         eargs.event_data.cell_cp_codename = cfg.cell_cp_codename
 
-                        self.log.debug("modified: Triggering event: %s", trigger_name)
-                        self.trigger_event("cell_custom_prop_modify", eargs)
+                        self.log.debug("modified() Triggering event: %s", trigger_name)
+                        se.trigger_event(CODE_CELL_EVENT_CELL_CUSTOM_PROP_MODIFY, eargs)
                         if eargs.event_data.remove_custom_property and calc_cell.has_custom_property(key):
                             calc_cell.remove_custom_property(key)
                     else:
-                        self.trigger_event("cell_modified", eargs)
+                        se.trigger_event(CODE_CELL_EVENT_CELL_MODIFIED, eargs)
                 except Exception as e:
-                    self.log.error(f"modified: {e}", exc_info=True)
+                    self.log.error(f"modified() {e}", exc_info=True)
                     return
 
-                # self.log.debug("CodeCellListener: modified: Cell is the same")
             else:
+                self.log.debug(
+                    "modified() Cell moved. Old Absolute Name: %s. New Absolute Name: %s", self._absolute_name, name
+                )
+                old_cell_obj = self.cell_obj.copy()
+                new_cell_obj = CellObj.from_cell(name)
                 eargs = EventArgs(self)
                 calc_cell = self._get_calc_cell(cell=aEvent.Source)  # type: ignore
                 eargs.event_data = DotDict(
@@ -176,22 +190,23 @@ class CodeCellListener(XModifyListener, LogMixin, TriggerStateMixin, EventsParti
                     code_name=self.code_name,
                     deleted=False,
                     calc_cell=calc_cell,
+                    old_cell_obj=old_cell_obj,
+                    new_cell_obj=new_cell_obj,
                     # cell_info=ci,
                 )
-                self.trigger_event("cell_moved", eargs)
                 self._absolute_name = name
+                self.cell_obj = new_cell_obj.copy()
+                self.log.debug("updated internal cell references")
+                self.log.debug("modified() Triggering event: %s", CODE_CELL_EVENT_CELL_MOVED)
+                se.trigger_event(CODE_CELL_EVENT_CELL_MOVED, eargs)
         except Exception:
             self.log.exception("modified() error.")
             raise
 
     @override
     def disposing(self, Source: EventObject) -> None:  # noqa: N803
-        eargs = EventArgs(self)
-        eargs.event_data = DotDict(absolute_name=self._absolute_name, event_obj=Source, code_name=self.code_name)
-        self.trigger_event("cell_disposing", eargs)
         self.log.debug("disposing")
-        self._absolute_name = ""
-        self.code_name = ""
+        self.set_trigger_state(False)
         self.log.debug("disposing: Done")
 
     def _get_calc_cell(self, cell: SheetCell) -> CalcCell:
@@ -218,56 +233,26 @@ class CodeCellListener(XModifyListener, LogMixin, TriggerStateMixin, EventsParti
             self.log.error("_get_calc_cell() error.", exc_info=True)
             raise
 
-    def update_absolute_name(self, name: str, cell_obj: CellObj) -> None:
-        """
-        Updates the Absolute Name of the cell.
+    # def update_absolute_name(self, name: str, cell_obj: CellObj) -> None:
+    #     """
+    #     Updates the Absolute Name of the cell.
 
-        Args:
-            name (str): The new Absolute Name of the cell.
-            cell_obj (CellObj): The new Cell Object.
+    #     Args:
+    #         name (str): The new Absolute Name of the cell.
+    #         cell_obj (CellObj): The new Cell Object.
 
-        Note:
-            When a cell has been moved the Absolute Name will be updated.
-            When the current instance was created it captured the Absolute Name of the cell.
-            Other event may occur that refresh the cell's Position such as
-            the ``CellCache.update_sheet_cell_addr_prop()`` and the ``CellMgr.update_cell_addr_prop()``.
-        """
-        old_name = self._absolute_name
-        old_co = self.cell_obj
-        is_db = self.log.is_debug
-        self._absolute_name = name
-        self.cell_obj = cell_obj
-        if is_db:
-            self.log.debug("update_absolute_name: Old Name: %s New Name: %s", old_name, name)
-            self.log.debug("update_absolute_name: Old Cell Obj: %s New Cell Obj: %s", old_co, self.cell_obj)
-            self.log.debug("update_absolute_name: Done")
-
-    def subscribe_cell_deleted(self, cb: Callable[[Any, Any], None]) -> None:
-        self.subscribe_event("cell_deleted", cb)
-
-    def subscribe_cell_modified(self, cb: Callable[[Any, Any], None]) -> None:
-        self.subscribe_event("cell_modified", cb)
-
-    def subscribe_cell_custom_prop_modify(self, cb: Callable[[Any, Any], None]) -> None:
-        self.subscribe_event("cell_custom_prop_modify", cb)
-
-    def subscribe_cell_moved(self, cb: Callable[[Any, Any], None]) -> None:
-        self.subscribe_event("cell_moved", cb)
-
-    def subscribe_cell_pyc_formula_removed(self, cb: Callable[[Any, Any], None]) -> None:
-        self.subscribe_event("cell_pyc_formula_removed", cb)
-
-    def unsubscribe_cell_deleted(self, cb: Callable[[Any, Any], None]) -> None:
-        self.unsubscribe_event("cell_deleted", cb)
-
-    def unsubscribe_cell_modified(self, cb: Callable[[Any, Any], None]) -> None:
-        self.unsubscribe_event("cell_modified", cb)
-
-    def unsubscribe_cell_moved(self, cb: Callable[[Any, Any], None]) -> None:
-        self.unsubscribe_event("cell_moved", cb)
-
-    def unsubscribe_cell_custom_prop_modify(self, cb: Callable[[Any, Any], None]) -> None:
-        self.unsubscribe_event("cell_custom_prop_modify", cb)
-
-    def unsubscribe_cell_pyc_formula_removed(self, cb: Callable[[Any, Any], None]) -> None:
-        self.unsubscribe_event("cell_pyc_formula_removed", cb)
+    #     Note:
+    #         When a cell has been moved the Absolute Name will be updated.
+    #         When the current instance was created it captured the Absolute Name of the cell.
+    #         Other event may occur that refresh the cell's Position such as
+    #         the ``CellCache.update_sheet_cell_addr_prop()`` and the ``CellMgr.update_cell_addr_prop()``.
+    #     """
+    #     old_name = self._absolute_name
+    #     old_co = self.cell_obj
+    #     is_db = self.log.is_debug
+    #     self._absolute_name = name
+    #     self.cell_obj = cell_obj
+    #     if is_db:
+    #         self.log.debug("update_absolute_name: Old Name: %s New Name: %s", old_name, name)
+    #         self.log.debug("update_absolute_name: Old Cell Obj: %s New Cell Obj: %s", old_co, self.cell_obj)
+    #         self.log.debug("update_absolute_name: Done")
