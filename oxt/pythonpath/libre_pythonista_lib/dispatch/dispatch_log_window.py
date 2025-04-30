@@ -11,16 +11,10 @@ from ooo.dyn.frame.feature_state_event import FeatureStateEvent
 
 
 if TYPE_CHECKING:
-    try:
-        # python 3.12+
-        from typing import override  # type: ignore
-    except ImportError:
-        from typing_extensions import override
+    from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
     from com.sun.star.frame import XStatusListener
 else:
-
-    def override(func):  # noqa: ANN001, ANN201
-        return func
+    from libre_pythonista_lib.utils.custom_ext import override
 
 
 class DispatchLogWindow(XDispatch, unohelper.Base):

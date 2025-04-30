@@ -1,6 +1,6 @@
 # region imports
-from __future__ import unicode_literals, annotations
-from typing import Any, TYPE_CHECKING
+from __future__ import annotations
+from typing import Any, Tuple, TYPE_CHECKING
 
 import unohelper
 import contextlib
@@ -25,15 +25,10 @@ if TYPE_CHECKING:
         from typing import override  # type: ignore
     except ImportError:
         from typing_extensions import override
-    from ooodev.loader import Lo
-    from ooodev.calc import CalcDoc
-    from ...___lo_pip___.oxt_logger import OxtLogger
+    from oxt.___lo_pip___.oxt_logger import OxtLogger
 else:
     override = lambda func: func  # noqa: E731
     _CONDITIONS_MET = _conditions_met()
-    if _CONDITIONS_MET:
-        from ooodev.loader import Lo  # noqa: F401
-        from ooodev.calc import CalcDoc  # noqa: F401
 
 # endregion imports
 
@@ -46,12 +41,12 @@ class UnLoadingJob(XJob, unohelper.Base):
     SERVICE_NAMES = ("com.sun.star.task.Job",)
 
     @classmethod
-    def get_imple(cls):
+    def get_imple(cls) -> Tuple[Any, str, Tuple[str, ...]]:
         return (cls, cls.IMPLE_NAME, cls.SERVICE_NAMES)
 
     # region Init
 
-    def __init__(self, ctx):
+    def __init__(self, ctx: object) -> None:
         XJob.__init__(self)
         unohelper.Base.__init__(self)
         self.ctx = ctx
@@ -62,15 +57,13 @@ class UnLoadingJob(XJob, unohelper.Base):
 
     # region execute
     @override
-    def execute(self, Arguments: Any) -> None:  # type: ignore
+    def execute(self, Arguments: Any) -> None:  # type: ignore  # noqa: ANN401, N803
         self._logger.debug("execute")
         try:
-            # loader = Lo.load_office()
-            self._logger.debug(f"Args Length: {len(Arguments)}")
             arg1 = Arguments[0]
 
             for struct in arg1.Value:
-                self._logger.debug(f"Struct: {struct.Name}")
+                self._logger.debug("Struct: %s", struct.Name)
                 if struct.Name == "Model":
                     self.document = struct.Value
                     self._logger.debug("Document Found")
@@ -102,8 +95,7 @@ class UnLoadingJob(XJob, unohelper.Base):
 
 # region Implementation
 
-g_TypeTable = {}
-g_ImplementationHelper = unohelper.ImplementationHelper()
+g_ImplementationHelper = unohelper.ImplementationHelper()  # noqa: N816
 g_ImplementationHelper.addImplementation(*UnLoadingJob.get_imple())
 
 # endregion Implementation

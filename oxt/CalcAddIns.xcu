@@ -4,7 +4,6 @@
 	oor:package="org.openoffice.Office">
 	<node oor:name="AddInInfo">
 		<node oor:name="___lo_identifier___.PyImpl" oor:op="replace">
-
 			<node oor:name="AddInFunctions">
 				<node oor:name="pyc" oor:op="replace">
 					<prop oor:name="DisplayName">

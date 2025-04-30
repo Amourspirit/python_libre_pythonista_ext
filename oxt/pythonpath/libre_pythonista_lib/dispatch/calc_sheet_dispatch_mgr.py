@@ -10,19 +10,18 @@ from ooodev.events.args.cancel_event_args import CancelEventArgs
 from ooodev.utils.helper.dot_dict import DotDict
 
 from ..const import (
-    PATH_CODE_EDIT,
+    PATH_CELL_CTl_UPDATE,
+    PATH_CELL_SELECT_RECALC,
+    PATH_CELL_SELECT,
+    PATH_CODE_DEL,
     PATH_CODE_EDIT_MB,
+    PATH_DATA_TBL_CARD,
+    PATH_DATA_TBL_STATE,
+    PATH_DF_CARD,
     PATH_DF_STATE,
     PATH_DS_STATE,
-    PATH_DATA_TBL_STATE,
-    PATH_CODE_DEL,
     PATH_PY_OBJ_STATE,
-    PATH_CELL_SELECT,
-    PATH_CELL_SELECT_RECALC,
-    PATH_DF_CARD,
-    PATH_DATA_TBL_CARD,
     PATH_SEL_RNG,
-    PATH_CELL_CTl_UPDATE,
 )
 
 from ..const.event_const import LP_DISPATCHED_CMD, LP_DISPATCHING_CMD
@@ -30,9 +29,15 @@ from ..log.log_inst import LogInst
 from ..event.shared_event import SharedEvent
 
 if TYPE_CHECKING:
-    from ....___lo_pip___.config import Config
+    from oxt.___lo_pip___.config import Config
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.general.qry_ctx_runtime_uid import QryCtxRuntimeUID
+    from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
 else:
     from ___lo_pip___.config import Config
+    from libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
+    from libre_pythonista_lib.cq.qry.general.qry_ctx_runtime_uid import QryCtxRuntimeUID
+    from libre_pythonista_lib.utils.result import Result
 
 
 class CalcSheetDispatchMgr:
@@ -40,6 +45,7 @@ class CalcSheetDispatchMgr:
         self.ctx = ctx
         self.frame = frame
         self._config = Config()
+        self._runtime_id = None
 
     def _convert_query_to_dict(self, query: str) -> Dict[str, str]:
         query_dict = parse_qs(query)
@@ -50,38 +56,7 @@ class CalcSheetDispatchMgr:
         se = SharedEvent()
         doc = Lo.current_doc
 
-        # print("CalcSheetDispatchMgr: URL.Main", URL.Main)
-
-        if URL.Path == PATH_CODE_EDIT:
-            try:
-                from .dispatch_edit_py_cell import DispatchEditPyCell
-            except ImportError:
-                log.exception("DispatchEditPyCell import error")
-                raise
-
-            try:
-                args = self._convert_query_to_dict(URL.Arguments)
-
-                cargs = CancelEventArgs(self)
-                cargs.event_data = DotDict(url=URL, cmd=URL.Complete, doc=doc, **args)
-                se.trigger_event(LP_DISPATCHING_CMD, cargs)
-                if cargs.cancel is True and cargs.handled is False:
-                    return None
-
-                with log.indent(True):
-                    log.debug("CalcSheetDispatchMgr.dispatch: dispatching DispatchEditPyCell")
-                result = DispatchEditPyCell(sheet=args["sheet"], cell=args["cell"])
-                result.dispatch(URL, Arguments)
-
-                eargs = EventArgs.from_args(cargs)
-                eargs.event_data.dispatch = result
-                se.trigger_event(LP_DISPATCHED_CMD, eargs)
-                return
-            except Exception:
-                log.exception("Dispatch Error: %s", URL.Main)
-                return None
-
-        elif URL.Path == PATH_CODE_EDIT_MB:
+        if URL.Path == PATH_CODE_EDIT_MB:
             is_experiential = self._config.lp_settings.experimental_editor
             if is_experiential:
                 try:
@@ -93,11 +68,11 @@ class CalcSheetDispatchMgr:
                     raise
             else:
                 try:
-                    from .dispatch_edit_py_cell_mb import (
-                        DispatchEditPyCellMb as DispatchEditPyCell,
+                    from .dispatch_edit_py_cell_mb2 import (
+                        DispatchEditPyCellMb2 as DispatchEditPyCell,
                     )
                 except ImportError:
-                    log.exception("DispatchEditPyCellMb import error")
+                    log.exception("DispatchEditPyCellMb2 import error")
                     raise
 
             try:
@@ -121,7 +96,7 @@ class CalcSheetDispatchMgr:
                     if is_experiential:
                         log.debug("CalcSheetDispatchMgr.dispatch: dispatching DispatchEditPyCellWv")
                     else:
-                        log.debug("CalcSheetDispatchMgr.dispatch: dispatching DispatchEditPyCellMb")
+                        log.debug("CalcSheetDispatchMgr.dispatch: dispatching DispatchEditPyCellMb2")
                 result = DispatchEditPyCell(sheet=args["sheet"], cell=args["cell"], in_thread=in_thread)
                 result.dispatch(URL, Arguments)
 
@@ -163,9 +138,9 @@ class CalcSheetDispatchMgr:
 
         elif URL.Path == PATH_CODE_DEL:
             try:
-                from .dispatch_del_py_cell import DispatchDelPyCell
+                from .dispatch_del_py_cell2 import DispatchDelPyCell2
             except ImportError:
-                log.exception("DispatchDelPyCell import error")
+                log.exception("DispatchDelPyCell2 import error")
                 raise
             try:
                 args = self._convert_query_to_dict(URL.Arguments)
@@ -177,8 +152,8 @@ class CalcSheetDispatchMgr:
                     return None
 
                 with log.indent(True):
-                    log.debug("CalcSheetDispatchMgr.dispatch: dispatching DispatchDelPyCell")
-                result = DispatchDelPyCell(sheet=args["sheet"], cell=args["cell"])
+                    log.debug("CalcSheetDispatchMgr.dispatch: dispatching DispatchDelPyCell2")
+                result = DispatchDelPyCell2(sheet=args["sheet"], cell=args["cell"])
                 result.dispatch(URL, Arguments)
 
                 eargs = EventArgs.from_args(cargs)
@@ -219,9 +194,9 @@ class CalcSheetDispatchMgr:
 
         elif URL.Path == PATH_DF_STATE:
             try:
-                from .dispatch_toggle_df_state import DispatchToggleDfState
+                from .dispatch_toggle_df_state2 import DispatchToggleDfState2
             except ImportError:
-                log.exception("DispatchToggleDfState import error")
+                log.exception("DispatchToggleDfState2 import error")
                 raise
             try:
                 args = self._convert_query_to_dict(URL.Arguments)
@@ -233,8 +208,8 @@ class CalcSheetDispatchMgr:
                     return None
 
                 with log.indent(True):
-                    log.debug("CalcSheetDispatchMgr.dispatch: dispatching DispatchToggleDfState")
-                result = DispatchToggleDfState(sheet=args["sheet"], cell=args["cell"])
+                    log.debug("CalcSheetDispatchMgr.dispatch: dispatching DispatchToggleDfState2")
+                result = DispatchToggleDfState2(sheet=args["sheet"], cell=args["cell"], uid=self.runtime_uid)
                 result.dispatch(URL, Arguments)
 
                 eargs = EventArgs.from_args(cargs)
@@ -304,9 +279,9 @@ class CalcSheetDispatchMgr:
 
         elif URL.Path == PATH_CELL_CTl_UPDATE:
             try:
-                from .dispatch_ctl_update import DispatchCtlUpdate
+                from .dispatch_ctl_update2 import DispatchCtlUpdate2
             except ImportError:
-                log.exception("DispatchCtlUpdate import error")
+                log.exception("DispatchCtlUpdate2 import error")
                 raise
 
             try:
@@ -319,8 +294,8 @@ class CalcSheetDispatchMgr:
                     return None
 
                 with log.indent(True):
-                    log.debug("CalcSheetDispatchMgr.dispatch: dispatching DispatchCtlUpdate")
-                result = DispatchCtlUpdate(sheet=args["sheet"], cell=args["cell"])
+                    log.debug("CalcSheetDispatchMgr.dispatch: dispatching DispatchCtlUpdate2")
+                result = DispatchCtlUpdate2(sheet=args["sheet"], cell=args["cell"])
                 result.dispatch(URL, Arguments)
 
                 eargs = EventArgs.from_args(cargs)
@@ -388,9 +363,9 @@ class CalcSheetDispatchMgr:
 
         elif URL.Path == PATH_DATA_TBL_STATE:
             try:
-                from .dispatch_toggle_data_tbl_state import DispatchToggleDataTblState
+                from .dispatch_toggle_data_tbl_state2 import DispatchToggleDataTblState2
             except ImportError:
-                log.exception("DispatchToggleDataTblState import error")
+                log.exception("DispatchToggleDataTblState2 import error")
                 raise
             try:
                 args = self._convert_query_to_dict(URL.Arguments)
@@ -402,8 +377,8 @@ class CalcSheetDispatchMgr:
                     return None
 
                 with log.indent(True):
-                    log.debug("CalcSheetDispatchMgr.dispatch: dispatching DispatchToggleDataTblState")
-                result = DispatchToggleDataTblState(sheet=args["sheet"], cell=args["cell"])
+                    log.debug("CalcSheetDispatchMgr.dispatch: dispatching DispatchToggleDataTblState2")
+                result = DispatchToggleDataTblState2(sheet=args["sheet"], cell=args["cell"], uid=self.runtime_uid)
                 result.dispatch(URL, Arguments)
 
                 eargs = EventArgs.from_args(cargs)
@@ -443,3 +418,12 @@ class CalcSheetDispatchMgr:
                 return None
 
         return None
+
+    @property
+    def runtime_uid(self) -> str:
+        if self._runtime_id is None:
+            qry_handler = QryHandlerFactory.get_qry_handler()
+            qry = QryCtxRuntimeUID(ctx=self.ctx)
+            qry_result = qry_handler.handle(qry)
+            self._runtime_id = qry_result.data if Result.is_success(qry_result) else ""
+        return self._runtime_id

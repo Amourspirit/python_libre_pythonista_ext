@@ -1,14 +1,13 @@
 from __future__ import annotations
 from typing import Any, cast, TYPE_CHECKING, Tuple
-import contextlib
 
 from ooodev.calc import CellObj, RangeObj, RangeValues
-from ooodev.calc import CalcDoc, CalcSheet, CalcCellRange
+from ooodev.calc import CalcDoc, CalcCellRange
 from ooodev.utils.data_type.rng.range_converter import RangeConverter
 
 if TYPE_CHECKING:
     from com.sun.star.table import CellRangeAddress
-    from .....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from oxt.___lo_pip___.oxt_logger.oxt_logger import OxtLogger
 else:
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
 
@@ -18,14 +17,14 @@ class RangeUtil:
     Utility class for working Calc Ranges
     """
 
-    def __init__(self, doc: CalcDoc):
+    def __init__(self, doc: CalcDoc) -> None:
         self._doc = doc
         self._convertor = None
         self._log = OxtLogger(log_name=self.__class__.__name__)
         with self._log.indent(True):
             self._log.debug("Init")
 
-    def get_range(self, *args) -> RangeObj:
+    def get_range(self, *args: CellObj) -> RangeObj:
         with self._log.indent(True):
             converter = self.converter
             return converter.get_range_obj(*args)

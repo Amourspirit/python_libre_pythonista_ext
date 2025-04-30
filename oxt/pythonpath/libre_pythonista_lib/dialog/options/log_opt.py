@@ -1,6 +1,5 @@
 # region Imports
 from __future__ import annotations
-import uno
 from typing import Any, cast, TYPE_CHECKING
 import logging
 
@@ -17,37 +16,59 @@ from ooodev.utils.info import Info
 from ooodev.utils.kind.tri_state_kind import TriStateKind
 from ooodev.utils.sys_info import SysInfo
 
-from ...doc_props.calc_props import CalcProps
-from ...event.shared_event import SharedEvent
-from ...const.event_const import LOG_OPTIONS_CHANGED
 
 if TYPE_CHECKING:
     from com.sun.star.awt import ActionEvent
     from com.sun.star.awt import ItemEvent
+    from ooodev.calc import CalcDoc
     from ooodev.dialog.dl_control import CtlRadioButton, CtlCheckBox
 
-    from .....___lo_pip___.config import Config
-    from .....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
-    from .....___lo_pip___.lo_util.resource_resolver import ResourceResolver
+    from oxt.___lo_pip___.config import Config
+    from oxt.___lo_pip___.lo_util.resource_resolver import ResourceResolver
+    from oxt.pythonpath.libre_pythonista_lib.event.shared_event import SharedEvent
+    from oxt.pythonpath.libre_pythonista_lib.const.event_const import LOG_OPTIONS_CHANGED
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_calc_props import QryCalcProps
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.cmd_calc_props import CmdCalcProps
+    from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
+    from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
 else:
     from ___lo_pip___.config import Config
-    from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
     from ___lo_pip___.lo_util.resource_resolver import ResourceResolver
+    from libre_pythonista_lib.event.shared_event import SharedEvent
+    from libre_pythonista_lib.const.event_const import LOG_OPTIONS_CHANGED
+    from libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
+    from libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
+    from libre_pythonista_lib.cq.qry.calc.doc.qry_calc_props import QryCalcProps
+    from libre_pythonista_lib.cq.cmd.calc.doc.cmd_calc_props import CmdCalcProps
+    from libre_pythonista_lib.log.log_mixin import LogMixin
+    from libre_pythonista_lib.utils.result import Result
+
+    CalcDoc = Any
 
 # endregion Imports
 
 
-class LogOpt:
+class LogOpt(LogMixin):
     # pylint: disable=unused-argument
     # region Init
     def __init__(self) -> None:
-        self._doc = Lo.current_doc
-        self._log = OxtLogger(log_name=self.__class__.__name__)
-        self._log.debug("Init Class")
+        LogMixin.__init__(self)
+        self._doc = cast(CalcDoc, Lo.current_doc)
+        self.log.debug("Init Class")
         self._platform = SysInfo.get_platform()
         self._cfg = Config()  # singleton
+        self._cmd_handler = CmdHandlerFactory.get_cmd_handler()
+        self._qry_handler = QryHandlerFactory.get_qry_handler()
         self._rr = ResourceResolver(ctx=self._doc.lo_inst.get_context())
-        self._calc_props = CalcProps(self._doc)
+        qry_props = QryCalcProps(doc=self._doc)
+        qry_props_result = self._qry_handler.handle(qry_props)
+        if Result.is_success(qry_props_result):
+            self._calc_props = qry_props_result.data.copy()
+        else:
+            raise qry_props_result.error
+
         self._border_kind = BorderKind.BORDER_SIMPLE
         if self._platform == SysInfo.PlatformEnum.MAC:
             self._box_height = 30
@@ -83,7 +104,7 @@ class LogOpt:
         fd.Height = 10
         self._fd = fd
         self._init_dialog()
-        self._log.debug("Init Class Done.")
+        self.log.debug("Init Class Done.")
 
     def _init_dialog(self) -> None:
         """Create dialog and add controls."""
@@ -165,10 +186,7 @@ class LogOpt:
     def _init_group_boxes(self) -> None:
         # self._ctl_format_text
         sz = self._ctl_format_text.view.getPosSize()
-        if self._platform == SysInfo.PlatformEnum.MAC:
-            height = 160
-        else:
-            height = 140
+        height = 160 if self._platform == SysInfo.PlatformEnum.MAC else 140
         self._ctl_gb1 = self._dialog.insert_group_box(
             x=self._margin,
             y=self._padding + sz.Y + sz.Height,
@@ -336,23 +354,27 @@ class LogOpt:
     # region Handle Results
     def _handle_results(self, result: int) -> None:
         """Display a message if the OK button has been clicked"""
-        with self._log.indent(True):
+        with self.log.indent(True):
             try:
                 if result == MessageBoxResultsEnum.OK.value:
                     if self._group1_opt:
-                        if self._log.is_debug:
-                            self._log.debug(f"Group 1 Tag: {self._group1_opt.tag}")
+                        if self.log.is_debug:
+                            self.log.debug(f"Group 1 Tag: {self._group1_opt.tag}")
                         self._calc_props.log_level = int(self._group1_opt.tag)
                     else:
-                        self._log.debug("Group 1 Option is None")
+                        self.log.debug("Group 1 Option is None")
                         self._calc_props.log_level = logging.INFO
                     fmt = self._ctl_format_text.text
-                    self._log.debug(f"Log Format: {fmt}")
+                    self.log.debug(f"Log Format: {fmt}")
                     self._calc_props.log_format = fmt
                     self._calc_props.include_extra_err_info = self._include_extra_info == TriStateKind.CHECKED
                     SharedEvent().trigger_event(LOG_OPTIONS_CHANGED, EventArgs(self))
+                if self._calc_props.is_modified:
+                    cmd = CmdCalcProps(doc=self._doc, props=self._calc_props)
+                    self._cmd_handler.handle(cmd)
+                    self.log.debug("Calc Props Updated")
             except Exception:
-                self._log.exception("Error in _handle_results")
+                self.log.exception("Error in _handle_results")
 
     def _reset_options(self) -> None:
         result = self._doc.msgbox(
@@ -373,22 +395,22 @@ class LogOpt:
     # region Event Handlers
     def on_group1_changed(self, src: Any, event: EventArgs, control_src: CtlRadioButton, *args, **kwargs) -> None:
         itm_event = cast("ItemEvent", event.event_data)
-        with self._log.indent(True):
-            if self._log.is_debug:
-                self._log.debug(f"Group 1 Item ID: {itm_event.ItemId}")
-                self._log.debug(f"Group 1 Tab Index: {control_src.tab_index}")
-                self._log.debug(f"Group 1 Tab Name: {control_src.model.Name}")
+        with self.log.indent(True):
+            if self.log.is_debug:
+                self.log.debug(f"Group 1 Item ID: {itm_event.ItemId}")
+                self.log.debug(f"Group 1 Tab Index: {control_src.tab_index}")
+                self.log.debug(f"Group 1 Tab Name: {control_src.model.Name}")
         self._group1_opt = control_src
 
     def on_check_changed(self, src: Any, event: EventArgs, control_src: CtlCheckBox, *args, **kwargs) -> None:
-        self._log.debug(f"Check Changed: {control_src.state}")
+        self.log.debug(f"Check Changed: {control_src.state}")
         self._include_extra_info = control_src.state
 
     def on_button_action_preformed(self, src: Any, event: EventArgs, control_src: Any, *args, **kwargs) -> None:
         """Method that is fired when Info button is clicked."""
         itm_event = cast("ActionEvent", event.event_data)
-        with self._log.indent(True):
-            self._log.debug(f"Button Action Command: {itm_event.ActionCommand}")
+        with self.log.indent(True):
+            self.log.debug(f"Button Action Command: {itm_event.ActionCommand}")
         if itm_event.ActionCommand == "RESET":
             self._reset_options()
 

@@ -1,5 +1,6 @@
 from __future__ import annotations
 from typing import Any, TYPE_CHECKING
+import contextlib
 
 try:
     # python 3.12+
@@ -7,56 +8,56 @@ try:
 except ImportError:
     from typing_extensions import override
 
-import uno
 import unohelper
 from com.sun.star.sheet import XActivationEventListener
-from ooodev.loader import Lo
-from ooodev.events.lo_events import LoEvents
 from ooodev.events.args.event_args import EventArgs
 from ooodev.utils.helper.dot_dict import DotDict
 
-from ...const.event_const import GBL_DOC_CLOSING
-from ...const.event_const import SHEET_ACTIVATION
-from ...event.shared_event import SharedEvent
 
 if TYPE_CHECKING:
     from com.sun.star.lang import EventObject
     from com.sun.star.sheet import ActivationEvent
-    from .....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from oxt.pythonpath.libre_pythonista_lib.const.event_const import SHEET_ACTIVATION
+    from oxt.pythonpath.libre_pythonista_lib.doc.doc_globals import DocGlobals
+    from oxt.pythonpath.libre_pythonista_lib.event.shared_event import SharedEvent
+    from oxt.pythonpath.libre_pythonista_lib.mixin.listener.trigger_state_mixin import TriggerStateMixin
+    from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
 else:
-    from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
-
+    from libre_pythonista_lib.const.event_const import SHEET_ACTIVATION
+    from libre_pythonista_lib.doc.doc_globals import DocGlobals
+    from libre_pythonista_lib.event.shared_event import SharedEvent
+    from libre_pythonista_lib.mixin.listener.trigger_state_mixin import TriggerStateMixin
+    from libre_pythonista_lib.log.log_mixin import LogMixin
 
 # is added when document view is complete.
+_KEY = "libre_pythonista_lib.sheet.listen.sheet_activation_listener.SheetActivationListener"
 
 
-class SheetActivationListener(XActivationEventListener, unohelper.Base):
+class SheetActivationListener(XActivationEventListener, LogMixin, TriggerStateMixin, unohelper.Base):
     """Singleton Class for Sheet Activation Listener."""
 
-    _instances = {}
-
     def __new__(cls) -> SheetActivationListener:
-        key = cls._get_key()
-        if key not in cls._instances:
-            inst = super().__new__(cls)
-            inst._is_init = False
-            cls._instances[key] = inst
-        return cls._instances[key]
+        gbl_cache = DocGlobals.get_current()
+        if _KEY in gbl_cache.mem_cache:
+            return gbl_cache.mem_cache[_KEY]
 
-    @classmethod
-    def _get_key(cls) -> str:
-        return f"{Lo.current_doc.runtime_uid}_uid"
+        inst = super().__new__(cls)
+        inst._is_init = False
+
+        gbl_cache.mem_cache[_KEY] = inst
+        return inst
 
     def __init__(self) -> None:
         if getattr(self, "_is_init", False):
             return
         XActivationEventListener.__init__(self)
+        LogMixin.__init__(self)
+        TriggerStateMixin.__init__(self)
         unohelper.Base.__init__(self)
-        self._log = OxtLogger(log_name=self.__class__.__name__)
         self._is_init = True
 
     @override
-    def activeSpreadsheetChanged(self, aEvent: ActivationEvent) -> None:
+    def activeSpreadsheetChanged(self, aEvent: ActivationEvent) -> None:  # noqa: N803
         """
         Is called whenever data or a selection changed.
 
@@ -66,14 +67,18 @@ class SheetActivationListener(XActivationEventListener, unohelper.Base):
 
             OOo 2.0
         """
-        self._log.debug("activeSpreadsheetChanged")
+        self.log.debug("activeSpreadsheetChanged")
+        if not self.is_trigger():
+            self.log.debug("Trigger events is False. Not raising SHEET_ACTIVATION event.")
+            return
+
         eargs = EventArgs(self)
         eargs.event_data = DotDict(sheet=aEvent.ActiveSheet, event=aEvent)
         se = SharedEvent()
         se.trigger_event(SHEET_ACTIVATION, eargs)
 
     @override
-    def disposing(self, Source: EventObject) -> None:
+    def disposing(self, Source: EventObject) -> None:  # noqa: N803
         """
         gets called when the broadcaster is about to be disposed.
 
@@ -84,22 +89,19 @@ class SheetActivationListener(XActivationEventListener, unohelper.Base):
         This method is called for every listener registration of derived listener
         interfaced, not only for registrations at XComponent.
         """
-        if self._log is not None:
-            self._log.debug("Disposing")
-        setattr(self, "_log", None)  # avoid type checker complaining about log being none.
+        # do not remove from cache when disposing.
+        # in some cased the listener is removed and then added again to ensure the listener is active.
+        # This may cause disposing to be called.
+        # If the listener is removed from the cache, it will not be added again but as a new instance.
+        # This would not be a true singleton and that leads to side effects.
+        pass
+        # with contextlib.suppress(Exception):
+        #     gbl_cache = DocGlobals.get_current()
+        #     if _KEY in gbl_cache.mem_cache:
+        #         del gbl_cache.mem_cache[_KEY]
 
     def __del__(self) -> None:
-        if self._log is not None:
-            self._log.debug("Deleted")
-        setattr(self, "_log", None)
-
-
-def _on_doc_closing(src: Any, event: EventArgs) -> None:
-    # clean up singleton
-    uid = str(event.event_data.uid)
-    key = f"{uid}_uid"
-    if key in SheetActivationListener._instances:
-        del SheetActivationListener._instances[key]
-
-
-LoEvents().on(GBL_DOC_CLOSING, _on_doc_closing)
+        with contextlib.suppress(Exception):
+            gbl_cache = DocGlobals.get_current()
+            if _KEY in gbl_cache.mem_cache:
+                del gbl_cache.mem_cache[_KEY]

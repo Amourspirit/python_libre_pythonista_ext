@@ -1,13 +1,6 @@
 from __future__ import annotations
 from typing import Dict, Tuple, TYPE_CHECKING
 
-try:
-    # python 3.12+
-    from typing import override  # type: ignore
-except ImportError:
-    from typing_extensions import override
-
-import uno
 import unohelper
 from com.sun.star.frame import XDispatch
 from com.sun.star.beans import PropertyValue
@@ -20,23 +13,32 @@ from ooodev.events.args.cancel_event_args import CancelEventArgs
 from ooodev.events.args.event_args import EventArgs
 from ooodev.utils.helper.dot_dict import DotDict
 
-from ..code.cell_cache import CellCache
-from ..cell.cell_mgr import CellMgr
-from ..cell.state.ctl_state import CtlState
-from ..cell.state.state_kind import StateKind
-from ..event.shared_event import SharedEvent
-from ..cell.array.array_tbl import ArrayTbl
 
 if TYPE_CHECKING:
+    from typing_extensions import override
     from com.sun.star.frame import XStatusListener
-    from ....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
-    import pandas as pd
+    from oxt.___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.cell_cache import CellCache
+    from oxt.pythonpath.libre_pythonista_lib.cell.cell_mgr import CellMgr
+    from oxt.pythonpath.libre_pythonista_lib.cell.state.ctl_state import CtlState
+    from oxt.pythonpath.libre_pythonista_lib.cell.state.state_kind import StateKind
+    from oxt.pythonpath.libre_pythonista_lib.event.shared_event import SharedEvent
+    from oxt.pythonpath.libre_pythonista_lib.cell.array.array_tbl import ArrayTbl
 else:
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.cell_cache import CellCache
+    from libre_pythonista_lib.cell.cell_mgr import CellMgr
+    from libre_pythonista_lib.cell.state.ctl_state import CtlState
+    from libre_pythonista_lib.cell.state.state_kind import StateKind
+    from libre_pythonista_lib.event.shared_event import SharedEvent
+    from libre_pythonista_lib.cell.array.array_tbl import ArrayTbl
+
+    def override(func):  # noqa: ANN001, ANN201
+        return func
 
 
 class DispatchToggleDataTblState(XDispatch, EventsPartial, unohelper.Base):
-    def __init__(self, sheet: str, cell: str):
+    def __init__(self, sheet: str, cell: str) -> None:
         XDispatch.__init__(self)
         EventsPartial.__init__(self)
         unohelper.Base.__init__(self)
@@ -44,11 +46,11 @@ class DispatchToggleDataTblState(XDispatch, EventsPartial, unohelper.Base):
         self._cell = cell
         self._log = OxtLogger(log_name=self.__class__.__name__)
         self.add_event_observers(SharedEvent().event_observer)
-        self._log.debug(f"init: sheet={sheet}, cell={cell}")
+        self._log.debug("init: sheet=%s, cell=%s", sheet, cell)
         self._status_listeners: Dict[str, XStatusListener] = {}
 
     @override
-    def addStatusListener(self, Control: XStatusListener, URL: URL) -> None:
+    def addStatusListener(self, Control: XStatusListener, URL: URL) -> None:  # noqa: N802, N803
         """
         registers a listener of a control for a specific URL at this object to receive status events.
 
@@ -58,9 +60,9 @@ class DispatchToggleDataTblState(XDispatch, EventsPartial, unohelper.Base):
         Note: Notifications can't be guaranteed! This will be a part of interface XNotifyingDispatch.
         """
         with self._log.indent(True):
-            self._log.debug(f"addStatusListener(): url={URL.Main}")
+            self._log.debug("addStatusListener(): url=%s", URL.Main)
             if URL.Complete in self._status_listeners:
-                self._log.debug(f"addStatusListener(): url={URL.Main} already exists.")
+                self._log.debug("addStatusListener(): url=%s already exists.", URL.Main)
             else:
                 # setting IsEnable=False here does not disable the dispatch command
                 # State=True may cause the menu items to be displayed as checked.
@@ -69,7 +71,7 @@ class DispatchToggleDataTblState(XDispatch, EventsPartial, unohelper.Base):
                 self._status_listeners[URL.Complete] = Control
 
     @override
-    def dispatch(self, URL: URL, Arguments: Tuple[PropertyValue, ...]) -> None:
+    def dispatch(self, URL: URL, Arguments: Tuple[PropertyValue, ...]) -> None:  # noqa: N803
         """
         Dispatches (executes) a URL
 
@@ -82,7 +84,7 @@ class DispatchToggleDataTblState(XDispatch, EventsPartial, unohelper.Base):
         """
         with self._log.indent(True):
             try:
-                self._log.debug(f"dispatch(): url={URL.Main}")
+                self._log.debug("dispatch(): url=%s", URL.Main)
                 doc = CalcDoc.from_current_doc()
                 sheet = doc.sheets[self._sheet]
                 cell = sheet[self._cell]
@@ -98,14 +100,14 @@ class DispatchToggleDataTblState(XDispatch, EventsPartial, unohelper.Base):
                 )
                 self.trigger_event(f"{URL.Main}_before_dispatch", cargs)
                 if cargs.cancel:
-                    self._log.debug(f"Event {URL.Main}_before_dispatch was cancelled.")
+                    self._log.debug("Event %s_before_dispatch was cancelled.", URL.Main)
                     return
                 cc = CellCache(doc)  # singleton
                 # cm = CellMgr(doc)  # singleton
                 cell_obj = cell.cell_obj
                 sheet_idx = sheet.sheet_index
                 if not cc.has_cell(cell=cell_obj, sheet_idx=sheet_idx):
-                    self._log.error(f"Cell {self._cell} is not in the cache.")
+                    self._log.error("Cell %s is not in the cache.", self._cell)
                     eargs = EventArgs.from_args(cargs)
                     eargs.event_data.success = False
                     self.trigger_event(f"{URL.Main}_after_dispatch", eargs)
@@ -115,7 +117,7 @@ class DispatchToggleDataTblState(XDispatch, EventsPartial, unohelper.Base):
                 # Toggle the formula from a cell formula to a array formula and vice versa.
                 formula = cell.component.getFormula()
                 if not formula:
-                    self._log.error(f"Cell {self._cell} has no formula.")
+                    self._log.error("Cell %s has no formula.", self._cell)
                     eargs = EventArgs.from_args(cargs)
                     eargs.event_data.success = False
                     self.trigger_event(f"{URL.Main}_after_dispatch", eargs)
@@ -146,7 +148,6 @@ class DispatchToggleDataTblState(XDispatch, EventsPartial, unohelper.Base):
                         ctl_state.set_state(value=orig_state)
                         raise
                 elif state == StateKind.PY_OBJ:
-
                     try:
                         self._log.debug("Changing State to Data Table")
                         self._set_formula(cell=cell, dd_args=cargs.event_data, arr_helper=arr_helper)
@@ -154,7 +155,7 @@ class DispatchToggleDataTblState(XDispatch, EventsPartial, unohelper.Base):
                         ctl_state.set_state(value=orig_state)
                         raise
                 else:
-                    self._log.warning(f"Invalid State: {state}")
+                    self._log.warning("Invalid State: %s", state)
                     eargs = EventArgs.from_args(cargs)
                     eargs.event_data.success = False
                     self.trigger_event(f"{URL.Main}_after_dispatch", eargs)
@@ -168,7 +169,7 @@ class DispatchToggleDataTblState(XDispatch, EventsPartial, unohelper.Base):
             except Exception as e:
                 # log the error and do not re-raise it.
                 # re-raising the error may crash the entire LibreOffice app.
-                self._log.error(f"Error: {e}", exc_info=True)
+                self._log.error("Error: %s", e, exc_info=True)
                 return
 
     def _set_array_formula(self, cell: CalcCell, dd_args: DotDict, arr_helper: ArrayTbl) -> None:
@@ -186,11 +187,11 @@ class DispatchToggleDataTblState(XDispatch, EventsPartial, unohelper.Base):
             cm.update_control(cell)
 
     @override
-    def removeStatusListener(self, Control: XStatusListener, URL: URL) -> None:
+    def removeStatusListener(self, Control: XStatusListener, URL: URL) -> None:  # noqa: N802, N803
         """
         Un-registers a listener from a control.
         """
         with self._log.indent(True):
-            self._log.debug(f"removeStatusListener(): url={URL.Main}")
+            self._log.debug("removeStatusListener(): url=%s", URL.Main)
             if URL.Complete in self._status_listeners:
                 del self._status_listeners[URL.Complete]

@@ -84,6 +84,16 @@
         <value>___lo_identifier___.VizTracerUnloadJob</value>
       </prop>
     </node>
+    <node oor:name="CleanupJob" oor:op="fuse">
+      <prop oor:name="Service">
+        <value>___lo_identifier___.CleanupJob</value>
+      </prop>
+    </node>
+    <node oor:name="RegisterDispatchJob" oor:op="fuse">
+      <prop oor:name="Service">
+        <value>___lo_identifier___.RegisterDispatchJob</value>
+      </prop>
+    </node>
   </node>
   <node oor:name="Events">
     <node oor:name="___startup_event___" oor:op="fuse">
@@ -92,6 +102,7 @@
       </node>
     </node>
     <node oor:name="OnLoad" oor:op="fuse">
+      <!-- OnLoad happens after OnLoadFinished -->
       <node oor:name="JobList">
         <node oor:name="LoadingJob" oor:op="fuse" />
       </node>
@@ -99,37 +110,35 @@
     <node oor:name="OnUnload" oor:op="fuse">
       <node oor:name="JobList">
         <node oor:name="UnLoadingJob" oor:op="fuse" />
+        <node oor:name="CleanupJob" oor:op="fuse" />
         <node oor:name="VizTracerUnloadJob" oor:op="fuse" />
       </node>
     </node>
-    <node oor:name="OnPrepareUnload" oor:op="fuse">
+    <!-- <node oor:name="OnPrepareUnload" oor:op="fuse">
       <node oor:name="JobList">
         <node oor:name="PrepareUnloadJob" oor:op="fuse" />
       </node>
-    </node>
+    </node> -->
     <node oor:name="OnViewCreated" oor:op="fuse">
       <node oor:name="JobList">
         <node oor:name="DebugJob" oor:op="fuse" />
         <node oor:name="VizTracerJob" oor:op="fuse" />
         <node oor:name="DebugLpJob" oor:op="fuse" />
         <node oor:name="ViewJob" oor:op="fuse" />
+        <!-- <node oor:name="RegisterDispatchJob" oor:op="fuse" /> -->
       </node>
     </node>
     <node oor:name="OnLoadFinished" oor:op="fuse">
+      <!-- OnLoadFinished happens before OnLoad -->
       <node oor:name="JobList">
         <node oor:name="LoadFinishedJob" oor:op="fuse" />
       </node>
     </node>
-    <node oor:name="OnSave" oor:op="fuse">
-      <node oor:name="JobList">
-        <node oor:name="SavingJob" oor:op="fuse" />
-      </node>
-    </node>
-    <node oor:name="OnCreate" oor:op="fuse">
+    <!-- <node oor:name="OnCreate" oor:op="fuse">
       <node oor:name="JobList">
         <node oor:name="CreateJob" oor:op="fuse" />
       </node>
-    </node>
+    </node> -->
     <node oor:name="OnSave" oor:op="fuse">
       <node oor:name="JobList">
         <node oor:name="SavingJob" oor:op="fuse" />
@@ -140,16 +149,16 @@
         <node oor:name="SavingJob" oor:op="fuse" />
       </node>
     </node>
-    <node oor:name="OnFocus" oor:op="fuse">
+    <!-- <node oor:name="OnFocus" oor:op="fuse">
       <node oor:name="JobList">
         <node oor:name="CalcDocFocusJob" oor:op="fuse" />
       </node>
-    </node>
-    <node oor:name="OnUnfocus" oor:op="fuse">
+    </node> -->
+    <!-- <node oor:name="OnUnfocus" oor:op="fuse">
       <node oor:name="JobList">
         <node oor:name="CalcDocUnFocusJob" oor:op="fuse" />
       </node>
-    </node>
+    </node> -->
     <node oor:name="HtmlPyEditSheetEvent" oor:op="replace">
       <node oor:name="JobList">
         <node oor:name="HtmlPyEditSheet" oor:op="replace" />

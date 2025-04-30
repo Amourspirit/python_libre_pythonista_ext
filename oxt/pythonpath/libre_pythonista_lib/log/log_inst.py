@@ -1,25 +1,36 @@
 from __future__ import annotations
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING
+import os
 
 if TYPE_CHECKING:
-    from ....___lo_pip___.oxt_logger import OxtLogger
-else:
-    from ___lo_pip___.oxt_logger import OxtLogger
+    from oxt.___lo_pip___.oxt_logger import OxtLogger
+
+_LOG_INST = None
 
 
-class LogInst(OxtLogger):
+def LogInst() -> OxtLogger:  # noqa: ANN202, N802
+    global _LOG_INST
+    if _LOG_INST:
+        return _LOG_INST
 
-    _instance = None
+    if "PYTEST_CURRENT_TEST" in os.environ:
+        if TYPE_CHECKING:
+            from oxt.pythonpath.libre_pythonista_lib.log.dummy_log import DummyLogger
+        else:
+            from libre_pythonista_lib.log.dummy_log import DummyLogger
+        _LOG_INST = DummyLogger()
+        return _LOG_INST  # type: ignore
 
-    def __new__(cls, *args, **kwargs):
-        if cls._instance is None:
-            cls._instance = super(LogInst, cls).__new__(cls, *args, **kwargs)
-            cls._instance._is_init = False
-        return cls._instance
+    if not TYPE_CHECKING:
+        from ___lo_pip___.oxt_logger import OxtLogger
 
-    def __init__(self):
-        if getattr(self, "_is_init", False):
-            return
-        log_name = "___lo_pip___"
-        super().__init__(log_name=log_name)
-        self._is_init = True
+    class _LogInst(OxtLogger):
+        def __init__(self) -> None:
+            log_name = "___lo_pip___"
+            super().__init__(log_name=log_name)
+
+    _LOG_INST = _LogInst()
+    return _LOG_INST
+
+
+# LogInst: OxtLogger = _get_logger()  # type: ignore

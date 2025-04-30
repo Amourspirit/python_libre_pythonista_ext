@@ -1,62 +1,105 @@
 from __future__ import annotations
-from typing import Any, Dict, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
-from ooodev.loader import Lo
-from ooodev.events.lo_events import LoEvents
-from ooodev.events.args.event_args import EventArgs
-from ooodev.events.lo_events import LoEvents
-from ooodev.events.args.event_args import EventArgs
-from ooodev.utils.helper.dot_dict import DotDict
+# from ooodev.loader import Lo
+# from ooodev.events.lo_events import LoEvents
+# from ooodev.events.args.event_args import EventArgs
+# from ooodev.events.lo_events import LoEvents
+# from ooodev.events.args.event_args import EventArgs
+# from ooodev.utils.helper.dot_dict import DotDict
 
-from ..const.event_const import GBL_DOC_CLOSING
-from ..ex.exceptions import SingletonKeyError
-from .doc_event_partial import DocEventPartial
+# from ..const.event_const import GBL_DOC_CLOSING
+# from ..ex.exceptions import SingletonKeyError
 
 if TYPE_CHECKING:
     from ooodev.proto.office_document_t import OfficeDocumentT
+    from ooodev.events.args.event_args_t import EventArgsT
+    from ooodev.utils.type_var import EventCallback
+    from oxt.pythonpath.libre_pythonista_lib.event.doc_event_partial import DocEventPartial
+    from oxt.pythonpath.libre_pythonista_lib.doc.doc_globals import DocGlobals
+    from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
+    from oxt.___lo_pip___.basic_config import BasicConfig
+
+else:
+    from libre_pythonista_lib.doc.doc_globals import DocGlobals
+    from libre_pythonista_lib.event.doc_event_partial import DocEventPartial
+    from libre_pythonista_lib.log.log_mixin import LogMixin
+    from libre_pythonista.basic_config import BasicConfig
+
+_KEY = "libre_pythonista_lib.event.shared_event.SharedEvent"
 
 
-class SharedEvent(DocEventPartial):
-    _instances: Dict[str, SharedEvent] = {}
-
+class SharedEvent(DocEventPartial, LogMixin):
     def __new__(cls, doc: OfficeDocumentT | None = None) -> SharedEvent:
-        if doc is None:
-            eargs = EventArgs(cls)
-            eargs.event_data = DotDict(class_name=cls.__name__, doc=None)
-            LoEvents().trigger("LibrePythonistaSharedEventGetDoc", eargs)
-            if eargs.event_data.doc is not None:
-                doc = eargs.event_data.doc
-            if doc is None:
-                try:
-                    doc = Lo.current_doc
-                except Exception as e:
-                    raise SingletonKeyError(
-                        f"Error getting single key for class name: {cls.__name__}"
-                    ) from e
+        gbl_cache = DocGlobals.get_current() if doc is None else DocGlobals.get_current(doc.runtime_uid)
+        if _KEY in gbl_cache.mem_cache:
+            return gbl_cache.mem_cache[_KEY]
 
-        key = f"doc_{doc.runtime_uid}"
-        if key not in cls._instances:
-            inst = super(SharedEvent, cls).__new__(cls)
-            inst._is_init = False
-            inst.__init__(doc)
-            cls._instances[key] = inst
-
-        return cls._instances[key]
+        inst = super(SharedEvent, cls).__new__(cls)
+        inst._is_init = False
+        inst.__init__(doc)
+        gbl_cache.mem_cache[_KEY] = inst
+        return inst
 
     def __init__(self, doc: OfficeDocumentT | None = None) -> None:
         if getattr(self, "_is_init", True):
             return
         DocEventPartial.__init__(self, doc=doc)
-        # self._doc = doc
+        LogMixin.__init__(self)
+        self.log.debug("Init")
+        self._config = BasicConfig()
         self._is_init = True
 
+    def trigger_event(self, event_name: str, event_args: EventArgsT) -> None:
+        """
+        Trigger an event on current instance.
 
-def _on_doc_closing(src: Any, event: EventArgs) -> None:
-    # clean up singleton
-    uid = str(event.event_data.uid)
-    key = f"doc_{uid}"
-    if key in SharedEvent._instances:
-        del SharedEvent._instances[key]
+        Args:
+            event_name (str): Event Name.
+            event_args (EventArgsT): Event Args.
 
+        Raises:
+            RuntimeUidError: If the runtime_uid check fails.
 
-LoEvents().on(GBL_DOC_CLOSING, _on_doc_closing)
+        Returns:
+            None:
+        """
+        if self.log.is_debug and event_name in self._config.debug_skip_events:
+            self.log.warning("trigger_event() event_name: %s is in debug_skip_events. Skipping.", event_name)
+            return
+        self.log.debug("trigger_event() event_name: %s", event_name)
+        DocEventPartial.trigger_event(self, event_name, event_args)
+
+    def subscribe_event(self, event_name: str, callback: EventCallback) -> None:
+        """
+        Add an event listener to current instance.
+
+        Args:
+            event_name (str): Event Name.
+            callback (EventCallback): Callback of the event listener.
+
+        Raises:
+            RuntimeUidError: If the runtime_uid check fails.
+
+        Returns:
+            None:
+        """
+        self.log.debug("subscribe_event() event_name: %s", event_name)
+        DocEventPartial.subscribe_event(self, event_name, callback)
+
+    def unsubscribe_event(self, event_name: str, callback: EventCallback) -> None:
+        """
+        Remove an event listener from current instance.
+
+        Args:
+            event_name (str): Event Name.
+            callback (EventCallback): Callback of the event listener.
+
+        Raises:
+            RuntimeUidError: If the runtime_uid check fails.
+
+        Returns:
+            None:
+        """
+        self.log.debug("unsubscribe_event() event_name: %s", event_name)
+        DocEventPartial.unsubscribe_event(self, event_name, callback)

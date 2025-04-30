@@ -1,5 +1,6 @@
 from __future__ import annotations
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING
+import contextlib
 
 try:
     # python 3.12+
@@ -7,68 +8,76 @@ try:
 except ImportError:
     from typing_extensions import override
 
-import uno
 import unohelper
 from com.sun.star.util import XModifyListener
-from ooodev.loader import Lo
-from ooodev.events.lo_events import LoEvents
 from ooodev.events.args.event_args import EventArgs
 from ooodev.utils.helper.dot_dict import DotDict
-
-from ...ex.exceptions import SingletonKeyError
-from ...const.event_const import GBL_DOC_CLOSING
-from ...event.shared_event import SharedEvent
-from ...const.event_const import SHEET_MODIFIED
+from ooodev.events.lo_events import LoEvents
+from ooodev.loader import Lo
 
 if TYPE_CHECKING:
     from com.sun.star.lang import EventObject
-    from .....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from oxt.pythonpath.libre_pythonista_lib.ex.exceptions import SingletonKeyError
+    from oxt.pythonpath.libre_pythonista_lib.event.shared_event import SharedEvent
+    from oxt.pythonpath.libre_pythonista_lib.doc.doc_globals import DocGlobals
+    from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
+    from oxt.pythonpath.libre_pythonista_lib.mixin.listener.trigger_state_mixin import TriggerStateMixin
+    from oxt.pythonpath.libre_pythonista_lib.const.event_const import SHEET_MODIFIED
 else:
-    from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from libre_pythonista_lib.ex.exceptions import SingletonKeyError
+    from libre_pythonista_lib.event.shared_event import SharedEvent
+    from libre_pythonista_lib.doc.doc_globals import DocGlobals
+    from libre_pythonista_lib.log.log_mixin import LogMixin
+    from libre_pythonista_lib.mixin.listener.trigger_state_mixin import TriggerStateMixin
+    from libre_pythonista_lib.const.event_const import SHEET_MODIFIED
+
+_KEY = "libre_pythonista_lib.sheet.listen.code_sheet_modify_listener.CodeSheetModifyListener"
 
 
-class CodeSheetModifyListener(XModifyListener, unohelper.Base):
+class CodeSheetModifyListener(XModifyListener, LogMixin, TriggerStateMixin, unohelper.Base):
     """Singleton class for Code Sheet Modify Listener."""
 
-    _instances = {}
-
     def __new__(cls, inst_name: str) -> CodeSheetModifyListener:
-        key = cls._get_key(inst_name)
-        if key not in cls._instances:
-            inst = super().__new__(cls)
-            inst._is_init = False
-            inst._inst_name = key
-            cls._instances[key] = inst
-        return cls._instances[key]
+        gbl_cache = DocGlobals.get_current()
+        key = cls._get_key(inst_name, gbl_cache.runtime_uid)
+        if _KEY in gbl_cache.mem_cache and key in gbl_cache.mem_cache[_KEY]:
+            return gbl_cache.mem_cache[_KEY][key]
+
+        inst = super().__new__(cls)
+        inst._inst_name = key
+        inst._runtime_uid = gbl_cache.runtime_uid
+        inst._is_init = False
+
+        gbl_cache.mem_cache[_KEY] = {key: inst}
+        return inst
 
     @classmethod
-    def _get_key(cls, inst_name: str) -> str:
+    def _get_key(cls, inst_name: str, runtime_uid: str) -> str:
         eargs = EventArgs(cls)
         eargs.event_data = DotDict(class_name=cls.__name__, key="", inst_name=inst_name)
         LoEvents().trigger("LibrePythonistaCodeSheetModifyListenerGetKey", eargs)
         if eargs.event_data.key:
             return eargs.event_data.key
         try:
-            return f"{Lo.current_doc.runtime_uid}_uid_{inst_name}"
+            return f"{runtime_uid}_uid_{inst_name}"
         except Exception as e:
             raise SingletonKeyError(
                 f"Error getting single key for class name: {cls.__name__} with inst_name: {inst_name}"
             ) from e
 
-    def __init__(
-        self,
-        inst_name: str,
-    ) -> None:
+    def __init__(self, inst_name: str) -> None:
         if getattr(self, "_is_init", False):
             return
         XModifyListener.__init__(self)
+        LogMixin.__init__(self)
+        TriggerStateMixin.__init__(self)
         unohelper.Base.__init__(self)
-        self._inst_name: str  # = inst_name
-        self._log = OxtLogger(log_name=self.__class__.__name__)
+        self._inst_name: str
+        self._runtime_uid: str
         self._is_init = True
 
     @override
-    def modified(self, aEvent: EventObject) -> None:
+    def modified(self, aEvent: EventObject) -> None:  # noqa: N803
         """
         Is called when something changes in the object.
 
@@ -77,17 +86,20 @@ class CodeSheetModifyListener(XModifyListener, unohelper.Base):
         The source of the event may be the content of the object to which the listener
         is registered.
         """
+        if not self.is_trigger():
+            self.log.debug("Trigger events is False. Not raising SHEET_MODIFIED event.")
+            return
         # event.Source: implementationName=ScTableSheetObj
         # event.Source: com.sun.star.sheet.Spreadsheet
-        self._log.debug("Sheet Modified. Raising SHEET_MODIFIED event.")
-        # if self._log.is_debug:
-        #     self._log.debug(str(event.Source))
+        self.log.debug("Sheet Modified. Raising SHEET_MODIFIED event.")
+        # if self.log.is_debug:
+        #     self.log.debug(aEvent)
         event_args = EventArgs(self)
         event_args.event_data = DotDict(src=self, event=aEvent)
         SharedEvent().trigger_event(SHEET_MODIFIED, event_args)
 
     @override
-    def disposing(self, Source: EventObject) -> None:
+    def disposing(self, Source: EventObject) -> None:  # noqa: N803
         """
         gets called when the broadcaster is about to be disposed.
 
@@ -98,51 +110,61 @@ class CodeSheetModifyListener(XModifyListener, unohelper.Base):
         This method is called for every listener registration of derived listener
         interfaced, not only for registrations at XComponent.
         """
+        # do not remove from cache when disposing.
+        # in some cased the listener is removed and then added again to ensure the listener is active.
+        # This may cause disposing to be called.
+        # If the listener is removed from the cache, it will not be added again but as a new instance.
+        # This would not be a true singleton and that leads to side effects.
+        pass
+        # with contextlib.suppress(Exception):
+        #     gbl_cache = DocGlobals.get_current()
+        #     if not _KEY in gbl_cache.mem_cache:
+        #         return
 
-        if self._log is not None:
-            self._log.debug("Disposing")
-        if self._inst_name in CodeSheetModifyListener._instances:
-            del CodeSheetModifyListener._instances[self._inst_name]
-        setattr(
-            self, "_log", None
-        )  # avoid type checker complaining about log being none.
+        #     if self._inst_name in gbl_cache.mem_cache[_KEY]:
+        #         del gbl_cache.mem_cache[_KEY][self._inst_name]
 
     def __del__(self) -> None:
-        if self._log is not None:
-            self._log.debug("Deleted")
-        if self._inst_name in CodeSheetModifyListener._instances:
-            del CodeSheetModifyListener._instances[self._inst_name]
-        setattr(self, "_log", None)
+        with contextlib.suppress(Exception):
+            gbl_cache = DocGlobals.get_current()
+            if not _KEY in gbl_cache.mem_cache:
+                return
+
+            if self._inst_name in gbl_cache.mem_cache[_KEY]:
+                del gbl_cache.mem_cache[_KEY][self._inst_name]
 
     @classmethod
     def reset_instance(cls, inst_name: str = "") -> None:
-        key_inst = cls._get_key(inst_name)
-        if not inst_name:
-            for key in list(cls._instances.keys()):
-                if key.startswith(key_inst):
-                    del cls._instances[key]
+        gbl_cache = DocGlobals.get_current()
+        if not _KEY in gbl_cache.mem_cache:
             return
-        if key_inst in cls._instances:
-            del cls._instances[inst_name]
+
+        key_inst = cls._get_key(inst_name, gbl_cache.runtime_uid)
+        if not inst_name:
+            for key in list(gbl_cache.mem_cache[_KEY].keys()):
+                if key.startswith(key_inst):
+                    del gbl_cache.mem_cache[_KEY][key]
+            return
+
+        if key_inst in gbl_cache.mem_cache[_KEY]:
+            del gbl_cache.mem_cache[_KEY][key_inst]
         return None
 
     @classmethod
     def has_listener(cls, inst_name: str) -> bool:
-        key_inst = cls._get_key(inst_name)
-        return key_inst in cls._instances
+        gbl_cache = DocGlobals.get_current()
+        key_inst = cls._get_key(inst_name, gbl_cache.runtime_uid)
+
+        if not _KEY in gbl_cache.mem_cache:
+            return False
+        return key_inst in gbl_cache.mem_cache[_KEY]
 
     @classmethod
     def get_listener(cls, inst_name: str) -> CodeSheetModifyListener:
-        key_inst = cls._get_key(inst_name)
-        return cls._instances.get(key_inst, None)
-
-
-def _on_doc_closing(src: Any, event: EventArgs) -> None:
-    uid = str(event.event_data.uid)
-    key_start = f"{uid}_uid_"
-    for key in list(CodeSheetModifyListener._instances.keys()):
-        if key.startswith(key_start):
-            del CodeSheetModifyListener._instances[key]
-
-
-LoEvents().on(GBL_DOC_CLOSING, _on_doc_closing)
+        gbl_cache = DocGlobals.get_current()
+        key = cls._get_key(inst_name, gbl_cache.runtime_uid)
+        if not _KEY in gbl_cache.mem_cache:
+            raise SingletonKeyError(f"Key {_KEY} not found in cache.")
+        if key in gbl_cache.mem_cache[_KEY]:
+            return gbl_cache.mem_cache[_KEY][key]
+        raise SingletonKeyError(f"Key {key} not found in cache.")

@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 class ResourceResolver:
     """Resource Resolver for localized strings"""
 
-    def __init__(self, ctx: Any):
+    def __init__(self, ctx: Any) -> None:  # noqa: ANN401
         self._config = Config()
         self._logger = OxtLogger(log_name=__name__)
         try:
@@ -32,10 +32,10 @@ class ResourceResolver:
             self._default_locale = Locale(*locale_parts[:3])
 
             if not self._is_default_locale():
-                self._logger.debug(f"ResourceResolver.__init__: locale={self.locale}")
+                self._logger.debug("ResourceResolver.__init__: locale=%s", self.locale)
                 self._default_resource_resolver = self._get_resource_resolver(self._default_locale)
         except Exception as err:
-            self._logger.error(f"ResourceResolver.__init__: {err}", exc_info=True)
+            self._logger.error("ResourceResolver.__init__: %s", err, exc_info=True)
 
     def _is_default_locale(self) -> bool:
         """Check if the current locale is the default locale"""
@@ -54,7 +54,7 @@ class ResourceResolver:
         except Exception:
             return "0.0.0"
 
-    def _get_env_locale(self):
+    def _get_env_locale(self) -> Locale:
         """Get interface locale"""
         ps = cast(
             "PathSubstitution",
@@ -97,7 +97,7 @@ class ResourceResolver:
             if self._default_resource_resolver:
                 return self._default_resource_resolver.resolveString(id)
         except Exception as err:
-            self._logger.error(f"ResourceResolver.resolve_string: {err}", exc_info=True)
+            self._logger.error("ResourceResolver.resolve_string: %s", err, exc_info=True)
             return id
-        self._logger.error(f"ResourceResolver.resolve_string missing resource for: {id}")
+        self._logger.error("ResourceResolver.resolve_string missing resource for: %s", id)
         return id

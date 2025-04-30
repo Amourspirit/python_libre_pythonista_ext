@@ -1,6 +1,6 @@
 # region imports
 from __future__ import unicode_literals, annotations
-from typing import Any, TYPE_CHECKING
+from typing import Any, Tuple, Type, TYPE_CHECKING
 import contextlib
 
 import unohelper
@@ -16,40 +16,57 @@ def _conditions_met() -> bool:
 
 
 if TYPE_CHECKING:
-    try:
-        # python 3.12+
-        from typing import override  # type: ignore
-    except ImportError:
-        from typing_extensions import override
+    from typing_extensions import override
 
     # just for design time
     _CONDITIONS_MET = True
     from ooodev.calc import CalcDoc
-    from ooodev.events.args.event_args import EventArgs
     from ooodev.utils.helper.dot_dict import DotDict
-    from ...___lo_pip___.oxt_logger import OxtLogger
-    from ...___lo_pip___.config import Config
-    from ...pythonpath.libre_pythonista_lib.event.shared_event import SharedEvent
-    from ...pythonpath.libre_pythonista_lib.const.event_const import DOCUMENT_SAVING
-    from ...pythonpath.libre_pythonista_lib.doc_props.calc_props import CalcProps
-
-    # from ...pythonpath.libre_pythonista_lib.state.calc_state_mgr import CalcStateMgr
-    from ...pythonpath.libre_pythonista_lib.doc.calc_doc_mgr import CalcDocMgr
+    from oxt.___lo_pip___.events.args.event_args import EventArgs
+    from oxt.___lo_pip___.events.lo_events import LoEvents
+    from oxt.___lo_pip___.oxt_logger import OxtLogger
+    from oxt.pythonpath.libre_pythonista_lib.const.event_const import DOCUMENT_SAVING
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.cmd_lp_doc_props import CmdLpDocProps
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.doc.cmd_lp_version import CmdLpVersion
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_calc_props import QryCalcProps
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_doc_init import QryDocInit
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_is_doc_pythonista import QryIsDocPythonista
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.doc.ext.qry_ext_location import QryExtLocation
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.doc.ext.qry_ext_version import QryExtVersion
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.doc.qry_lp_version import QryLpVersion
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.general.qry_is_import2_available import QryIsImport2Available
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
+    from oxt.pythonpath.libre_pythonista_lib.doc.doc_globals import GET_CURRENT_EVENT
+    from oxt.pythonpath.libre_pythonista_lib.event.shared_event import SharedEvent
+    from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
 
 else:
-    override = lambda func: func
+
+    def override(func):  # noqa: ANN001, ANN201
+        return func
+
     _CONDITIONS_MET = _conditions_met()
     if _CONDITIONS_MET:
         from ooodev.calc import CalcDoc
-        from ooodev.events.args.event_args import EventArgs
         from ooodev.utils.helper.dot_dict import DotDict
-        from ___lo_pip___.config import Config
+        from ___lo_pip___.events.args.event_args import EventArgs
+        from ___lo_pip___.events.lo_events import LoEvents
         from libre_pythonista_lib.const.event_const import DOCUMENT_SAVING
+        from libre_pythonista_lib.cq.cmd.calc.doc.cmd_lp_doc_props import CmdLpDocProps
+        from libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
+        from libre_pythonista_lib.cq.cmd.doc.cmd_lp_version import CmdLpVersion
+        from libre_pythonista_lib.cq.qry.calc.doc.qry_calc_props import QryCalcProps
+        from libre_pythonista_lib.cq.qry.calc.doc.qry_doc_init import QryDocInit
+        from libre_pythonista_lib.cq.qry.calc.doc.qry_is_doc_pythonista import QryIsDocPythonista
+        from libre_pythonista_lib.cq.qry.doc.ext.qry_ext_location import QryExtLocation
+        from libre_pythonista_lib.cq.qry.doc.ext.qry_ext_version import QryExtVersion
+        from libre_pythonista_lib.cq.qry.doc.qry_lp_version import QryLpVersion
+        from libre_pythonista_lib.cq.qry.general.qry_is_import2_available import QryIsImport2Available
+        from libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
+        from libre_pythonista_lib.doc.doc_globals import GET_CURRENT_EVENT
         from libre_pythonista_lib.event.shared_event import SharedEvent
-        from libre_pythonista_lib.doc_props.calc_props import CalcProps
-
-        # from libre_pythonista_lib.state.calc_state_mgr import CalcStateMgr
-        from libre_pythonista_lib.doc.calc_doc_mgr import CalcDocMgr
+        from libre_pythonista_lib.utils.result import Result
 # endregion imports
 
 
@@ -61,35 +78,35 @@ class SavingJob(XJob, unohelper.Base):
     SERVICE_NAMES = ("com.sun.star.task.Job",)
 
     @classmethod
-    def get_imple(cls):
+    def get_imple(cls) -> Tuple[Type[SavingJob], str, Tuple[str, ...]]:
         return (cls, cls.IMPLE_NAME, cls.SERVICE_NAMES)
 
     # region Init
 
-    def __init__(self, ctx):
+    def __init__(self, ctx: Any) -> None:  # noqa: ANN401
         XJob.__init__(self)
         unohelper.Base.__init__(self)
         self.ctx = ctx
         self.document = None
         self._log = self._get_local_logger()
 
-    # endregion Init
+        if _CONDITIONS_MET:
+            # subscribe to the DocGlobals.get_current event and set the uid for the current document.
+            self._fn_on_get_current = self._on_get_current
+            self._events = LoEvents()
+            self._events.on(GET_CURRENT_EVENT, self._fn_on_get_current)
 
-    def _update_ext_location(self, doc: CalcDoc):
-        cp = CalcProps(doc)
-        cp.update_doc_ext_location()
+    # endregion Init
 
     # region execute
     @override
-    def execute(self, Arguments: Any) -> None:
+    def execute(self, Arguments: Any) -> None:  # noqa: ANN401, N803
         self._log.debug("execute")
         try:
-            # loader = Lo.load_office()
-            self._log.debug(f"Args Length: {len(Arguments)}")
             arg1 = Arguments[0]
 
             for struct in arg1.Value:
-                self._log.debug(f"Struct: {struct.Name}")
+                self._log.debug("Struct: %s", struct.Name)
                 if struct.Name == "Model":
                     self.document = struct.Value
                     self._log.debug("Document Found")
@@ -99,48 +116,87 @@ class SavingJob(XJob, unohelper.Base):
             if self.document.supportsService("com.sun.star.sheet.SpreadsheetDocument"):
                 self._log.debug("Document Saving is a spreadsheet")
                 if _CONDITIONS_MET:
+                    qry_handler = QryHandlerFactory.get_qry_handler()
+                    qry = QryIsImport2Available()
+                    if not qry_handler.handle(qry):
+                        self._log.debug("Imports2 is not available. Returning.")
+                        return
+
                     doc = CalcDoc.get_doc_from_component(self.document)
 
-                    doc_mgr = CalcDocMgr()
-                    if not doc_mgr.events_ensured:
-                        self._log.debug("Events not ensured. Returning.")
+                    qry_is_doc_pythonista = QryIsDocPythonista(doc)
+                    qry_is_doc_pythonista_result = qry_handler.handle(qry_is_doc_pythonista)
+                    if Result.is_failure(qry_is_doc_pythonista_result):
+                        self._log.error(
+                            "Error checking if document is a LibrePythonista. Error: %s",
+                            qry_is_doc_pythonista_result.error,
+                        )
+                        return
+                    if not qry_is_doc_pythonista_result.data:
+                        self._log.debug("Document is not a LibrePythonista. Returning.")
                         return
 
-                    state_mgr = doc_mgr.calc_state_mgr
-                    if not state_mgr.is_imports2_ready:
-                        self._log.debug("Imports2 is not ready. Returning.")
-                        return
-
-                    if not state_mgr.is_pythonista_doc:
-                        self._log.debug("Document not currently a LibrePythonista. Returning.")
+                    qry_doc_init = QryDocInit()
+                    if not qry_handler.handle(qry_doc_init):
+                        self._log.debug("Document is not initialized. Returning.")
                         return
 
                     try:
-                        cfg = Config()
-                        ver = doc.get_custom_property("LIBRE_PYTHONISTA_VERSION", "")
-                        if ver != cfg.extension_version:
-                            doc.set_custom_property("LIBRE_PYTHONISTA_VERSION", cfg.extension_version)
+                        qry_ext_version = QryExtVersion()
+                        qry_lp_version = QryLpVersion(doc)
+                        ext_version = qry_handler.handle(qry_ext_version)
+                        lp_version = qry_handler.handle(qry_lp_version)
 
-                    except Exception as e:
+                        if lp_version is None or lp_version != ext_version:
+                            self._log.debug("Extension version is not current. Setting.")
+                            cmd_lp_version = CmdLpVersion(doc=doc)
+                            cmd_handler = CmdHandlerFactory.get_cmd_handler()
+                            cmd_handler.handle(cmd_lp_version)
+
+                    except Exception:
                         self._log.error("Error Setting Custom Properties", exc_info=True)
 
                     try:
-                        self._update_ext_location(doc)
-                    except:
+                        qry_ext_location = QryExtLocation()
+                        ext_location = qry_handler.handle(qry_ext_location)
+                        qry_props = QryCalcProps(doc)
+                        props_result = qry_handler.handle(qry_props)
+                        if Result.is_failure(props_result):
+                            self._log.error("Error getting calc properties. Error: %s", props_result.error)
+                            return
+                        props = props_result.data
+                        props.doc_ext_location = ext_location
+                        if props.is_modified:
+                            cmd_props = CmdLpDocProps(doc=doc, props=props.to_dict())
+                            cmd_handler = CmdHandlerFactory.get_cmd_handler()
+                            cmd_handler.handle(cmd_props)
+
+                    except Exception:
                         self._log.error("Error Updating Extension Location", exc_info=True)
 
                     se = SharedEvent()
                     eargs = EventArgs(self)
                     eargs.event_data = DotDict(doc=doc)
                     se.trigger_event(DOCUMENT_SAVING, eargs)
+
+                    # no longer needs to listen for the DocGlobals.get_current event.
+                    self._events.remove(GET_CURRENT_EVENT, self._fn_on_get_current)
             else:
                 self._log.debug("Document UnLoading not a spreadsheet")
 
-        except Exception as e:
+        except Exception:
             self._log.error("Error getting current document", exc_info=True)
             return
 
     # endregion execute
+
+    # region Event Handlers
+
+    def _on_get_current(self, source: Any, event: EventArgs) -> None:  # noqa: ANN401
+        if self.document is not None:
+            event.event_data["uid"] = self.document.RuntimeUID
+
+    # endregion Event Handlers
 
     # region Logging
 
@@ -156,8 +212,7 @@ class SavingJob(XJob, unohelper.Base):
 
 # region Implementation
 
-g_TypeTable = {}
-g_ImplementationHelper = unohelper.ImplementationHelper()
+g_ImplementationHelper = unohelper.ImplementationHelper()  # noqa: N816
 g_ImplementationHelper.addImplementation(*SavingJob.get_imple())
 
 # endregion Implementation

@@ -1,9 +1,7 @@
 # region imports
 from __future__ import unicode_literals, annotations
-from typing import Any, TYPE_CHECKING
-import threading
+from typing import Any, Tuple, TYPE_CHECKING
 import contextlib
-import os
 
 import unohelper
 from com.sun.star.task import XJob
@@ -18,19 +16,24 @@ def _conditions_met() -> bool:
 
 
 if TYPE_CHECKING:
-    try:
-        # python 3.12+
-        from typing import override  # type: ignore
-    except ImportError:
-        from typing_extensions import override
+    from typing_extensions import override
 
     # just for design time
     _CONDITIONS_MET = True
-    from ooodev.loader import Lo
     from ooodev.calc import CalcDoc
-    from ooodev.utils.props import Props
-    from ...___lo_pip___.oxt_logger import OxtLogger
-    from ...___lo_pip___.debug.break_mgr import BreakMgr
+    from oxt.___lo_pip___.oxt_logger import OxtLogger
+    from oxt.___lo_pip___.debug.break_mgr import BreakMgr
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.doc.cmd_current_ctx_load import CmdCurrentCtxLoad
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.doc.qry_is_macro_enabled import QryIsMacroEnabled
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_is_calc_view import QryIsCalcView
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.cmd_register_dispatch_interceptor import (
+        CmdRegisterDispatchInterceptor,
+    )
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.cmd_unregister_dispatch_interceptor import (
+        CmdUnRegisterDispatchInterceptor,
+    )
 
     break_mgr = BreakMgr()
 
@@ -39,15 +42,24 @@ if TYPE_CHECKING:
     # )
 else:
 
-    def override(func):
+    def override(func):  # noqa: ANN001, ANN201
         return func
 
     _CONDITIONS_MET = _conditions_met()
     if _CONDITIONS_MET:
-        from ooodev.loader import Lo
-        from ooodev.calc import CalcDoc
-        from ooodev.utils.props import Props
+        from ooodev.calc import CalcDoc  # noqa: F401
         from ___lo_pip___.debug.break_mgr import BreakMgr
+        from libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
+        from libre_pythonista_lib.cq.cmd.doc.cmd_current_ctx_load import CmdCurrentCtxLoad
+        from libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
+        from libre_pythonista_lib.cq.qry.doc.qry_is_macro_enabled import QryIsMacroEnabled
+        from libre_pythonista_lib.cq.qry.calc.doc.qry_is_calc_view import QryIsCalcView
+        from libre_pythonista_lib.cq.cmd.calc.doc.cmd_register_dispatch_interceptor import (
+            CmdRegisterDispatchInterceptor,
+        )
+        from libre_pythonista_lib.cq.cmd.calc.doc.cmd_unregister_dispatch_interceptor import (
+            CmdUnRegisterDispatchInterceptor,
+        )
 
         # Initialize the breakpoint manager
         break_mgr = BreakMgr()
@@ -64,12 +76,12 @@ class ViewJob(unohelper.Base, XJob):
     SERVICE_NAMES = ("com.sun.star.task.Job",)
 
     @classmethod
-    def get_imple(cls):
+    def get_imple(cls) -> Tuple[Any, str, Tuple[str, ...]]:
         return (cls, cls.IMPLE_NAME, cls.SERVICE_NAMES)
 
     # region Init
 
-    def __init__(self, ctx):
+    def __init__(self, ctx: object) -> None:
         XJob.__init__(self)
         unohelper.Base.__init__(self)
         self.ctx = ctx
@@ -78,9 +90,20 @@ class ViewJob(unohelper.Base, XJob):
 
     # endregion Init
 
+    def _lo_load(self, doc: Any) -> None:  # noqa: ANN401
+        """Loads OooDev"""
+        self._log.debug("_lo_load()_ Loading OooDev")
+        cmd_handler = CmdHandlerFactory.get_cmd_handler()
+        cmd = CmdCurrentCtxLoad(ctx=self.ctx, uid=doc.RuntimeUID)
+        cmd_handler.handle(cmd)
+        if not cmd.success:
+            self._log.error("Error loading OooDev")
+            return
+        self._log.debug("OooDev Loaded")
+
     # region execute
     @override
-    def execute(self, Arguments: Any) -> None:
+    def execute(self, Arguments: Any) -> None:  # noqa: ANN401, N803
         # This job may be executed more then once.
         # When a spreadsheet is put into print preview this is fired.
         # When the print preview is closed this is fired again.
@@ -100,42 +123,55 @@ class ViewJob(unohelper.Base, XJob):
             if self.document is None:
                 self._log.debug("ViewJob - Document is None")
                 return
+
+            if _CONDITIONS_MET:
+                self._lo_load(self.document)
+
             if self.document.supportsService("com.sun.star.sheet.SpreadsheetDocument"):
                 # run_id = self.document.RuntimeUID
                 # key = f"LIBRE_PYTHONISTA_DOC_{run_id}"
                 # os.environ[key] = "1"
-                # self._log.debug(f"Added {key} to environment variables")
+                # self._log.debug(f"Added {key} to environment variables"
+                self._log.debug("Document is a spreadsheet")
+
                 if _CONDITIONS_MET:
+                    qry_handler = QryHandlerFactory.get_qry_handler()
+                    cmd_handler = CmdHandlerFactory.get_cmd_handler()
+
                     try:
                         self._log.debug("Conditions met. Continuing ...")
                         break_mgr.check_breakpoint("view_job_init")
-                        doc_args = self.document.getArgs()
-                        args_dic = Props.props_to_dot_dict(doc_args)
-                        if hasattr(args_dic, "MacroExecutionMode"):
-                            self._log.debug(
-                                "MacroExecutionMode: %s", args_dic.MacroExecutionMode
-                            )
-                            macros_enabled = args_dic.MacroExecutionMode == 4
+                        doc = CalcDoc.get_doc_from_component(self.document)
+
+                        qry_macro_mode = QryIsMacroEnabled(doc=doc)
+                        macros_enabled = qry_handler.handle(qry_macro_mode)
+                        if macros_enabled:
+                            self._log.debug("Macros are enabled.")
                         else:
-                            macros_enabled = False
-                        self._log.debug("Macros Enabled: %s", macros_enabled)
-                        if not macros_enabled:
                             self._log.debug("Macros are not enabled. Exiting.")
                             return
 
-                        _ = Lo.load_office()
-                        # doc = CalcDoc.get_doc_from_component(self.document)
-                        # if os.getenv("LIBREOFFICE_DEBUG_ATTACHED"):
-                        #     breakpoint()
-                        # t = threading.Thread(
-                        #     target=_init_with_state, args=(doc, self._log), daemon=True
-                        # )
-                        # t.start()
+                        qry = QryIsCalcView(doc=doc)
+                        if qry_handler.handle(qry):
+                            self._log.debug("Document is a Calc view.")
+                            cmd = CmdRegisterDispatchInterceptor(doc=doc)
+                            cmd_handler.handle(cmd)
+                            if cmd.success:
+                                self._log.debug("Successfully registered dispatch interceptor.")
+                            else:
+                                self._log.warning("Failed to register dispatch interceptor.")
+                        else:
+                            self._log.debug("Document is not a Calc view. Returning.")
+                            cmd = CmdUnRegisterDispatchInterceptor(doc=doc)
+                            cmd_handler.handle(cmd)
+                            if cmd.success:
+                                self._log.debug("Successfully unregistered dispatch interceptor.")
+                            else:
+                                self._log.warning("Failed to unregister dispatch interceptor.")
+                            return
 
                     except Exception:
-                        self._log.error(
-                            "Error setting components on view.", exc_info=True
-                        )
+                        self._log.error("Error setting components on view.", exc_info=True)
                 else:
                     self._log.debug("Conditions not met to register dispatch manager")
             else:
@@ -157,45 +193,11 @@ class ViewJob(unohelper.Base, XJob):
     # endregion Logging
 
 
-def _init_with_state(doc: CalcDoc, log: OxtLogger):
-    # This method is run in a thread.
-    # The reason for this on Ubuntu 20.04 is that the main thread crashes if there is a plot in the document python code.
-    # This crash does not give any information in the logs.
-    # After much testing and debugging I discovered that crash can be avoided if this code is run in a thread.
-    # The crash did not happen Flatpak version, Snap Version, Windows version or Docker version. Only on Ubuntu 20.04 when apt installed so far.
-    log.debug("_init_with_state()")
-    if TYPE_CHECKING:
-        from ...pythonpath.libre_pythonista_lib.doc.calc_doc_mgr import CalcDocMgr
-
-    else:
-        try:
-            from libre_pythonista_lib.doc.calc_doc_mgr import CalcDocMgr
-
-            log.debug("Imported CalcDocMgr")
-        except ImportError:
-            log.error("Error importing oxt_init and/or CalcStateMgr", exc_info=True)
-            return
-
-    try:
-        log.debug("Creating an instance of CalcDocMgr")
-        # if os.getenv("LIBREOFFICE_DEBUG_ATTACHED"):
-        #     breakpoint()
-        break_mgr.check_breakpoint("view_job_init_state")
-
-        doc_mgr = CalcDocMgr()
-        doc_mgr.calc_state_mgr.is_oxt_init = True
-        # doc_mgr.ensure_events()
-
-    except Exception:
-        log.error("Error _init_with_state()", exc_info=True)
-
-
 # endregion XJob
 
 # region Implementation
 
-g_TypeTable = {}
-g_ImplementationHelper = unohelper.ImplementationHelper()
+g_ImplementationHelper = unohelper.ImplementationHelper()  # noqa: N816
 g_ImplementationHelper.addImplementation(*ViewJob.get_imple())
 
 # endregion Implementation

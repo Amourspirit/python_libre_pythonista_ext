@@ -7,7 +7,6 @@ try:
 except ImportError:
     from typing_extensions import override
 
-import uno
 import unohelper
 from com.sun.star.frame import XDispatch
 from com.sun.star.beans import PropertyValue
@@ -20,26 +19,29 @@ from ooodev.events.args.cancel_event_args import CancelEventArgs
 from ooodev.events.args.event_args import EventArgs
 from ooodev.utils.helper.dot_dict import DotDict
 
-from ..dialog.card.tbl_data_card import TblDataCard
 from ..event.shared_event import SharedEvent
 
 if TYPE_CHECKING:
     from com.sun.star.frame import XStatusListener
-    from ....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from oxt.pythonpath.libre_pythonista_lib.dialog.card.tbl_data_card2 import TblDataCard2
+    from oxt.pythonpath.libre_pythonista_lib.event.shared_event import SharedEvent
+    from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
 else:
-    from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from libre_pythonista_lib.dialog.card.tbl_data_card2 import TblDataCard2
+    from libre_pythonista_lib.event.shared_event import SharedEvent
+    from libre_pythonista_lib.log.log_mixin import LogMixin
 
 
-class DispatchCardTblData(XDispatch, EventsPartial, unohelper.Base):
-    def __init__(self, sheet: str, cell: str):
+class DispatchCardTblData(XDispatch, LogMixin, EventsPartial, unohelper.Base):
+    def __init__(self, sheet: str, cell: str) -> None:
         XDispatch.__init__(self)
+        LogMixin.__init__(self)
         EventsPartial.__init__(self)
         unohelper.Base.__init__(self)
         self._sheet = sheet
         self._cell = cell
-        self._log = OxtLogger(log_name=self.__class__.__name__)
         self.add_event_observers(SharedEvent().event_observer)
-        self._log.debug(f"init: sheet={sheet}, cell={cell}")
+        self.log.debug("init: sheet=%s, cell=%s", sheet, cell)
         self._status_listeners: Dict[str, XStatusListener] = {}
 
     @override
@@ -51,10 +53,10 @@ class DispatchCardTblData(XDispatch, EventsPartial, unohelper.Base):
 
         Note: Notifications can't be guaranteed! This will be a part of interface XNotifyingDispatch.
         """
-        with self._log.indent(True):
-            self._log.debug(f"addStatusListener(): url={URL.Main}")
+        with self.log.indent(True):
+            self.log.debug("addStatusListener(): url=%s", URL.Main)
             if URL.Complete in self._status_listeners:
-                self._log.debug(f"addStatusListener(): url={URL.Main} already exists.")
+                self.log.debug("addStatusListener(): url=%s already exists.", URL.Main)
             else:
                 # setting IsEnable=False here does not disable the dispatch command
                 # State=True may cause the menu items to be displayed as checked.
@@ -74,9 +76,9 @@ class DispatchCardTblData(XDispatch, EventsPartial, unohelper.Base):
         By default, and absent any arguments, ``SynchronMode`` is considered ``False`` and the execution is performed asynchronously (i.e. dispatch() returns immediately, and the action is performed in the background).
         But when set to ``True``, dispatch() processes the request synchronously.
         """
-        with self._log.indent(True):
+        with self.log.indent(True):
             try:
-                self._log.debug(f"dispatch(): url={URL.Main}")
+                self.log.debug("dispatch(): url=%s", URL.Main)
                 doc = CalcDoc.from_current_doc()
                 sheet = doc.sheets[self._sheet]
                 cell = sheet[self._cell]
@@ -90,10 +92,10 @@ class DispatchCardTblData(XDispatch, EventsPartial, unohelper.Base):
                 )
                 self.trigger_event(f"{URL.Main}_before_dispatch", cargs)
                 if cargs.cancel:
-                    self._log.debug(f"Event {URL.Main}_before_dispatch was cancelled.")
+                    self.log.debug("Event %s_before_dispatch was cancelled.", URL.Main)
                     return
 
-                card = TblDataCard(cell)
+                card = TblDataCard2(cell)
                 card.show()
 
                 eargs = EventArgs.from_args(cargs)
@@ -102,7 +104,7 @@ class DispatchCardTblData(XDispatch, EventsPartial, unohelper.Base):
             except Exception as e:
                 # log the error and do not re-raise it.
                 # re-raising the error may crash the entire LibreOffice app.
-                self._log.error(f"Error: {e}", exc_info=True)
+                self.log.error("Error: %s", e, exc_info=True)
                 return
 
     @override
@@ -110,7 +112,7 @@ class DispatchCardTblData(XDispatch, EventsPartial, unohelper.Base):
         """
         Un-registers a listener from a control.
         """
-        with self._log.indent(True):
-            self._log.debug(f"removeStatusListener(): url={URL.Main}")
+        with self.log.indent(True):
+            self.log.debug("removeStatusListener(): url=%s", URL.Main)
             if URL.Complete in self._status_listeners:
                 del self._status_listeners[URL.Complete]

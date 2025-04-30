@@ -1,5 +1,5 @@
-import logging
-import sys
+# ruff: noqa: ANN001, ANN002, ANN003, N802, ANN201
+from contextlib import contextmanager
 from logging import Logger
 from logging.handlers import TimedRotatingFileHandler
 
@@ -12,23 +12,21 @@ from logging.handlers import TimedRotatingFileHandler
 class DummyLogger:
     """Dummy Logger Class. Does Nothing!"""
 
-    def __init__(self, log_file: str = "", log_name: str = "", *args, **kwargs):
-
-        pass
+    def __init__(self, log_file: str = "", log_name: str = "", *args, **kwargs) -> None:
+        self.current_indent = 0
 
     def debugs(self, *messages: str) -> None:
-
         pass
 
     # region Logger Methods
 
-    def setLevel(self, level):
+    def setLevel(self, level) -> None:
         pass
 
-    def debug(self, msg, *args, **kwargs):
+    def debug(self, msg, *args, **kwargs) -> None:
         pass
 
-    def info(self, msg, *args, **kwargs):
+    def info(self, msg, *args, **kwargs) -> None:
         pass
 
     def warning(self, msg, *args, **kwargs):
@@ -68,33 +66,53 @@ class DummyLogger:
         pass
 
     def hasHandlers(self):
-
         return False
 
     def callHandlers(self, record):
-
         pass
 
     def getEffectiveLevel(self):
-
         return 0
 
     def isEnabledFor(self, level):
-
         return False
 
     def getChild(self, suffix):
-
         return None
 
     def __repr__(self):
-
         return f"<{self.__class__.__name__}()>"
 
-    def __reduce__(self):
-        return None
-
     # endregion Logger Methods
+
+    # region Indent
+
+    @contextmanager
+    def indent(self, use_as_context_manager: bool = False):
+        if use_as_context_manager:
+            # Context manager behavior
+            try:
+                pass
+                yield self.current_indent
+            finally:
+                pass
+        else:
+            # Normal method behavior
+            return self.current_indent  # Optionally return something
+
+    def outdent(self) -> int:
+        return self.current_indent
+
+    @contextmanager
+    def noindent(self):
+        """Temporarily disable indentation."""
+        try:
+            self.current_indent = 0
+            yield
+        finally:
+            pass
+
+    # endregion Indent
 
     # region Properties
 
@@ -106,21 +124,21 @@ class DummyLogger:
     @property
     def is_debug(self) -> bool:
         """Check if is debug"""
-        return False
+        return True
 
     @property
     def is_info(self) -> bool:
         """Check if is info"""
-        return False
+        return True
 
     @property
     def is_warning(self) -> bool:
         """Check if is warning"""
-        return False
+        return True
 
     @property
     def is_error(self) -> bool:
         """Check if is error"""
-        return False
+        return True
 
     # endregion Properties
