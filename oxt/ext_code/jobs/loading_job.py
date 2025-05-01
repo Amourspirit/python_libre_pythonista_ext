@@ -30,6 +30,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.doc.qry_is_macro_enabled import QryIsMacroEnabled
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.cmd_init_calculate import CmdInitCalculate
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_init_calculate import QryInitCalculate
+    from oxt.pythonpath.libre_pythonista_lib.doc.doc_globals import DocGlobals
 else:
 
     def override(func):  # noqa: ANN001, ANN201
@@ -45,7 +46,10 @@ else:
         from libre_pythonista_lib.cq.qry.doc.qry_is_macro_enabled import QryIsMacroEnabled
         from libre_pythonista_lib.cq.cmd.calc.doc.cmd_init_calculate import CmdInitCalculate
         from libre_pythonista_lib.cq.qry.calc.doc.qry_init_calculate import QryInitCalculate
+        from libre_pythonista_lib.doc.doc_globals import DocGlobals
 # endregion imports
+
+_KEY = "ext_code.jobs.loading_job.LoadingJob"
 
 
 # region XJob
@@ -104,6 +108,10 @@ class LoadingJob(XJob, unohelper.Base):
             if self.document.supportsService("com.sun.star.sheet.SpreadsheetDocument"):
                 self._log.debug("Document Loading is a spreadsheet")
                 run_id = self.document.RuntimeUID
+                doc_globals = DocGlobals(runtime_uid=run_id)
+                if _KEY in doc_globals.mem_cache:
+                    self._log.debug("Already executed command. Returning...")
+                    return
                 doc = CalcDoc.get_doc_from_component(self.document)
                 qry_handler = QryHandlerFactory.get_qry_handler()
                 cmd_handler = CmdHandlerFactory.get_cmd_handler()
@@ -131,6 +139,7 @@ class LoadingJob(XJob, unohelper.Base):
                     cmd_handler.handle(cmd_init_calc)
                     if cmd_init_calc.success:
                         self._log.debug("Successfully executed command.")
+                        doc_globals.mem_cache[_KEY] = True
                     else:
                         self._log.error("Error executing command.")
                 else:
