@@ -1,6 +1,6 @@
 [project]
 name = "LibrePythonista"
-version = "0.10.0"
+version = "0.10.1"
 description = "Python For LibreOffice Calc"
 readme = "README.md"
 requires-python = ">=3.8"
