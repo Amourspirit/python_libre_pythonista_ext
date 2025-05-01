@@ -117,16 +117,10 @@ class LoadFinishedJob(unohelper.Base, XJob):
     # region execute
     @override
     def execute(self, Arguments: Any) -> None:  # noqa: ANN401, N803
-        # This job may be executed more then once or not at all.
-        # When a spreadsheet is put into print preview this is fired.
-        # When the print preview is closed this is fired again.
-        # print("ViewJob execute")
         # Load Finished Job is not fired by LibreOffice when a new document is created.
         # It is fired when a document is loaded.
-        self._log.debug("ViewJob execute")
+        self._log.debug("execute")
         try:
-            # loader = Lo.load_office()
-            self._log.debug("Args Length: %i", len(Arguments))
             arg1 = Arguments[0]
 
             for struct in arg1.Value:
@@ -136,7 +130,7 @@ class LoadFinishedJob(unohelper.Base, XJob):
                     self._log.debug("Document Found")
 
             if self.document is None:
-                self._log.debug("ViewJob - Document is None")
+                self._log.debug("Document is None")
                 return
 
             if _CONDITIONS_MET:
