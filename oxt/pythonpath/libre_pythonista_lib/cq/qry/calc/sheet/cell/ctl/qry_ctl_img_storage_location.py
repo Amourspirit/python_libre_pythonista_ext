@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union, Optional
 from ooodev.calc import CalcCell
 
 if TYPE_CHECKING:
@@ -31,10 +31,10 @@ else:
     from libre_pythonista_lib.utils.result import Result
 
 
-class QryCtlStorageLocation(QryBase, LogMixin, QryCellT[Result[str, None] | Result[None, Exception]]):
+class QryCtlStorageLocation(QryBase, LogMixin, QryCellT[Union[Result[str, None], Result[None, Exception]]]):
     """Gets the control storage location"""
 
-    def __init__(self, cell: CalcCell, ctl: Ctl | None = None) -> None:
+    def __init__(self, cell: CalcCell, ctl: Optional[Ctl] = None) -> None:
         """Constructor
 
         Args:
@@ -48,7 +48,7 @@ class QryCtlStorageLocation(QryBase, LogMixin, QryCellT[Result[str, None] | Resu
         self._ctl = ctl
         self.log.debug("init done for cell %s", cell.cell_obj)
 
-    def _qry_module_state(self) -> Result[ModuleStateItem, None] | Result[None, Exception]:
+    def _qry_module_state(self) -> Union[Result[ModuleStateItem, None], Result[None, Exception]]:
         """Gets the module state via query"""
         qry = QryModuleState(cell=self.cell)
         return self._execute_qry(qry)
@@ -66,7 +66,7 @@ class QryCtlStorageLocation(QryBase, LogMixin, QryCellT[Result[str, None] | Resu
             return False
         return rule.rule_kind in (RuleNameKind.CELL_DATA_TYPE_CELL_IMG, RuleNameKind.CELL_DATA_TYPE_MP_FIGURE)
 
-    def execute(self) -> Result[str, None] | Result[None, Exception]:
+    def execute(self) -> Union[Result[str, None], Result[None, Exception]]:
         """
         Executes the query to get control name
 

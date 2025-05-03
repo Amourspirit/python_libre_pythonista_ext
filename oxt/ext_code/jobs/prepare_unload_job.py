@@ -1,6 +1,6 @@
 # region imports
 from __future__ import unicode_literals, annotations
-from typing import Any, cast, Tuple, TYPE_CHECKING
+from typing import Any, cast, Tuple, TYPE_CHECKING, Union
 import os
 import contextlib
 
@@ -101,7 +101,7 @@ class PrepareUnloadJob(XJob, unohelper.Base):
         self.ctx = ctx
         self.document = None
         self._log = self._get_local_logger()
-        self._doc: CalcDoc | None = None
+        self._doc: Union[CalcDoc, None] = None
         self._fn_on_singleton_get_key = self._on_singleton_get_key
         self._fn_on_doc_event_partial_check_uid = self._on_doc_event_partial_check_uid
         self._fn_on_singleton_get_doc = self._on_singleton_get_doc

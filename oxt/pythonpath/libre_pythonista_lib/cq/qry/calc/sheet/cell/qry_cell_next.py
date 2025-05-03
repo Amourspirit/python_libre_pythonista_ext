@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Union
 
 from ooodev.calc import CalcCell
 from ooodev.utils.data_type.cell_obj import CellObj
@@ -26,8 +26,8 @@ else:
     PySourceManager = Any
 
 
-class QryCellNext(QryBase, LogMixin, QryCellT[Result[CellObj, None] | Result[None, Exception]]):
-    def __init__(self, cell: CalcCell, require_exist: bool = False, mod: PyModuleT | None = None) -> None:
+class QryCellNext(QryBase, LogMixin, QryCellT[Union[Result[CellObj, None], Result[None, Exception]]]):
+    def __init__(self, cell: CalcCell, require_exist: bool = False, mod: Union[PyModuleT, None] = None) -> None:
         """Constructor
 
         Args:
@@ -52,7 +52,7 @@ class QryCellNext(QryBase, LogMixin, QryCellT[Result[CellObj, None] | Result[Non
         qry = QryPySrcMgrCode(doc=self.cell.calc_doc, mod=self._mod)
         return self._execute_qry(qry)
 
-    def execute(self) -> Result[CellObj, None] | Result[None, Exception]:
+    def execute(self) -> Union[Result[CellObj, None], Result[None, Exception]]:
         """
         Executes the query to get the URI for a cell.
 

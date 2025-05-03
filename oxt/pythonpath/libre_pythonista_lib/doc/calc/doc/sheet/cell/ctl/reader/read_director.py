@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Type, overload
+from typing import TYPE_CHECKING, Type, overload, Union
 
 try:
     from typing import Literal  # type: ignore
@@ -50,7 +50,7 @@ def _get_kind(calc_cell: CalcCell) -> CtlKind:
     return result.data
 
 
-def _get_control_class(ctl_kind: CtlKind) -> Type[CtlReader] | None:
+def _get_control_class(ctl_kind: CtlKind) -> Union[Type[CtlReader], None]:
     """
     Gets the control class for the given control kind.
 
@@ -58,7 +58,7 @@ def _get_control_class(ctl_kind: CtlKind) -> Type[CtlReader] | None:
         ctl_kind (CtlKind): The kind of control to get the class for
 
     Returns:
-        Type[CtlBase] | None: The control class or None if not found
+        Type[CtlBase], None: The control class or None if not found
     """
     # Import controls here to avoid circular imports
     if not TYPE_CHECKING:
@@ -113,10 +113,10 @@ def get_reader(calc_cell: CalcCell, kind: Literal[CtlKind.NONE]) -> CtlReaderNon
 @overload
 def get_reader(calc_cell: CalcCell, kind: Literal[CtlKind.MAT_PLT_FIGURE]) -> CtlReaderMatPlotFig: ...
 @overload
-def get_reader(calc_cell: CalcCell, kind: CtlKind | None = None) -> CtlReader: ...
+def get_reader(calc_cell: CalcCell, kind: Union[CtlKind, None] = None) -> CtlReader: ...
 
 
-def get_reader(calc_cell: CalcCell, kind: CtlKind | None = None) -> CtlReader:
+def get_reader(calc_cell: CalcCell, kind: Union[CtlKind, None] = None) -> CtlReader:
     """
     Gets a reader for the given cell and control kind.
 

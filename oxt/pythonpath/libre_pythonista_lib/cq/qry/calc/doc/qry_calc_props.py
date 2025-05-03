@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import cast, TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 
 from ooodev.utils.gen_util import NULL_OBJ
 
@@ -27,7 +27,7 @@ else:
 # tested in tests/test_cmd_qry/test_doc/test_cmd_calc_props.py
 
 
-class QryCalcProps(QryBase, LogMixin, QryCacheT[Result[CalcProps2, None] | Result[None, Exception]]):
+class QryCalcProps(QryBase, LogMixin, QryCacheT[Union[Result[CalcProps2, None], Result[None, Exception]]]):
     """Gets the calc properties"""
 
     def __init__(self, doc: CalcDoc) -> None:
@@ -37,14 +37,14 @@ class QryCalcProps(QryBase, LogMixin, QryCacheT[Result[CalcProps2, None] | Resul
         self._doc = doc
         self.log.debug("init done for doc %s", doc.runtime_uid)
 
-    def _get_data(self) -> dict | None:
+    def _get_data(self) -> Union[dict, None]:
         qry = QryLpDocProps(self._doc)
         result = self._execute_qry(qry)
         if Result.is_success(result):
             return result.data
         return None
 
-    def execute(self) -> Result[CalcProps2, None] | Result[None, Exception]:
+    def execute(self) -> Union[Result[CalcProps2, None], Result[None, Exception]]:
         """
         Executes the query and gets the calc properties.
 

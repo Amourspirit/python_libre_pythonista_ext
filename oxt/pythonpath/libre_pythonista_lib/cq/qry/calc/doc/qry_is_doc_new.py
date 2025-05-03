@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 
 from ooodev.utils.props import Props
 
@@ -15,19 +15,19 @@ else:
     from libre_pythonista_lib.log.log_mixin import LogMixin
 
 
-class QryIsDocNew(QryBase, LogMixin, QryDocT[bool | None]):
+class QryIsDocNew(QryBase, LogMixin, QryDocT[Union[bool, None]]):
     def __init__(self, doc: CalcDoc) -> None:
         QryBase.__init__(self)
         LogMixin.__init__(self)
         self._doc = doc
         self.log.debug("init done for doc %s", doc.runtime_uid)
 
-    def execute(self) -> bool | None:
+    def execute(self) -> Union[bool, None]:
         """
         Executes the query to check if the document is a new unsaved document.
 
         Returns:
-            bool | None: True if the document is new, None if there are any errors; False otherwise.
+            bool, None: True if the document is new, None if there are any errors; False otherwise.
         """
         try:
             result = True

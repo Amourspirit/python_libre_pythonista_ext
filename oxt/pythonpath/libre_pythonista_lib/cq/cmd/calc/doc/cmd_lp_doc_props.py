@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import cast, Tuple, TYPE_CHECKING
+from typing import cast, Tuple, TYPE_CHECKING, Union
 
 from ooodev.io.json.doc_json_file import DocJsonFile
 from ooodev.utils.gen_util import NULL_OBJ
@@ -45,9 +45,9 @@ class CmdLpDocProps(CmdBase, LogMixin, CmdCacheT):
         self._doc = doc
         self._props = props
         self._file_name = ""
-        self._json_file = cast(DocJsonFile | None, NULL_OBJ)
+        self._json_file = cast(Union[DocJsonFile, None], NULL_OBJ)
         self._ensured = False
-        self._current_state = cast(dict | None, NULL_OBJ)
+        self._current_state = cast(Union[dict, None], NULL_OBJ)
         self.log.debug("init done for doc %s", doc.runtime_uid)
 
     def _ensure_json_file(self) -> bool:
@@ -58,7 +58,7 @@ class CmdLpDocProps(CmdBase, LogMixin, CmdCacheT):
             self._execute_cmd(cmd)
         return True
 
-    def _get_json_file(self) -> DocJsonFile | None:
+    def _get_json_file(self) -> Union[DocJsonFile, None]:
         qry = QryLpDocJsonFile(self._doc)
         self._file_name = qry.file_name
         result = self._execute_qry(qry)

@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import cast, TYPE_CHECKING
+from typing import cast, TYPE_CHECKING, Optional
 import ast
 import types
 from ooodev.utils.helper.dot_dict import DotDict
@@ -20,7 +20,7 @@ class LpFnExpr:
     def __init__(self) -> None:
         self._result = None
 
-    def set_values(self, mod: types.ModuleType, code: str, ast_mod: ast.Module | None) -> None:
+    def set_values(self, mod: types.ModuleType, code: str, ast_mod: Optional[ast.Module]) -> None:
         """
         Set the values for the class.
 
@@ -53,24 +53,23 @@ class LpFnExpr:
             return False
 
         log = LogInst()
-        with log.indent(True):
-            log.debug("LpFn - get_is_match() Entered.")
+        log.debug("LpFn - get_is_match() Entered.")
 
-            result = None
-            # with contextlib.suppress(Exception):
-            try:
-                if "lp_mod" in self.mod.__dict__:
-                    log.debug("LpFn - get_is_match() lp_mod is in module")
-                    result = cast(DotDict, self.mod.lp_mod.LAST_LP_RESULT)  # type: ignore
-                    log.debug("LpFn - get_is_match() lp_mod.LAST_LP_RESULT %s", result)
-                    if "headers" in result:
-                        log.debug("LpFnObj - get_is_match() has headers: %s", result.headers)
-                else:
-                    log.debug("LpFn - get_is_match() lp_mod is NOT in module")
-                self._result = result
-            except Exception as e:
-                log.error("LpFn - get_is_match() Exception: %s", e, exc_info=True)
-            return self._result is not None
+        result = None
+        # with contextlib.suppress(Exception):
+        try:
+            if "lp_mod" in self.mod.__dict__:
+                log.debug("LpFn - get_is_match() lp_mod is in module")
+                result = cast(DotDict, self.mod.lp_mod.LAST_LP_RESULT)  # type: ignore
+                log.debug("LpFn - get_is_match() lp_mod.LAST_LP_RESULT %s", result)
+                if "headers" in result:
+                    log.debug("LpFnObj - get_is_match() has headers: %s", result.headers)
+            else:
+                log.debug("LpFn - get_is_match() lp_mod is NOT in module")
+            self._result = result
+        except Exception as e:
+            log.error("LpFn - get_is_match() Exception: %s", e, exc_info=True)
+        return self._result is not None
 
     def get_value(self) -> DotDict:
         """

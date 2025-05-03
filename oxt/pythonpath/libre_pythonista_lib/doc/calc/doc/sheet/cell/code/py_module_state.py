@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, Tuple, TYPE_CHECKING
+from typing import Any, Tuple, TYPE_CHECKING, Union
 from collections import OrderedDict
 
 from ooodev.calc import CalcCell
@@ -249,7 +249,7 @@ class PyModuleState(LogMixin):
         self._remove_state_history_by_cell(cell)
         return True
 
-    def get_last_item(self) -> ModuleStateItem | None:
+    def get_last_item(self) -> Union[ModuleStateItem, None]:
         """Returns the last item in the state history or None if empty."""
         # See: cq.qry.calc.sheet.cell.state.qry_module_state_last_item.QryModuleStateLastItem
         if not self._state_history:

@@ -50,7 +50,7 @@ class CmdState(CmdBase, LogMixin, CmdCellCtlT):
             self._ctl.cell = cell
         self._config = BasicConfig()
         self._code_name = None
-        self._current_ctl: Dict[str, Any] | None = None
+        self._current_ctl: Union[Dict[str, Any], None] = None
         self.log.debug("init done for cell %s", cell.cell_obj)
 
     def _validate(self) -> bool:

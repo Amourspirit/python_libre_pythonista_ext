@@ -36,7 +36,7 @@ class QryCellIsDeleted(QryBase, QryCellT[bool]):
         The url will start with ``vnd.sun.star.script:``
 
         Returns:
-            str | None: The script URL if successful, otherwise None.
+            str, None: The script URL if successful, otherwise None.
         """
 
         qry = UnoQryCellIsDeleted(cell=self._cell.component)

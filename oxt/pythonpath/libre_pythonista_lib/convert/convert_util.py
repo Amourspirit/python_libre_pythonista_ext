@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import Union
 from datetime import datetime, timedelta
 import pandas as pd
 from ooodev.loader import Lo
@@ -61,7 +62,7 @@ class ConvertUtil:
             pd.Timestamp: The Pandas Timestamp representation of the numeric date.
         """
         # LibreOffice Calc's epoch
-        epoch = cls.get_lo_epoch() # must not contain tz
+        epoch = cls.get_lo_epoch()  # must not contain tz
         # epoch = datetime(1899, 12, 30)
         # Convert numeric date to datetime
         date_time = epoch + timedelta(days=numeric_date)
@@ -70,18 +71,18 @@ class ConvertUtil:
         return pandas_timestamp
 
     @classmethod
-    def pandas_to_lo_date(cls, timestamp: pd.Timestamp | datetime) -> int:
+    def pandas_to_lo_date(cls, timestamp: Union[pd.Timestamp, datetime]) -> int:
         """
         Convert a Pandas Timestamp or datetime object to a LibreOffice Calc numeric date.
 
         Args:
-            timestamp (pd.Timestamp | datetime): The Pandas Timestamp or datetime object to convert.
+            timestamp (pd.Timestamp, datetime): The Pandas Timestamp or datetime object to convert.
 
         Returns:
             int: The LibreOffice Calc numeric date representation of the timestamp.
         """
         # Base date for LibreOffice Calc
-        epoch = cls.get_lo_epoch() # must not contain tz
+        epoch = cls.get_lo_epoch()  # must not contain tz
         # epoch = datetime(1899, 12, 30)
 
         # Ensure the timestamp is a datetime object

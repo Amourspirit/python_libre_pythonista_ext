@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcDoc
@@ -23,7 +23,7 @@ else:
 class QryCellEventMgr(QryBase, LogMixin, QryDocT[CellEventMgr]):
     """Gets the singleton CellEventMgr"""
 
-    def __init__(self, doc: CalcDoc, mod: PyModuleT | None = None) -> None:
+    def __init__(self, doc: CalcDoc, mod: Union[PyModuleT, None] = None) -> None:
         """Constructor
 
         Args:

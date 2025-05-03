@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import cast, TYPE_CHECKING
+from typing import cast, TYPE_CHECKING, Union
 
 
 if TYPE_CHECKING:
@@ -32,7 +32,7 @@ else:
 
 
 class CmdDeleteLpCell(CmdBase, LogMixin, CmdCellT):
-    def __init__(self, cell: CalcCell, mod: PyModuleT | None = None, style: StyleT | None = None) -> None:
+    def __init__(self, cell: CalcCell, mod: Union[PyModuleT, None] = None, style: Union[StyleT, None] = None) -> None:
         CmdBase.__init__(self)
         LogMixin.__init__(self)
         self._cell = cell

@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, Dict, TYPE_CHECKING, cast
+from typing import Any, Dict, TYPE_CHECKING, cast, Union
 
 from ooo.dyn.awt.size import Size
 from ooo.dyn.awt.point import Point
@@ -45,12 +45,12 @@ else:
 class CmdSimple(CmdBase, LogMixin, CmdCellCtlT):
     """Creates a simple control"""
 
-    def __init__(self, cell: CalcCell, ctl: Ctl, opt: CtlOptions | None = None) -> None:
+    def __init__(self, cell: CalcCell, ctl: Ctl, opt: Union[CtlOptions, None] = None) -> None:
         CmdBase.__init__(self)
         LogMixin.__init__(self)
         self._ctl = ctl
         self._cfg = BasicConfig()
-        self.__current_ctl: Dict[str, Any] | None = None
+        self.__current_ctl: Union[Dict[str, Any], None] = None
         if opt is None:
             opt = CtlOptions()
         self._opt = opt

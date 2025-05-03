@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 
 if TYPE_CHECKING:
@@ -28,7 +28,7 @@ class QryCtlScriptLoc(QryBase, LogMixin, QryCellT[str]):
     Assigns the script location to the ``ctl`` as property ``ctl_script_loc``.
     """
 
-    def __init__(self, cell: CalcCell, ctl: Ctl | None = None) -> None:
+    def __init__(self, cell: CalcCell, ctl: Optional[Ctl] = None) -> None:
         QryBase.__init__(self)
         LogMixin.__init__(self)
         self.kind = CalcQryKind.CELL

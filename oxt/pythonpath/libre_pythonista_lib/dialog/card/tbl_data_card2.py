@@ -1,7 +1,7 @@
 # region Imports
 from __future__ import annotations
 import uno
-from typing import Any, cast, TYPE_CHECKING, List
+from typing import Any, cast, TYPE_CHECKING, List, Optional
 from ooo.dyn.awt.push_button_type import PushButtonType
 from ooo.dyn.awt.pos_size import PosSize
 
@@ -11,9 +11,7 @@ from ooodev.loader import Lo
 
 
 if TYPE_CHECKING:
-    from oxt.___lo_pip___.oxt_logger.oxt_logger import OxtLogger
     from oxt.___lo_pip___.lo_util.resource_resolver import ResourceResolver
-    from oxt.pythonpath.libre_pythonista_lib.cell.lpl_cell import LplCell
     from oxt.pythonpath.libre_pythonista_lib.utils.pandas_util import PandasUtil
     from oxt.pythonpath.libre_pythonista_lib.data.tbl_data_obj import TblDataObj
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
@@ -22,9 +20,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.state.qry_module_state import QryModuleState
     from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
 else:
-    from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
     from ___lo_pip___.lo_util.resource_resolver import ResourceResolver
-    from libre_pythonista_lib.cell.lpl_cell import LplCell
     from libre_pythonista_lib.utils.pandas_util import PandasUtil
     from libre_pythonista_lib.data.tbl_data_obj import TblDataObj
     from libre_pythonista_lib.log.log_mixin import LogMixin
@@ -60,7 +56,7 @@ class TblDataCard2(LogMixin):
         self._row_index = -1
         self._cell = cell
         self._qry_handler = QryHandlerFactory.get_qry_handler()
-        self._module_state = cast(ModuleStateItem | None, None)
+        self._module_state = cast(Optional[ModuleStateItem], None)
         self._doc = self._cell.calc_doc
         self._init_dialog()
         self._set_table_data()

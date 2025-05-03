@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, Sequence
+from typing import Any, Sequence, Union
 
 from .run_time_dialog_base import RuntimeDialogBase
 
@@ -24,8 +24,8 @@ class TempDialog(RuntimeDialogBase):
         *,
         parent: Any = None,
         align: int = 0,
-        prop_names: Sequence[str] | None = None,
-        prop_values: Sequence[Any] | None = None,
+        prop_names: Union[Sequence[str], None] = None,
+        prop_values: Union[Sequence[Any], None] = None,
     ):
         """
         Constructor
@@ -36,8 +36,8 @@ class TempDialog(RuntimeDialogBase):
             msg (str, optional): Dialog Message. Defaults to "Complete".
             parent (Any, optional): Parent Window. Defaults to None.
             align (int, optional): Message Alignment, 0 for left, 1 for center and 2 for right. Defaults to 0.
-            prop_names (Sequence[str] | None, optional): Property names. Defaults to None.
-            prop_values (Sequence[Any] | None, optional): Property values. Defaults to None.
+            prop_names (Sequence[str], None, optional): Property names. Defaults to None.
+            prop_values (Sequence[Any], None, optional): Property values. Defaults to None.
 
         Returns:
             None: None

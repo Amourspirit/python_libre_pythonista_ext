@@ -2,6 +2,7 @@
 """
 This module is for the purpose of sharing events between classes.
 """
+
 from __future__ import annotations
 import contextlib
 from weakref import ref, ReferenceType, proxy
@@ -30,7 +31,7 @@ class _event_base(object):
     """Base events class"""
 
     def __init__(self) -> None:
-        self._callbacks: Dict[str, List[ReferenceType[EventCallback]]] | None = None
+        self._callbacks: Union[Dict[str, List[ReferenceType[EventCallback]]], None] = None
 
     def on(self, event_name: str, callback: EventCallback):
         """
@@ -134,12 +135,12 @@ class Events(_event_base):
     # is still holding on to it.
     # In short, do not change this class!
 
-    def __init__(self, source: Any | None = None, trigger_args: GenericArgs | None = None) -> None:
+    def __init__(self, source: Union[Any, None] = None, trigger_args: Union[GenericArgs, None] = None) -> None:  # noqa: ANN401
         """
         Construct for Events
 
         Args:
-            source (Any | None, optional): Source can be class or any object.
+            source (Any, None, optional): Source can be class or any object.
                 The value of ``source`` is the value assigned to the ``EventArgs.event_source`` property.
                 Defaults to current instance of this class.
             event_args (GenericArgs, optional): Args that are passed to events when they are triggered.
@@ -170,11 +171,10 @@ class LoEvents(_event_base):
 
     _instance = None
 
-    def __new__(cls, *args, **kwargs):
+    def __new__(cls, *args, **kwargs) -> LoEvents:  # noqa: ANN002, ANN003
         if not cls._instance:
             cls._instance = super(LoEvents, cls).__new__(cls, *args, **kwargs)
             cls._instance._callbacks = None
-            # cls._instance._observers: List[ReferenceType[event_observer.EventObserver]] | None = None
             cls._instance._observers = None
             # register wih _Events so this instance get triggered when _Events() are triggered.
             event_singleton._Events().add_observer(cls._instance)
@@ -201,7 +201,7 @@ class LoEvents(_event_base):
         for observer in args:
             self._observers.append(ref(observer))
 
-    def trigger(self, event_name: str, event_args: AbstractEvent):
+    def trigger(self, event_name: str, event_args: AbstractEvent) -> None:
         super().trigger(event_name, event_args)
         self._update_observers(event_name, event_args)
 
@@ -226,7 +226,7 @@ class LoEvents(_event_base):
 class DummyEvents:
     """Dummy events class for ignoring events."""
 
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args, **kwargs) -> None:  # noqa: ANN002, ANN003
         pass
 
     def on(self, event_name: str, callback: EventCallback) -> None:
@@ -235,7 +235,7 @@ class DummyEvents:
     def remove(self, event_name: str, callback: EventCallback) -> bool:
         return True
 
-    def trigger(self, event_name: str, event_args: AbstractEvent, *args, **kwargs) -> None:
+    def trigger(self, event_name: str, event_args: AbstractEvent, *args, **kwargs) -> None:  # noqa: ANN002, ANN003
         pass
 
 

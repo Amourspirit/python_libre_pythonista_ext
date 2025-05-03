@@ -1,6 +1,6 @@
 # region Imports
 from __future__ import annotations
-from typing import Any, cast, TYPE_CHECKING
+from typing import Any, cast, TYPE_CHECKING, Optional
 import logging
 
 from ooo.dyn.awt.push_button_type import PushButtonType
@@ -88,7 +88,7 @@ class LogOpt(LogMixin):
         else:
             self._padding = 12
         self._current_tab_index = 1
-        self._group1_opt: CtlRadioButton | None = None
+        self._group1_opt: Optional[CtlRadioButton] = None
         self._include_extra_info = self._get_extra_tri_state()
 
         # get or set a font descriptor. This helps to keep the font consistent across different platforms.
@@ -393,7 +393,7 @@ class LogOpt(LogMixin):
     # endregion Handle Results
 
     # region Event Handlers
-    def on_group1_changed(self, src: Any, event: EventArgs, control_src: CtlRadioButton, *args, **kwargs) -> None:
+    def on_group1_changed(self, src: Any, event: EventArgs, control_src: CtlRadioButton, *args, **kwargs) -> None:  # noqa: ANN002, ANN003, ANN401
         itm_event = cast("ItemEvent", event.event_data)
         with self.log.indent(True):
             if self.log.is_debug:
@@ -402,11 +402,11 @@ class LogOpt(LogMixin):
                 self.log.debug(f"Group 1 Tab Name: {control_src.model.Name}")
         self._group1_opt = control_src
 
-    def on_check_changed(self, src: Any, event: EventArgs, control_src: CtlCheckBox, *args, **kwargs) -> None:
+    def on_check_changed(self, src: Any, event: EventArgs, control_src: CtlCheckBox, *args, **kwargs) -> None:  # noqa: ANN002, ANN003, ANN401
         self.log.debug(f"Check Changed: {control_src.state}")
         self._include_extra_info = control_src.state
 
-    def on_button_action_preformed(self, src: Any, event: EventArgs, control_src: Any, *args, **kwargs) -> None:
+    def on_button_action_preformed(self, src: Any, event: EventArgs, control_src: Any, *args, **kwargs) -> None:  # noqa: ANN002, ANN003, ANN401
         """Method that is fired when Info button is clicked."""
         itm_event = cast("ActionEvent", event.event_data)
         with self.log.indent(True):

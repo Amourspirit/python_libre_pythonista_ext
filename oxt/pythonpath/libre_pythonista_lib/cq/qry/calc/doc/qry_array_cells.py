@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import List, TYPE_CHECKING
+from typing import List, TYPE_CHECKING, Union
 
 from ooodev.utils.data_type.cell_obj import CellObj
 from ooodev.calc import CalcDoc, CalcCell
@@ -23,7 +23,7 @@ else:
     from libre_pythonista_lib.utils.result import Result
 
 
-class QryArrayCells(QryBase, LogMixin, QryDocT[Result[List[CalcCell], None] | Result[None, Exception]]):
+class QryArrayCells(QryBase, LogMixin, QryDocT[Union[Result[List[CalcCell], None], Result[None, Exception]]]):
     """
     Query to get all cells in a document that contain array formulas.
     """
@@ -101,7 +101,7 @@ class QryArrayCells(QryBase, LogMixin, QryDocT[Result[List[CalcCell], None] | Re
             raise e
         return results
 
-    def execute(self) -> Result[List[CalcCell], None] | Result[None, Exception]:
+    def execute(self) -> Union[Result[List[CalcCell], None], Result[None, Exception]]:
         """
         Execute the query to get array cells.
 

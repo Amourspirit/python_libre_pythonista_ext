@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, Dict, cast, List, TYPE_CHECKING
+from typing import Any, Dict, cast, List, TYPE_CHECKING, Union
 
 from ooodev.utils.gen_util import NULL_OBJ
 
@@ -41,7 +41,7 @@ class CmdCtlShapeName(CmdBase, LogMixin, CmdCellCtlT):
         if not self._ctl.cell:
             self._ctl.cell = cell
         self._current_state = self._ctl.ctl_shape_name
-        self._current_ctl: Dict[str, Any] | None = None
+        self._current_ctl: Union[Dict[str, Any], None] = None
         self.log.debug("init done for cell %s", cell.cell_obj)
 
     def _validate(self) -> bool:

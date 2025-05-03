@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import cast, TYPE_CHECKING
+from typing import cast, TYPE_CHECKING, Union, Optional
 
 from ooodev.calc import CalcCell
 
@@ -25,7 +25,7 @@ else:
 # tested in: tests/test_cmd/test_cmd_append_code.py
 
 
-class QryCellCode(QryBase, LogMixin, QryCellT[Result[str, None] | Result[None, Exception]]):
+class QryCellCode(QryBase, LogMixin, QryCellT[Union[Result[str, None], Result[None, Exception]]]):
     """
     Query to retrieve Python source code associated with a cell.
 
@@ -34,7 +34,7 @@ class QryCellCode(QryBase, LogMixin, QryCellT[Result[str, None] | Result[None, E
         mod (PyModuleT): The Python module associated with the cell
     """
 
-    def __init__(self, cell: CalcCell, mod: PyModuleT | None = None) -> None:
+    def __init__(self, cell: CalcCell, mod: Optional[PyModuleT] = None) -> None:
         QryBase.__init__(self)
         LogMixin.__init__(self)
         self._cell = cell
@@ -62,12 +62,12 @@ class QryCellCode(QryBase, LogMixin, QryCellT[Result[str, None] | Result[None, E
         qry = QryPySrcMgrCode(doc=self.cell.calc_doc, mod=self._mod)
         return self._execute_qry(qry)
 
-    def execute(self) -> Result[str, None] | Result[None, Exception]:
+    def execute(self) -> Union[Result[str, None], Result[None, Exception]]:
         """
         Executes the query to retrieve the source code for the cell.
 
         Returns:
-            str | None: The source code if found, None if the cell has no associated code or on error
+            str, None: The source code if found, None if the cell has no associated code or on error
         """
         try:
             if self._mod is None:

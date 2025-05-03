@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Tuple, TYPE_CHECKING, Set
+from typing import Tuple, TYPE_CHECKING, Set, Union
 
 
 if TYPE_CHECKING:
@@ -40,14 +40,14 @@ class CtlBase(LogMixin, CalcCellMixin):
             return False
         return feature in self.supported_features
 
-    def get_shape_name(self) -> str | None:
+    def get_shape_name(self) -> Union[str, None]:
         """
         Gets the control shape name.
 
         For controls that do not have a shape name, this method will return None.
 
         Returns:
-            str | None: The control shape name or None if not found.
+            str, None: The control shape name or None if not found.
         """
         return self.ctl.ctl_shape_name
 

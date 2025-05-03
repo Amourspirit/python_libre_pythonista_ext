@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 from ooodev.calc import CalcCell
 from ooodev.units import SizePosMM100
 from ooodev.units import UnitMM100
@@ -20,7 +20,7 @@ else:
 class QryCtlCellSizePos(QryBase, QryCellT[SizePosMM100]):
     """Gets the cell size and position"""
 
-    def __init__(self, cell: CalcCell, ctl: Ctl | None = None, merged: bool = False) -> None:
+    def __init__(self, cell: CalcCell, ctl: Optional[Ctl] = None, merged: bool = False) -> None:
         """Constructor
 
         Args:

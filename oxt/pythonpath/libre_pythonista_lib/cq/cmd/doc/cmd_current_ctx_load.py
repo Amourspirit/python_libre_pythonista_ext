@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, cast, TYPE_CHECKING
+from typing import Any, cast, TYPE_CHECKING, Union
 
 from ooodev.utils.gen_util import NULL_OBJ
 from ooodev.conn.connect_ctx import ConnectCtx
@@ -38,19 +38,19 @@ else:
 
 
 class CmdCurrentCtxLoad(CmdBase, LogMixin, CmdT):
-    def __init__(self, ctx: object, uid: str | None = None) -> None:
+    def __init__(self, ctx: object, uid: Union[str, None] = None) -> None:
         CmdBase.__init__(self)
         LogMixin.__init__(self)
         self.kind = CalcCmdKind.SIMPLE
         self._ctx = ctx
         self._uid = uid
         self._state_changed = False
-        self._current_state = cast(XComponentContext | None, NULL_OBJ)
-        self._current_lo_inst = cast(LoInst | None, NULL_OBJ)
-        self._current_options = cast(Options | None, NULL_OBJ)
+        self._current_state = cast(Union[XComponentContext, None], NULL_OBJ)
+        self._current_lo_inst = cast(Union[LoInst, None], NULL_OBJ)
+        self._current_options = cast(Union[Options, None], NULL_OBJ)
         self.log.debug("init done")
 
-    def _qry_globals(self) -> Result[DocGlobals, None] | Result[None, Exception]:
+    def _qry_globals(self) -> Union[Result[DocGlobals, None], Result[None, Exception]]:
         """
         Get the document globals using QryDocGlobals.
 
@@ -79,7 +79,7 @@ class CmdCurrentCtxLoad(CmdBase, LogMixin, CmdT):
         connect_ctx = ConnectCtx(ctx=ctx)  # type: ignore
         _ = Lo.load_office(connector=connect_ctx, opt=opt)
 
-    def _get_current_options(self) -> Options | None:
+    def _get_current_options(self) -> Union[Options, None]:
         """Gets the current options."""
         try:
             if self._current_lo_inst is None:

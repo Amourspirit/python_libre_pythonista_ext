@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 
 if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_t import QryHandlerT
@@ -10,7 +10,7 @@ else:
 class QryHandlerFactory:
     """Factory for creating query handlers"""
 
-    _qry_handler: QryHandlerT | None = None
+    _qry_handler: Union[QryHandlerT, None] = None
 
     @classmethod
     def get_qry_handler(cls) -> QryHandlerT:

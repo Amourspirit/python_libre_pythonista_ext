@@ -1,7 +1,6 @@
 from __future__ import annotations
-from typing import Any, Dict
+from typing import Any, Dict, Union
 from urllib.parse import parse_qs
-
 from com.sun.star.frame import XDispatch
 from com.sun.star.util import URL
 
@@ -45,7 +44,7 @@ class MainHandlerMgr:
         query_dict = parse_qs(query)
         return {k: v[0] for k, v in query_dict.items()}
 
-    def query_dispatch(self, URL: URL, TargetFrameName: str, SearchFlags: int) -> XDispatch | None:  # type: ignore # noqa: N802, N803
+    def query_dispatch(self, URL: URL, TargetFrameName: str, SearchFlags: int) -> Union[XDispatch, None]:  # type: ignore # noqa: N802, N803
         log = LogInst()
         se = SharedEvent()
         doc = Lo.current_doc

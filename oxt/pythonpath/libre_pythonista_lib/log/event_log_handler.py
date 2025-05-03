@@ -7,13 +7,13 @@ import logging
 
 
 class EventLogHandler(logging.Handler, EventsPartial):
-    def __init__(self, *args, uid: str, **kwargs):
+    def __init__(self, *args, uid: str, **kwargs) -> None:  # noqa: ANN002, ANN003
         self._uid = uid
         logging.Handler.__init__(self, *args, **kwargs)
         EventsPartial.__init__(self)
         # Initialization code for your handler (e.g., open a file, establish a network connection)
 
-    def emit(self, record):
+    def emit(self, record: logging.LogRecord) -> None:
         # This method will be called for every log message
         # You can format the record as you wish using self.format(record)
         log_message = self.format(record)

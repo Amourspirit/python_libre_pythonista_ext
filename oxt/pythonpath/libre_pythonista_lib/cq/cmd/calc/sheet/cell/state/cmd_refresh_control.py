@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import cast, TYPE_CHECKING
+from typing import cast, TYPE_CHECKING, Union
 
 
 if TYPE_CHECKING:
@@ -48,17 +48,17 @@ class CmdRefreshControl(CmdBase, LogMixin, CmdCellT):
 
     Args:
         cell (CalcCell): The cell to refresh the control for
-        mod (PyModuleT | None): Optional Python module. If None, will be queried
+        mod (PyModuleT, None): Optional Python module. If None, will be queried
         force_refresh (bool): If True, forces control refresh even if same type
     """
 
-    def __init__(self, cell: CalcCell, mod: PyModuleT | None = None, force_refresh: bool = False) -> None:
+    def __init__(self, cell: CalcCell, mod: Union[PyModuleT, None] = None, force_refresh: bool = False) -> None:
         """
         Initialize the command with a cell, optional module and force refresh flag.
 
         Args:
             cell (CalcCell): The cell to refresh the control for
-            mod (PyModuleT | None, optional): Optional Python module. If None, will be queried
+            mod (PyModuleT, None, optional): Optional Python module. If None, will be queried
             force_refresh (bool, optional): If True, forces control refresh even if same type. Defaults to False.
         """
         CmdBase.__init__(self)

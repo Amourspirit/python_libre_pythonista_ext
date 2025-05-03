@@ -1,7 +1,5 @@
 from __future__ import annotations
-
-
-from typing import Any, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING, Union
 
 if TYPE_CHECKING:
     from ooodev.utils.cache import MemCache
@@ -20,7 +18,7 @@ else:
     MemCache = Any
 
 
-class QryCache(QryBase, LogMixin, QryT[MemCache | None]):
+class QryCache(QryBase, LogMixin, QryT[Union[MemCache, None]]):
     """Gets the cache"""
 
     def __init__(self) -> None:
@@ -29,12 +27,12 @@ class QryCache(QryBase, LogMixin, QryT[MemCache | None]):
         self.kind = CalcQryKind.SIMPLE
         self.log.debug("init done")
 
-    def execute(self) -> MemCache | None:
+    def execute(self) -> Union[MemCache, None]:
         """
         Executes the query and gets the cache.
 
         Returns:
-            MemCache | None: The cache if successful, otherwise None.
+            MemCac, None: The cache if successful, otherwise None.
         """
 
         try:

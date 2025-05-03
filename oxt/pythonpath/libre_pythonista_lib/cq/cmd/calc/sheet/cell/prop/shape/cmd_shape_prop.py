@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 
 from ooo.dyn.drawing.text_vertical_adjust import TextVerticalAdjust
 
@@ -39,7 +39,7 @@ class CmdShapeProp(CmdBase, LogMixin, CmdCellCtlT):
         }
     """
 
-    def __init__(self, cell: CalcCell, shape: Shape, props: dict | None = None) -> None:
+    def __init__(self, cell: CalcCell, shape: Shape, props: Union[dict, None] = None) -> None:
         """Constructor
 
         Args:
@@ -54,7 +54,7 @@ class CmdShapeProp(CmdBase, LogMixin, CmdCellCtlT):
         if props is None:
             props = self._get_default_props()
         self._props = props
-        self._current_state: dict | None = None
+        self._current_state: Union[dict, None] = None
         self.log.debug("init done for cell %s", cell.cell_obj)
 
     def _get_default_props(self) -> dict:

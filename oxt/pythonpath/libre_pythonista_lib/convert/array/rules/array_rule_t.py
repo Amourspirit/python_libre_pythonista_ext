@@ -7,6 +7,6 @@ class ArrayRuleT(Protocol):
     A class to represent a Array Rule.
     """
 
-    def get_is_match(self, value: Any) -> bool: ...
+    def get_is_match(self, value: Any) -> bool: ...  # noqa: ANN401
 
-    def convert(self, value: Any) -> Any: ...
+    def convert(self, value: Any) -> Any: ...  # noqa: ANN401

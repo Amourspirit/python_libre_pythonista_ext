@@ -94,7 +94,8 @@ class DialogLog(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
     MIN_HEIGHT = HEADER + FOOTER + 30
     MIN_WIDTH = 225
 
-    def __new__(cls, ctx: Any):
+    def __new__(cls, ctx: Any) -> DialogLog:  # noqa: ANN401
+        assert Lo.current_doc is not None
         uid = Lo.current_doc.runtime_uid
         key = f"doc_{uid}"
         if key not in cls._instances:
@@ -105,12 +106,13 @@ class DialogLog(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
             cls._instances[key] = inst
         return cls._instances[key]
 
-    def __init__(self, ctx: Any) -> None:
+    def __init__(self, ctx: Any) -> None:  # noqa: ANN401
         if getattr(self, "_is_init", False):
             return
         TheDictionaryPartial.__init__(self)
         XTopWindowListener.__init__(self)
         unohelper.Base.__init__(self)
+        assert Lo.current_doc is not None
         self.runtime_uid: str
         self._platform = SysInfo.get_platform()
         self._ctx = ctx
@@ -313,11 +315,11 @@ class DialogLog(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
 
     # endregion Controls
 
-    def _set_tab_index(self, ctl: Any) -> None:
+    def _set_tab_index(self, ctl: Any) -> None:  # noqa: ANN401
         ctl.tab_index = self._current_tab_index
         self._current_tab_index += 1
 
-    def get_parent(self):
+    def get_parent(self) -> Any:  # noqa: ANN401
         """Returns parent frame"""
         try:
             window = Lo.desktop.get_active_frame().getContainerWindow()
@@ -358,7 +360,7 @@ class DialogLog(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
     # endregion Menubar
 
     # region Event Handlers
-    def _on_menu_select(self, src: Any, event: EventArgs, menu: PopupMenu) -> None:
+    def _on_menu_select(self, src: Any, event: EventArgs, menu: PopupMenu) -> None:  # noqa: ANN401
         self._log.debug("Menu Selected")
         me = cast("MenuEvent", event.event_data)
         command = menu.get_command(me.MenuId)
@@ -401,12 +403,12 @@ class DialogLog(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
             self._log.exception("Error in _on_menu_select")
         return
 
-    def _on_log_event(self, src: Any, event: EventArgs) -> None:
+    def _on_log_event(self, src: Any, event: EventArgs) -> None:  # noqa: ANN401
         if self._log.is_debug:
             self._log.debug("_on_log_event, Writing Line")
         self._write_line(event.event_data.log_msg)
 
-    def _on_log_py_inst_reset(self, src: Any, event_args: EventArgs) -> None:
+    def _on_log_py_inst_reset(self, src: Any, event_args: EventArgs) -> None:  # noqa: ANN401
         self._log.debug("_on_log_py_inst_reset")
         try:
             self._py_logger = PyLogger(doc=self._doc)
@@ -418,7 +420,7 @@ class DialogLog(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
     # endregion Event Handlers
 
     # region Window Methods
-    def set_focus(self):
+    def set_focus(self) -> None:
         self._dialog.setFocus()
 
     def _update_config(self) -> None:
@@ -485,7 +487,7 @@ class DialogLog(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
         except Exception:
             self._log.exception("Failed to resize.")
 
-    def dispose(self):
+    def dispose(self) -> None:
         self._log.debug("Dispose Called")
         try:
             self._is_visible = True  # make sure set flag to true so windowClosed can process.
@@ -614,7 +616,7 @@ class DialogLog(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
 
     # region Static Methods
     @classmethod
-    def reset_inst(cls, uid: str = ""):
+    def reset_inst(cls, uid: str = "") -> None:
         """Reset instance"""
         if not uid:
             for key in cls._instances:
@@ -672,7 +674,7 @@ class DialogLog(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
     # endregion properties
 
 
-def create_window_name(win_name: str):
+def create_window_name(win_name: str) -> str:
     frames = Lo.desktop.get_frames()
     # frames = desktop.getFrames()
 
@@ -692,11 +694,11 @@ def create_window_name(win_name: str):
     return title[0]
 
 
-def on_menu_select(src: Any, event: EventArgs, menu: PopupMenu) -> None:
+def on_menu_select(src: Any, event: EventArgs, menu: PopupMenu) -> None:  # noqa: ANN401
     # print("Menu Selected")
     me = cast("MenuEvent", event.event_data)
     command = menu.get_command(me.MenuId)
-    if command:
+    if command:  # noqa: SIM102
         # check if command is a dispatch command
         if menu.is_dispatch_cmd(command):
             menu.execute_cmd(command)
@@ -713,7 +715,7 @@ def _close_dialog(key: str) -> None:
             del DialogLog._instances[key]
 
 
-def _on_doc_closing(src: Any, event: EventArgs) -> None:
+def _on_doc_closing(src: Any, event: EventArgs) -> None:  # noqa: ANN401
     # clean up singleton
     uid = str(event.event_data.uid)
     key = f"doc_{uid}"

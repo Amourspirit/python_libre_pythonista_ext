@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.style.default_style import DefaultStyle
@@ -12,7 +12,7 @@ else:
 class CtlOptions:
     """Options for a cell control."""
 
-    def __init__(self, *, style: StyleT | None = None) -> None:
+    def __init__(self, *, style: Optional[StyleT] = None) -> None:
         """Constructor
 
         Args:

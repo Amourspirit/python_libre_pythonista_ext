@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Optional
 from ooodev.calc import CalcCell
 
 if TYPE_CHECKING:
@@ -26,7 +26,7 @@ else:
 class QryMatPlotFigure(QryBase, LogMixin, QryCellT[Any]):
     """Sets Control MatPlotFigure properties"""
 
-    def __init__(self, cell: CalcCell, ctl: Ctl | None = None) -> None:
+    def __init__(self, cell: CalcCell, ctl: Optional[Ctl] = None) -> None:
         """Constructor
 
         Args:

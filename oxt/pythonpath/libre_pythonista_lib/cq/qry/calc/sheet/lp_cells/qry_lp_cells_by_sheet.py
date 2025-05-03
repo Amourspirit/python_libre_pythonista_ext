@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, cast, Dict, Tuple
+from typing import TYPE_CHECKING, cast, Dict, Tuple, Union
 from ooodev.utils.data_type.cell_obj import CellObj
 from ooodev.calc import CalcSheet
 
@@ -28,7 +28,9 @@ else:
 
 
 class QryLpCellsBySheet(
-    QryBase, LogMixin, QrySheetManagedCacheT[Result[Dict[CellObj, IndexCellProps], None] | Result[None, Exception]]
+    QryBase,
+    LogMixin,
+    QrySheetManagedCacheT[Union[Result[Dict[CellObj, IndexCellProps], None], Result[None, Exception]]],
 ):
     """
     Query that retrieves cells and their properties for a specific sheet in a Calc document.
@@ -87,7 +89,7 @@ class QryLpCellsBySheet(
             code_index[key] = IndexCellProps(code_name, value, i)
         return code_index
 
-    def execute(self) -> Result[Dict[CellObj, IndexCellProps], None] | Result[None, Exception]:
+    def execute(self) -> Union[Result[Dict[CellObj, IndexCellProps], None], Result[None, Exception]]:
         """
         Executes the query to get cells and their properties.
 

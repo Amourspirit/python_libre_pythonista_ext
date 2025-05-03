@@ -12,11 +12,11 @@ from py.dialog_python import DialogPython
 # https://gitlab.com/jmzambon/apso/-/blob/master/console/console.py#L283
 
 
-def main():
+def main() -> None:
     with Lo.Loader(connector=Lo.ConnectSocket(), opt=Options(log_level=logging.DEBUG)):
         doc = CalcDoc.create_doc(visible=True)
 
-        dlg = DialogPython()
+        dlg = DialogPython(ctx=Lo.get_context())
         dlg.show()
         doc.close()
 

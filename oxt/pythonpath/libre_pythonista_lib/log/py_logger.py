@@ -3,7 +3,7 @@ import logging
 import sys
 import contextlib
 from pathlib import Path
-from typing import Any, Callable, TYPE_CHECKING
+from typing import Any, Callable, TYPE_CHECKING, Optional
 from logging import Logger
 from logging.handlers import TimedRotatingFileHandler
 from ooodev.loader import Lo
@@ -303,12 +303,12 @@ class PyLogger(Logger):
     # endregion Properties
 
     @classmethod
-    def reset_instance(cls, doc: OfficeDocumentT | None = None) -> None:
+    def reset_instance(cls, doc: Optional[OfficeDocumentT] = None) -> None:
         """
         Reset the Singleton instance(s).
 
         Args:
-            doc (CalcDoc | None, optional): Calc Doc or None. If None all cached instances are cleared. Defaults to None.
+            doc (CalcDoc, optional): Calc Doc or None. If None all cached instances are cleared. Defaults to None.
         """
 
         se = SharedEvent(doc=doc)

@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, cast, TYPE_CHECKING
+from typing import Any, cast, TYPE_CHECKING, Union
 
 
 if TYPE_CHECKING:
@@ -21,7 +21,7 @@ else:
     SheetCellCursor = Any
 
 
-class QryFormulaCursor(QryBase, LogMixin, QryUnoCellT[Result[SheetCellCursor, None] | Result[None, Exception]]):
+class QryFormulaCursor(QryBase, LogMixin, QryUnoCellT[Union[Result[SheetCellCursor, None], Result[None, Exception]]]):
     """
     Query to create a cursor for a cell's array formula range.
 
@@ -41,7 +41,7 @@ class QryFormulaCursor(QryBase, LogMixin, QryUnoCellT[Result[SheetCellCursor, No
         self._cell = cell
         self.log.debug("init done")
 
-    def execute(self) -> Result[SheetCellCursor, None] | Result[None, Exception]:
+    def execute(self) -> Union[Result[SheetCellCursor, None], Result[None, Exception]]:
         """
         Execute the query to get a cursor for the cell's array formula range.
 

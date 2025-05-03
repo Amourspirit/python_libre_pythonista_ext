@@ -60,7 +60,7 @@ class ProcessMgr(ABC):
             Reads and logs the output and errors from a subprocess.
     """
 
-    def __init__(self, socket_manager: SocketManager):
+    def __init__(self, socket_manager: SocketManager) -> None:
         """
         Initializes the Editor instance.
 
@@ -84,7 +84,7 @@ class ProcessMgr(ABC):
         self._server = None
         self._read_output_thread = False
 
-    def _on_notify_termination(self, src: Any, event: EventArgs) -> None:
+    def _on_notify_termination(self, src: Any, event: EventArgs) -> None:  # noqa: ANN401
         """
         Handles the notification of termination events.
         This method is called when a termination event is received. It logs the
@@ -137,9 +137,7 @@ class ProcessMgr(ABC):
             additional_paths = os.pathsep.join(sys.path)
 
             env["PYTHONPATH"] = (
-                f"{current_pythonpath}{os.pathsep}{additional_paths}"
-                if current_pythonpath
-                else additional_paths
+                f"{current_pythonpath}{os.pathsep}{additional_paths}" if current_pythonpath else additional_paths
             )
 
             if self.log.is_debug:
@@ -147,9 +145,7 @@ class ProcessMgr(ABC):
                 self.log.debug(f"Python Path: {config.python_path}")
 
             if self._server is None:
-                server_socket, host, port, socket_file = (
-                    self.socket_manager.create_server_socket()
-                )
+                server_socket, host, port, socket_file = self.socket_manager.create_server_socket()
                 self._server = server_socket, host, port, socket_file
             else:
                 server_socket, host, port, socket_file = self._server
@@ -229,7 +225,7 @@ class ProcessMgr(ABC):
                 self.process_pool[process_id] = (
                     process,
                     str(port),
-                    Lo.current_doc.runtime_uid,
+                    Lo.current_doc.runtime_uid,  # type: ignore
                 )
 
             try:
@@ -242,18 +238,14 @@ class ProcessMgr(ABC):
                         process_id,
                     )
 
-                threading.Thread(
-                    target=self.handle_client, args=(process_id,), daemon=True
-                ).start()
+                threading.Thread(target=self.handle_client, args=(process_id,), daemon=True).start()
             except socket.timeout:
                 with self.lock:
                     if process_id in self.process_pool:
                         del self.process_pool[process_id]
 
             if self.read_output_thread:
-                threading.Thread(
-                    target=self.read_output, args=(process, process_id), daemon=True
-                ).start()
+                threading.Thread(target=self.read_output, args=(process, process_id), daemon=True).start()
             return process_id
         except Exception as e:
             self.log.exception(f"Error starting subprocess: {e}")
@@ -280,7 +272,7 @@ class ProcessMgr(ABC):
 
         ...
 
-    def terminate_subprocess(self, process_id: str):
+    def terminate_subprocess(self, process_id: str) -> None:
         """
         Terminates a subprocess given its process ID.
 
@@ -304,13 +296,11 @@ class ProcessMgr(ABC):
             self.log.error(f"Process with ID {process_id} does not exist.")
             return
         self.log.debug(f"Terminating subprocess {process_id}")
-        self.socket_manager.send_message(
-            {"cmd": "destroy", "data": "destroy"}, process_id
-        )
+        self.socket_manager.send_message({"cmd": "destroy", "data": "destroy"}, process_id)
         with self.lock:
             del self.process_pool[process_id]
 
-    def terminate_all_subprocesses(self):
+    def terminate_all_subprocesses(self) -> None:
         """
         Terminates all subprocesses managed by the process pool.
         This method logs the termination process and iterates through all
@@ -338,7 +328,7 @@ class ProcessMgr(ABC):
             result = self.process_pool.get(process_id)
             return result[0] if result else None
 
-    def read_output(self, process: subprocess.Popen, process_id: str):
+    def read_output(self, process: subprocess.Popen, process_id: str) -> None:
         """
         Reads the output and error streams of a subprocess and logs the information.
 
@@ -364,9 +354,7 @@ class ProcessMgr(ABC):
 
         try:
             if process.stdout is None or process.stderr is None:
-                self.log.error(
-                    f"Subprocess {process_id} stdout/stderr is not available"
-                )
+                self.log.error(f"Subprocess {process_id} stdout/stderr is not available")
                 return
             for line in iter(process.stdout.readline, ""):
                 self.log.debug(f"Subprocess {process_id} output: {line.strip()}")
@@ -377,20 +365,16 @@ class ProcessMgr(ABC):
             process.stderr.close()
 
             process.wait()
-            self.log.debug(
-                f"Subprocess {process_id} finished with return code {process.returncode}"
-            )
+            self.log.debug(f"Subprocess {process_id} finished with return code {process.returncode}")
         except Exception as e:
             self.log.exception(f"Error reading output for subprocess {process_id}: {e}")
         finally:
             with self.lock:
                 if process_id in self.process_pool:
                     del self.process_pool[process_id]
-                    self.log.debug(
-                        "Subprocess %s removed from process pool", process_id
-                    )
+                    self.log.debug("Subprocess %s removed from process pool", process_id)
 
-    def terminate_server(self):
+    def terminate_server(self) -> None:
         """
         Terminates the server socket.
 
@@ -417,7 +401,7 @@ class ProcessMgr(ABC):
                 self.log.error(f"Error removing socket file: {e}")
             self._server = None
 
-    def __del__(self):
+    def __del__(self) -> None:
         """
         Destructor for the ProcessMgr class.
         This method is called when the ProcessMgr instance is deleted.
@@ -428,7 +412,7 @@ class ProcessMgr(ABC):
             self.terminate_server()
 
     @property
-    def read_output_thread(self):
+    def read_output_thread(self) -> bool:
         """
         Returns the thread responsible for reading output.
         This method provides access to the thread that handles the reading of output
@@ -441,5 +425,5 @@ class ProcessMgr(ABC):
         return self._read_output_thread
 
     @read_output_thread.setter
-    def read_output_thread(self, value):
+    def read_output_thread(self, value: bool) -> None:
         self._read_output_thread = value

@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Dict, TYPE_CHECKING
+from typing import Dict, TYPE_CHECKING, Iterator
 from ooodev.loader import Lo
 from .callback_holder import CallbackHolder
 from ..utils.singleton_base import SingletonBase
@@ -51,17 +51,17 @@ class SharedCb(SingletonBase):
     def __contains__(self, name: str) -> bool:
         return name in self._held
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[str]:
         return iter(self._held)
 
     def _check_runtime_uid(self) -> bool:
         with self._log.indent(True):
             try:
-                if Lo.current_doc.runtime_uid == self.runtime_uid:
+                if Lo.current_doc.runtime_uid == self.runtime_uid:  # type: ignore
                     return True
                 else:
                     self._log.error(
-                        f"Runtime UID mismatch. Current: {Lo.current_doc.runtime_uid}, SharedCb: {self.runtime_uid}"
+                        f"Runtime UID mismatch. Current: {Lo.current_doc.runtime_uid}, SharedCb: {self.runtime_uid}"  # type: ignore
                     )
                     return False
             except Exception:
@@ -91,7 +91,7 @@ class SharedCb(SingletonBase):
             else:
                 self.add(name, cbh)
 
-    def add_callback(self, name: str, callback, *args, **kwargs) -> CallbackHolder:
+    def add_callback(self, name: str, callback, *args, **kwargs) -> CallbackHolder:  # noqa: ANN001, ANN002, ANN003
         """
         Add a callback to a CallbackHolder with the given name. If the name does not exist, raise a KeyError.
 

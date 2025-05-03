@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union, Optional
 from ooodev.calc import CalcCell
 
 if TYPE_CHECKING:
@@ -23,10 +23,10 @@ else:
     from libre_pythonista_lib.utils.result import Result
 
 
-class QryControlImgName(QryBase, QryCellT[Result[str, None] | Result[None, Exception]]):
+class QryControlImgName(QryBase, QryCellT[Union[Result[str, None], Result[None, Exception]]]):
     """Gets the control name of the control"""
 
-    def __init__(self, cell: CalcCell, ctl: Ctl | None = None) -> None:
+    def __init__(self, cell: CalcCell, ctl: Optional[Ctl] = None) -> None:
         """Constructor
 
         Args:
@@ -43,7 +43,7 @@ class QryControlImgName(QryBase, QryCellT[Result[str, None] | Result[None, Excep
         qry = QryControlNameImg(code_name=code_name)
         return self._execute_qry(qry)
 
-    def execute(self) -> Result[str, None] | Result[None, Exception]:
+    def execute(self) -> Union[Result[str, None], Result[None, Exception]]:
         """
         Executes the query to get control name
 

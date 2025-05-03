@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union, Optional
 from ooodev.calc import CalcCell
 from ooodev.calc import CalcSheet, SpreadsheetDrawPage
 from ooodev.draw.shapes import DrawShape
@@ -26,11 +26,13 @@ else:
 
 
 class QryLpShape(
-    QryBase, LogMixin, QryCellT[Result[DrawShape[SpreadsheetDrawPage[CalcSheet]], None] | Result[None, Exception]]
+    QryBase,
+    LogMixin,
+    QryCellT[Union[Result[DrawShape[SpreadsheetDrawPage[CalcSheet]], None], Result[None, Exception]]],
 ):
     """Gets the control shape"""
 
-    def __init__(self, cell: CalcCell, ctl: Ctl | None = None) -> None:
+    def __init__(self, cell: CalcCell, ctl: Optional[Ctl] = None) -> None:
         """Constructor
 
         Args:
@@ -43,7 +45,7 @@ class QryLpShape(
         self._ctl = ctl
         self.log.debug("init done for cell %s", cell.cell_obj)
 
-    def execute(self) -> Result[DrawShape[SpreadsheetDrawPage[CalcSheet]], None] | Result[None, Exception]:
+    def execute(self) -> Union[Result[DrawShape[SpreadsheetDrawPage[CalcSheet]], None], Result[None, Exception]]:
         """
         Executes the query to get control shape
 

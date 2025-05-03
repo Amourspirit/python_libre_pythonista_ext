@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import cast, Tuple, TYPE_CHECKING
+from typing import cast, Tuple, TYPE_CHECKING, Union
 
 from ooodev.io.json.doc_json_file import DocJsonFile
 from ooodev.utils.gen_util import NULL_OBJ
@@ -53,10 +53,10 @@ class CmdDocJsonFile(CmdBase, LogMixin, CmdCacheT):
         if ext and not file_name.endswith(ext):
             file_name = f"{file_name}.{ext}"
         self.name = file_name
-        self._current_state = cast(DocJsonFile | None, NULL_OBJ)
+        self._current_state = cast(Union[DocJsonFile, None], NULL_OBJ)
         self.log.debug("init done for doc %s", doc.runtime_uid)
 
-    def _get_current_value(self) -> DocJsonFile | None:
+    def _get_current_value(self) -> Union[DocJsonFile, None]:
         qry = QryDocJsonFile(doc=self.doc, file_name=self.file_name, root_dir=self.root_dir, ext=self.ext)
         result = self._execute_qry(qry)
         if Result.is_success(result):

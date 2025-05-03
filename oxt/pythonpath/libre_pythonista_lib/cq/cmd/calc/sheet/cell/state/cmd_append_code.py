@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, cast, TYPE_CHECKING
+from typing import Any, cast, TYPE_CHECKING, Union
 
 
 if TYPE_CHECKING:
@@ -35,7 +35,7 @@ class CmdAppendCode(CmdBase, LogMixin, CmdCellT):
         code (str, optional): The Python code to append. Defaults to empty string
     """
 
-    def __init__(self, cell: CalcCell, mod: PyModuleT | None = None, code: str = "") -> None:
+    def __init__(self, cell: CalcCell, mod: Union[PyModuleT, None] = None, code: str = "") -> None:
         """
         Initialize the command with a cell, module, and optional code and source provider.
 

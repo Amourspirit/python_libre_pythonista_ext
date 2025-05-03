@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, Dict, List, Tuple, Iterable, TYPE_CHECKING, cast
+from typing import Any, Dict, List, Tuple, Iterable, TYPE_CHECKING, cast, Union, Optional
 
 from sortedcontainers import SortedDict
 
@@ -173,7 +173,7 @@ class PySourceManager(LogMixin):
         qry = QryCellPySource(uri=uri, cell=cell)
         return self._qry_handler.handle(qry)
 
-    def qry_last_module_state_item(self) -> ModuleStateItem | None:
+    def qry_last_module_state_item(self) -> Union[ModuleStateItem, None]:
         """Returns the last module state item or None if empty."""
         qry = QryModuleStateLastItem(mod=self._mod_state.mod)
         result = self._qry_handler.handle(qry)
@@ -181,7 +181,7 @@ class PySourceManager(LogMixin):
             return result.data
         return None
 
-    def qry_module_state_item(self, cell: CalcCell) -> ModuleStateItem | None:
+    def qry_module_state_item(self, cell: CalcCell) -> Union[ModuleStateItem, None]:
         """Returns the last module state item or None if empty."""
         qry = QryModuleState(cell=cell, mod=self.mod)
         result = self._qry_handler.handle(qry)
@@ -244,7 +244,7 @@ class PySourceManager(LogMixin):
 
     # endregion Init
 
-    def get_module_source_code(self, max_cell: CellObj | None = None, include_max: bool = True) -> str:
+    def get_module_source_code(self, max_cell: Optional[CellObj] = None, include_max: bool = True) -> str:
         """
         Gets a string that represents the source code of the modules current state.
 
@@ -284,7 +284,7 @@ class PySourceManager(LogMixin):
         )
         return src_code
 
-    def _getitem_py_src_data(self, key: CellObj | Tuple[int, int, int]) -> PySourceData:
+    def _getitem_py_src_data(self, key: Union[CellObj, Tuple[int, int, int]]) -> PySourceData:
         """
         Gets an Item
 
@@ -306,7 +306,7 @@ class PySourceManager(LogMixin):
     def __len__(self) -> int:
         return len(self.src_data)
 
-    def __getitem__(self, key: CellObj | Tuple[int, int, int]) -> PySource:
+    def __getitem__(self, key: Union[CellObj, Tuple[int, int, int]]) -> PySource:
         """
         Gets an Item
 
@@ -321,7 +321,7 @@ class PySourceManager(LogMixin):
         self.log.debug("__getitem__() - Result Unique Id: %s", result.uri_info.unique_id)
         return result
 
-    def __setitem__(self, key: CellObj | Tuple[int, int, int], value: PySource | PySourceData) -> None:
+    def __setitem__(self, key: Union[CellObj, Tuple[int, int, int]], value: Union[PySource, PySourceData]) -> None:
         """
         Sets an Item
 
@@ -337,7 +337,7 @@ class PySourceManager(LogMixin):
         eargs.event_data = DotDict(source=self, value=value, cell_obj=value.cell.copy(), sheet_idx=code_cell[0])
         self._se.trigger_event(PYTHON_SOURCE_MODIFIED, eargs)
 
-    def __delitem__(self, key: CellObj | Tuple[int, int, int]) -> None:
+    def __delitem__(self, key: Union[CellObj, Tuple[int, int, int]]) -> None:
         """
         Removes an Item
 
@@ -347,7 +347,7 @@ class PySourceManager(LogMixin):
         co = key if isinstance(key, CellObj) else self.convert_tuple_to_cell_obj(key)
         self.remove_source(co)
 
-    def __contains__(self, key: CellObj | Tuple[int, int, int]) -> bool:
+    def __contains__(self, key: Union[CellObj, Tuple[int, int, int]]) -> bool:
         """
         Checks if key exists in the data.
 
@@ -379,7 +379,7 @@ class PySourceManager(LogMixin):
         """Checks if index is the last index."""
         return index == len(self) - 1
 
-    def _get_first_item(self) -> PySourceData | None:
+    def _get_first_item(self) -> Union[PySourceData, None]:
         """Returns the first item in the source manager or None if empty."""
         # get the first item in self._data
         if len(self) == 0:
@@ -387,14 +387,14 @@ class PySourceManager(LogMixin):
         py_data = self._getitem_py_src_data(list(self.src_data.keys())[0])
         return py_data
 
-    def get_first_item(self) -> PySource | None:
+    def get_first_item(self) -> Union[PySource, None]:
         """Returns the first item in the source manager or None if empty."""
         py_data = self._get_first_item()
         if py_data is None:
             return None
         return PySource(uri=py_data.uri, cell=py_data.cell)
 
-    def _get_last_item(self) -> PySourceData | None:
+    def _get_last_item(self) -> Union[PySourceData, None]:
         """Returns the last item in the source manager or None if empty."""
         # get the last item in self._data
         if len(self) == 0:
@@ -403,7 +403,7 @@ class PySourceManager(LogMixin):
         py_data = self._getitem_py_src_data(list(self.src_data.keys())[-1])
         return py_data
 
-    def get_next_item_py_src_data(self, cell: CellObj, require_exist: bool = False) -> PySourceData | None:
+    def get_next_item_py_src_data(self, cell: CellObj, require_exist: bool = False) -> Union[PySourceData, None]:
         """
         Returns the next item in the source manager or None if empty.
 
@@ -412,7 +412,7 @@ class PySourceManager(LogMixin):
             require_exist (bool, optional): If True, the cell must exist in the source manager. Defaults to False.
 
         Returns:
-            PySourceData | None: Source data or None if not found.
+            PySourceData, None: Source data or None if not found.
         """
         if len(self) == 0:
             self.log.debug("get_next_item_py_src_data() - No items in source manager.")
@@ -444,7 +444,7 @@ class PySourceManager(LogMixin):
             self.log.debug("get_next_item_py_src_data() - Found cell %s after current cell %s.", found.cell, cell)
         return found
 
-    def get_next_item(self, cell: CellObj, require_exist: bool = False) -> PySource | None:
+    def get_next_item(self, cell: CellObj, require_exist: bool = False) -> Union[PySource, None]:
         """
         Returns the next item in the source manager or None if empty.
 
@@ -453,14 +453,14 @@ class PySourceManager(LogMixin):
             require_exist (bool, optional): If True, the cell must exist in the source manager. Defaults to False.
 
         Returns:
-            PySource | None: Source data or None if not found.
+            PySource, None: Source data or None if not found.
         """
         py_data = self.get_next_item_py_src_data(cell=cell, require_exist=require_exist)
         if py_data is None:
             return None
         return PySource(uri=py_data.uri, cell=py_data.cell)
 
-    def get_prev_item_py_src_data(self, cell: CellObj, require_exist: bool = False) -> PySourceData | None:
+    def get_prev_item_py_src_data(self, cell: CellObj, require_exist: bool = False) -> Union[PySourceData, None]:
         """
         Returns the previous item in the source manager or None if empty.
 
@@ -469,7 +469,7 @@ class PySourceManager(LogMixin):
             require_exist (bool, optional): If True, the cell must exist in the source manager. Defaults to False.
 
         Returns:
-            PySourceData | None: Source data or None if not found.
+            PySourceDat, None: Source data or None if not found.
         """
         if len(self) == 0:
             self.log.debug("get_prev_item_py_src_data() - No items in source manager.")
@@ -502,7 +502,7 @@ class PySourceManager(LogMixin):
             self.log.debug("get_prev_item_py_src_data() - Found cell %s before current cell %s.", found.cell, cell)
         return found
 
-    def get_prev_item(self, cell: CellObj, require_exist: bool = False) -> PySource | None:
+    def get_prev_item(self, cell: CellObj, require_exist: bool = False) -> Union[PySource, None]:
         """
         Returns the previous item in the source manager or None if empty.
 
@@ -511,14 +511,14 @@ class PySourceManager(LogMixin):
             require_exist (bool, optional): If True, the cell must exist in the source manager. Defaults to False.
 
         Returns:
-            PySource | None: Source data or None if not found.
+            PySource, None: Source data or None if not found.
         """
         py_data = self.get_prev_item_py_src_data(cell=cell, require_exist=require_exist)
         if py_data is None:
             return None
         return PySource(uri=py_data.uri, cell=py_data.cell)
 
-    def get_last_item(self) -> PySource | None:
+    def get_last_item(self) -> Union[PySource, None]:
         """Returns the last item in the source manager or None if empty."""
         py_data = self._get_last_item()
         if py_data is None:
@@ -867,7 +867,7 @@ class PySourceManager(LogMixin):
         """
         return len(self) > 0
 
-    def _update_item(self, py_src: PySource | PySourceData) -> bool:
+    def _update_item(self, py_src: Union[PySource, PySourceData]) -> bool:
         if isinstance(py_src, PySourceData):
             py_src = PySource(uri=py_src.uri, cell=py_src.cell)
         cargs = CancelEventArgs(self)

@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, cast, TYPE_CHECKING
+from typing import Any, cast, TYPE_CHECKING, Union
 
 from ooodev.utils.gen_util import NULL_OBJ
 
@@ -39,7 +39,7 @@ class CmdDeleteCode(CmdBase, LogMixin, CmdCellT):
         mod (PyModuleT): The Python module to associate the code with
     """
 
-    def __init__(self, cell: CalcCell, mod: PyModuleT | None = None) -> None:
+    def __init__(self, cell: CalcCell, mod: Union[PyModuleT, None] = None) -> None:
         """
         Initialize the command with a cell, module, and optional code and source provider.
 
@@ -53,11 +53,11 @@ class CmdDeleteCode(CmdBase, LogMixin, CmdCellT):
         self._mod = mod
         self._py_src_mgr = cast(PySourceManager, None)
         self._state_changed = False
-        self._current_source = cast(str | None, NULL_OBJ)
+        self._current_source = cast(Union[str, None], NULL_OBJ)
         self._src_code_removed = False
         self.log.debug("init done for cell %s", self.cell.cell_obj)
 
-    def _qry_cell_code(self) -> str | None:
+    def _qry_cell_code(self) -> Union[str, None]:
         """Gets the source code for the cell via query"""
         qry = QryCellCode(cell=self.cell, mod=self._mod)
         result = self._execute_qry(qry)
@@ -146,7 +146,7 @@ class CmdDeleteCode(CmdBase, LogMixin, CmdCellT):
             if not cmd.success:
                 self.log.error("Failed to execute undo command.")
                 return
-            self._current_source = cast(str | None, NULL_OBJ)
+            self._current_source = cast(Union[str, None], NULL_OBJ)
             self._state_changed = False
             self._src_code_removed = False
             self.log.debug("Successfully executed undo command for cell %s", self.cell.cell_obj)

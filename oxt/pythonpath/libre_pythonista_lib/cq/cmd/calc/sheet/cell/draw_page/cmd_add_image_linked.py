@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import cast, List, Tuple, TYPE_CHECKING
+from typing import cast, List, Tuple, TYPE_CHECKING, Union
 from pathlib import Path
 
 from ooodev.units import UnitMM100
@@ -53,8 +53,8 @@ class CmdAddImageLinked(CmdBase, LogMixin, CmdCellT):
         _shape_name (str): Name of the shape (image) to be added
         _code_name (str): Unique code name for the cell
         _success_cmds (List[CmdCellT]): List of successfully executed sub-commands
-        _current_shape (DrawShape | None): Existing shape in the cell, if any
-        _new_shape (DrawShape | None): Newly added shape
+        _current_shape (DrawShape, None): Existing shape in the cell, if any
+        _new_shape (DrawShape, None): Newly added shape
     """
 
     def __init__(self, cell: CalcCell, fnm: PathOrStr) -> None:
@@ -73,8 +73,8 @@ class CmdAddImageLinked(CmdBase, LogMixin, CmdCellT):
         self._shape_name = cast(str, None)
         self._code_name = cast(str, None)
         self._success_cmds: List[CmdCellT] = []
-        self._current_shape = cast(DrawShape[SpreadsheetDrawPage[CalcSheet]] | None, NULL_OBJ)
-        self._new_shape: DrawShape[SpreadsheetDrawPage[CalcSheet]] | None = None
+        self._current_shape = cast(Union[DrawShape[SpreadsheetDrawPage[CalcSheet]], None], NULL_OBJ)
+        self._new_shape: Union[DrawShape[SpreadsheetDrawPage[CalcSheet]], None] = None
         self.log.debug("init done for cell %s", cell.cell_obj)
 
     def _validate(self) -> bool:
@@ -150,7 +150,7 @@ class CmdAddImageLinked(CmdBase, LogMixin, CmdCellT):
         qry = QryShapeNameImg(code_name=code_name)
         return self._execute_qry(qry)
 
-    def _qry_shape_by_name(self) -> DrawShape[SpreadsheetDrawPage[CalcSheet]] | None:
+    def _qry_shape_by_name(self) -> Union[DrawShape[SpreadsheetDrawPage[CalcSheet]], None]:
         """
         Retrieves an existing shape by its name from the sheet.
 

@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import cast, Tuple, TYPE_CHECKING
+from typing import cast, Tuple, TYPE_CHECKING, Union
 
 from ooodev.utils.gen_util import NULL_OBJ
 
@@ -46,10 +46,10 @@ class CmdSheetCalcFormula(CmdBase, LogMixin, CmdSheetCacheT):
         self.kind = CalcCmdKind.SHEET_CACHE
         self._sheet = sheet
         self._has_calc_event = cast(bool, NULL_OBJ)
-        self._current_script = cast(str | None, NULL_OBJ)
+        self._current_script = cast(Union[str, None], NULL_OBJ)
         self.log.debug("init done for sheet %s", sheet.name)
 
-    def _get_current_script(self) -> str | None:
+    def _get_current_script(self) -> Union[str, None]:
         qry = QrySheetCalculationEvent(sheet=self._sheet)
         return self._execute_qry(qry)
 

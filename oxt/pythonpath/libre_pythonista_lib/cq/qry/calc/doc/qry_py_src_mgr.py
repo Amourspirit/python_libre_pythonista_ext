@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcDoc
@@ -21,7 +21,7 @@ else:
 class QryPySrcMgr(QryBase, LogMixin, QryDocT[PySourceManager]):
     """Gets the singleton PySourceManager"""
 
-    def __init__(self, doc: CalcDoc, mod: PyModuleT | None = None) -> None:
+    def __init__(self, doc: CalcDoc, mod: Union[PyModuleT, None] = None) -> None:
         """Constructor
 
         Args:

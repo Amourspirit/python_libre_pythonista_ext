@@ -2,7 +2,7 @@
 # region Imports
 from __future__ import annotations
 from pathlib import Path
-from typing import Dict, List, Set, TYPE_CHECKING
+from typing import Dict, List, Set, TYPE_CHECKING, Union
 import uno
 import os
 import sys
@@ -141,7 +141,7 @@ class Config(metaclass=Singleton):
             return pp
         return Path(sys.executable)
 
-    def find_program_directory(self, start_path: str) -> Path | None:
+    def find_program_directory(self, start_path: str) -> Union[Path, None]:
         path = Path(start_path)
         for parent in path.parents:
             if parent.name == "program":

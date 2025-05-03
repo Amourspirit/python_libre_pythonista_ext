@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import cast, TYPE_CHECKING
+from typing import cast, TYPE_CHECKING, Union
 
 from ooodev.utils.gen_util import NULL_OBJ
 
@@ -35,14 +35,14 @@ class CmdLpVersion(CmdBase, LogMixin, CmdOfficeDocT):
         LogMixin.__init__(self)
         self.doc = doc
         self._config = BasicConfig()
-        self._current_state = cast(str | None, NULL_OBJ)
+        self._current_state = cast(Union[str, None], NULL_OBJ)
         self.log.debug("init done for doc %s", doc.runtime_uid)
 
-    def _get_current_state(self) -> str | None:  # noqa: ANN401
+    def _get_current_state(self) -> Union[str, None]:  # noqa: ANN401
         qry = QryLpVersion(doc=self.doc)
         return self._execute_qry(qry)
 
-    def _get_cmd_custom(self, value: str | None) -> CmdDocCustomProp:
+    def _get_cmd_custom(self, value: Union[str, None]) -> CmdDocCustomProp:
         # for testing
         return CmdDocCustomProp(doc=self.doc, name=LP_EXT_VERSION, value=value)
 

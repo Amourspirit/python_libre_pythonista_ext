@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, Tuple, Sequence, TYPE_CHECKING, cast
+from typing import Any, Tuple, Sequence, TYPE_CHECKING, cast, Union
 
 from .dialog_base import DialogBase
 from ..lo_util.resource_resolver import ResourceResolver
@@ -22,19 +22,19 @@ if TYPE_CHECKING:
 class RuntimeDialogBase(DialogBase):
     """Runtime dialog base."""
 
-    def __init__(self, ctx: Any):
+    def __init__(self, ctx: Any) -> None:  # noqa: ANN401
         super().__init__(ctx)
         self._dialog = cast("UnoControlDialog", None)
 
-    def _result(self):
+    def _result(self) -> None:
         """Returns result."""
         return None
 
-    def _init(self):
+    def _init(self) -> None:
         """Initialize, create dialog and controls."""
         raise NotImplementedError
 
-    def execute(self) -> Any:
+    def execute(self) -> Any:  # noqa: ANN401
         """
         Execute to show this dialog.
         None return value should mean canceled.
@@ -50,10 +50,10 @@ class RuntimeDialogBase(DialogBase):
         type_: str,
         pos: Tuple[int, int],
         size: Tuple[int, int],
-        prop_names: Sequence[str] | None = None,
-        prop_values: Sequence[Any] | None = None,
+        prop_names: Union[Sequence[str], None] = None,
+        prop_values: Union[Sequence[Any], None] = None,
         full_name: bool = False,
-    ):
+    ) -> XWindow:
         """Create and insert control."""
         if not full_name:
             type_ = f"com.sun.star.awt.UnoControl{type_}Model"
@@ -76,25 +76,20 @@ class RuntimeDialogBase(DialogBase):
             return ()
         if len(prop_names) != len(prop_values):
             raise ValueError("prop_names and prop_values must have same length.")
-        return tuple(
-            PropertyValue(Name=name, Value=value)
-            for name, value in zip(prop_names, prop_values)
-        )
+        return tuple(PropertyValue(Name=name, Value=value) for name, value in zip(prop_names, prop_values))
 
     def create_dialog(
         self,
         title: str,
         *,
-        pos: Tuple[int, int] | None = None,
-        size: Tuple[int, int] | None = None,
+        pos: Union[Tuple[int, int], None] = None,
+        size: Union[Tuple[int, int], None] = None,
         parent: Any = None,
-        prop_names: Sequence[str] | None = None,
-        prop_values: Sequence[Any] | None = None,
-    ):
+        prop_names: Union[Sequence[str], None] = None,
+        prop_values: Union[Sequence[Any], None] = None,
+    ) -> None:
         """Create base dialog."""
-        dialog = cast(
-            "UnoControlDialog", self.create("com.sun.star.awt.UnoControlDialog")
-        )
+        dialog = cast("UnoControlDialog", self.create("com.sun.star.awt.UnoControlDialog"))
         dialog_model = cast(
             "UnoControlDialogModel",
             self.create("com.sun.star.awt.UnoControlDialogModel"),
@@ -119,10 +114,10 @@ class RuntimeDialogBase(DialogBase):
         command: str,
         pos: Tuple[int, int],
         size: Tuple[int, int],
-        prop_names: Sequence[str] | None = None,
-        prop_values: Sequence[Any] | None = None,
-        action: XActionListener | None = None,
-    ):
+        prop_names: Union[Sequence[str], None] = None,
+        prop_values: Union[Sequence[Any], None] = None,
+        action: Union[XActionListener, None] = None,
+    ) -> None:
         """Create and add new label."""
         self.create_control(name, "FixedText", pos, size, prop_names, prop_values)
 
@@ -132,10 +127,10 @@ class RuntimeDialogBase(DialogBase):
         command: str,
         pos: Tuple[int, int],
         size: Tuple[int, int],
-        prop_names: Sequence[str] | None = None,
-        prop_values: Sequence[Any] | None = None,
-        action: XActionListener | None = None,
-    ):
+        prop_names: Union[Sequence[str], None] = None,
+        prop_values: Union[Sequence[Any], None] = None,
+        action: Union[XActionListener, None] = None,
+    ) -> None:
         """Create and add new button."""
         btn = cast(
             "CommandButton",
@@ -150,9 +145,9 @@ class RuntimeDialogBase(DialogBase):
         name: str,
         pos: Tuple[int, int],
         size: Tuple[int, int],
-        prop_names: Sequence[str] | None = None,
-        prop_values: Sequence[Any] | None = None,
-    ):
+        prop_names: Union[Sequence[str], None] = None,
+        prop_values: Union[Sequence[Any], None] = None,
+    ) -> None:
         """Create and add new edit control."""
         self.create_control(name, "Edit", pos, size, prop_names, prop_values)
 
@@ -161,9 +156,9 @@ class RuntimeDialogBase(DialogBase):
         name: str,
         pos: Tuple[int, int],
         size: Tuple[int, int],
-        prop_names: Sequence[str] | None = None,
-        prop_values: Sequence[Any] | None = None,
-    ):
+        prop_names: Union[Sequence[str], None] = None,
+        prop_values: Union[Sequence[Any], None] = None,
+    ) -> None:
         """Create and add new tree."""
         self.create_control(
             name,
@@ -183,7 +178,7 @@ class RuntimeDialogBase(DialogBase):
         """Returns value of Text attribute specified by name."""
         return self.dialog.getControl(name).getModel().Text  # type: ignore
 
-    def set_focus(self, name: str):
+    def set_focus(self, name: str) -> None:
         """Set focus to the control specified by the name."""
         window = cast("XWindow", self.dialog.getControl(name))
         window.setFocus()

@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union, Optional
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcCell
@@ -22,22 +22,22 @@ else:
     from libre_pythonista_lib.utils.result import Result
 
 
-class QryCtlKind(QryBase, QryCellT[Result[CtlKind, None] | Result[None, Exception]]):
+class QryCtlKind(QryBase, QryCellT[Union[Result[CtlKind, None], Result[None, Exception]]]):
     """
     Query to determine the control kind (CtlKind) of a cell.
 
     Args:
         cell (CalcCell): The cell to query
-        ctl (Ctl | None): Optional control object to update with query results
+        ctl (Ctl, None): Optional control object to update with query results
     """
 
-    def __init__(self, cell: CalcCell, ctl: Ctl | None = None) -> None:
+    def __init__(self, cell: CalcCell, ctl: Optional[Ctl] = None) -> None:
         QryBase.__init__(self)
         self.kind = CalcQryKind.CELL
         self._cell = cell
         self._ctl = ctl
 
-    def _qry_prop_kind(self) -> Result[CtlKind, None] | Result[None, Exception]:
+    def _qry_prop_kind(self) -> Union[Result[CtlKind, None], Result[None, Exception]]:
         """
         Queries the cell's control kind using QryPropCtlKind.
 
@@ -47,7 +47,7 @@ class QryCtlKind(QryBase, QryCellT[Result[CtlKind, None] | Result[None, Exceptio
         qry = QryPropCtlKind(cell=self._cell)
         return self._execute_qry(qry)
 
-    def execute(self) -> Result[CtlKind, None] | Result[None, Exception]:
+    def execute(self) -> Union[Result[CtlKind, None], Result[None, Exception]]:
         """
         Executes the query to get the control kind.
         If a control object was provided, updates it with the results.

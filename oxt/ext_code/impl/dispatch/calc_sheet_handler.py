@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, Tuple, TYPE_CHECKING
+from typing import Any, Tuple, TYPE_CHECKING, Union
 import unohelper
 
 from com.sun.star.frame import XDispatchProvider
@@ -44,7 +44,7 @@ class CalcSheetHandler(XDispatchProvider, XInitialization, unohelper.Base):
             self.frame = aArguments[0]
 
     @override
-    def queryDispatch(self, URL: URL, TargetFrameName: str, SearchFlags: int) -> XDispatch | None:  # type: ignore # noqa: N802, N803
+    def queryDispatch(self, URL: URL, TargetFrameName: str, SearchFlags: int) -> Union[XDispatch, None]:  # type: ignore # noqa: N802, N803
         # print(f"URL: {URL}")
         if URL.Protocol == "___lo_identifier___.ProtocolHandler.cs:":
             # service_mgr = self.ctx.getServiceManager()

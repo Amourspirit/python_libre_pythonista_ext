@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import List, TYPE_CHECKING
+from typing import List, TYPE_CHECKING, Optional
 import ast
 import types
 
@@ -150,7 +150,7 @@ class CodeRules(LogMixin):
         self._reg_rule(rule=Assign())
         self._reg_rule(rule=Underscore())
 
-    def get_matched_rule(self, mod: types.ModuleType, code: str, ast_mod: ast.Module | None) -> CodeRuleT:
+    def get_matched_rule(self, mod: types.ModuleType, code: str, ast_mod: Optional[ast.Module]) -> CodeRuleT:
         """
         Get matched rules
 

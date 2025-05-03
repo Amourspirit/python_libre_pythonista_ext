@@ -2,11 +2,6 @@ from __future__ import annotations
 from typing import Any, TYPE_CHECKING
 import logging
 
-try:
-    # python 3.12+
-    from typing import override  # noqa # type: ignore
-except ImportError:
-    from typing_extensions import override  # noqa # type: ignore
 
 try:
     # python 3.10+
@@ -28,9 +23,11 @@ if TYPE_CHECKING:
     from ..doc.calc_doc_mgr import CalcDocMgr
     from ....___lo_pip___.config import Config
     from ....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
 else:
     from ___lo_pip___.config import Config
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from libre_pythonista_lib.utils.custom_ext import override
 
 
 class CalcProps(CustomPropsBase):
@@ -38,7 +35,7 @@ class CalcProps(CustomPropsBase):
     Class to add custom properties to a Calc document for LibrePythonista. The properties are stored in a json file embedded in the document.
     """
 
-    def __init__(self, doc: OfficeDocumentT):
+    def __init__(self, doc: OfficeDocumentT) -> None:
         """
         Constructor.
 
@@ -55,9 +52,7 @@ class CalcProps(CustomPropsBase):
         file_name = f"{cfg.general_code_name}{cfg.calc_props_json_name}"
 
         self._is_imported_calc_doc_mgr = False
-        CustomPropsBase.__init__(
-            self, doc=doc, file_name=file_name, props_id="calc_custom_props"
-        )
+        CustomPropsBase.__init__(self, doc=doc, file_name=file_name, props_id="calc_custom_props")
 
         self._doc_mgr: CalcDocMgr
         if self.log.is_debug:
@@ -65,12 +60,10 @@ class CalcProps(CustomPropsBase):
                 self.log.debug("Setting log_level: %i", self.log_level)
                 self.log.debug("Setting log_format: %s", self.log_format)
                 self.log.debug("Setting log_to_console: %s", self.log_to_console)
-                self.log.debug(
-                    "Setting include_extra_err_info: %s", self.include_extra_err_info
-                )
+                self.log.debug("Setting include_extra_err_info: %s", self.include_extra_err_info)
         # please the type checker
 
-    def _ensure_import_calc_doc_mgr(self):
+    def _ensure_import_calc_doc_mgr(self) -> None:
         """
         Ensures that the CalcDocMgr module is imported and initializes the CalcDocMgr instance.
         This method checks if the CalcDocMgr module has already been imported. If not, it attempts to import the module
@@ -100,9 +93,7 @@ class CalcProps(CustomPropsBase):
             self.is_doc_props = True
             super()._ensure_doc_json_file()
         else:
-            self.log.debug(
-                "_ensure_doc_json_file() Events not ensured. Document json file not ensured."
-            )
+            self.log.debug("_ensure_doc_json_file() Events not ensured. Document json file not ensured.")
 
     # region Overrides
     @override
@@ -129,7 +120,7 @@ class CalcProps(CustomPropsBase):
         return self.is_doc_props
 
     @override
-    def _init_props(self):
+    def _init_props(self) -> None:
         """
         Initializes the properties.
         """
@@ -137,12 +128,10 @@ class CalcProps(CustomPropsBase):
         if self._doc_mgr.events_ensured:
             super()._init_props()
         else:
-            self.log.debug(
-                "_init_props() Events not ensured. Properties not initialized."
-            )
+            self.log.debug("_init_props() Events not ensured. Properties not initialized.")
 
     @override
-    def set_custom_property(self, name: str, value: Any):
+    def set_custom_property(self, name: str, value: Any) -> None:  # noqa: ANN401
         """
         Sets a custom property.
 
@@ -157,9 +146,7 @@ class CalcProps(CustomPropsBase):
         if self._doc_mgr.events_ensured:
             super().set_custom_property(name, value)
         else:
-            self.log.debug(
-                "set_custom_property() Events not ensured. Property not set."
-            )
+            self.log.debug("set_custom_property() Events not ensured. Property not set.")
 
     @override
     def set_custom_properties(self, properties: DotDict) -> None:
@@ -177,13 +164,11 @@ class CalcProps(CustomPropsBase):
         if self._doc_mgr.events_ensured:
             super().set_custom_properties(properties)
         else:
-            self.log.debug(
-                "set_custom_properties() Events not ensured. Properties not set."
-            )
+            self.log.debug("set_custom_properties() Events not ensured. Properties not set.")
 
     # endregion Overrides
 
-    def _is_calc_doc(self, doc: Any) -> TypeGuard[CalcDoc]:
+    def _is_calc_doc(self, doc: Any) -> TypeGuard[CalcDoc]:  # noqa: ANN401
         return isinstance(doc, CalcDoc)
 
     def update_doc_ext_location(self) -> None:
@@ -196,7 +181,7 @@ class CalcProps(CustomPropsBase):
     @property
     def doc_ext_location(self) -> str:
         """Gets/sets the document extension location. Must be ``share`` or ``user``."""
-        if self.config.is_shared_installed:
+        if self.config.is_shared_installed:  # noqa: SIM108
             location = "share"
         else:
             location = "user"

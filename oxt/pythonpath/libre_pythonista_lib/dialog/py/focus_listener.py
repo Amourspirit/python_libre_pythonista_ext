@@ -18,9 +18,9 @@ if TYPE_CHECKING:
 
 class FocusListener(ListenerBase["DialogPython"], XFocusListener):
     @override
-    def focusGained(self, e: FocusEvent):
+    def focusGained(self, e: FocusEvent) -> None:
         self.component.tk.addKeyHandler(self.component.keyhandler)
 
     @override
-    def focusLost(self, e: FocusEvent):
+    def focusLost(self, e: FocusEvent) -> None:
         self.component.tk.removeKeyHandler(self.component.keyhandler)

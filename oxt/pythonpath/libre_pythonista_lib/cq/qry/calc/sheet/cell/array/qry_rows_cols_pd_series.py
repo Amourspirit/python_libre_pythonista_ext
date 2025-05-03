@@ -26,7 +26,7 @@ class QryRowsColsPdSeries(QryRowsColsTbl):
 
     Args:
         cell (CalcCell): The cell to query
-        mod (PyModuleT | None): Optional Python module. If None, will be queried using QryPyModuleDefault
+        mod (PyModule, None): Optional Python module. If None, will be queried using QryPyModuleDefault
     """
 
     def _qry_ctl_rule_name_kind(self) -> RuleNameKind:

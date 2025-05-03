@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, List, TYPE_CHECKING
+from typing import Any, List, TYPE_CHECKING, Union
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcDoc
@@ -92,7 +92,7 @@ class CmdInitDoc(CmdBase, List[CmdT], LogMixin, CmdDocT):
         self._doc = doc
         self.log.debug("init done for doc %s", doc.runtime_uid)
 
-    def _get_globals(self) -> DocGlobals | None:
+    def _get_globals(self) -> Union[DocGlobals, None]:
         qry = QryDocGlobals()
         qry_result = self._execute_qry(qry)
         if Result.is_success(qry_result):

@@ -1,6 +1,6 @@
 # region Imports
 from __future__ import annotations
-from typing import Any, cast, TYPE_CHECKING
+from typing import Any, cast, TYPE_CHECKING, Union
 import threading
 
 from com.sun.star.uno import XInterface
@@ -165,7 +165,7 @@ class CtlPopup:
         self._cps = CellDispatchState2(cell=self._cell)
         self._facade = CellItemFacade(self._cell)
 
-    def _qry_array_ability(self) -> bool | None:
+    def _qry_array_ability(self) -> Union[bool, None]:
         qry = QryArrayAbility(cell=self._cell)
         result = _get_qry_handler().handle(qry)
         if Result.is_success(result):

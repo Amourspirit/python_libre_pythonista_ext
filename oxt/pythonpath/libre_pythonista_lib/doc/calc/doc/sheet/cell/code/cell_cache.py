@@ -17,7 +17,7 @@ The Keys in the cache can be a tuple of (sheet_index, row, column).
 
 # region Imports
 from __future__ import annotations
-from typing import Any, cast, Dict, Set, TYPE_CHECKING, Iterator, Generator
+from typing import Any, cast, Dict, Set, TYPE_CHECKING, Iterator, Generator, Union, Optional
 from contextlib import contextmanager
 from ooodev.calc import CalcDoc, CalcCell
 from ooodev.events.args.event_args import EventArgs
@@ -181,7 +181,7 @@ class CellCache(LogMixin):
 
     # region Public Methods
 
-    def get_cell_before(self, cell: CellObj | None = None, sheet_idx: int = -1) -> CellObj | None:
+    def get_cell_before(self, cell: Optional[CellObj] = None, sheet_idx: int = -1) -> Union[CellObj, None]:
         """
         Gets the cell before the current cell if Any.
 
@@ -194,7 +194,7 @@ class CellCache(LogMixin):
             ValueError: Sheet index not set.
 
         Returns:
-            CellObj | None: Cell before the current cell if Any; Otherwise, ``None``
+            CellObj, None: Cell before the current cell if Any; Otherwise, ``None``
         """
         if cell is None:
             cell = self.current_cell
@@ -275,7 +275,7 @@ class CellCache(LogMixin):
             raise ValueError(f"Index: {index} not in indexes")
         return indexes[index]
 
-    def get_cell_index(self, cell: CellObj | None = None, sheet_idx: int = -1) -> int:
+    def get_cell_index(self, cell: Optional[CellObj] = None, sheet_idx: int = -1) -> int:
         if sheet_idx < 0:
             sheet_idx = self.current_sheet_index
         if sheet_idx < 0:
@@ -356,7 +356,7 @@ class CellCache(LogMixin):
             self._cache[key] = last_cell
         return last_cell
 
-    def get_next_cell(self, cell: CellObj | None = None, sheet_idx: int = -1) -> CellObj | None:
+    def get_next_cell(self, cell: Optional[CellObj] = None, sheet_idx: int = -1) -> Union[CellObj, None]:
         if cell is None:
             cell = self.current_cell
         if cell is None:
@@ -492,12 +492,12 @@ class CellCache(LogMixin):
         first_cell = self.get_first_cell(sheet_idx)
         return cell < first_cell
 
-    def is_first_cell(self, cell: CellObj | None = None, sheet_idx: int = -1) -> bool:
+    def is_first_cell(self, cell: Optional[CellObj] = None, sheet_idx: int = -1) -> bool:
         """
         Gets if cell is equal to the first cell in the sheet.
 
         Args:
-            cell (CellObj | None, optional): Cell. Defaults to ``current_cell``.
+            cell (CellObj, None, optional): Cell. Defaults to ``current_cell``.
             sheet_idx (int, optional): Sheet Index. Defaults to ``current_sheet_index``.
 
         Raises:
@@ -522,7 +522,7 @@ class CellCache(LogMixin):
         first_cell = self.get_first_cell(sheet_idx)
         return first_cell == cell
 
-    def is_last_cell(self, cell: CellObj | None = None, sheet_idx: int = -1) -> bool:
+    def is_last_cell(self, cell: Optional[CellObj] = None, sheet_idx: int = -1) -> bool:
         if sheet_idx < 0:
             sheet_idx = self.current_sheet_index
         if sheet_idx < 0:
@@ -768,20 +768,20 @@ class CellCache(LogMixin):
         return result
 
     @property
-    def previous_cell(self) -> CellObj | None:
+    def previous_cell(self) -> Union[CellObj, None]:
         return self._previous_cell
 
     @previous_cell.setter
-    def previous_cell(self, cell: CellObj | None) -> None:
+    def previous_cell(self, cell: Optional[CellObj]) -> None:
         self._previous_cell = cell
         return None
 
     @property
-    def current_cell(self) -> CellObj | None:
+    def current_cell(self) -> Union[CellObj, None]:
         return self._current_cell
 
     @current_cell.setter
-    def current_cell(self, value: CellObj | None) -> None:
+    def current_cell(self, value: Optional[CellObj]) -> None:
         self.previous_cell = self._current_cell
         self._current_cell = value
         return None

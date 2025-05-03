@@ -9,7 +9,7 @@ This renaming allows the python interpreter to find the import.
 """
 
 from __future__ import annotations
-from typing import List
+from typing import List, Union
 from pathlib import Path
 from importlib import machinery
 import logging
@@ -31,7 +31,7 @@ class CPythonLink:
         self._logger.debug("CPythonLink.__init__")
         # self._suffix = self._get_current_suffix()
         self._config = Config()
-        self._site_packages: Path | None = None
+        self._site_packages: Union[Path, None] = None
         self._file_suffix = ""
         if self._config.site_packages:
             self._site_packages = Path(self._config.site_packages)

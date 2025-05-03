@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import cast, Tuple, TYPE_CHECKING
+from typing import cast, Tuple, TYPE_CHECKING, Union
 
 from ooodev.utils.gen_util import NULL_OBJ
 
@@ -40,7 +40,7 @@ class CmdCellSrcCode(CmdBase, LogMixin, CmdCellCacheT):
         self._uri = uri
         self._cell = cell
         self._code = code
-        self._current_src = cast(str | None, NULL_OBJ)
+        self._current_src = cast(Union[str, None], NULL_OBJ)
         self._current_exist = cast(bool, NULL_OBJ)
         self.log.debug("init done for cell %s", cell.cell_obj)
 

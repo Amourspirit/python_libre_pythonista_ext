@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, cast, List, TYPE_CHECKING
+from typing import Any, cast, List, TYPE_CHECKING, Union
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcCell
@@ -25,22 +25,22 @@ else:
     PyModuleT = Any
 
 
-class QryRowsColsTbl(QryBase, LogMixin, QryCellT[Result[List[int], None] | Result[None, Exception]]):
+class QryRowsColsTbl(QryBase, LogMixin, QryCellT[Union[Result[List[int], None], Result[None, Exception]]]):
     """
     Query that returns the number of rows and columns in a Data Table associated with a cell.
 
     Args:
         cell (CalcCell): The cell to query
-        mod (PyModuleT | None): Optional Python module. If None, will be queried using QryPyModuleDefault
+        mod (PyModuleT, None): Optional Python module. If None, will be queried using QryPyModuleDefault
     """
 
-    def __init__(self, cell: CalcCell, mod: PyModuleT | None = None) -> None:
+    def __init__(self, cell: CalcCell, mod: Union[PyModuleT, None] = None) -> None:
         """
         Initialize the query with a cell and optional module.
 
         Args:
             cell (CalcCell): The cell to query
-            mod (PyModuleT | None, optional): Optional Python module. If None, will be queried using QryPyModuleDefault. Defaults to None.
+            mod (PyModuleT, None, optional): Optional Python module. If None, will be queried using QryPyModuleDefault. Defaults to None.
         """
         QryBase.__init__(self)
         LogMixin.__init__(self)
@@ -88,7 +88,7 @@ class QryRowsColsTbl(QryBase, LogMixin, QryCellT[Result[List[int], None] | Resul
         cols = len(first)
         return [rows, cols]
 
-    def execute(self) -> Result[List[int], None] | Result[None, Exception]:
+    def execute(self) -> Union[Result[List[int], None], Result[None, Exception]]:
         """
         Executes the query to get DataFrame dimensions.
 

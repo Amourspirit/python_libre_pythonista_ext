@@ -13,12 +13,12 @@ else:
 class JobListener(XJobListener, unohelper.Base):
     """Job Listener for Editor Service"""
 
-    def __init__(self, ctx: Any):
+    def __init__(self, ctx: Any) -> None:  # noqa: ANN401
         XJobListener.__init__(self)
         unohelper.Base.__init__(self)
         self.ctx = ctx
         self._log = OxtLogger(log_name=self.__class__.__name__)
         self._log.debug("JobListener.__init__()")
 
-    def jobFinished(self, Job: XAsyncJob, Result: Any):
+    def jobFinished(self, Job: XAsyncJob, Result: Any) -> None:  # noqa: ANN401, N802, N803
         self._log.debug("JobListener.jobFinished()")

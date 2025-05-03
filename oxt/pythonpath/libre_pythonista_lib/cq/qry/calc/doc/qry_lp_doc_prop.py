@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING, Union
 
 from ooodev.utils.gen_util import NULL_OBJ
 
@@ -26,7 +26,7 @@ class QryLpDocProp(QryBase, QryDocT[Any]):
         self._name = name
         self._default = default
 
-    def _get_data(self) -> dict | None:
+    def _get_data(self) -> Union[dict, None]:
         qry = QryLpDocProps(self._doc)
         result = self._execute_qry(qry)
         if Result.is_success(result):

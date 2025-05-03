@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, List, TYPE_CHECKING, Type
+from typing import Any, List, TYPE_CHECKING, Type, Union
 
 
 if TYPE_CHECKING:
@@ -65,7 +65,7 @@ class ArrayRules:
         # self._log.debug(f"add_rule_at() Rule {rule} registered at index {index}.")
         self._rules.insert(index, rule)
 
-    def remove_rule(self, rule: Type[ArrayRuleT]):
+    def remove_rule(self, rule: Type[ArrayRuleT]) -> None:
         """
         Unregister Rule
 
@@ -82,7 +82,7 @@ class ArrayRules:
             msg = f"{self.__class__.__name__}.unregister_rule() Unable to unregister rule."
             raise ValueError(msg) from e
 
-    def remove_rule_at(self, index: int):
+    def remove_rule_at(self, index: int) -> None:
         """
         Unregister Rule at index
 
@@ -100,13 +100,13 @@ class ArrayRules:
             # self._log.error(msg, exc_info=True)
             raise ValueError(msg) from e
 
-    def _reg_rule(self, rule: Type[ArrayRuleT]):
+    def _reg_rule(self, rule: Type[ArrayRuleT]) -> None:
         self._rules.append(rule)
 
-    def _register_known_rules(self):
+    def _register_known_rules(self) -> None:
         return
 
-    def get_matched_rule(self, value: Any) -> ArrayRuleT | None:
+    def get_matched_rule(self, value: Any) -> Union[ArrayRuleT, None]:  # noqa: ANN401
         """
         Get matched rules
 

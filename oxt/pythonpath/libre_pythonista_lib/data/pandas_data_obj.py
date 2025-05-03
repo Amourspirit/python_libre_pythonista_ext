@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Dict, TYPE_CHECKING
+from typing import Dict, TYPE_CHECKING, Optional, Union
 import pandas as pd
 from typing import List
 import uno
@@ -10,18 +10,19 @@ from ..utils.pandas_util import PandasUtil
 
 if TYPE_CHECKING:
     from ....___lo_pip___.oxt_logger import OxtLogger
+    from ooodev.utils.type_var import TupleArray
 else:
     from ___lo_pip___.oxt_logger import OxtLogger
 
 
 class PandasDataObj:
-    def __init__(self, cell_rng: CalcCellRange, col_types: Dict[str | int, str] | None = None):
+    def __init__(self, cell_rng: CalcCellRange, col_types: Optional[Dict[Union[str, int], str]] = None) -> None:
         """
         Constructor
 
         Args:
             cell_rng (CalcCellRange): The cell range to get the table information from.
-            col_types (Dict[str | int, str] | None): A dictionary of column names or indexes and their types.
+            col_types (Dict[str, int, str], optional): A dictionary of column names or indexes and their types.
                 Currently only "date" column type is supported.
         """
         self._sheet = cell_rng.calc_sheet
@@ -39,7 +40,7 @@ class PandasDataObj:
                 self._process_column_types(col_types)
             self._log.debug("init complete.")
 
-    def _process_column_types(self, col_types: Dict[str | int, str]):
+    def _process_column_types(self, col_types: Dict[Union[str, int], str]) -> None:
         with self._log.indent(True):
             names: Dict[str, str] = {}
             indexes: Dict[int, str] = {}
@@ -59,11 +60,10 @@ class PandasDataObj:
                     self._log.debug(f"_process_column_types() - Added Date Column index: {key}")
                     self._date_column_indexes.append(key)
 
-    def _get_data(self):
+    def _get_data(self) -> TupleArray:
         return self._sheet.get_array(range_obj=self._cell_rng.range_obj)
 
-    def _process_df_with_headers(self, df: pd.DataFrame):
-
+    def _process_df_with_headers(self, df: pd.DataFrame) -> pd.DataFrame:
         with self._log.indent(True):
             try:
                 self._log.debug("_process_df_with_headers() Entered.")
@@ -91,7 +91,7 @@ class PandasDataObj:
                 self._log.exception("_process_df_with_headers()")
                 raise
 
-    def _process_df_no_headers(self, df: pd.DataFrame):
+    def _process_df_no_headers(self, df: pd.DataFrame) -> pd.DataFrame:
         with self._log.indent(True):
             self._log.debug("_process_df_no_headers() Entered.")
             dc = self._data_info.date_columns

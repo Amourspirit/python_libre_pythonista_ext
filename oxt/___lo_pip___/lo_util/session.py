@@ -1,7 +1,7 @@
 # coding: utf-8
 from __future__ import annotations, unicode_literals
 import sys
-from typing import Any, TYPE_CHECKING, cast
+from typing import Any, TYPE_CHECKING, cast, Union
 from enum import Enum
 from pathlib import Path
 import uno
@@ -169,12 +169,12 @@ class Session(metaclass=Singleton):
             else:
                 sys.path.insert(0, script_path)
 
-    def register_path(self, pth: str | Path, append: bool = False) -> RegisterPathKind:
+    def register_path(self, pth: Union[str, Path], append: bool = False) -> RegisterPathKind:
         """
         Register a path into ``sys.path`` if it does not exist
 
         Args:
-            pth (str | Path): Path to register.
+            pth (str, Path): Path to register.
             append (bool, optional): If True, appends to ``sys.path`` otherwise prepends. Defaults to False.
         """
         if not isinstance(pth, str):
@@ -189,12 +189,12 @@ class Session(metaclass=Singleton):
             return RegisterPathKind.REGISTERED
         return RegisterPathKind.ALREADY_REGISTERED
 
-    def unregister_path(self, pth: str | Path) -> UnRegisterPathKind:
+    def unregister_path(self, pth: Union[str, Path]) -> UnRegisterPathKind:
         """
         Unregister a path into ``sys.path``
 
         Args:
-            pth (str | Path): Path to unregister.
+            pth (str, Path): Path to unregister.
             append (bool, optional): If True, appends to ``sys.path`` otherwise prepends. Defaults to False.
         """
         if not isinstance(pth, str):

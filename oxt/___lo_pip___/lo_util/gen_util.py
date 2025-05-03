@@ -4,7 +4,7 @@
 from __future__ import annotations
 import contextlib
 import re
-from typing import Iterator, NamedTuple, Any, Sequence, TypeVar
+from typing import Iterator, NamedTuple, Any, Sequence, TypeVar, Union
 from inspect import isclass
 
 # match:
@@ -24,6 +24,7 @@ class ArgsHelper:
 
     class NameValue(NamedTuple):
         "Name Value pair"
+
         name: str
         """Name component"""
         value: Any
@@ -32,7 +33,7 @@ class ArgsHelper:
 
 class Util:
     @classmethod
-    def is_iterable(cls, arg: Any, excluded_types: Sequence[type] | None = None) -> bool:
+    def is_iterable(cls, arg: Any, excluded_types: Union[Sequence[type], None] = None) -> bool:
         """
         Gets if ``arg`` is iterable.
 

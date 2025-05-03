@@ -1,9 +1,8 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Union
 
 
 if TYPE_CHECKING:
-    from ooodev.calc import CalcDoc
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_base import QryBase
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_t import QryT
     from oxt.pythonpath.libre_pythonista_lib.const.cache_const import DOC_INIT_CALCULATED
@@ -23,16 +22,16 @@ else:
 
 
 class QryInitCalculate(QryBase, QryT[bool]):
-    def __init__(self, uid: str | None = None) -> None:
+    def __init__(self, uid: Union[str, None] = None) -> None:
         """Constructor
 
         Args:
-            doc (CalcDoc, optional): The Calc document. Defaults to None.
+            uid (str, optional): The document uid. Defaults to None.
         """
         QryBase.__init__(self)
         self._uid = uid
 
-    def _get_globals(self) -> DocGlobals | None:
+    def _get_globals(self) -> Union[DocGlobals, None]:
         qry = QryDocGlobals(uid=self._uid)
         qry_result = self._execute_qry(qry)
         if Result.is_success(qry_result):
@@ -41,7 +40,7 @@ class QryInitCalculate(QryBase, QryT[bool]):
 
     def execute(self) -> bool:
         """
-        Executes the query to check if the document is initialized.
+        Executes the query to check if the document calculate is initialized.
 
         Returns:
             bool: True if the document is initialized, False otherwise.

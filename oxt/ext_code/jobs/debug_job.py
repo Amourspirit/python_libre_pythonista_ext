@@ -1,6 +1,6 @@
 # region imports
 from __future__ import unicode_literals, annotations
-from typing import Any, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING, Tuple
 import contextlib
 import os
 
@@ -56,12 +56,12 @@ class DebugJob(unohelper.Base, XJob):
     SERVICE_NAMES = ("com.sun.star.task.Job",)
 
     @classmethod
-    def get_imple(cls):
+    def get_imple(cls) -> Tuple[Any, str, Tuple[str, ...]]:
         return (cls, cls.IMPLE_NAME, cls.SERVICE_NAMES)
 
     # region Init
 
-    def __init__(self, ctx):
+    def __init__(self, ctx: object) -> None:
         self.ctx = ctx
         self.document = None
         self._log = self._get_local_logger()
@@ -86,7 +86,10 @@ class DebugJob(unohelper.Base, XJob):
                 basic_config = BasicConfig()
                 # Start the debug server
                 if basic_config.libreoffice_debug_port > 0:
-                    debugpy.listen(("localhost", basic_config.libreoffice_debug_port))
+                    print(f"Waiting for debugger attach on port  {basic_config.libreoffice_debug_port}")
+                    self._log.debug("Waiting for debugger attach on port %i ...", basic_config.libreoffice_debug_port)
+                    debugpy.listen(basic_config.libreoffice_debug_port)
+                    # debugpy.listen(("127.0.0.1", basic_config.libreoffice_debug_port))
                 else:
                     self._log.warning(
                         "Debug port not set. Must be set in tool.oxt.token.libreoffice_debug_port of pyproject.toml file. Contact the developer."
@@ -94,8 +97,8 @@ class DebugJob(unohelper.Base, XJob):
                     return
 
                 # Pause execution until debugger is attached
-                print(f"Waiting for debugger attach on port  {basic_config.libreoffice_debug_port}")
-                self._log.debug("Waiting for debugger attach on port %i ...", basic_config.libreoffice_debug_port)
+                # print(f"Waiting for debugger attach on port  {basic_config.libreoffice_debug_port}")
+                # self._log.debug("Waiting for debugger attach on port %i ...", basic_config.libreoffice_debug_port)
                 debugpy.wait_for_client()
                 # debugpy.trace_this_thread(True)
                 os.environ.pop("ENABLE_LIBREOFFICE_DEBUG")

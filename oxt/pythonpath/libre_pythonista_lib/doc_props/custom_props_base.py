@@ -28,7 +28,7 @@ class CustomPropsBase:
         Classes can implement the :py:class:`ooodev.io.json.json_encoder.JsonEncoder` class to provide custom serialization by overriding the ``on_json_encode()`` method.
     """
 
-    def __init__(self, doc: OfficeDocumentT, file_name: str, props_id: str):
+    def __init__(self, doc: OfficeDocumentT, file_name: str, props_id: str) -> None:
         """
         Constructor.
 
@@ -54,7 +54,7 @@ class CustomPropsBase:
             self.log.debug("End Init")
         # please the type checker
 
-    def _init_props(self):
+    def _init_props(self) -> None:
         """
         Initializes the properties.
         """
@@ -151,7 +151,7 @@ class CustomPropsBase:
             except Exception:
                 self.log.error(f"_save_properties() Error writing JSON file: {self._name}", exc_info=True)
 
-    def get_custom_property(self, name: str, default: Any = NULL_OBJ) -> Any:
+    def get_custom_property(self, name: str, default: Any = NULL_OBJ) -> Any:  # noqa: ANN401
         """
         Gets a custom property.
 
@@ -173,7 +173,7 @@ class CustomPropsBase:
                 raise AttributeError(f"Property '{name}' not found.")
             return result
 
-    def set_custom_property(self, name: str, value: Any):
+    def set_custom_property(self, name: str, value: Any) -> None:  # noqa: ANN401
         """
         Sets a custom property.
 
