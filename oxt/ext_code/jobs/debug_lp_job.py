@@ -1,8 +1,9 @@
 # region imports
 from __future__ import unicode_literals, annotations
-from typing import Any, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING, Tuple
 import contextlib
 import os
+import sys
 
 import unohelper
 from com.sun.star.task import XJob
@@ -26,8 +27,8 @@ if TYPE_CHECKING:
 
     # just for design time
     _CONDITIONS_MET = True
-    from ...___lo_pip___.oxt_logger import OxtLogger
-    from ...___lo_pip___.basic_config import BasicConfig
+    from oxt.___lo_pip___.oxt_logger import OxtLogger
+    from oxt.___lo_pip___.config import Config
     import debugpy  # type: ignore
 
     # from ...pythonpath.libre_pythonista_lib.sheet.listen.sheet_calculation_event_listener import (
@@ -43,7 +44,7 @@ else:
         import debugpy
 
         try:
-            from ___lo_pip___.basic_config import BasicConfig
+            from ___lo_pip___.config import Config
         except (ModuleNotFoundError, ImportError):
             _CONDITIONS_MET = False
 # endregion imports
@@ -57,7 +58,7 @@ class DebugLpJob(unohelper.Base, XJob):
     SERVICE_NAMES = ("com.sun.star.task.Job",)
 
     @classmethod
-    def get_imple(cls) -> tuple:
+    def get_imple(cls) -> Tuple[Any, str, Tuple[str, ...]]:
         return (cls, cls.IMPLE_NAME, cls.SERVICE_NAMES)
 
     # region Init
@@ -87,22 +88,30 @@ class DebugLpJob(unohelper.Base, XJob):
                 ):
                     self._log.debug("Debugger already attached.")
                     return
-                basic_config = BasicConfig()
+                cfg = Config()
                 # Start the debug server on port 5678
-                if basic_config.lp_debug_port > 0:
-                    debugpy.listen(("localhost", basic_config.lp_debug_port))
+                if cfg.lp_debug_port > 0:
+                    is_windows = sys.platform == "win32"
+                    print(f"Waiting for debugger attach on port  {cfg.lp_debug_port}")
+                    self._log.debug("Waiting for debugger attach on port %i ...", cfg.lp_debug_port)
+                    if is_windows:
+                        exe = sys.executable
+                        try:
+                            # see: https://github.com/microsoft/debugpy/issues/262
+                            sys.executable = cfg.python_path
+                            self._log.debug("Windows so temporary setting sys.executable to %s", sys.executable)
+                            debugpy.listen(cfg.lp_debug_port)
+                        finally:
+                            sys.executable = exe
+                    else:
+                        debugpy.listen(cfg.lp_debug_port)
+
                 else:
                     self._log.warning(
                         "Debug port not set. Must be set in tool.oxt.token.lp_debug_port of pyproject.toml file. Contact the developer."
                     )
                     return
-                self._log.debug(
-                    "Waiting for debugger attach on port %i ...",
-                    basic_config.lp_debug_port,
-                )
 
-                # Pause execution until debugger is attached
-                print(f"Waiting for debugger attach on port  {basic_config.lp_debug_port}")
                 debugpy.wait_for_client()
                 os.environ.pop("ENABLE_LIBREPYTHONISTA_DEBUG")
                 os.environ["LIBREPYTHONISTA_DEBUG_ATTACHED"] = "1"

@@ -23,6 +23,7 @@ if TYPE_CHECKING:
     from ooodev.calc import CalcDoc
     from typing_extensions import override
     from oxt.___lo_pip___.oxt_logger import OxtLogger
+    from oxt.___lo_pip___.debug.break_mgr import BreakMgr
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.cmd_calculate_all import CmdCalculateAll
@@ -31,6 +32,8 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.cmd_init_calculate import CmdInitCalculate
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_init_calculate import QryInitCalculate
     from oxt.pythonpath.libre_pythonista_lib.doc.doc_globals import DocGlobals
+
+    break_mgr = BreakMgr()
 else:
 
     def override(func):  # noqa: ANN001, ANN201
@@ -39,6 +42,7 @@ else:
     _CONDITIONS_MET = _conditions_met()
     if _CONDITIONS_MET:
         from ooodev.calc import CalcDoc
+        from ___lo_pip___.debug.break_mgr import BreakMgr
         from libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
         from libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
         from libre_pythonista_lib.cq.cmd.calc.doc.cmd_calculate_all import CmdCalculateAll
@@ -47,6 +51,9 @@ else:
         from libre_pythonista_lib.cq.cmd.calc.doc.cmd_init_calculate import CmdInitCalculate
         from libre_pythonista_lib.cq.qry.calc.doc.qry_init_calculate import QryInitCalculate
         from libre_pythonista_lib.doc.doc_globals import DocGlobals
+
+        break_mgr = BreakMgr()
+        break_mgr.add_breakpoint("ext_code.jobs.loading_job.execute")
 # endregion imports
 
 _KEY = "ext_code.jobs.loading_job.LoadingJob"
@@ -103,6 +110,7 @@ class LoadingJob(XJob, unohelper.Base):
                 return
 
             if _CONDITIONS_MET:
+                break_mgr.check_breakpoint("ext_code.jobs.loading_job.execute")
                 self._lo_load(self.document)
 
             if self.document.supportsService("com.sun.star.sheet.SpreadsheetDocument"):
@@ -138,10 +146,10 @@ class LoadingJob(XJob, unohelper.Base):
                     cmd_init_calc = CmdInitCalculate(uid=run_id)
                     cmd_handler.handle(cmd_init_calc)
                     if cmd_init_calc.success:
-                        self._log.debug("Successfully executed command.")
+                        self._log.debug("Successfully executed command CmdInitCalculate.")
                         doc_globals.mem_cache[_KEY] = True
                     else:
-                        self._log.error("Error executing command.")
+                        self._log.error("Error executing command CmdInitCalculate.")
                 else:
                     self._log.error("Error calculating all formulas.")
                 return

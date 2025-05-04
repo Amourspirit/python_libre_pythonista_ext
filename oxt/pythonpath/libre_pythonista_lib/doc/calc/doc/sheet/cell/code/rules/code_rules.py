@@ -31,7 +31,7 @@ else:
     from libre_pythonista_lib.log.log_mixin import LogMixin
 
     break_mgr = BreakMgr()
-    break_mgr.add_breakpoint("libre_pythonista_lib.doc.calc.doc.sheet.cell.code.rules.code_rules.get_matched_rule")
+    # break_mgr.add_breakpoint("libre_pythonista_lib.doc.calc.doc.sheet.cell.code.rules.code_rules.get_matched_rule")
 
 
 class CodeRules(LogMixin):

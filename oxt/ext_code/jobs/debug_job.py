@@ -3,6 +3,7 @@ from __future__ import unicode_literals, annotations
 from typing import Any, TYPE_CHECKING, Tuple
 import contextlib
 import os
+import sys
 
 
 import unohelper
@@ -28,8 +29,8 @@ if TYPE_CHECKING:
 
     # just for design time
     _CONDITIONS_MET = True
-    from ...___lo_pip___.oxt_logger import OxtLogger
-    from ...___lo_pip___.basic_config import BasicConfig
+    from oxt.___lo_pip___.oxt_logger import OxtLogger
+    from oxt.___lo_pip___.config import Config
     import debugpy  # type: ignore
 
 else:
@@ -42,7 +43,7 @@ else:
         import debugpy
 
         try:
-            from ___lo_pip___.basic_config import BasicConfig
+            from ___lo_pip___.config import Config
         except (ModuleNotFoundError, ImportError):
             _CONDITIONS_MET = False
 # endregion imports
@@ -83,12 +84,24 @@ class DebugJob(unohelper.Base, XJob):
                 if os.getenv("LIBREOFFICE_DEBUG_ATTACHED") == "1":
                     self._log.debug("Debugger already attached.")
                     return
-                basic_config = BasicConfig()
+                cfg = Config()
+
                 # Start the debug server
-                if basic_config.libreoffice_debug_port > 0:
-                    print(f"Waiting for debugger attach on port  {basic_config.libreoffice_debug_port}")
-                    self._log.debug("Waiting for debugger attach on port %i ...", basic_config.libreoffice_debug_port)
-                    debugpy.listen(basic_config.libreoffice_debug_port)
+                if cfg.libreoffice_debug_port > 0:
+                    is_windows = sys.platform == "win32"
+                    print(f"Waiting for debugger attach on port  {cfg.libreoffice_debug_port}")
+                    self._log.debug("Waiting for debugger attach on port %i ...", cfg.libreoffice_debug_port)
+                    if is_windows:
+                        exe = sys.executable
+                        try:
+                            # see: https://github.com/microsoft/debugpy/issues/262
+                            sys.executable = cfg.python_path
+                            self._log.debug("Windows so temporary setting sys.executable to %s", sys.executable)
+                            debugpy.listen(cfg.libreoffice_debug_port)
+                        finally:
+                            sys.executable = exe
+                    else:
+                        debugpy.listen(cfg.libreoffice_debug_port)
                     # debugpy.listen(("127.0.0.1", basic_config.libreoffice_debug_port))
                 else:
                     self._log.warning(
