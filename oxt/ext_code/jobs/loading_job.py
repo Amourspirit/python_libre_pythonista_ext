@@ -120,6 +120,10 @@ class LoadingJob(XJob, unohelper.Base):
                 if _KEY in doc_globals.mem_cache:
                     self._log.debug("Already executed command. Returning...")
                     return
+                # Loading may be called more the once.
+                # When CalculateAll is called when first starting on windows this job is called again.
+                # To prevent loops we set cache to true here.
+                doc_globals.mem_cache[_KEY] = True
                 doc = CalcDoc.get_doc_from_component(self.document)
                 qry_handler = QryHandlerFactory.get_qry_handler()
                 cmd_handler = CmdHandlerFactory.get_cmd_handler()
@@ -147,7 +151,6 @@ class LoadingJob(XJob, unohelper.Base):
                     cmd_handler.handle(cmd_init_calc)
                     if cmd_init_calc.success:
                         self._log.debug("Successfully executed command CmdInitCalculate.")
-                        doc_globals.mem_cache[_KEY] = True
                     else:
                         self._log.error("Error executing command CmdInitCalculate.")
                 else:
