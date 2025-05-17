@@ -1,6 +1,6 @@
 from __future__ import annotations
 from typing import Any, Dict, List, Tuple, Iterable, TYPE_CHECKING, cast, Union, Optional
-
+import threading
 from sortedcontainers import SortedDict
 
 from ooodev.calc import CalcDoc, CalcCell
@@ -13,6 +13,8 @@ from ooodev.utils.string.str_list import StrList
 
 
 if TYPE_CHECKING:
+    from oxt.___lo_pip___.debug.break_mgr import BreakMgr
+    from oxt.___lo_pip___.debug.py_charm_break_mgr import PyCharmBreakMgr
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.module_state_item import ModuleStateItem
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module_state import PyModuleState
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.code.cmd_cell_src_code import CmdCellSrcCode
@@ -53,6 +55,9 @@ if TYPE_CHECKING:
         PYTHON_SOURCE_MODIFIED,
     )
 else:
+    from ___lo_pip___.debug.break_mgr import BreakMgr
+    from ___lo_pip___.debug.py_charm_break_mgr import PyCharmBreakMgr
+
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.module_state_item import ModuleStateItem
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module_state import PyModuleState
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module_t import PyModuleT
@@ -91,6 +96,12 @@ else:
 
     QryHandlerT = Any
     CmdHandlerT = Any
+
+break_mgr = BreakMgr()  # Initialize the breakpoint manager
+break_mgr.add_breakpoint("libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source_manager._init_sources")
+
+py_break_mgr = PyCharmBreakMgr()
+py_break_mgr.add_breakpoint("libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source_manager._init_sources")
 
 _KEY = "libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source_manager.PySourceManager"
 
@@ -207,6 +218,10 @@ class PySourceManager(LogMixin):
 
     def _init_sources(self) -> None:  # type: ignore
         """Initializes the source code manager."""
+        break_mgr.check_breakpoint("libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source_manager._init_sources")
+        py_break_mgr.check_breakpoint(
+            "libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source_manager._init_sources"
+        )
         self._src_data = SortedDict()
         self._mod_state.reset_module()
         self.log.debug("_init_sources() Entered.")
@@ -228,19 +243,24 @@ class PySourceManager(LogMixin):
                 py_src = self._qry_py_source(uri=uri, cell=calc_cell)
                 sources.append((py_src, calc_cell, uri))
 
-            sources.sort(key=lambda x: x[0])  # Sort by PySource object only
-            for src in sources:
-                py_src = src[0]
-                calc_cell = src[1]
-                uri = src[2]
-                self.src_data[py_src.sheet_idx, py_src.row, py_src.col] = PySourceData(
-                    uri=uri, cell=calc_cell.cell_obj.copy()
-                )
-                self.set_global_var("CURRENT_CELL_ID", py_src.uri_info.unique_id)
-                self.set_global_var("CURRENT_CELL_OBJ", calc_cell.cell_obj)
-                _ = self._mod_state.update_with_result(cell=calc_cell, code=py_src.source_code)
-
+            sources.sort(key=lambda x: x[0])  # Sort by PySource object only.
+            self._process_sources(sources)
+            # process_thread = threading.Thread(target=self._process_sources, args=(sources,), daemon=True)
+            # process_thread.start()
+            # process_thread.join()  # Wait for thread to complete
         self.log.debug("_init_sources() Leaving.")
+
+    def _process_sources(self, sources: List[Tuple[PySource, CalcCell, str]]) -> None:
+        for src in sources:
+            py_src = src[0]
+            calc_cell = src[1]
+            uri = src[2]
+            self.src_data[py_src.sheet_idx, py_src.row, py_src.col] = PySourceData(
+                uri=uri, cell=calc_cell.cell_obj.copy()
+            )
+            self.set_global_var("CURRENT_CELL_ID", py_src.uri_info.unique_id)
+            self.set_global_var("CURRENT_CELL_OBJ", calc_cell.cell_obj)
+            _ = self._mod_state.update_with_result(cell=calc_cell, code=py_src.source_code)
 
     # endregion Init
 

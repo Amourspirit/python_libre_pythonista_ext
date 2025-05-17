@@ -38,14 +38,30 @@ else:
     def override(func):  # noqa: ANN001, ANN201
         return func
 
+    def try_log(msg: str) -> None:
+        try:
+            from ___lo_pip___.oxt_logger import OxtLogger  # type: ignore
+
+            log = OxtLogger(log_name="DebugJob")
+            log.warning(msg)
+
+        except Exception:
+            pass
+
     _CONDITIONS_MET = _conditions_met()
     if _CONDITIONS_MET:
-        import debugpy
-
         try:
             from ___lo_pip___.config import Config
         except (ModuleNotFoundError, ImportError):
             _CONDITIONS_MET = False
+            try_log("Config not found")
+        if _CONDITIONS_MET:
+            try:
+                import debugpy
+            except (ModuleNotFoundError, ImportError) as e:
+                _CONDITIONS_MET = False
+                try_log(f"debugpy not found. {e}")
+
 # endregion imports
 
 
@@ -66,6 +82,7 @@ class DebugJob(unohelper.Base, XJob):
         self.ctx = ctx
         self.document = None
         self._log = self._get_local_logger()
+        self._log.debug("init Done")
 
     # endregion Init
 
@@ -142,7 +159,6 @@ class DebugJob(unohelper.Base, XJob):
 
 # region Implementation
 
-g_TypeTable = {}  # noqa: N816
 g_ImplementationHelper = unohelper.ImplementationHelper()  # noqa: N816
 g_ImplementationHelper.addImplementation(*DebugJob.get_imple())
 

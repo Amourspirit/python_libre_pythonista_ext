@@ -87,6 +87,7 @@ class ViewJob(unohelper.Base, XJob):
         self.ctx = ctx
         self.document = None
         self._log = self._get_local_logger()
+        self._log.debug("init Done")
 
     # endregion Init
 

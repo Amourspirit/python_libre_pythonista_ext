@@ -17,13 +17,13 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.event.shared_event import SharedEvent
     from oxt.pythonpath.libre_pythonista_lib.log.event_log_handler import EventLogHandler
     from oxt.pythonpath.libre_pythonista_lib.doc.doc_globals import DocGlobals
-    from oxt.pythonpath.libre_pythonista_lib.const.event_const import LOG_PY_LOGGER_RESET, GBL_DOC_CLOSING
+    from oxt.pythonpath.libre_pythonista_lib.const.event_const import LOG_PY_LOGGER_RESET
 else:
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
     from libre_pythonista_lib.event.shared_event import SharedEvent
     from libre_pythonista_lib.log.event_log_handler import EventLogHandler
     from libre_pythonista_lib.doc.doc_globals import DocGlobals
-    from libre_pythonista_lib.const.event_const import LOG_PY_LOGGER_RESET, GBL_DOC_CLOSING
+    from libre_pythonista_lib.const.event_const import LOG_PY_LOGGER_RESET
 
 _KEY = "libre_pythonista_lib.log.py_logger.PyLogger"
 

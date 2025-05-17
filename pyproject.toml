@@ -93,7 +93,7 @@ url_pip = 'https://bootstrap.pypa.io/get-pip.py' # https://tinyurl.com/ymeh4c9j#
 # set log_file to "" to disable logging
 log_file = "libre_pythonista.log" # https://tinyurl.com/ymeh4c9j#log_file
 log_name = "LibrePythonista Installer" # https://tinyurl.com/ymeh4c9j#log_name
-log_level = "INFO" # NONE, DEBUG, INFO, WARNING, ERROR, CRITICAL https://tinyurl.com/ymeh4c9j#log_level
+log_level = "DEBUG" # NONE, DEBUG, INFO, WARNING, ERROR, CRITICAL https://tinyurl.com/ymeh4c9j#log_level
 log_format = "%(asctime)s - %(levelname)s - %(name)s: %(message)s" # https://tinyurl.com/ymeh4c9j#log_format
 # log_format = "%(asctime)s - %(levelname)s - %(indent_str)s%(name)s: %(message)s"
 log_add_console = true # should be false for production # https://tinyurl.com/ymeh4c9j#log_add_console
@@ -115,7 +115,12 @@ odfpy = ">=1.4"
 ooo-dev-tools = ">=0.53.3"
 seaborn = ">=0.13"
 sortedcontainers = ">=2.4.0"
-debugpy = ">=1.8.14"
+#debugpy = ">=1.8.14"
+
+# [[tool.oxt.py_packages]]
+# name="pydevd_pycharm"
+# version="251.23774.444"
+# restriction="=="
 
 [[tool.oxt.py_packages]]
 # https://tinyurl.com/ymeh4c9j#tooloxtpy_packages

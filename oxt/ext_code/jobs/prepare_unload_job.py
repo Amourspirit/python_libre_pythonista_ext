@@ -105,6 +105,7 @@ class PrepareUnloadJob(XJob, unohelper.Base):
         self._fn_on_singleton_get_key = self._on_singleton_get_key
         self._fn_on_doc_event_partial_check_uid = self._on_doc_event_partial_check_uid
         self._fn_on_singleton_get_doc = self._on_singleton_get_doc
+        self._log.debug("init Done")
 
     # endregion Init
 

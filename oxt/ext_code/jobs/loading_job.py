@@ -78,6 +78,7 @@ class LoadingJob(XJob, unohelper.Base):
         self.ctx = ctx
         self.document = None
         self._log = self._get_local_logger()
+        self._log.debug("init Done")
 
     # endregion Init
 
@@ -101,7 +102,7 @@ class LoadingJob(XJob, unohelper.Base):
             arg1 = Arguments[0]
 
             for struct in arg1.Value:
-                self._log.debug(f"Struct: {struct.Name}")
+                self._log.debug("Struct: %s", struct.Name)
                 if struct.Name == "Model":
                     self.document = struct.Value
                     self._log.debug("Document Found")

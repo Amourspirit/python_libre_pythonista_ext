@@ -40,6 +40,7 @@ class CPythonLink:
 
     def _get_current_suffix(self) -> str:
         """Gets suffix currently used by the embedded python interpreter such as ``cpython-3.8``"""
+        # in windows suffixes are something like ['.cp39-win_amd64.pyd', '.pyd']
         for suffix in machinery.EXTENSION_SUFFIXES:
             if suffix.startswith(".cpython-") and suffix.endswith(".so"):
                 # remove leading . and trailing .so
