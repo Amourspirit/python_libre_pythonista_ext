@@ -107,7 +107,7 @@ class DebugJob(unohelper.Base, XJob):
                 if cfg.libreoffice_debug_port > 0:
                     is_windows = sys.platform == "win32"
                     print(f"Waiting for debugger attach on port  {cfg.libreoffice_debug_port}")
-                    self._log.debug("Waiting for debugger attach on port %i ...", cfg.libreoffice_debug_port)
+                    self._log.info("Waiting for debugger attach on port %i ...", cfg.libreoffice_debug_port)
                     if is_windows:
                         exe = sys.executable
                         try:

@@ -143,6 +143,8 @@ class LoadingJob(XJob, unohelper.Base):
                     return
 
                 self._log.debug("Document has not been calculated.")
+                # self.document.calculateAll()
+                # return
 
                 cmd_calc_all = CmdCalculateAll(doc=doc)
                 cmd_handler.handle(cmd_calc_all)

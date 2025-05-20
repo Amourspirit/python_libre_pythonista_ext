@@ -118,7 +118,7 @@ class PyCharmBreakMgr(LogMixin):
             pydevd_pycharm.stoptrace()
             self.log.debug("Debugger detached.")
             print(f"Waiting for debugger attach on port  {self._debug_port}")
-            self.log.debug("Waiting for debugger attach on port %i ...", self._debug_port)
+            self.log.info("Waiting for debugger attach on port %i ...", self._debug_port)
             time.sleep(1)
             pydevd_pycharm.settrace(
                 host=self._host, port=self._debug_port, stdoutToServer=True, stderrToServer=True, suspend=False
