@@ -2,6 +2,7 @@
 from __future__ import annotations
 from typing import Any, Dict, List, Tuple, Iterable, TYPE_CHECKING, cast, Union, Optional
 import threading
+import time
 from sortedcontainers import SortedDict
 
 from ooodev.calc import CalcDoc, CalcCell
@@ -55,6 +56,7 @@ if TYPE_CHECKING:
         PYTHON_BEFORE_SOURCE_UPDATE,
         PYTHON_SOURCE_MODIFIED,
     )
+    from oxt.pythonpath.libre_pythonista_lib.const.event_const import PY_SRC_MGR_MOD_STATES_INIT_UPDATED
 else:
     from ___lo_pip___.debug.break_mgr import BreakMgr
     from ___lo_pip___.debug.py_charm_break_mgr import PyCharmBreakMgr
@@ -94,12 +96,14 @@ else:
         PYTHON_BEFORE_SOURCE_UPDATE,
         PYTHON_SOURCE_MODIFIED,
     )
+    from libre_pythonista_lib.const.event_const import PY_SRC_MGR_MOD_STATES_INIT_UPDATED
 
     QryHandlerT = Any
     CmdHandlerT = Any
 # endregion Imports
 
 _TREAD_LOCK = threading.Lock()
+_THREAD_EVENT = threading.Event()
 
 break_mgr = BreakMgr()  # Initialize the breakpoint manager
 break_mgr.add_breakpoint("libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source_manager._init_sources")
@@ -189,12 +193,20 @@ class PySourceManager(LogMixin):
         self.log.debug("_init_sources() Leaving.")
 
     def _process_sources(self, sources: List[Tuple[PySource, CalcCell, str]]) -> None:
-        def process_source(calc_cell: CalcCell, code: str) -> None:
+        _THREAD_EVENT.clear()
+
+        def process_source(calc_cell: CalcCell, code: str, is_last: bool) -> None:
             with _TREAD_LOCK:
                 _ = self._mod_state.update_with_result(cell=calc_cell, code=code)
+            if is_last:
+                # self.log.debug("Last source processed.")
+                self._se.trigger_event(PY_SRC_MGR_MOD_STATES_INIT_UPDATED, EventArgs(self))
+                _THREAD_EVENT.set()
 
         threads = []
-        for src in sources:
+        count = len(sources)
+        for i, src in enumerate(sources):
+            is_last = i + 1 == count
             py_src = src[0]
             calc_cell = src[1]
             uri = src[2]
@@ -204,9 +216,20 @@ class PySourceManager(LogMixin):
             self.set_global_var("CURRENT_CELL_ID", py_src.uri_info.unique_id)
             self.set_global_var("CURRENT_CELL_OBJ", calc_cell.cell_obj)
             # _ = self._mod_state.update_with_result(cell=calc_cell, code=py_src.source_code)
-            process_thread = threading.Thread(target=process_source, args=(calc_cell, py_src.source_code), daemon=True)
+            process_thread = threading.Thread(
+                target=process_source, args=(calc_cell, py_src.source_code, is_last), daemon=True
+            )
             threads.append(process_thread)
             process_thread.start()
+
+        return
+
+        # wait 5 seconds to see if threads are complete
+        start_time = time.time()
+        while not _THREAD_EVENT.is_set():
+            if time.time() - start_time > 5:
+                break
+            time.sleep(0.1)
 
         # for thread in threads:
         #     thread.join()
