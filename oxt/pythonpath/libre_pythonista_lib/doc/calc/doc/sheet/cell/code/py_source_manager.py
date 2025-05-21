@@ -196,8 +196,39 @@ class PySourceManager(LogMixin):
         _THREAD_EVENT.clear()
 
         def process_source(calc_cell: CalcCell, code: str, is_last: bool) -> None:
+            # This solves a strange issue on Windows.
+            #
+            # Version: 24.8.6.2 (X86_64) / LibreOffice Community
+            # Build ID: 6d98ba145e9a8a39fc57bcc76981d1fb1316c60c
+            # CPU threads: 4; OS: Windows 10 X86_64 (10.0 build 19045); UI render: Skia/Raster; VCL: win
+            # Locale: en-US (en_US); UI: en-US
+            # Calc: CL threaded
+            #
+            # It is not absolutely clear on what the issue is. LibreOffice Calc was crashing when a sheet was loaded that contained a matplotlib plot.
+            # The crash was a complete crash and did not give any usable info in the log files to trace.
+            # Debugging was able to trace the code to the point:
+            #
+            # C:\Users\bigby\AppData\Roaming\Python\Python39\64\site-packages\matplotlib\transforms.py
+            # Line 881
+            # points, minpos, changed = update_path_extents(path, None, self._points, self._minpos, ignore)
+
+            # update_path_extents in a method in binary file _path.cp39-win_amd64.pyd
+            # in C:\Users\bigby\AppData\Roaming\Python\Python39\64\site-packages\matplotlib
+            #
+            # If self._mod_state.update_with_result(cell=calc_cell, code=code) is call on the main
+            # thread then the crash would occur. If it is called on a separate thread then the crash does not occur.
+            # When called on a separate thread there is thenot real value because the main thread continues.
+            # Calling Join just causes the thread to hang.
+            # After the last source is processed the event is set and the main thread continues.
+            # The event calls a method that then calls the sheet caculateAll method.
+            # From this point forward all seems to work fine. on all systems.
+            # In theory I could have applied this to windows only but it works fine on other os'es as well.
+            # See: libre_pythonista_lib.doc.calc.doc.doc_event_mgr.DocEventMgr
+            # see: libre_pythonista_lib.doc.calc.doc.lp_listeners.listener_py_src_mgr_mod_states_init_updated.ListenerPySrcMgrModStatesInitUpdated
+
             with _TREAD_LOCK:
-                _ = self._mod_state.update_with_result(cell=calc_cell, code=code)
+                time.sleep(0.1)
+                # _ = self._mod_state.update_with_result(cell=calc_cell, code=code)
             if is_last:
                 # self.log.debug("Last source processed.")
                 self._se.trigger_event(PY_SRC_MGR_MOD_STATES_INIT_UPDATED, EventArgs(self))
