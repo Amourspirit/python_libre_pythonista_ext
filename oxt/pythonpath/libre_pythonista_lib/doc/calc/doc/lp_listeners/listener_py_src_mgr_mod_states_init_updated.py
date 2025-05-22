@@ -56,6 +56,8 @@ class ListenerPySrcMgrModStatesInitUpdated(LogMixin, TriggerStateMixin):
                 self.log.debug("Module States Init. DOC_MOD_STATES_INIT cache state set.")
             else:
                 self.log.error("CmdModeStatesInit failed")
+            self.log.debug("Calling document calculateAll()")
             self._doc.component.calculateAll()
+            self.log.debug("calculateAll() call complete")
         except Exception as e:
             self.log.exception("Error executing query: %s", e)
