@@ -171,7 +171,7 @@ python_versions=[">=3.10"]
 
 [[tool.oxt.lp_editor_py_packages]]
 name="librepythonista-python-editor"
-version="0.1.8"
+version="0.1.9"
 platforms=["all"]
 ignore_platforms=["flatpak", "snap"]
 

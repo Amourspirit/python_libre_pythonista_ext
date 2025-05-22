@@ -52,6 +52,9 @@ class CPythonLink:
         # for normal installs the suffix will be something like cpython-312-x86_64-linux-gnu
         # for other embedded it will be something like .cpython-3.9
         # If the number of - occurrences are greater then 1 then linking should not be needed
+        if self._config.is_win:
+            self._logger.debug("get_needs_linking() Not needed on Windows")
+            return False
         if not self._site_packages:
             self._logger.debug("get_needs_linking() No site-packages found")
             return False

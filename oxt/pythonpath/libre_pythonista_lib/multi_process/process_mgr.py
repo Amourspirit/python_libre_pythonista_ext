@@ -164,8 +164,6 @@ class ProcessMgr(ABC):
                     config.flatpak_libre_pythonista_py_editor,
                     "--process-id",
                     process_id,
-                    "--socket-path",
-                    socket_file,  # may start with ~
                     "--debug",
                     is_dbg,
                 ]
@@ -177,8 +175,6 @@ class ProcessMgr(ABC):
                     "librepythonista-pyeditor",
                     "--process-id",
                     process_id,
-                    # "--socket-path",
-                    # socket_file,  # may start with ~
                     "--host",
                     host,
                     "--port",
@@ -196,8 +192,6 @@ class ProcessMgr(ABC):
                     host,
                     "--port",
                     str(port),
-                    "--socket-path",
-                    socket_file,  # may start with ~
                     "--debug",
                     is_dbg,
                 ]
@@ -207,6 +201,11 @@ class ProcessMgr(ABC):
             elif config.is_snap:
                 p_args.append("--kind")
                 p_args.append("snap")
+            if socket_file:
+                p_args.append("--socket-path")
+                p_args.append(socket_file)
+
+            # p_args.append("-b")
 
             if self.log.is_debug:
                 self.log.debug("args: %s", p_args)
