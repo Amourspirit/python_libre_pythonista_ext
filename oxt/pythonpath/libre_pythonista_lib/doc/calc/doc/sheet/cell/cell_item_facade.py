@@ -1,6 +1,6 @@
 # region Imports
 from __future__ import annotations
-from typing import Any, Iterable, Tuple, TYPE_CHECKING
+from typing import Any, Iterable, Tuple, TYPE_CHECKING, Union
 
 from ooodev.calc import CalcCell
 from ooodev.utils.data_type.cell_obj import CellObj
@@ -23,6 +23,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.rule_value.qry_value import QryValue
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.state.qry_module_state import QryModuleState
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.lp_cells.qry_lp_cells_moved import QryLpCellsMoved
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.doc.qry_mode_states_init import QryModeStatesInit
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_t import QryHandlerT
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.module_state_item import ModuleStateItem
@@ -62,6 +63,7 @@ else:
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.state.qry_module_state import QryModuleState
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.state.qry_state_rules_default import QryStateRulesDefault
     from libre_pythonista_lib.cq.qry.calc.sheet.lp_cells.qry_lp_cells_moved import QryLpCellsMoved
+    from libre_pythonista_lib.cq.qry.doc.qry_mode_states_init import QryModeStatesInit
     from libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.module_state_item import ModuleStateItem
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module import PyModule
@@ -136,6 +138,11 @@ class CellItemFacade(LogMixin):
             return result.data
         raise result.error
 
+    def _qry_mode_states_init(self) -> bool:
+        qry = QryModeStatesInit(uid=self._cell.calc_doc.runtime_uid)
+        result = self.qry_handler.handle(qry)
+        return result
+
     def _qry_uri(self) -> str:
         """Gets the URI for the cell, ensuring it has a code name first"""
         key = "qry_uri_result"
@@ -208,7 +215,7 @@ class CellItemFacade(LogMixin):
         qry = QryLpCellsMoved(self.cell.calc_sheet)
         return self.qry_handler.handle(qry)
 
-    def qry_cell_moved_old_new(self) -> Tuple[CellObj, CellObj] | None:
+    def qry_cell_moved_old_new(self) -> Union[Tuple[CellObj, CellObj], None]:
         """Queries if the cell has moved and returns the old and new positions"""
         qry = QryCellMovedOldNew(self._cell)
         result = self.qry_handler.handle(qry)
@@ -245,7 +252,7 @@ class CellItemFacade(LogMixin):
         if not cmd.success:
             self.log.error("Failed to append code.")
 
-    def get_control(self) -> CtlBase | None:
+    def get_control(self) -> Union[CtlBase, None]:
         """Gets the control object attached to the cell"""
         return ctl_director.get_control(self._cell)
 
@@ -302,14 +309,18 @@ class CellItemFacade(LogMixin):
         except Exception as e:
             self.log.debug("auto_update() -Failed to auto-update %s", e)
 
-    def get_matched_rule(self) -> StateRuleT | None:
+    def get_matched_rule(self) -> Union[StateRuleT, None]:
         """Gets the matching state rule for the cell's current state"""
         # do not cache this value. It may change when a cell get updated.
         try:
             state_rules = self._qry_state_rules()
             state = self._qry_module_state()
         except Exception:
-            self.log.exception("Failed to get module state.")
+            mod_states_init = self._qry_mode_states_init()
+            if mod_states_init:
+                self.log.exception("Failed to get module state.")
+            else:
+                self.log.debug("Module States not yet Init")
             return None
 
         return state_rules.get_matched_rule(self._cell, state.dd_data)
@@ -327,12 +338,17 @@ class CellItemFacade(LogMixin):
         """
         Gets the value of the cell.
         """
+
         try:
             result = self._qry_value()
             # self.log.debug("get_value() result: %s", result)
             return result
         except Exception:
-            self.log.exception("get_value() Failed to get module state.")
+            mod_states_init = self._qry_mode_states_init()
+            if mod_states_init:
+                self.log.exception("get_value() Failed to get module state.")
+            else:
+                self.log.debug("Module States not yet Init")
             return ((None,),)
 
     def __repr__(self) -> str:

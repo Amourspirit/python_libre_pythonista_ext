@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, cast, TYPE_CHECKING, Iterable
+from typing import Any, cast, TYPE_CHECKING, Iterable, Union
 from collections import OrderedDict
 
 import pandas as pd
@@ -26,7 +26,7 @@ else:
 # tested in: tests/test_cmd/test_cmd_py_src.py
 
 
-class QrySeries(QryBase, LogMixin, QryCellT[Result[Iterable[Iterable[object]], None] | Result[None, Exception]]):
+class QrySeries(QryBase, LogMixin, QryCellT[Union[Result[Iterable[Iterable[object]], None], Result[None, Exception]]]):
     """
     Query class for handling pandas Series data in LibreOffice Calc cells.
 
@@ -48,7 +48,7 @@ class QrySeries(QryBase, LogMixin, QryCellT[Result[Iterable[Iterable[object]], N
         self._data = data
         self.log.debug("init done for cell %s", cell.cell_obj)
 
-    def _qry_state(self) -> Result[StateKind, None] | Result[None, Exception]:
+    def _qry_state(self) -> Union[Result[StateKind, None], Result[None, Exception]]:
         """
         Query the state of the cell.
 
@@ -83,7 +83,7 @@ class QrySeries(QryBase, LogMixin, QryCellT[Result[Iterable[Iterable[object]], N
             list_2d.insert(0, ["", ds.name])
         return list_2d
 
-    def execute(self) -> Result[Iterable[Iterable[object]], None] | Result[None, Exception]:
+    def execute(self) -> Union[Result[Iterable[Iterable[object]], None], Result[None, Exception]]:
         """
         Execute the query to convert pandas Series data for LibreOffice Calc.
 

@@ -7,7 +7,7 @@ class RuleBase:
     def __init__(self) -> None:
         pass
 
-    def convert(self, value: Any) -> Any:
+    def convert(self, value: Any) -> Any:  # noqa: ANN401
         raise NotImplementedError
 
     def __bool__(self) -> bool:
@@ -16,7 +16,7 @@ class RuleBase:
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__}()>"
 
-    def get_all_date_columns(sefl, df: pd.DataFrame) -> List[str]:
+    def get_all_date_columns(self, df: pd.DataFrame) -> List[str]:
         """
         Gets all the date columns in a DataFrame.
 

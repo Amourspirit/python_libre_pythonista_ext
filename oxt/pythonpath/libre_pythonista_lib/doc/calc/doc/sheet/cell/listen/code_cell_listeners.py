@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, cast, Dict, Generator, Iterator, Iterable, TYPE_CHECKING
+from typing import Any, cast, Dict, Generator, Iterator, Iterable, TYPE_CHECKING, Union
 from contextlib import contextmanager
 
 from ooodev.calc import CalcDoc, CalcCell, CellObj
@@ -161,7 +161,7 @@ class CodeCellListeners(LogMixin):
             self.log.debug("Clearing all listeners")
             self._listeners.clear()
 
-    def _get_calc_cell(self, cell_obj: CellObj) -> CalcCell | None:
+    def _get_calc_cell(self, cell_obj: CellObj) -> Union[CalcCell, None]:
         """
         Get a CalcCell instance for a given CellObj.
 
@@ -169,7 +169,7 @@ class CodeCellListeners(LogMixin):
             cell_obj (CellObj): Cell object to look up
 
         Returns:
-            CalcCell | None: The found cell or None if invalid/not found
+            CalcCell, None: The found cell or None if invalid/not found
         """
         if cell_obj.sheet_idx < 0:
             self.log.error("Invalid sheet index: %s", cell_obj.sheet_idx)
@@ -178,7 +178,7 @@ class CodeCellListeners(LogMixin):
         sheet = doc.sheets[cell_obj.sheet_idx]
         return sheet[cell_obj]
 
-    def qry_code_name(self, calc_cell: CalcCell) -> Result[str, None] | Result[None, Exception]:
+    def qry_code_name(self, calc_cell: CalcCell) -> Union[Result[str, None], Result[None, Exception]]:
         """
         Query the code name for a cell.
 
@@ -191,7 +191,7 @@ class CodeCellListeners(LogMixin):
         qry = QryCodeName(cell=calc_cell)
         return self._qry_handler.handle(qry)
 
-    def get_cell_listener(self, cell_obj: CellObj) -> Result[CodeCellListener, None] | Result[None, Exception]:
+    def get_cell_listener(self, cell_obj: CellObj) -> Union[Result[CodeCellListener, None], Result[None, Exception]]:
         """
         Get the listener for a specific cell.
 
@@ -199,7 +199,7 @@ class CodeCellListeners(LogMixin):
             cell_obj (CellObj): Cell to get the listener for
 
         Returns:
-            CodeCellListener | None: The cell's listener or None if not found
+            CodeCellListener, None: The cell's listener or None if not found
         """
         cell = self._get_calc_cell(cell_obj)
         if cell is None:
@@ -215,7 +215,7 @@ class CodeCellListeners(LogMixin):
             return Result.failure(Exception("Cell listener not found"))
         return Result.success(self[code_name])
 
-    def get(self, code_name: str) -> Result[CodeCellListener, None] | Result[None, Exception]:
+    def get(self, code_name: str) -> Union[Result[CodeCellListener, None], Result[None, Exception]]:
         """
         Get a listener by its code name.
 
@@ -223,14 +223,14 @@ class CodeCellListeners(LogMixin):
             code_name (str): Code name to look up
 
         Returns:
-            CodeCellListener | None: The listener or None if not found
+            CodeCellListener, None: The listener or None if not found
         """
         if code_name in self:
             return Result.success(self[code_name])
         self.log.warning("Listener not found: %s", code_name)
         return Result.failure(Exception("Listener not found"))
 
-    def pop(self, code_name: str) -> Result[CodeCellListener, None] | Result[None, Exception]:
+    def pop(self, code_name: str) -> Union[Result[CodeCellListener, None], Result[None, Exception]]:
         """
         Remove and return a listener by its code name.
 
@@ -238,7 +238,7 @@ class CodeCellListeners(LogMixin):
             code_name (str): Code name of the listener to remove
 
         Returns:
-            CodeCellListener | None: The removed listener or None if not found
+            CodeCellListener, None: The removed listener or None if not found
         """
         if code_name in self:
             listener = self[code_name]
@@ -254,7 +254,7 @@ class CodeCellListeners(LogMixin):
         self.log.warning("Listener not found: %s", code_name)
         return Result.failure(Exception("Listener not found"))
 
-    def add_listener(self, cell: CalcCell) -> Result[CodeCellListener, None] | Result[None, Exception]:
+    def add_listener(self, cell: CalcCell) -> Union[Result[CodeCellListener, None], Result[None, Exception]]:
         """
         Add a new listener to a cell.
 
@@ -262,7 +262,7 @@ class CodeCellListeners(LogMixin):
             cell (CalcCell): Cell to add the listener to
 
         Returns:
-            Result[CodeCellListener, None] | Result[None, Exception]: The created listener or None if failed
+            Result[CodeCellListener, None], Result[None, Exception]: The created listener or None if failed
         """
         code_name_qry = self.qry_code_name(cell)
         if Result.is_failure(code_name_qry):

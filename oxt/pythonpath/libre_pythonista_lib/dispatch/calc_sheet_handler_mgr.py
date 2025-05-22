@@ -1,10 +1,8 @@
 from __future__ import annotations
-from typing import Any, Dict, TYPE_CHECKING
+from typing import Any, Dict, TYPE_CHECKING, Union
 from urllib.parse import parse_qs
-
 from com.sun.star.frame import XDispatch
 from com.sun.star.util import URL
-
 from ooodev.loader import Lo
 from ooodev.events.args.event_args import EventArgs
 from ooodev.events.args.cancel_event_args import CancelEventArgs
@@ -43,7 +41,7 @@ class CalcSheetHandlerMgr:
         query_dict = parse_qs(query)
         return {k: v[0] for k, v in query_dict.items()}
 
-    def query_dispatch(self, URL: URL, TargetFrameName: str, SearchFlags: int) -> XDispatch | None:  # type: ignore # noqa: N802, N803
+    def query_dispatch(self, URL: URL, TargetFrameName: str, SearchFlags: int) -> Union[XDispatch, None]:  # type: ignore # noqa: N802, N803
         log = LogInst()
         se = SharedEvent()
         doc = Lo.current_doc

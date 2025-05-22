@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any
+from typing import Any, Union
 from abc import ABC
 from ...lo_util.gen_util import NULL_OBJ
 
@@ -8,7 +8,7 @@ class AbstractEvent(ABC):
     # https://stackoverflow.com/questions/472000/usage-of-slots
     __slots__ = ()
 
-    def __init__(self, source: Any) -> None:
+    def __init__(self, source: Any) -> None:  # noqa: ANN401
         """
         Constructor
 
@@ -26,7 +26,7 @@ class AbstractEvent(ABC):
     event_data: Any
     """Gets/Sets any extra data associated with the event"""
 
-    def get(self, key: str, default: Any = NULL_OBJ) -> Any:
+    def get(self, key: str, default: Any = NULL_OBJ) -> Any:  # noqa: ANN401
         """
         Gets user data from event.
 
@@ -47,7 +47,7 @@ class AbstractEvent(ABC):
             return self._kv_data[key]
         return self._kv_data.get(key, default)
 
-    def set(self, key: str, value: Any, allow_overwrite: bool = True) -> bool:
+    def set(self, key: str, value: Any, allow_overwrite: bool = True) -> bool:  # noqa: ANN401
         """
         Sets a key value pair for event instance.
 
@@ -112,7 +112,7 @@ class AbstractEvent(ABC):
         return self._event_name
 
     @property
-    def event_source(self) -> Any | None:
+    def event_source(self) -> Union[Any, None]:  # noqa: ANN401
         """
         Gets the event source for these args
         """

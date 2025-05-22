@@ -65,7 +65,7 @@ class PandasDfConverter:
         # self._log.debug(f"add_rule_at() Rule {rule} registered at index {index}.")
         self._rules.insert(index, rule)
 
-    def remove_rule(self, rule: Type[PdRuleT]):
+    def remove_rule(self, rule: Type[PdRuleT]) -> None:
         """
         Unregister Rule
 
@@ -82,7 +82,7 @@ class PandasDfConverter:
             msg = f"{self.__class__.__name__}.unregister_rule() Unable to unregister rule."
             raise ValueError(msg) from e
 
-    def remove_rule_at(self, index: int):
+    def remove_rule_at(self, index: int) -> None:
         """
         Unregister Rule at index
 
@@ -100,10 +100,10 @@ class PandasDfConverter:
             # self._log.error(msg, exc_info=True)
             raise ValueError(msg) from e
 
-    def _reg_rule(self, rule: Type[PdRuleT]):
+    def _reg_rule(self, rule: Type[PdRuleT]) -> None:
         self._rules.append(rule)
 
-    def _register_known_rules(self):
+    def _register_known_rules(self) -> None:
         return
 
     def apply_rules(self, value: pd.DataFrame) -> pd.DataFrame:

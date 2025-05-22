@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import cast, TYPE_CHECKING
+from typing import cast, TYPE_CHECKING, Union
 
 from ooodev.utils.gen_util import NULL_OBJ
 
@@ -34,7 +34,7 @@ class CmdArrayAbilityDel(CmdBase, LogMixin, CmdCellT):
         LogMixin.__init__(self)
         self._cell = cell
         self._keys = cast("KeyMaker", NULL_OBJ)
-        self._current_state = cast(bool | None, NULL_OBJ)
+        self._current_state = cast(Union[bool, None], NULL_OBJ)
         self._state_changed = False
         self.log.debug("init done for cell %s", cell.cell_obj)
 
@@ -42,7 +42,7 @@ class CmdArrayAbilityDel(CmdBase, LogMixin, CmdCellT):
         qry = QryKeyMaker()
         return self._execute_qry(qry)
 
-    def _get_current_state(self) -> bool | None:
+    def _get_current_state(self) -> Union[bool, None]:
         qry = QryArrayAbility(cell=self.cell)
         result = self._execute_qry(qry)
         if Result.is_success(result):

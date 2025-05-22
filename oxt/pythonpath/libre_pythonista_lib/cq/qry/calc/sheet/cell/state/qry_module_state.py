@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING, Union, Optional
 
 from ooodev.calc import CalcCell
 
@@ -26,7 +26,7 @@ else:
 # Both PyModuleState and PySourceManager are singletons per module.
 
 
-class QryModuleState(QryBase, QryCellT[Result[ModuleStateItem, None] | Result[None, Exception]]):
+class QryModuleState(QryBase, QryCellT[Union[Result[ModuleStateItem, None], Result[None, Exception]]]):
     """
     Query class that retrieves the module state for a given cell and Python module.
 
@@ -37,7 +37,7 @@ class QryModuleState(QryBase, QryCellT[Result[ModuleStateItem, None] | Result[No
         mod (PyModuleT, optional): The Python module to query the state from. Defaults to None.
     """
 
-    def __init__(self, cell: CalcCell, mod: PyModuleT | None = None) -> None:
+    def __init__(self, cell: CalcCell, mod: Optional[PyModuleT] = None) -> None:
         """
         Initialize the query with a cell and module.
 
@@ -69,7 +69,7 @@ class QryModuleState(QryBase, QryCellT[Result[ModuleStateItem, None] | Result[No
         qry = QryPySrcMgrCode(doc=self.cell.calc_doc, mod=self.mod)
         return self._execute_qry(qry)
 
-    def execute(self) -> Result[ModuleStateItem, None] | Result[None, Exception]:
+    def execute(self) -> Union[Result[ModuleStateItem, None], Result[None, Exception]]:
         """
         Execute the query to get the module state for the cell.
 

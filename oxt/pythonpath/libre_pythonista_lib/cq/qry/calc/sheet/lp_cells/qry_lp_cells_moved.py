@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional, Union
 
 from ooodev.calc import CalcSheet, CalcCell
 from ooodev.utils.data_type.cell_obj import CellObj
@@ -41,7 +41,7 @@ class QryLpCellsMoved(QryBase, LogMixin, QrySheetCacheT[bool]):
     Inherits from QryBase, LogMixin, and QrySheetCacheT[bool].
     """
 
-    def __init__(self, sheet: CalcSheet, mod: PyModuleT | None = None) -> None:
+    def __init__(self, sheet: CalcSheet, mod: Optional[PyModuleT] = None) -> None:
         """
         Initialize the query.
 
@@ -66,7 +66,7 @@ class QryLpCellsMoved(QryBase, LogMixin, QrySheetCacheT[bool]):
         qry = QryPySrcMgr(doc=self._sheet.calc_doc, mod=self._mod)
         return self._execute_qry(qry)
 
-    def _qry_address(self, cell: CalcCell) -> Addr | None:
+    def _qry_address(self, cell: CalcCell) -> Union[Addr, None]:
         """
         Query the address of a cell.
 
@@ -74,7 +74,7 @@ class QryLpCellsMoved(QryBase, LogMixin, QrySheetCacheT[bool]):
             cell: The CalcCell to get the address for
 
         Returns:
-            Addr | None: The cell's address or None if query fails
+            Addr, None: The cell's address or None if query fails
         """
         qry = QryAddr(cell=cell)
         qry_result = self._execute_qry(qry)
@@ -83,7 +83,7 @@ class QryLpCellsMoved(QryBase, LogMixin, QrySheetCacheT[bool]):
         self.log.debug("_qry_address() Address not found")
         return None
 
-    def _qry_lp_cell_last(self) -> CellObj | None:
+    def _qry_lp_cell_last(self) -> Union[CellObj, None]:
         """
         Query the last Python source cell in the sheet.
 
@@ -96,12 +96,12 @@ class QryLpCellsMoved(QryBase, LogMixin, QrySheetCacheT[bool]):
             return result.data
         return None
 
-    def _get_last_cell(self) -> PySource | None:
+    def _get_last_cell(self) -> Union[PySource, None]:
         """
         Get the last Python source cell from the source manager.
 
         Returns:
-            PySource | None: The last source cell or None if none exists
+            PySource, None: The last source cell or None if none exists
         """
         mgr = self._qry_py_src_mgr()
         return mgr.get_last_item()

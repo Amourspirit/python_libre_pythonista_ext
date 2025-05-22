@@ -51,32 +51,33 @@ class UnLoadingJob(XJob, unohelper.Base):
         unohelper.Base.__init__(self)
         self.ctx = ctx
         self.document = None
-        self._logger = self._get_local_logger()
+        self._log = self._get_local_logger()
+        self._log.debug("init Done")
 
     # endregion Init
 
     # region execute
     @override
     def execute(self, Arguments: Any) -> None:  # type: ignore  # noqa: ANN401, N803
-        self._logger.debug("execute")
+        self._log.debug("execute")
         try:
             arg1 = Arguments[0]
 
             for struct in arg1.Value:
-                self._logger.debug("Struct: %s", struct.Name)
+                self._log.debug("Struct: %s", struct.Name)
                 if struct.Name == "Model":
                     self.document = struct.Value
-                    self._logger.debug("Document Found")
+                    self._log.debug("Document Found")
             if self.document is None:
-                self._logger.debug("Document is None")
+                self._log.debug("Document is None")
                 return
             if self.document.supportsService("com.sun.star.sheet.SpreadsheetDocument"):
-                self._logger.debug("Document Loading is a spreadsheet")
+                self._log.debug("Document Loading is a spreadsheet")
             else:
-                self._logger.debug("Document Loading not a spreadsheet")
+                self._log.debug("Document Loading not a spreadsheet")
 
         except Exception:
-            self._logger.error("Error getting current document", exc_info=True)
+            self._log.error("Error getting current document", exc_info=True)
             return
 
     # endregion execute

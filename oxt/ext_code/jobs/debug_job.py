@@ -1,8 +1,9 @@
 # region imports
 from __future__ import unicode_literals, annotations
-from typing import Any, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING, Tuple
 import contextlib
 import os
+import sys
 
 
 import unohelper
@@ -28,8 +29,8 @@ if TYPE_CHECKING:
 
     # just for design time
     _CONDITIONS_MET = True
-    from ...___lo_pip___.oxt_logger import OxtLogger
-    from ...___lo_pip___.basic_config import BasicConfig
+    from oxt.___lo_pip___.oxt_logger import OxtLogger
+    from oxt.___lo_pip___.config import Config
     import debugpy  # type: ignore
 
 else:
@@ -37,14 +38,30 @@ else:
     def override(func):  # noqa: ANN001, ANN201
         return func
 
+    def try_log(msg: str) -> None:
+        try:
+            from ___lo_pip___.oxt_logger import OxtLogger  # type: ignore
+
+            log = OxtLogger(log_name="DebugJob")
+            log.warning(msg)
+
+        except Exception:
+            pass
+
     _CONDITIONS_MET = _conditions_met()
     if _CONDITIONS_MET:
-        import debugpy
-
         try:
-            from ___lo_pip___.basic_config import BasicConfig
+            from ___lo_pip___.config import Config
         except (ModuleNotFoundError, ImportError):
             _CONDITIONS_MET = False
+            try_log("Config not found")
+        if _CONDITIONS_MET:
+            try:
+                import debugpy
+            except (ModuleNotFoundError, ImportError) as e:
+                _CONDITIONS_MET = False
+                try_log(f"debugpy not found. {e}")
+
 # endregion imports
 
 
@@ -56,15 +73,16 @@ class DebugJob(unohelper.Base, XJob):
     SERVICE_NAMES = ("com.sun.star.task.Job",)
 
     @classmethod
-    def get_imple(cls):
+    def get_imple(cls) -> Tuple[Any, str, Tuple[str, ...]]:
         return (cls, cls.IMPLE_NAME, cls.SERVICE_NAMES)
 
     # region Init
 
-    def __init__(self, ctx):
+    def __init__(self, ctx: object) -> None:
         self.ctx = ctx
         self.document = None
         self._log = self._get_local_logger()
+        self._log.debug("init Done")
 
     # endregion Init
 
@@ -83,10 +101,25 @@ class DebugJob(unohelper.Base, XJob):
                 if os.getenv("LIBREOFFICE_DEBUG_ATTACHED") == "1":
                     self._log.debug("Debugger already attached.")
                     return
-                basic_config = BasicConfig()
+                cfg = Config()
+
                 # Start the debug server
-                if basic_config.libreoffice_debug_port > 0:
-                    debugpy.listen(("localhost", basic_config.libreoffice_debug_port))
+                if cfg.libreoffice_debug_port > 0:
+                    is_windows = sys.platform == "win32"
+                    print(f"Waiting for debugger attach on port  {cfg.libreoffice_debug_port}")
+                    self._log.info("Waiting for debugger attach on port %i ...", cfg.libreoffice_debug_port)
+                    if is_windows:
+                        exe = sys.executable
+                        try:
+                            # see: https://github.com/microsoft/debugpy/issues/262
+                            sys.executable = cfg.python_path
+                            self._log.debug("Windows so temporary setting sys.executable to %s", sys.executable)
+                            debugpy.listen(cfg.libreoffice_debug_port)
+                        finally:
+                            sys.executable = exe
+                    else:
+                        debugpy.listen(cfg.libreoffice_debug_port)
+                    # debugpy.listen(("127.0.0.1", basic_config.libreoffice_debug_port))
                 else:
                     self._log.warning(
                         "Debug port not set. Must be set in tool.oxt.token.libreoffice_debug_port of pyproject.toml file. Contact the developer."
@@ -94,8 +127,8 @@ class DebugJob(unohelper.Base, XJob):
                     return
 
                 # Pause execution until debugger is attached
-                print(f"Waiting for debugger attach on port  {basic_config.libreoffice_debug_port}")
-                self._log.debug("Waiting for debugger attach on port %i ...", basic_config.libreoffice_debug_port)
+                # print(f"Waiting for debugger attach on port  {basic_config.libreoffice_debug_port}")
+                # self._log.debug("Waiting for debugger attach on port %i ...", basic_config.libreoffice_debug_port)
                 debugpy.wait_for_client()
                 # debugpy.trace_this_thread(True)
                 os.environ.pop("ENABLE_LIBREOFFICE_DEBUG")
@@ -126,7 +159,6 @@ class DebugJob(unohelper.Base, XJob):
 
 # region Implementation
 
-g_TypeTable = {}  # noqa: N816
 g_ImplementationHelper = unohelper.ImplementationHelper()  # noqa: N816
 g_ImplementationHelper.addImplementation(*DebugJob.get_imple())
 

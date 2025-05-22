@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 from ooodev.calc import CalcDoc
 
@@ -29,7 +29,7 @@ class QryPySrcMgrCode(QryBase, QryT[PySourceManager]):
     in a LibreOffice Calc document.
     """
 
-    def __init__(self, doc: CalcDoc, mod: PyModuleT | None = None) -> None:
+    def __init__(self, doc: CalcDoc, mod: Optional[PyModuleT] = None) -> None:
         """
         Initialize the query with a cell and optional Python module.
 

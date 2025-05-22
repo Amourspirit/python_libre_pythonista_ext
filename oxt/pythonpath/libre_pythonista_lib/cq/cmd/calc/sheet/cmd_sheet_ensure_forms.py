@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import cast, TYPE_CHECKING, Any
+from typing import cast, TYPE_CHECKING, Any, Union
 
 from ooodev.utils.gen_util import NULL_OBJ
 
@@ -37,12 +37,12 @@ class CmdSheetEnsureForms(CmdBase, LogMixin, CmdSheetT):
         self.kind = CalcCmdKind.SHEET
         self._sheet = sheet
         self._has_calc_event = cast(bool, NULL_OBJ)
-        self._current_form = cast(CalcForm | None, NULL_OBJ)
+        self._current_form = cast(Union[CalcForm, None], NULL_OBJ)
         self._added_form1 = False
         self._added_form_lp = False
         self.log.debug("init done for sheet %s", sheet.name)
 
-    def _get_current_form(self) -> CalcForm | None:
+    def _get_current_form(self) -> Union[CalcForm, None]:
         qry = QryLpForm(sheet=self._sheet)
         return self._execute_qry(qry)
 

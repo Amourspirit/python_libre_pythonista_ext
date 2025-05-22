@@ -2,7 +2,7 @@ from __future__ import annotations
 import os
 
 import subprocess
-from typing import Any, Dict
+from typing import Any, Dict, Union
 from pathlib import Path
 from importlib.metadata import PackageNotFoundError, version
 
@@ -34,12 +34,12 @@ class InstallPkg:
         self._logger = OxtLogger(log_name=__name__)
         self._flag_upgrade = flag_upgrade
 
-    def install(self, req: Dict[str, str] | None = None, force: bool = False) -> bool:
+    def install(self, req: Union[Dict[str, str], None] = None, force: bool = False) -> bool:
         """
         Install all the packages in the configuration if they are not already installed and meet requirements.
 
         Args:
-            req (Dict[str, str] | None, optional): The requirements to install.
+            req (Dict[str, str], None, optional): The requirements to install.
                 If omitted then requirements from config are used. Defaults to None.
             force (bool, optional): Force install even if package is already installed. Defaults to False.
 
@@ -66,12 +66,12 @@ class InstallPkg:
             self._logger.error("Not all package were installed!")
         return result
 
-    def install_file(self, pth: str | Path, force: bool = False) -> bool:
+    def install_file(self, pth: Union[str, Path], force: bool = False) -> bool:
         """
         Install a package from a file.
 
         Args:
-            pth (str | Path): The path to the file to install.
+            pth (str, Path): The path to the file to install.
             force (bool, optional): Force install even if package is already installed. Defaults to False.
 
         Returns:
@@ -128,37 +128,37 @@ class InstallPkg:
             self._logger.error("Not all package were uninstalled!")
         return result
 
-    def _install_default(self, req: Dict[str, str] | None, force: bool) -> bool:
+    def _install_default(self, req: Union[Dict[str, str], None], force: bool) -> bool:
         from .pkg_installers.install_pkg import InstallPkg
 
         installer = InstallPkg(ctx=self.ctx, flag_upgrade=self._flag_upgrade)
         return installer.install(req=req, force=force)
 
-    def _install_win(self, req: Dict[str, str] | None, force: bool) -> bool:
+    def _install_win(self, req: Union[Dict[str, str], None], force: bool) -> bool:
         from .pkg_installers.install_pkg_win import InstallPkgWin
 
         installer = InstallPkgWin(ctx=self.ctx, flag_upgrade=self._flag_upgrade)
         return installer.install(req=req, force=force)
 
-    def _install_default_file(self, pth: str | Path, force: bool = False) -> bool:
+    def _install_default_file(self, pth: Union[str, Path], force: bool = False) -> bool:
         from .pkg_installers.install_pkg import InstallPkg
 
         installer = InstallPkg(ctx=self.ctx, flag_upgrade=self._flag_upgrade)
         return installer.install_file(pth=pth, force=force)
 
-    def _install_win_file(self, pth: str | Path, force: bool = False) -> bool:
+    def _install_win_file(self, pth: Union[str, Path], force: bool = False) -> bool:
         from .pkg_installers.install_pkg_win import InstallPkgWin
 
         installer = InstallPkgWin(ctx=self.ctx, flag_upgrade=self._flag_upgrade)
         return installer.install_file(pth=pth, force=force)
 
-    def _install_flatpak(self, req: Dict[str, str] | None, force: bool) -> bool:
+    def _install_flatpak(self, req: Union[Dict[str, str], None], force: bool) -> bool:
         from .pkg_installers.install_pkg_flatpak import InstallPkgFlatpak
 
         installer = InstallPkgFlatpak(ctx=self.ctx, flag_upgrade=self._flag_upgrade)
         return installer.install(req=req, force=force)
 
-    def _install_flatpak_file(self, pth: str | Path, force: bool = False) -> bool:
+    def _install_flatpak_file(self, pth: Union[str, Path], force: bool = False) -> bool:
         from .pkg_installers.install_pkg_flatpak import InstallPkgFlatpak
 
         installer = InstallPkgFlatpak(ctx=self.ctx, flag_upgrade=self._flag_upgrade)

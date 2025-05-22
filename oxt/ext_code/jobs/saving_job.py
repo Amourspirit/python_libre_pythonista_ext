@@ -95,6 +95,7 @@ class SavingJob(XJob, unohelper.Base):
             self._fn_on_get_current = self._on_get_current
             self._events = LoEvents()
             self._events.on(GET_CURRENT_EVENT, self._fn_on_get_current)
+        self._log.debug("init Done")
 
     # endregion Init
 

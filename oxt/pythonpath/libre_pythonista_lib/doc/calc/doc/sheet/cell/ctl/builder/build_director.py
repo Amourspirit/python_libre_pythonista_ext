@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Type, overload
+from typing import TYPE_CHECKING, Type, overload, Union
 
 try:
     from typing import Literal  # type: ignore
@@ -44,7 +44,7 @@ else:
 # tested in: tests/test_doc/test_calc/test_doc/test_sheet/test_cell/test_ctl/test_ctl_builder.py
 
 
-def _get_control_class(ctl_kind: CtlKind) -> Type[CtlBuilder] | None:
+def _get_control_class(ctl_kind: CtlKind) -> Union[Type[CtlBuilder], None]:
     """
     Gets the control class for the given control kind.
 
@@ -52,7 +52,7 @@ def _get_control_class(ctl_kind: CtlKind) -> Type[CtlBuilder] | None:
         ctl_kind (CtlKind): The kind of control to get the class for
 
     Returns:
-        Type[CtlBase] | None: The control class or None if not found
+        Type[CtlBase], None: The control class or None if not found
     """
     # Import controls here to avoid circular imports
     if not TYPE_CHECKING:

@@ -9,7 +9,7 @@ from ..config import Config
 
 
 class Progress:
-    def __init__(self, start_msg: str, title: str = "Terminal"):
+    def __init__(self, start_msg: str, title: str = "Terminal") -> None:
         self._start_msg = start_msg
         self._title = title
         self._config = Config()
@@ -20,9 +20,7 @@ class Progress:
     def start(self) -> None:
         """Start the progress indicator as a terminal window."""
         if self._progress_obj is None:
-            self._logger.debug(
-                "No terminal found. Progress indicator will not be shown."
-            )
+            self._logger.debug("No terminal found. Progress indicator will not be shown.")
             return
         self._progress_obj.start(msg=self._start_msg, title=self._title)
 

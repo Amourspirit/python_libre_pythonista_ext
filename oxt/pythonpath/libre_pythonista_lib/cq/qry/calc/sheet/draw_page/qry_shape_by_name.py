@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 
 from ooodev.exceptions.ex import ShapeMissingError
 from ooodev.calc import CalcSheet, SpreadsheetDrawPage
@@ -20,7 +20,9 @@ else:
 
 
 class QryShapeByName(
-    QryBase, LogMixin, QrySheetT[Result[DrawShape[SpreadsheetDrawPage[CalcSheet]], None] | Result[None, Exception]]
+    QryBase,
+    LogMixin,
+    QrySheetT[Union[Result[DrawShape[SpreadsheetDrawPage[CalcSheet]], None], Result[None, Exception]]],
 ):
     def __init__(self, sheet: CalcSheet, shape_name: str) -> None:
         QryBase.__init__(self)
@@ -30,7 +32,7 @@ class QryShapeByName(
         self._sheet = sheet
         self.log.debug("init done for sheet %s for shape %s", sheet.name, shape_name)
 
-    def execute(self) -> Result[DrawShape[SpreadsheetDrawPage[CalcSheet]], None] | Result[None, Exception]:
+    def execute(self) -> Union[Result[DrawShape[SpreadsheetDrawPage[CalcSheet]], None], Result[None, Exception]]:
         """
         Executes the query to get the shape.
 

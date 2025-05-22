@@ -36,9 +36,12 @@ class TopListenerRng(XTopWindowListener, LogMixin, unohelper.Base):
     def __init__(self, doc: CalcDoc) -> None:
         XTopWindowListener.__init__(self)
         unohelper.Base.__init__(self)
+        LogMixin.__init__(self)
         # assigning tk to class is important.
         # if not assigned then tk goes out of scope after class __init__() is called
         # and dispose is called right after __init__()
+        self.log.debug("Init")
+        self._top = None
         self._doc = doc
         try:
             self._top = self._doc.get_top_window()

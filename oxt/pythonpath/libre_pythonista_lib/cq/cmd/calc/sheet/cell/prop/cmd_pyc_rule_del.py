@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import cast, TYPE_CHECKING
+from typing import cast, TYPE_CHECKING, Union
 
 from ooodev.utils.gen_util import NULL_OBJ
 
@@ -50,7 +50,7 @@ class CmdPycRuleDel(CmdBase, LogMixin, CmdCellT):
         qry = QryKeyMaker()
         return self._execute_qry(qry)
 
-    def _get_current_state(self) -> RuleNameKind | None:
+    def _get_current_state(self) -> Union[RuleNameKind, None]:
         qry = QryPycRule(cell=self.cell)
         result = self._execute_qry(qry)
         if Result.is_success(result):

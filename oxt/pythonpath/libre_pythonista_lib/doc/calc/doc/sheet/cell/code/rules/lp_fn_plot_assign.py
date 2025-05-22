@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import cast, TYPE_CHECKING
+from typing import cast, TYPE_CHECKING, Optional
 import ast
 import types
 from ooodev.utils.helper.dot_dict import DotDict
@@ -18,8 +18,11 @@ class LpFnPlotAssign:
 
     def __init__(self) -> None:
         self._result = None
+        self.mod = None
+        self.code = None
+        self.ast_mod = None
 
-    def set_values(self, mod: types.ModuleType, code: str, ast_mod: ast.Module | None) -> None:
+    def set_values(self, mod: types.ModuleType, code: str, ast_mod: Optional[ast.Module]) -> None:
         """
         Set the values for the class.
 

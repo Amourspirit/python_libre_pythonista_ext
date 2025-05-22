@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, List, TYPE_CHECKING
+from typing import Any, List, TYPE_CHECKING, Union
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcDoc
@@ -35,6 +35,7 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.cmd_register_dispatch_interceptor import (
         CmdRegisterDispatchInterceptor,
     )
+    from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.cmd_doc_event_mgr import CmdDocEventMgr
 
 else:
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module import PyModule
@@ -62,6 +63,7 @@ else:
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.utils.custom_ext import override
     from libre_pythonista_lib.utils.result import Result
+    from libre_pythonista_lib.cq.cmd.calc.doc.cmd_doc_event_mgr import CmdDocEventMgr
 
     PyModuleT = Any
 
@@ -80,6 +82,7 @@ class CmdInitDoc(CmdBase, List[CmdT], LogMixin, CmdDocT):
         self.log.debug("init entered for doc %s", doc.runtime_uid)
         self.append(CmdDocCustomProp(doc=doc, name=LP_DOCUMENT, value=True))
         self.append(CmdDocEvent(doc=doc))
+        self.append(CmdDocEventMgr(doc=doc))
         self.append(CmdCodeSheetActivation(doc=doc))
         self.append(CmdSheetsModified(doc=doc))
         self.append(CmdSheetActivation(doc=doc))
@@ -92,7 +95,7 @@ class CmdInitDoc(CmdBase, List[CmdT], LogMixin, CmdDocT):
         self._doc = doc
         self.log.debug("init done for doc %s", doc.runtime_uid)
 
-    def _get_globals(self) -> DocGlobals | None:
+    def _get_globals(self) -> Union[DocGlobals, None]:
         qry = QryDocGlobals()
         qry_result = self._execute_qry(qry)
         if Result.is_success(qry_result):

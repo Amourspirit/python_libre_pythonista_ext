@@ -3,7 +3,7 @@ import logging
 import sys
 import contextlib
 from pathlib import Path
-from typing import Any, Callable, TYPE_CHECKING
+from typing import Any, Callable, TYPE_CHECKING, Optional
 from logging import Logger
 from logging.handlers import TimedRotatingFileHandler
 from ooodev.loader import Lo
@@ -17,13 +17,13 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.event.shared_event import SharedEvent
     from oxt.pythonpath.libre_pythonista_lib.log.event_log_handler import EventLogHandler
     from oxt.pythonpath.libre_pythonista_lib.doc.doc_globals import DocGlobals
-    from oxt.pythonpath.libre_pythonista_lib.const.event_const import LOG_PY_LOGGER_RESET, GBL_DOC_CLOSING
+    from oxt.pythonpath.libre_pythonista_lib.const.event_const import LOG_PY_LOGGER_RESET
 else:
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
     from libre_pythonista_lib.event.shared_event import SharedEvent
     from libre_pythonista_lib.log.event_log_handler import EventLogHandler
     from libre_pythonista_lib.doc.doc_globals import DocGlobals
-    from libre_pythonista_lib.const.event_const import LOG_PY_LOGGER_RESET, GBL_DOC_CLOSING
+    from libre_pythonista_lib.const.event_const import LOG_PY_LOGGER_RESET
 
 _KEY = "libre_pythonista_lib.log.py_logger.PyLogger"
 
@@ -303,12 +303,12 @@ class PyLogger(Logger):
     # endregion Properties
 
     @classmethod
-    def reset_instance(cls, doc: OfficeDocumentT | None = None) -> None:
+    def reset_instance(cls, doc: Optional[OfficeDocumentT] = None) -> None:
         """
         Reset the Singleton instance(s).
 
         Args:
-            doc (CalcDoc | None, optional): Calc Doc or None. If None all cached instances are cleared. Defaults to None.
+            doc (CalcDoc, optional): Calc Doc or None. If None all cached instances are cleared. Defaults to None.
         """
 
         se = SharedEvent(doc=doc)

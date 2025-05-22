@@ -7,7 +7,7 @@ from ooo.dyn.table.cell_address import CellAddress
 from ooo.dyn.beans.property_attribute import PropertyAttributeEnum
 from ooodev.calc import CalcDoc
 from ooodev.form.controls.form_ctl_hidden import FormCtlHidden
-from ooodev.utils import gen_util as gUtil
+from ooodev.utils import gen_util as gUtil  # noqa: N812
 
 
 if TYPE_CHECKING:
@@ -33,7 +33,7 @@ else:
 
 
 class PythonCode:
-    def __init__(self, ctx: Any, verify_is_formula: bool = False):
+    def __init__(self, ctx: Any, verify_is_formula: bool = False) -> None:  # noqa: ANN401
         self._ctx = ctx
         self._hidden_name = "PythonCodeHiddenID"
         self._verify_is_formula = verify_is_formula
@@ -41,7 +41,7 @@ class PythonCode:
         self._doc = CalcDoc.from_current_doc()
         self._addr = self.get_formula_addr()
 
-    def _is_py_formula(self, formula: Any) -> bool:
+    def _is_py_formula(self, formula: Any) -> bool:  # noqa: ANN401
         with self._log.indent(True):
             if not formula:
                 self._log.debug("_is_py_formula: formula is None")
@@ -51,7 +51,7 @@ class PythonCode:
                 return False
             return formula.lower().startswith(("=py(", "{=py(")) and formula.endswith((")", ")}"))
 
-    def get_formula_addr(self) -> CellAddress | None:
+    def get_formula_addr(self) -> Union[CellAddress, None]:
         with self._log.indent(True):
             sel = self._doc.get_selection()
             if sel is None:
@@ -92,7 +92,7 @@ class PythonCode:
                     )
                     return CellAddress(rng_addr.Sheet, rng_addr.StartColumn, rng_addr.StartRow)
                 formula = sel_cells.getArrayFormula()  # type: ignore
-                self._log.debug(f"get_formula_addr: formula:{formula}")
+                self._log.debug("get_formula_addr: formula: %s", formula)
                 if self._is_py_formula(formula):
                     rng_addr = sel_cells.getRangeAddress()  # type: ignore
                     self._log.debug(
@@ -132,7 +132,7 @@ class PythonCode:
             psa = self._doc.python_script
             with contextlib.suppress(Exception):
                 return psa.read_file(file_name)
-            self._log.debug(f"get_code: file_name:{file_name} not found")
+            self._log.debug("get_code: file_name:%s not found", file_name)
         return ""
 
     def save_code(self, code: str) -> None:
@@ -143,9 +143,9 @@ class PythonCode:
             psa = self._doc.python_script
             psa.test_compile_python(code)
             file_name = self._get_file_name()
-            self._log.debug(f"save_code: filename:{file_name}")
+            self._log.debug("save_code: filename:%s", file_name)
             psa.write_file(file_name, code, mode="w")
-            self._log.debug(f"save_code: code saved")
+            self._log.debug("save_code: code saved")
 
     def _get_sheet_id(self) -> str:
         # need to get a unique id for the sheet.
@@ -166,14 +166,14 @@ class PythonCode:
                     self._log.debug("_get_sheet_id: Hidden control found")
                     ctl = FormCtlHidden(frm.get_by_name(self._hidden_name), self._doc.lo_inst)
                     sheet_id = cast(str, ctl.get_property("sheet_id"))
-                    self._log.debug(f"_get_sheet_id: sheet_id:{sheet_id}")
+                    self._log.debug("_get_sheet_id: sheet_id:%s", sheet_id)
                     return sheet_id
                 self._log.debug("_get_sheet_id: Hidden control not found. Creating a new Hidden control")
                 ctl = frm.insert_control_hidden(name=self._hidden_name)
                 ctl.hidden_value = "SheetId"
                 str_id = gUtil.Util.generate_random_string(10)
                 ctl.add_property("sheet_id", PropertyAttributeEnum.CONSTRAINED, str_id)
-                self._log.debug(f"_get_sheet_id: returning str_id:{str_id}")
+                self._log.debug("_get_sheet_id: returning str_id:%s", str_id)
                 return str_id
             except Exception as e:
                 self._log.error(f"_get_sheet_id: {e}", exc_info=True)

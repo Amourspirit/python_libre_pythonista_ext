@@ -1,13 +1,6 @@
 from __future__ import annotations
 from typing import Dict, Tuple, TYPE_CHECKING
 
-try:
-    # python 3.12+
-    from typing import override  # type: ignore
-except ImportError:
-    from typing_extensions import override
-
-import uno
 import unohelper
 from com.sun.star.frame import XDispatch
 from com.sun.star.beans import PropertyValue
@@ -21,24 +14,26 @@ from ooodev.utils.data_type.range_values import RangeValues
 
 if TYPE_CHECKING:
     from com.sun.star.frame import XStatusListener
-    from ....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from oxt.___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
 else:
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from libre_pythonista_lib.utils.custom_ext import override
 
 
 class DispatchCellSelectRecalc(unohelper.Base, XDispatch):
     """If the View is not in PY_OBJ state the it is switched into PY_OBJ State."""
 
-    def __init__(self, sheet: str, cell: str):
+    def __init__(self, sheet: str, cell: str) -> None:
         super().__init__()
         self._sheet = sheet
         self._cell = cell
         self._log = OxtLogger(log_name=self.__class__.__name__)
-        self._log.debug(f"init: sheet={sheet}, cell={cell}")
+        self._log.debug("init: sheet=%s, cell=%s", sheet, cell)
         self._status_listeners: Dict[str, XStatusListener] = {}
 
     @override
-    def addStatusListener(self, Control: XStatusListener, URL: URL) -> None:
+    def addStatusListener(self, Control: XStatusListener, URL: URL) -> None:  # noqa: N802, N803
         """
         registers a listener of a control for a specific URL at this object to receive status events.
 
@@ -49,7 +44,7 @@ class DispatchCellSelectRecalc(unohelper.Base, XDispatch):
         """
         with self._log.indent(True):
             if URL.Complete in self._status_listeners:
-                self._log.debug(f"addStatusListener(): url={URL.Main} already exists.")
+                self._log.debug("addStatusListener(): url=%s already exists.", URL.Main)
             else:
                 # setting IsEnable=False here does not disable the dispatch command
                 # State=True may cause the menu items to be displayed as checked.
@@ -70,7 +65,7 @@ class DispatchCellSelectRecalc(unohelper.Base, XDispatch):
         return rv
 
     @override
-    def dispatch(self, URL: URL, Arguments: Tuple[PropertyValue, ...]) -> None:
+    def dispatch(self, URL: URL, Arguments: Tuple[PropertyValue, ...]) -> None:  # noqa: N803
         """
         Dispatches (executes) a URL
 
@@ -83,7 +78,7 @@ class DispatchCellSelectRecalc(unohelper.Base, XDispatch):
         """
         with self._log.indent(True):
             try:
-                self._log.debug(f"dispatch(): url={URL.Main}")
+                self._log.debug("dispatch(): url=%s", URL.Main)
                 doc = CalcDoc.from_current_doc()
                 sheet = doc.sheets[self._sheet]
                 cell = sheet[self._cell]
@@ -101,7 +96,7 @@ class DispatchCellSelectRecalc(unohelper.Base, XDispatch):
                 return
 
     @override
-    def removeStatusListener(self, Control: XStatusListener, URL: URL) -> None:
+    def removeStatusListener(self, Control: XStatusListener, URL: URL) -> None:  # noqa: N802, N803
         """
         Un-registers a listener from a control.
         """

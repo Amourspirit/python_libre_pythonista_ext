@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Dict
+from typing import TYPE_CHECKING, Dict, Union
 from ooodev.utils.data_type.cell_obj import CellObj
 from ooodev.calc import CalcSheet
 
@@ -20,7 +20,7 @@ else:
     from libre_pythonista_lib.utils.result import Result
 
 
-class QryLpCellsCount(QryBase, LogMixin, QrySheetT[Result[int, None] | Result[None, Exception]]):
+class QryLpCellsCount(QryBase, LogMixin, QrySheetT[Union[Result[int, None], Result[None, Exception]]]):
     """
     Query that counts the number of LibrePythonista cells in a sheet.
 
@@ -56,7 +56,7 @@ class QryLpCellsCount(QryBase, LogMixin, QrySheetT[Result[int, None] | Result[No
             return result.data
         raise result.error
 
-    def execute(self) -> Result[int, None] | Result[None, Exception]:
+    def execute(self) -> Union[Result[int, None], Result[None, Exception]]:
         """
         Execute the query to count LibrePythonista cells.
 

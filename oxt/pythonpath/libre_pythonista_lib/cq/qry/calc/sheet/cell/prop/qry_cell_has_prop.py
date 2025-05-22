@@ -31,7 +31,7 @@ class QryCellHasProp(QryBase, LogMixin, QryCellT[bool]):
         Executes the query to get if the cell contain a custom property.
 
         Returns:
-            str | None: The script URL if successful, otherwise None.
+            str, None: The script URL if successful, otherwise None.
         """
 
         try:

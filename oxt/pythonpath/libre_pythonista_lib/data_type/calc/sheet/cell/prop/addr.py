@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 from dataclasses import dataclass, field
 import re
 
@@ -23,7 +23,7 @@ class Addr:
 
     value: str
     """str value."""
-    _cell: CellObj | None = field(repr=False, hash=False, default=None, init=False)
+    _cell: Optional[CellObj] = field(repr=False, hash=False, default=None, init=False)
     _idx: int = field(repr=False, hash=False, default=-1, init=False)
 
     def __post_init__(self) -> None:

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 
-from typing import Any, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING, Union
 from ooodev.calc import CalcDoc
 
 if TYPE_CHECKING:
@@ -15,7 +15,7 @@ else:
     SheetCell = Any
 
 
-class QryCellSheetDoc(QryBase, QryUnoCellT[CalcDoc | None]):
+class QryCellSheetDoc(QryBase, QryUnoCellT[Union[CalcDoc, None]]):
     """Gets the sheet document of the cell."""
 
     def __init__(self, cell: SheetCell) -> None:
@@ -27,12 +27,12 @@ class QryCellSheetDoc(QryBase, QryUnoCellT[CalcDoc | None]):
         QryBase.__init__(self)
         self._cell = cell
 
-    def execute(self) -> CalcDoc | None:
+    def execute(self) -> Union[CalcDoc, None]:
         """
         Executes the query to get the sheet document of the cell.
 
         Returns:
-            CalcDoc | None: The sheet document if successful, otherwise None.
+            CalcDoc, None: The sheet document if successful, otherwise None.
         """
         return CalcDoc.from_obj(obj=self._cell.Spreadsheet)  # type: ignore
 

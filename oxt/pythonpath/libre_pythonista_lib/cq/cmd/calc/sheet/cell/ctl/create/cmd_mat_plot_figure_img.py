@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, Dict, List, TYPE_CHECKING
+from typing import Any, Dict, List, TYPE_CHECKING, Union
 
 
 if TYPE_CHECKING:
@@ -38,7 +38,7 @@ else:
 
 
 class CmdMatPlotFigureImg(CmdBase, LogMixin, CmdCellCtlT):
-    def __init__(self, cell: CalcCell, ctl: Ctl, opt: CtlOptions | None = None) -> None:
+    def __init__(self, cell: CalcCell, ctl: Ctl, opt: Union[CtlOptions, None] = None) -> None:
         CmdBase.__init__(self)
         LogMixin.__init__(self)
         self.kind = CalcCmdKind.CELL
@@ -46,7 +46,7 @@ class CmdMatPlotFigureImg(CmdBase, LogMixin, CmdCellCtlT):
         if not self._ctl.cell:
             self._ctl.cell = cell
         self._success_cmds: List[CmdT] = []
-        self._current_ctl: Dict[str, Any] | None = None
+        self._current_ctl: Union[Dict[str, Any], None] = None
         if opt is None:
             opt = CtlOptions()
         self._opt = opt

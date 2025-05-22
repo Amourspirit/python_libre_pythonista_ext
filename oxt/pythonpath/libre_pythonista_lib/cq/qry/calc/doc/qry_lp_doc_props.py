@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 
 
 if TYPE_CHECKING:
@@ -22,7 +22,7 @@ else:
 # tested in tests/test_cmd_qry/test_doc/test_cmd_lp_doc_prop.py
 
 
-class QryLpDocProps(QryBase, QryCacheT[Result[dict, None] | Result[None, Exception]]):
+class QryLpDocProps(QryBase, QryCacheT[Union[Result[dict, None], Result[None, Exception]]]):
     """
     Query class for retrieving LibrePythonista document properties.
 
@@ -57,7 +57,7 @@ class QryLpDocProps(QryBase, QryCacheT[Result[dict, None] | Result[None, Excepti
             return result.data.read_json(qry.file_name)
         raise result.error
 
-    def execute(self) -> Result[dict, None] | Result[None, Exception]:
+    def execute(self) -> Union[Result[dict, None], Result[None, Exception]]:
         """
         Executes the query to get the document properties.
 

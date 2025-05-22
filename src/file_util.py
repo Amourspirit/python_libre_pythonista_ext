@@ -2,14 +2,14 @@ from __future__ import annotations
 import os
 import shutil
 from pathlib import Path
-from typing import Iterable, List
+from typing import Iterable, List, Union
 import os
 from shutil import which
 from contextlib import contextmanager
 
 
 @contextmanager
-def change_dir(directory):
+def change_dir(directory):  # noqa: ANN001, ANN201
     """
     A context manager that changes the current working directory to the specified directory
     temporarily and then changes it back when the context is exited.
@@ -50,13 +50,13 @@ def mkdirp(self, dest_dir):
         Path(dest_dir).mkdir(parents=True, exist_ok=True)
 
 
-def find_files_matching_patterns(root_dir: str | Path, ext: Iterable[str], *files: str) -> List[str]:
+def find_files_matching_patterns(root_dir: Union[str, Path], ext: Iterable[str], *files: str) -> List[str]:
     """
     Finds all files in the given directory and its subdirectories that match the patterns *.txt and *.xml.
     Returns a list of absolute file paths.
 
     Args:
-        root_dir (str | Path): The root directory to search.
+        root_dir (str, Path): The root directory to search.
         ext (List[str]): The file extensions to search for.
     Returns:
         List[str]: A list of absolute file paths.
@@ -87,12 +87,12 @@ def write_string_to_file(file_path: str, content: str, encoding="UTF-8") -> None
         f.write(content)
 
 
-def zip_folder(folder: str | Path, base_name: str = "", dest_dir: str | Path = "") -> None:
+def zip_folder(folder: Union[str, Path], base_name: str = "", dest_dir: Union[str, Path] = "") -> None:
     """
     Zips all files in the given folder to the specified zip file.
 
     Args:
-        folder (str | Path): is a directory that will be the root directory of the archive;
+        folder (str, Path): is a directory that will be the root directory of the archive;
         base_name (str): is the name of the file to create, minus any format-specific
             extension; 'format' is the archive format: one of "zip", "tar", "gztar",
             "bztar", or "xztar".  Or any other registered format.
@@ -124,7 +124,7 @@ def zip_folder(folder: str | Path, base_name: str = "", dest_dir: str | Path = "
         shutil.make_archive(base_name, "zip", folder_path)
 
 
-def get_which(name: str | Path) -> str:
+def get_which(name: Union[str, Path]) -> str:
     """
     Returns the path to the executable which would be executed in the current
     environment, or empty string if no executable is found.
@@ -135,7 +135,7 @@ def get_which(name: str | Path) -> str:
     return "" if result is None else str(result)
 
 
-def is_on_path(name: str | Path) -> bool:
+def is_on_path(name: Union[str, Path]) -> bool:
     """
     Returns True if the given name is on the PATH, False otherwise.
 
@@ -144,7 +144,7 @@ def is_on_path(name: str | Path) -> bool:
     return which(name) is not None
 
 
-def clear_cache(dst: str | Path) -> None:
+def clear_cache(dst: Union[str, Path]) -> None:
     """
     Recursively removes generic `__pycache__` .
 

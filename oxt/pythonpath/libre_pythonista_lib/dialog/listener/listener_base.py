@@ -10,10 +10,10 @@ T = TypeVar("T")
 
 
 class ListenerBase(unohelper.Base, Generic[T]):
-    def __init__(self, component: T):
+    def __init__(self, component: T) -> None:
         self._component = component
 
-    def disposing(self, Source: EventObject):
+    def disposing(self, Source: EventObject) -> None:  # noqa: N803
         self._component = None
 
     @property

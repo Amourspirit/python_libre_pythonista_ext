@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Union, Optional
 from ooodev.calc import CalcCell
 
 if TYPE_CHECKING:
@@ -23,10 +23,10 @@ else:
     from libre_pythonista_lib.utils.result import Result
 
 
-class QryCtlOrigRuleName(QryBase, LogMixin, QryCellT[Result[str, None] | Result[None, Exception]]):
+class QryCtlOrigRuleName(QryBase, LogMixin, QryCellT[Union[Result[str, None], Result[None, Exception]]]):
     """Gets the control rule name"""
 
-    def __init__(self, cell: CalcCell, ctl: Ctl | None = None) -> None:
+    def __init__(self, cell: CalcCell, ctl: Optional[Ctl] = None) -> None:
         """Constructor
 
         Args:
@@ -40,7 +40,7 @@ class QryCtlOrigRuleName(QryBase, LogMixin, QryCellT[Result[str, None] | Result[
         self.kind = CalcQryKind.CELL
         self.log.debug("init done for cell %s", cell.cell_obj)
 
-    def execute(self) -> Result[str, None] | Result[None, Exception]:
+    def execute(self) -> Union[Result[str, None], Result[None, Exception]]:
         """
         Executes the query to get control rule name
 

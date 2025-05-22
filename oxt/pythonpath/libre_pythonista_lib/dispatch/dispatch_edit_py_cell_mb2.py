@@ -314,5 +314,6 @@ def edit_code(inst_id: str, calc_cell: CalcCell, log: OxtLogger, src_code: str =
     else:
         with log.indent(True):
             log.debug("Dialog returned with Cancel")
+        success = False
     mb.dispose()
     return success

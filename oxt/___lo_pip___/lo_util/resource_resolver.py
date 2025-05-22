@@ -1,6 +1,6 @@
 from __future__ import annotations
 import uno
-from typing import Any, cast, TYPE_CHECKING
+from typing import Any, cast, TYPE_CHECKING, Union
 
 from ..config import Config
 from ..oxt_logger import OxtLogger
@@ -25,7 +25,7 @@ class ResourceResolver:
             self.locale = self._get_env_locale()
             self.resource_resolver = self._get_resource_resolver(self.locale)
             self.version = self._get_ext_ver()
-            self._default_resource_resolver: StringResourceWithLocation | None = None
+            self._default_resource_resolver: Union[StringResourceWithLocation, None] = None
 
             # config.default_locale can be 1 to 3 parts
             locale_parts = self._config.default_locale + 2 * [""]

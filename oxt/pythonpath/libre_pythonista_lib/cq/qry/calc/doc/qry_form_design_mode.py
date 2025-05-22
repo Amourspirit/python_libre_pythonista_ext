@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 from ooodev.exceptions import ex as mEx  # noqa: N812
 
 
@@ -17,14 +17,14 @@ else:
     from libre_pythonista_lib.log.log_mixin import LogMixin
 
 
-class QryFormDesignMode(QryBase, LogMixin, QryDocT[bool | None]):
+class QryFormDesignMode(QryBase, LogMixin, QryDocT[Union[bool, None]]):
     def __init__(self, doc: CalcDoc) -> None:
         QryBase.__init__(self)
         LogMixin.__init__(self)
         self._doc = doc
         self.log.debug("init done for doc %s", doc.runtime_uid)
 
-    def _get_view(self) -> CalcSheetView | None:
+    def _get_view(self) -> Union[CalcSheetView, None]:
         try:
             view = self._doc.get_view()
             if view.view_controller_name == "Default":
@@ -43,12 +43,12 @@ class QryFormDesignMode(QryBase, LogMixin, QryDocT[bool | None]):
             self.log.debug("Error getting view from document. %s", e)
             return None
 
-    def execute(self) -> bool | None:
+    def execute(self) -> Union[bool, None]:
         """
         Executes the query to check if the document is in form design mode.
 
         Returns:
-            bool | None: True if the document is in form design mode, None if unable to get the view; False otherwise.
+            bool, None: True if the document is in form design mode, None if unable to get the view; False otherwise.
         """
         view = self._get_view()
         if view is None:

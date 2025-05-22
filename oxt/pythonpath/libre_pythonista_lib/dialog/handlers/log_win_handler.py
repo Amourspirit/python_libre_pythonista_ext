@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, TYPE_CHECKING, cast, Tuple
+from typing import Any, TYPE_CHECKING, cast, Tuple, Optional
 import uno
 import unohelper
 
@@ -24,15 +24,17 @@ if TYPE_CHECKING:
     from com.sun.star.awt import UnoControlDialog  # service
     from com.sun.star.awt import UnoControlButton  # service
 
-    from .....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
-    from .....___lo_pip___.lo_util.resource_resolver import ResourceResolver
+    from oxt.___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from oxt.___lo_pip___.lo_util.resource_resolver import ResourceResolver
+    from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
 else:
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
     from ___lo_pip___.lo_util.resource_resolver import ResourceResolver
+    from libre_pythonista_lib.utils.custom_ext import override
 
 
 class ButtonListener(XActionListener, unohelper.Base):
-    def __init__(self, handler: "LogWinHandler"):
+    def __init__(self, handler: "LogWinHandler") -> None:
         XActionListener.__init__(self)
         unohelper.Base.__init__(self)
         self._log = OxtLogger(log_name=self.__class__.__name__)
@@ -40,18 +42,19 @@ class ButtonListener(XActionListener, unohelper.Base):
         self.handler = handler
         self._log.debug("ButtonListener.__init__ done")
 
-    def disposing(self, ev: Any):
+    @override
+    def disposing(self, Source: Any) -> None:  # noqa: ANN401, N803
         pass
 
-    def actionPerformed(self, ev: Any):
+    @override
+    def actionPerformed(self, rEvent: Any) -> None:  # noqa: ANN401, N802, N803
         # sourcery skip: extract-method
         with self._log.indent(True):
             self._log.debug("ButtonListener.actionPerformed")
             try:
-                cmd = str(ev.ActionCommand)
+                cmd = str(rEvent.ActionCommand)
                 self._log.debug(f"ButtonListener.actionPerformed cmd: {cmd}")
                 if cmd == "LogSettings":
-
                     LogOpt().show()
                     return
                 if cmd == "ClearLog":
@@ -73,7 +76,7 @@ class ButtonListener(XActionListener, unohelper.Base):
 class LogWinHandler(XWindowListener, unohelper.Base):
     """LogWinHandler Class"""
 
-    def __init__(self, ctx: Any, dialog: UnoControlDialog):
+    def __init__(self, ctx: Any, dialog: UnoControlDialog) -> None:  # noqa: ANN401
         XWindowListener.__init__(self)
         unohelper.Base.__init__(self)
         self._log = OxtLogger(log_name=self.__class__.__name__)
@@ -87,6 +90,7 @@ class LogWinHandler(XWindowListener, unohelper.Base):
             # reset the logger on Init.
             # this will reset the lp_log global var that can log directly to this window in sheet Python Cells.
             doc = Lo.current_doc
+            assert doc is not None
             self._fn_on_log_event = self._on_log_event
             self._fn_on_log_py_inst_reset = self._on_log_py_inst_reset
             self._py_logger = PyLogger(doc=doc)
@@ -95,9 +99,9 @@ class LogWinHandler(XWindowListener, unohelper.Base):
             self._share_event.subscribe_event(LOG_PY_LOGGER_RESET, self._fn_on_log_py_inst_reset)
             PyLogger.reset_instance(doc=doc)
 
-            self._log.debug(f"init Done for Doc with RuntimeID {doc.runtime_uid}")
+            self._log.debug("init Done for Doc with RuntimeID %s", doc.runtime_uid)
         except Exception as err:
-            self._log.error(f"LogWinHandler.__init__ {err}", exc_info=True)
+            self._log.error("LogWinHandler.__init__ %s", err, exc_info=True)
             raise err
 
     def _init_dialog(self) -> None:
@@ -120,17 +124,18 @@ class LogWinHandler(XWindowListener, unohelper.Base):
 
         self._log_txt = CtlTextEdit(cast("UnoControlEdit", self._dialog.getControl("txtLog")))
 
-    def _on_log_py_inst_reset(self, src: Any, event_args: EventArgs) -> None:
+    def _on_log_py_inst_reset(self, src: Any, event_args: EventArgs) -> None:  # noqa: ANN401
         with self._log.indent(True):
             self._log.debug("_on_log_py_inst_reset")
             try:
+                assert Lo.current_doc is not None
                 self._py_logger = PyLogger(doc=Lo.current_doc)
                 self._py_logger.unsubscribe_log_event(self._fn_on_log_event)
                 self._py_logger.subscribe_log_event(self._fn_on_log_event)
             except Exception:
                 self._log.exception("_on_log_py_inst_reset")
 
-    def _on_log_event(self, src: Any, event: EventArgs) -> None:
+    def _on_log_event(self, src: Any, event: EventArgs) -> None:  # noqa: ANN401
         with self._log.indent(True):
             if self._log.is_debug:
                 self._log.debug("_on_log_event, Writing Line")
@@ -139,7 +144,7 @@ class LogWinHandler(XWindowListener, unohelper.Base):
     def _write_line(self, text: str) -> None:
         self._log_txt.write_line(text)
 
-    def _write(self, data: str, sel: Tuple[int, int] | None = None):
+    def _write(self, data: str, sel: Optional[Tuple[int, int]] = None) -> None:
         """Append data to edit control text"""
         if not sel:
             sel = (self.end, self.end)

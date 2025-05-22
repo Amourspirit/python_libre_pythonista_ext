@@ -1,6 +1,8 @@
+# region Imports
 from __future__ import annotations
-from typing import Any, Dict, List, Tuple, Iterable, TYPE_CHECKING, cast
-
+from typing import Any, Dict, List, Tuple, Iterable, TYPE_CHECKING, cast, Union, Optional
+import threading
+import time
 from sortedcontainers import SortedDict
 
 from ooodev.calc import CalcDoc, CalcCell
@@ -13,6 +15,8 @@ from ooodev.utils.string.str_list import StrList
 
 
 if TYPE_CHECKING:
+    from oxt.___lo_pip___.debug.break_mgr import BreakMgr
+    from oxt.___lo_pip___.debug.py_charm_break_mgr import PyCharmBreakMgr
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.module_state_item import ModuleStateItem
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module_state import PyModuleState
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.sheet.cell.code.cmd_cell_src_code import CmdCellSrcCode
@@ -52,7 +56,11 @@ if TYPE_CHECKING:
         PYTHON_BEFORE_SOURCE_UPDATE,
         PYTHON_SOURCE_MODIFIED,
     )
+    from oxt.pythonpath.libre_pythonista_lib.const.event_const import PY_SRC_MGR_MOD_STATES_INIT_UPDATED
 else:
+    from ___lo_pip___.debug.break_mgr import BreakMgr
+    from ___lo_pip___.debug.py_charm_break_mgr import PyCharmBreakMgr
+
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.module_state_item import ModuleStateItem
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module_state import PyModuleState
     from libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module_t import PyModuleT
@@ -88,9 +96,20 @@ else:
         PYTHON_BEFORE_SOURCE_UPDATE,
         PYTHON_SOURCE_MODIFIED,
     )
+    from libre_pythonista_lib.const.event_const import PY_SRC_MGR_MOD_STATES_INIT_UPDATED
 
     QryHandlerT = Any
     CmdHandlerT = Any
+# endregion Imports
+
+_TREAD_LOCK = threading.Lock()
+_THREAD_EVENT = threading.Event()
+
+break_mgr = BreakMgr()  # Initialize the breakpoint manager
+break_mgr.add_breakpoint("libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source_manager._init_sources")
+
+py_break_mgr = PyCharmBreakMgr()
+py_break_mgr.add_breakpoint("libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source_manager._init_sources")
 
 _KEY = "libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source_manager.PySourceManager"
 
@@ -142,7 +161,111 @@ class PySourceManager(LogMixin):
         self.log.debug("Init completed")
         self._is_init = True
 
-    # endregion Event Handlers
+    def _init_sources(self) -> None:  # type: ignore
+        """Initializes the source code manager."""
+        break_mgr.check_breakpoint("libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source_manager._init_sources")
+        py_break_mgr.check_breakpoint(
+            "libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source_manager._init_sources"
+        )
+        self._src_data = SortedDict()
+        self._mod_state.reset_module()
+        self.log.debug("_init_sources() Entered.")
+        sources: List[Tuple[PySource, CalcCell, str]] = []
+        code_cells = self._qry_lp_cells()
+        for sheet in self._doc.sheets:
+            if sheet.sheet_index not in code_cells:
+                continue
+
+            cells = code_cells[sheet.sheet_index]
+            for cell in cells:
+                calc_cell = sheet[cell]
+                qry_cell = QryCellUri(calc_cell)
+                qry_cell_result = self._qry_handler.handle(qry_cell)
+                if Result.is_failure(qry_cell_result):
+                    self.log.warning("Failed to get URI for cell %s", cell)
+                    continue
+                uri = qry_cell_result.data
+                py_src = self._qry_py_source(uri=uri, cell=calc_cell)
+                sources.append((py_src, calc_cell, uri))
+
+            sources.sort(key=lambda x: x[0])  # Sort by PySource object only.
+            self._process_sources(sources)
+        self.log.debug("_init_sources() Leaving.")
+
+    def _process_sources(self, sources: List[Tuple[PySource, CalcCell, str]]) -> None:
+        _THREAD_EVENT.clear()
+
+        def process_source(calc_cell: CalcCell, code: str, is_last: bool) -> None:
+            # This solves a strange issue on Windows.
+            #
+            # Version: 24.8.6.2 (X86_64) / LibreOffice Community
+            # Build ID: 6d98ba145e9a8a39fc57bcc76981d1fb1316c60c
+            # CPU threads: 4; OS: Windows 10 X86_64 (10.0 build 19045); UI render: Skia/Raster; VCL: win
+            # Locale: en-US (en_US); UI: en-US
+            # Calc: CL threaded
+            #
+            # It is not absolutely clear on what the issue is. LibreOffice Calc was crashing when a sheet was loaded that contained a matplotlib plot.
+            # The crash was a complete crash and did not give any usable info in the log files to trace.
+            # Debugging was able to trace the code to the point:
+            #
+            # C:\Users\bigby\AppData\Roaming\Python\Python39\64\site-packages\matplotlib\transforms.py
+            # Line 881
+            # points, minpos, changed = update_path_extents(path, None, self._points, self._minpos, ignore)
+
+            # update_path_extents in a method in binary file _path.cp39-win_amd64.pyd
+            # in C:\Users\bigby\AppData\Roaming\Python\Python39\64\site-packages\matplotlib
+            #
+            # If self._mod_state.update_with_result(cell=calc_cell, code=code) is call on the main
+            # thread then the crash would occur. If it is called on a separate thread then the crash does not occur.
+            # When called on a separate thread there is thenot real value because the main thread continues.
+            # Calling Join just causes the thread to hang.
+            # After the last source is processed the event is set and the main thread continues.
+            # The event calls a method that then calls the sheet caculateAll method.
+            # From this point forward all seems to work fine. on all systems.
+            # In theory I could have applied this to windows only but it works fine on other os'es as well.
+            # See: libre_pythonista_lib.doc.calc.doc.doc_event_mgr.DocEventMgr
+            # see: libre_pythonista_lib.doc.calc.doc.lp_listeners.listener_py_src_mgr_mod_states_init_updated.ListenerPySrcMgrModStatesInitUpdated
+
+            with _TREAD_LOCK:
+                time.sleep(0.1)
+                # _ = self._mod_state.update_with_result(cell=calc_cell, code=code)
+            if is_last:
+                # self.log.debug("Last source processed.")
+                self._se.trigger_event(PY_SRC_MGR_MOD_STATES_INIT_UPDATED, EventArgs(self))
+                _THREAD_EVENT.set()
+
+        threads = []
+        count = len(sources)
+        for i, src in enumerate(sources):
+            is_last = i + 1 == count
+            py_src = src[0]
+            calc_cell = src[1]
+            uri = src[2]
+            self.src_data[py_src.sheet_idx, py_src.row, py_src.col] = PySourceData(
+                uri=uri, cell=calc_cell.cell_obj.copy()
+            )
+            self.set_global_var("CURRENT_CELL_ID", py_src.uri_info.unique_id)
+            self.set_global_var("CURRENT_CELL_OBJ", calc_cell.cell_obj)
+            # _ = self._mod_state.update_with_result(cell=calc_cell, code=py_src.source_code)
+            process_thread = threading.Thread(
+                target=process_source, args=(calc_cell, py_src.source_code, is_last), daemon=True
+            )
+            threads.append(process_thread)
+            process_thread.start()
+
+        return
+
+        # wait 5 seconds to see if threads are complete
+        start_time = time.time()
+        while not _THREAD_EVENT.is_set():
+            if time.time() - start_time > 5:
+                break
+            time.sleep(0.1)
+
+        # for thread in threads:
+        #     thread.join()
+
+    # endregion Init
 
     # region Qry Methods
 
@@ -173,7 +296,7 @@ class PySourceManager(LogMixin):
         qry = QryCellPySource(uri=uri, cell=cell)
         return self._qry_handler.handle(qry)
 
-    def qry_last_module_state_item(self) -> ModuleStateItem | None:
+    def qry_last_module_state_item(self) -> Union[ModuleStateItem, None]:
         """Returns the last module state item or None if empty."""
         qry = QryModuleStateLastItem(mod=self._mod_state.mod)
         result = self._qry_handler.handle(qry)
@@ -181,7 +304,7 @@ class PySourceManager(LogMixin):
             return result.data
         return None
 
-    def qry_module_state_item(self, cell: CalcCell) -> ModuleStateItem | None:
+    def qry_module_state_item(self, cell: CalcCell) -> Union[ModuleStateItem, None]:
         """Returns the last module state item or None if empty."""
         qry = QryModuleState(cell=cell, mod=self.mod)
         result = self._qry_handler.handle(qry)
@@ -205,46 +328,7 @@ class PySourceManager(LogMixin):
             self._se.trigger_event("PySourceManagerDisposed", EventArgs(self))
         self._se = cast(SharedEvent, None)
 
-    def _init_sources(self) -> None:  # type: ignore
-        """Initializes the source code manager."""
-        self._src_data = SortedDict()
-        self._mod_state.reset_module()
-        self.log.debug("_init_sources() Entered.")
-        sources: List[Tuple[PySource, CalcCell, str]] = []
-        code_cells = self._qry_lp_cells()
-        for sheet in self._doc.sheets:
-            if sheet.sheet_index not in code_cells:
-                continue
-
-            cells = code_cells[sheet.sheet_index]
-            for cell in cells:
-                calc_cell = sheet[cell]
-                qry_cell = QryCellUri(calc_cell)
-                qry_cell_result = self._qry_handler.handle(qry_cell)
-                if Result.is_failure(qry_cell_result):
-                    self.log.warning("Failed to get URI for cell %s", cell)
-                    continue
-                uri = qry_cell_result.data
-                py_src = self._qry_py_source(uri=uri, cell=calc_cell)
-                sources.append((py_src, calc_cell, uri))
-
-            sources.sort(key=lambda x: x[0])  # Sort by PySource object only
-            for src in sources:
-                py_src = src[0]
-                calc_cell = src[1]
-                uri = src[2]
-                self.src_data[py_src.sheet_idx, py_src.row, py_src.col] = PySourceData(
-                    uri=uri, cell=calc_cell.cell_obj.copy()
-                )
-                self.set_global_var("CURRENT_CELL_ID", py_src.uri_info.unique_id)
-                self.set_global_var("CURRENT_CELL_OBJ", calc_cell.cell_obj)
-                _ = self._mod_state.update_with_result(cell=calc_cell, code=py_src.source_code)
-
-        self.log.debug("_init_sources() Leaving.")
-
-    # endregion Init
-
-    def get_module_source_code(self, max_cell: CellObj | None = None, include_max: bool = True) -> str:
+    def get_module_source_code(self, max_cell: Optional[CellObj] = None, include_max: bool = True) -> str:
         """
         Gets a string that represents the source code of the modules current state.
 
@@ -284,7 +368,7 @@ class PySourceManager(LogMixin):
         )
         return src_code
 
-    def _getitem_py_src_data(self, key: CellObj | Tuple[int, int, int]) -> PySourceData:
+    def _getitem_py_src_data(self, key: Union[CellObj, Tuple[int, int, int]]) -> PySourceData:
         """
         Gets an Item
 
@@ -306,7 +390,7 @@ class PySourceManager(LogMixin):
     def __len__(self) -> int:
         return len(self.src_data)
 
-    def __getitem__(self, key: CellObj | Tuple[int, int, int]) -> PySource:
+    def __getitem__(self, key: Union[CellObj, Tuple[int, int, int]]) -> PySource:
         """
         Gets an Item
 
@@ -321,7 +405,7 @@ class PySourceManager(LogMixin):
         self.log.debug("__getitem__() - Result Unique Id: %s", result.uri_info.unique_id)
         return result
 
-    def __setitem__(self, key: CellObj | Tuple[int, int, int], value: PySource | PySourceData) -> None:
+    def __setitem__(self, key: Union[CellObj, Tuple[int, int, int]], value: Union[PySource, PySourceData]) -> None:
         """
         Sets an Item
 
@@ -337,7 +421,7 @@ class PySourceManager(LogMixin):
         eargs.event_data = DotDict(source=self, value=value, cell_obj=value.cell.copy(), sheet_idx=code_cell[0])
         self._se.trigger_event(PYTHON_SOURCE_MODIFIED, eargs)
 
-    def __delitem__(self, key: CellObj | Tuple[int, int, int]) -> None:
+    def __delitem__(self, key: Union[CellObj, Tuple[int, int, int]]) -> None:
         """
         Removes an Item
 
@@ -347,7 +431,7 @@ class PySourceManager(LogMixin):
         co = key if isinstance(key, CellObj) else self.convert_tuple_to_cell_obj(key)
         self.remove_source(co)
 
-    def __contains__(self, key: CellObj | Tuple[int, int, int]) -> bool:
+    def __contains__(self, key: Union[CellObj, Tuple[int, int, int]]) -> bool:
         """
         Checks if key exists in the data.
 
@@ -379,7 +463,7 @@ class PySourceManager(LogMixin):
         """Checks if index is the last index."""
         return index == len(self) - 1
 
-    def _get_first_item(self) -> PySourceData | None:
+    def _get_first_item(self) -> Union[PySourceData, None]:
         """Returns the first item in the source manager or None if empty."""
         # get the first item in self._data
         if len(self) == 0:
@@ -387,14 +471,14 @@ class PySourceManager(LogMixin):
         py_data = self._getitem_py_src_data(list(self.src_data.keys())[0])
         return py_data
 
-    def get_first_item(self) -> PySource | None:
+    def get_first_item(self) -> Union[PySource, None]:
         """Returns the first item in the source manager or None if empty."""
         py_data = self._get_first_item()
         if py_data is None:
             return None
         return PySource(uri=py_data.uri, cell=py_data.cell)
 
-    def _get_last_item(self) -> PySourceData | None:
+    def _get_last_item(self) -> Union[PySourceData, None]:
         """Returns the last item in the source manager or None if empty."""
         # get the last item in self._data
         if len(self) == 0:
@@ -403,7 +487,7 @@ class PySourceManager(LogMixin):
         py_data = self._getitem_py_src_data(list(self.src_data.keys())[-1])
         return py_data
 
-    def get_next_item_py_src_data(self, cell: CellObj, require_exist: bool = False) -> PySourceData | None:
+    def get_next_item_py_src_data(self, cell: CellObj, require_exist: bool = False) -> Union[PySourceData, None]:
         """
         Returns the next item in the source manager or None if empty.
 
@@ -412,7 +496,7 @@ class PySourceManager(LogMixin):
             require_exist (bool, optional): If True, the cell must exist in the source manager. Defaults to False.
 
         Returns:
-            PySourceData | None: Source data or None if not found.
+            PySourceData, None: Source data or None if not found.
         """
         if len(self) == 0:
             self.log.debug("get_next_item_py_src_data() - No items in source manager.")
@@ -444,7 +528,7 @@ class PySourceManager(LogMixin):
             self.log.debug("get_next_item_py_src_data() - Found cell %s after current cell %s.", found.cell, cell)
         return found
 
-    def get_next_item(self, cell: CellObj, require_exist: bool = False) -> PySource | None:
+    def get_next_item(self, cell: CellObj, require_exist: bool = False) -> Union[PySource, None]:
         """
         Returns the next item in the source manager or None if empty.
 
@@ -453,14 +537,14 @@ class PySourceManager(LogMixin):
             require_exist (bool, optional): If True, the cell must exist in the source manager. Defaults to False.
 
         Returns:
-            PySource | None: Source data or None if not found.
+            PySource, None: Source data or None if not found.
         """
         py_data = self.get_next_item_py_src_data(cell=cell, require_exist=require_exist)
         if py_data is None:
             return None
         return PySource(uri=py_data.uri, cell=py_data.cell)
 
-    def get_prev_item_py_src_data(self, cell: CellObj, require_exist: bool = False) -> PySourceData | None:
+    def get_prev_item_py_src_data(self, cell: CellObj, require_exist: bool = False) -> Union[PySourceData, None]:
         """
         Returns the previous item in the source manager or None if empty.
 
@@ -469,7 +553,7 @@ class PySourceManager(LogMixin):
             require_exist (bool, optional): If True, the cell must exist in the source manager. Defaults to False.
 
         Returns:
-            PySourceData | None: Source data or None if not found.
+            PySourceDat, None: Source data or None if not found.
         """
         if len(self) == 0:
             self.log.debug("get_prev_item_py_src_data() - No items in source manager.")
@@ -502,7 +586,7 @@ class PySourceManager(LogMixin):
             self.log.debug("get_prev_item_py_src_data() - Found cell %s before current cell %s.", found.cell, cell)
         return found
 
-    def get_prev_item(self, cell: CellObj, require_exist: bool = False) -> PySource | None:
+    def get_prev_item(self, cell: CellObj, require_exist: bool = False) -> Union[PySource, None]:
         """
         Returns the previous item in the source manager or None if empty.
 
@@ -511,14 +595,14 @@ class PySourceManager(LogMixin):
             require_exist (bool, optional): If True, the cell must exist in the source manager. Defaults to False.
 
         Returns:
-            PySource | None: Source data or None if not found.
+            PySource, None: Source data or None if not found.
         """
         py_data = self.get_prev_item_py_src_data(cell=cell, require_exist=require_exist)
         if py_data is None:
             return None
         return PySource(uri=py_data.uri, cell=py_data.cell)
 
-    def get_last_item(self) -> PySource | None:
+    def get_last_item(self) -> Union[PySource, None]:
         """Returns the last item in the source manager or None if empty."""
         py_data = self._get_last_item()
         if py_data is None:
@@ -867,7 +951,7 @@ class PySourceManager(LogMixin):
         """
         return len(self) > 0
 
-    def _update_item(self, py_src: PySource | PySourceData) -> bool:
+    def _update_item(self, py_src: Union[PySource, PySourceData]) -> bool:
         if isinstance(py_src, PySourceData):
             py_src = PySource(uri=py_src.uri, cell=py_src.cell)
         cargs = CancelEventArgs(self)
@@ -880,12 +964,13 @@ class PySourceManager(LogMixin):
 
         self.log.debug("_update_item() Entered.")
         self.log.debug("_update_item() sheet index: %i col: %i, row: %i", sheet_idx, col, row)
+        src_code = py_src.source_code
         cargs.event_data = DotDict(
             source=self,
             sheet_idx=sheet_idx,
             row=row,
             col=col,
-            code=py_src.source_code,
+            code=src_code,
             doc=self._doc,
             py_src=py_src,
             cell_obj=cell_obj.copy(),
@@ -897,16 +982,20 @@ class PySourceManager(LogMixin):
         self._se.trigger_event(PYTHON_BEFORE_SOURCE_UPDATE, cargs)
         if cargs.cancel:
             return False
-        code = cargs.event_data.get("code", py_src.source_code)
-        if code != py_src.source_code:
-            py_src.source_code = code
+        code = cargs.event_data.get("code", src_code)
+        if code != src_code:
+            py_src.source_code = code  # writes code to file
         # update the dictionary to the current state of the module
 
         self.set_global_var("CURRENT_CELL_ID", py_src.uri_info.unique_id)
         self.set_global_var("CURRENT_CELL_OBJ", cell_obj)
 
-        result = self._mod_state.update_with_result(calc_cell, py_src.source_code)
-        result.py_src = py_src
+        try:
+            result = self._mod_state.update_with_result(calc_cell, py_src.source_code)
+            result.py_src = py_src
+        except Exception as e:
+            self.log.exception("_update_item() - Error updating module. %s", e)
+            return False
 
         eargs = EventArgs.from_args(cargs)
         eargs.event_data["result"] = result

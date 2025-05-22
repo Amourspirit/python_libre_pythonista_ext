@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 
 
 if TYPE_CHECKING:
@@ -28,7 +28,7 @@ else:
 class CmdInitCalculate(CmdBase, LogMixin, CmdT):
     """Sets a flag that the Document Calculate All has been called."""
 
-    def __init__(self, uid: str | None = None) -> None:
+    def __init__(self, uid: Union[str, None] = None) -> None:
         """Constructor
 
         Args:
@@ -44,7 +44,7 @@ class CmdInitCalculate(CmdBase, LogMixin, CmdT):
         else:
             self.log.debug("init done for uid %s", self._uid)
 
-    def _get_globals(self) -> DocGlobals | None:
+    def _get_globals(self) -> Union[DocGlobals, None]:
         qry = QryDocGlobals(uid=self._uid)
         qry_result = self._execute_qry(qry)
         if Result.is_success(qry_result):

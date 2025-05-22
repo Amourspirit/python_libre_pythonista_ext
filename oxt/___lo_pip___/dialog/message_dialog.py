@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, cast
+from typing import Any, cast, Union
 
 from .dialog_base import DialogBase
 
@@ -11,7 +11,7 @@ from com.sun.star.awt import XMessageBoxFactory
 class MessageDialog(DialogBase):
     """Shows message in standard message box."""
 
-    def __init__(self, ctx: Any, parent: XWindowPeer | None = None, **kwargs):
+    def __init__(self, ctx: Any, parent: Union[XWindowPeer, None] = None, **kwargs) -> None:  # noqa: ANN003
         """
         Constructor
 
@@ -46,9 +46,7 @@ class MessageDialog(DialogBase):
         message = str(self.args.get("message", ""))
 
         toolkit = cast(XMessageBoxFactory, self.parent.getToolkit())
-        dialog = toolkit.createMessageBox(
-            self.parent, box_type, buttons, title, message
-        )
+        dialog = toolkit.createMessageBox(self.parent, box_type, buttons, title, message)
         n = dialog.execute()
         dialog.dispose()  # type: ignore
         return n

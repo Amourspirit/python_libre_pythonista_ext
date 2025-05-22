@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 
 from ooodev.format.calc.direct.cell.borders import Side, Shadow
 from ooodev.format.inner.direct.structs.side import LineSize
@@ -24,7 +24,7 @@ else:
 
 
 class CmdCellAddBorderStyle(CmdBase, LogMixin, CmdCellCtlT):
-    def __init__(self, cell: CalcCell, style: StyleT | None = None) -> None:
+    def __init__(self, cell: CalcCell, style: Union[StyleT, None] = None) -> None:
         CmdBase.__init__(self)
         LogMixin.__init__(self)
         self.kind = CalcCmdKind.CELL

@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, Dict, cast, TYPE_CHECKING
+from typing import Any, Dict, cast, TYPE_CHECKING, Optional
 import ast
 import copy
 import os
@@ -35,7 +35,7 @@ else:
 
     break_mgr = BreakMgr()
     # break_mgr.add_breakpoint("libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module.init")
-    # break_mgr.add_breakpoint("libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module.execute_code")
+    break_mgr.add_breakpoint("libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module.execute_code")
 
 _KEY = "libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module.PyModule"
 
@@ -154,7 +154,7 @@ class PyModule(LogMixin, PyModuleT):
         """Returns a copy of the module dictionary."""
         return self.mod.__dict__.copy()
 
-    def _execute_init_code(self, code_snippet: str, globals_dict: dict | None = None) -> Any:  # noqa: ANN401
+    def _execute_init_code(self, code_snippet: str, globals_dict: Optional[dict] = None) -> Any:  # noqa: ANN401
         """
         Compiles and executes the given code snippet.
         - If the last statement is an expression, returns its value.
@@ -189,7 +189,7 @@ class PyModule(LogMixin, PyModuleT):
             # traceback.print_exc()
             return None
 
-    def execute_code(self, code_snippet: str, globals_dict: dict | None = None) -> Any:  # noqa: ANN401
+    def execute_code(self, code_snippet: str, globals_dict: Optional[dict] = None) -> Any:  # noqa: ANN401
         """
         Compiles and executes the given code snippet.
         - If the last statement is an expression, returns its value.

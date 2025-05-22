@@ -18,7 +18,7 @@ class QryRowsColsPdDf(QryRowsColsTbl):
 
     Args:
         cell (CalcCell): The cell to query
-        mod (PyModuleT | None): Optional Python module. If None, will be queried using QryPyModuleDefault
+        mod (PyModuleT, None): Optional Python module. If None, will be queried using QryPyModuleDefault
     """
 
     @override

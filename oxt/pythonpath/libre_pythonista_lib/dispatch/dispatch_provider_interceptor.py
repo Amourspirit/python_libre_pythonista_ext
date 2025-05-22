@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, cast, Dict, Tuple, TYPE_CHECKING
+from typing import Any, cast, Dict, Tuple, TYPE_CHECKING, Union
 from urllib.parse import parse_qs
 
 try:
@@ -112,7 +112,7 @@ class DispatchProviderInterceptor(unohelper.Base, XDispatchProviderInterceptor):
         URL: URL,  # noqa: N803
         TargetFrameName: str,  # noqa: N803
         SearchFlags: int,  # noqa: N803
-    ) -> XDispatch | None:  # type: ignore
+    ) -> Union[XDispatch, None]:  # type: ignore
         """
         Searches for an XDispatch for the specified URL within the specified target frame.
         """

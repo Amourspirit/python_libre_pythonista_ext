@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, cast
+from typing import Any, cast, Optional
 import ast
 import types
 import importlib.util
@@ -47,7 +47,7 @@ def get_module_init_code() -> str:
     return "\n".join(lines)
 
 
-def execute_code(code_snippet: str, globals: dict | None = None, _private_enabled: bool = True) -> Any:  # noqa: ANN401
+def execute_code(code_snippet: str, globals: Optional[dict] = None, _private_enabled: bool = True) -> Any:  # noqa: ANN401
     """
     Compiles and executes the given code snippet.
     - If the last statement is an expression, returns its value.

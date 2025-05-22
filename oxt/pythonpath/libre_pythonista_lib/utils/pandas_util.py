@@ -1,6 +1,6 @@
 from __future__ import annotations
 import contextlib
-from typing import Any, Tuple, List, TYPE_CHECKING
+from typing import Any, Tuple, List, TYPE_CHECKING, Union
 from datetime import datetime, timedelta
 import pandas as pd
 
@@ -246,7 +246,7 @@ class PandasUtil:
         return result
 
     @staticmethod
-    def lo_date_to_pandas(numeric_date) -> pd.Timestamp:
+    def lo_date_to_pandas(numeric_date: float) -> pd.Timestamp:
         # LibreOffice Calc's epoch
         epoch = datetime(1899, 12, 30)
         # Convert numeric date to datetime
@@ -256,7 +256,7 @@ class PandasUtil:
         return pandas_timestamp
 
     @staticmethod
-    def pandas_to_lo_date(timestamp: pd.Timestamp | datetime) -> int:
+    def pandas_to_lo_date(timestamp: Union[pd.Timestamp, datetime]) -> int:
         # Base date for LibreOffice Calc
         base_date = datetime(1899, 12, 30)
 
@@ -300,7 +300,7 @@ class PandasUtil:
         return df
 
     @classmethod
-    def convert_lo_to_pandas_date_columns(cls, df: pd.DataFrame, *columns: str | int) -> pd.DataFrame:
+    def convert_lo_to_pandas_date_columns(cls, df: pd.DataFrame, *columns: Union[str, int]) -> pd.DataFrame:
         """
         Converts date columns to Pandas Timestamp.
 
@@ -325,7 +325,7 @@ class PandasUtil:
         return df
 
     @classmethod
-    def convert_pandas_lo_date_columns(cls, df: pd.DataFrame, *columns: str | int) -> pd.DataFrame:
+    def convert_pandas_lo_date_columns(cls, df: pd.DataFrame, *columns: Union[str, int]) -> pd.DataFrame:
         """
         Converts date columns to Pandas Timestamp.
 
@@ -493,13 +493,13 @@ class PandasUtil:
         return None
 
     @classmethod
-    def pandas_is_date_col(cls, df: pd.DataFrame, col: str | int) -> bool:
+    def pandas_is_date_col(cls, df: pd.DataFrame, col: Union[str, int]) -> bool:
         """
         Gets if a column is a date column.
 
         Args:
             df (DataFrame): The DataFrame to check.
-            col (str | int): The column name or zero-based index to check.
+            col (str, int): The column name or zero-based index to check.
         """
         # Test show that this work even if the df has no headers.
         if isinstance(col, str):

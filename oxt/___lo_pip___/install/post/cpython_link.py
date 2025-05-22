@@ -9,7 +9,7 @@ This renaming allows the python interpreter to find the import.
 """
 
 from __future__ import annotations
-from typing import List
+from typing import List, Union
 from pathlib import Path
 from importlib import machinery
 import logging
@@ -31,7 +31,7 @@ class CPythonLink:
         self._logger.debug("CPythonLink.__init__")
         # self._suffix = self._get_current_suffix()
         self._config = Config()
-        self._site_packages: Path | None = None
+        self._site_packages: Union[Path, None] = None
         self._file_suffix = ""
         if self._config.site_packages:
             self._site_packages = Path(self._config.site_packages)
@@ -40,6 +40,7 @@ class CPythonLink:
 
     def _get_current_suffix(self) -> str:
         """Gets suffix currently used by the embedded python interpreter such as ``cpython-3.8``"""
+        # in windows suffixes are something like ['.cp39-win_amd64.pyd', '.pyd']
         for suffix in machinery.EXTENSION_SUFFIXES:
             if suffix.startswith(".cpython-") and suffix.endswith(".so"):
                 # remove leading . and trailing .so
@@ -51,6 +52,9 @@ class CPythonLink:
         # for normal installs the suffix will be something like cpython-312-x86_64-linux-gnu
         # for other embedded it will be something like .cpython-3.9
         # If the number of - occurrences are greater then 1 then linking should not be needed
+        if self._config.is_win:
+            self._logger.debug("get_needs_linking() Not needed on Windows")
+            return False
         if not self._site_packages:
             self._logger.debug("get_needs_linking() No site-packages found")
             return False

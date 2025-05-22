@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import cast, TYPE_CHECKING
+from typing import cast, TYPE_CHECKING, Union
 
 import uno
 from .adapter_base import AdapterBase, GenericArgs
@@ -20,7 +20,7 @@ class TopWindowListener(AdapterBase, XTopWindowListener):
         `API XTopWindowListener <https://api.libreoffice.org/docs/idl/ref/interfacecom_1_1sun_1_1star_1_1awt_1_1XTopWindowListener.html>`_
     """
 
-    def __init__(self, trigger_args: GenericArgs | None = None, add_listener: bool = True) -> None:
+    def __init__(self, trigger_args: Union[GenericArgs, None] = None, add_listener: bool = True) -> None:
         """
         Constructor:
 
@@ -43,27 +43,27 @@ class TopWindowListener(AdapterBase, XTopWindowListener):
         if self._tk:
             self._tk.removeTopWindowListener(self)
 
-    def windowOpened(self, event: EventObject) -> None:
+    def windowOpened(self, event: EventObject) -> None:  # type: ignore # noqa: N802
         """Is invoked when a window is activated."""
         self._trigger_event("windowOpened", event)
 
-    def windowActivated(self, event: EventObject) -> None:
+    def windowActivated(self, event: EventObject) -> None:  # type: ignore # noqa: N802
         """Is invoked when a window is activated."""
         self._trigger_event("windowActivated", event)
 
-    def windowDeactivated(self, event: EventObject) -> None:
+    def windowDeactivated(self, event: EventObject) -> None:  # type: ignore # noqa: N802
         """Is invoked when a window is deactivated."""
         self._trigger_event("windowDeactivated", event)
 
-    def windowMinimized(self, event: EventObject) -> None:
+    def windowMinimized(self, event: EventObject) -> None:  # type: ignore # noqa: N802
         """is invoked when a window is iconified."""
         self._trigger_event("windowMinimized", event)
 
-    def windowNormalized(self, event: EventObject) -> None:
+    def windowNormalized(self, event: EventObject) -> None:  # type: ignore # noqa: N802
         """Is invoked when a window is deiconified."""
         self._trigger_event("windowNormalized", event)
 
-    def windowClosing(self, event: EventObject) -> None:
+    def windowClosing(self, event: EventObject) -> None:  # type: ignore # noqa: N802
         """
         Is invoked when a window is in the process of being closed.
 
@@ -71,11 +71,11 @@ class TopWindowListener(AdapterBase, XTopWindowListener):
         """
         self._trigger_event("windowClosing", event)
 
-    def windowClosed(self, event: EventObject) -> None:
+    def windowClosed(self, event: EventObject) -> None:  # type: ignore # noqa: N802
         """Is invoked when a window has been closed."""
         self._trigger_event("windowClosed", event)
 
-    def disposing(self, event: EventObject) -> None:
+    def disposing(self, event: EventObject) -> None:  # type: ignore
         """
         Gets called when the broadcaster is about to be disposed.
 

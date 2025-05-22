@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, Dict, TYPE_CHECKING
+from typing import Any, Dict, TYPE_CHECKING, Union
 
 
 if TYPE_CHECKING:
@@ -27,7 +27,7 @@ class CmdCodeNameDel(CmdBase, LogMixin, CmdCellCtlT):
         if not self._ctl.cell:
             self._ctl.cell = cell
         self._current_dict_code_name = self.cell.extra_data.get("code_name", "")
-        self._current_ctl: Dict[str, Any] | None = None
+        self._current_ctl: Union[Dict[str, Any], None] = None
         self.log.debug("init done for cell %s", cell.cell_obj)
 
     @override

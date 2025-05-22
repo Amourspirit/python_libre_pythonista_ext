@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
 
 class DialogMenu:
-    def __init__(self, dlg: DialogPython):
+    def __init__(self, dlg: DialogPython) -> None:
         self._dlg = dlg
         self._doc = dlg.doc
         self._is_calc_doc = self._doc.DOC_TYPE == DocType.CALC

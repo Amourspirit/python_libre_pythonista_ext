@@ -1,7 +1,7 @@
 """Query to determine if a cell has been moved from its original position."""
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Tuple
+from typing import TYPE_CHECKING, Tuple, Union
 
 from ooodev.calc import CalcCell
 from ooodev.utils.data_type.cell_obj import CellObj
@@ -20,7 +20,9 @@ else:
     from libre_pythonista_lib.utils.result import Result
 
 
-class QryCellMovedOldNew(QryBase, LogMixin, QryCellT[Result[Tuple[CellObj, CellObj], None] | Result[None, Exception]]):
+class QryCellMovedOldNew(
+    QryBase, LogMixin, QryCellT[Union[Result[Tuple[CellObj, CellObj], None], Result[None, Exception]]]
+):
     """
     Query to determine if a cell has been moved from its original position and return both old and new positions.
 
@@ -39,7 +41,7 @@ class QryCellMovedOldNew(QryBase, LogMixin, QryCellT[Result[Tuple[CellObj, CellO
         self._cell = cell
         self.log.debug("init done for cell %s", cell.cell_obj)
 
-    def execute(self) -> Result[Tuple[CellObj, CellObj], None] | Result[None, Exception]:
+    def execute(self) -> Union[Result[Tuple[CellObj, CellObj], None], Result[None, Exception]]:
         """
         Execute the query to check if cell has moved from its original position.
 

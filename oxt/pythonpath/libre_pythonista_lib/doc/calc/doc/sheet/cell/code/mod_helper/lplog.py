@@ -42,7 +42,7 @@ class LpLog(SingletonBase):
         _ = self.log
         self._is_init = True
 
-    def _on_log_options_changed(self, src: Any, event_args: EventArgs) -> None:
+    def _on_log_options_changed(self, src: Any, event_args: EventArgs) -> None:  # noqa: ANN401
         self._share_event.unsubscribe_event(LOG_OPTIONS_CHANGED, self._fn_on_log_options_changed)
         LpLog.remove_this_instance(self)
 
@@ -70,31 +70,33 @@ class StaticLpLog:
         return LpLog().log
 
     @classmethod
-    def debug(cls, msg, *args, **kwargs):
+    def debug(cls, msg, *args, **kwargs) -> None:  # noqa: ANN001, ANN002, ANN003
         log = cls._get_logger()
         log.debug(msg, *args, **kwargs)
 
     @classmethod
-    def info(cls, msg, *args, **kwargs):
+    def info(cls, msg, *args, **kwargs) -> None:  # noqa: ANN001, ANN002, ANN003
+        log = cls._get_logger()
         log = cls._get_logger()
         log.info(msg, *args, **kwargs)
 
     @classmethod
-    def warning(cls, msg, *args, **kwargs):
+    def warning(cls, msg, *args, **kwargs) -> None:  # noqa: ANN001, ANN002, ANN003
+        log = cls._get_logger()
         log = cls._get_logger()
         log.warning(msg, *args, **kwargs)
 
     @classmethod
-    def error(cls, msg, *args, **kwargs):
+    def error(cls, msg, *args, **kwargs) -> None:  # noqa: ANN001, ANN002, ANN003
         log = cls._get_logger()
         log.error(msg, *args, **kwargs)
 
     @classmethod
-    def exception(cls, msg, *args, **kwargs):
+    def exception(cls, msg, *args, **kwargs) -> None:  # noqa: ANN001, ANN002, ANN003
         log = cls._get_logger()
         log.exception(msg, *args, **kwargs)
 
     @classmethod
-    def critical(cls, msg, *args, **kwargs):
+    def critical(cls, msg, *args, **kwargs) -> None:  # noqa: ANN001, ANN002, ANN003
         log = cls._get_logger()
         log.critical(msg, *args, **kwargs)

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 
 
 if TYPE_CHECKING:
@@ -15,8 +15,8 @@ else:
     from libre_pythonista_lib.utils.result import Result
 
 
-class QryDocGlobals(QryBase, QryT[Result[DocGlobals, None] | Result[None, Exception]]):
-    def __init__(self, uid: str | None = None) -> None:
+class QryDocGlobals(QryBase, QryT[Union[Result[DocGlobals, None], Result[None, Exception]]]):
+    def __init__(self, uid: Union[str, None] = None) -> None:
         """Constructor
 
         Args:
@@ -25,7 +25,7 @@ class QryDocGlobals(QryBase, QryT[Result[DocGlobals, None] | Result[None, Except
         QryBase.__init__(self)
         self._uid = uid
 
-    def execute(self) -> Result[DocGlobals, None] | Result[None, Exception]:
+    def execute(self) -> Union[Result[DocGlobals, None], Result[None, Exception]]:
         """
         Executes the query to get the document globals.
 

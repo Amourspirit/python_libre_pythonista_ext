@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 import time
 
 from ooodev.exceptions import ex as mEx  # noqa: N812
@@ -27,13 +27,13 @@ class CmdFormDesignModeOff(CmdBase, LogMixin, CmdDocT):
         self._current_state = self._get_form_design_mode()
         self.log.debug("init done for doc %s", doc.runtime_uid)
 
-    def _get_form_design_mode(self) -> bool | None:
+    def _get_form_design_mode(self) -> Union[bool, None]:
         view = self._get_view()
         if view is not None:
             return view.is_form_design_mode()
         return None
 
-    def _get_view(self) -> CalcSheetView | None:
+    def _get_view(self) -> Union[CalcSheetView, None]:
         try:
             view = self._doc.get_view()
             if view.view_controller_name == "Default":

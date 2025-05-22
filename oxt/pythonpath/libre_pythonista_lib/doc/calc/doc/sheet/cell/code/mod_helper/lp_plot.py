@@ -1,5 +1,5 @@
+from __future__ import annotations
 from typing import Any, TYPE_CHECKING
-import re
 import functools
 from matplotlib import pyplot as plt
 
@@ -17,9 +17,9 @@ else:
 # _ORIG_PLT_SHOW = plt.show
 
 
-def _lp_plt_show_prefix_function(function: Any, pre_function: Any):
+def _lp_plt_show_prefix_function(function: Any, pre_function: Any) -> Any:  # noqa: ANN401
     @functools.wraps(function)
-    def run(*args, **kwargs):
+    def run(*args, **kwargs) -> None:  # noqa: ANN002, ANN003
         pre_function(*args, **kwargs)
         # in theory the real plot.show() can be called here.
         # However, this would run the real plot.show() which may popup an window and
@@ -33,7 +33,7 @@ def _lp_plt_show_prefix_function(function: Any, pre_function: Any):
     return run
 
 
-def _custom_plt_show(*args, **kwargs):
+def _custom_plt_show(*args, **kwargs) -> None:  # noqa: ANN002, ANN003
     # Your own code here that will be run before
     global LAST_LP_RESULT
     log = LogInst()

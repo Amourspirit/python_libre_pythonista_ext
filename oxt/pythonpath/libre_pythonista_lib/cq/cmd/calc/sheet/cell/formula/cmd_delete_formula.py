@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, cast, TYPE_CHECKING
+from typing import Any, cast, TYPE_CHECKING, Union
 
 from com.sun.star.sheet import CellFlags
 
@@ -59,7 +59,7 @@ class CmdDeleteFormula(CmdBase, LogMixin, CmdCellT):
 
     """
 
-    def __init__(self, cell: CalcCell, style: StyleT | None = None) -> None:
+    def __init__(self, cell: CalcCell, style: Union[StyleT, None] = None) -> None:
         """
         Initialize the command with a target cell.
 
@@ -70,7 +70,7 @@ class CmdDeleteFormula(CmdBase, LogMixin, CmdCellT):
         LogMixin.__init__(self)
         self._cell = cell
         self._undo_available = False
-        self._current_formula: str | None = None
+        self._current_formula: Union[str, None] = None
         self._is_array_formula = cast(bool, None)
         self._is_formula = cast(bool, None)
         self._current_col_rows = (0, 0)

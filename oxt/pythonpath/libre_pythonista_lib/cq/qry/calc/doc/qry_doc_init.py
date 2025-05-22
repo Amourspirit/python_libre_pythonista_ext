@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Union
 
 
 if TYPE_CHECKING:
@@ -23,7 +23,7 @@ else:
 
 
 class QryDocInit(QryBase, QryT[bool]):
-    def __init__(self, doc: CalcDoc | None = None) -> None:
+    def __init__(self, doc: Union[CalcDoc, None] = None) -> None:
         """Constructor
 
         Args:
@@ -32,7 +32,7 @@ class QryDocInit(QryBase, QryT[bool]):
         QryBase.__init__(self)
         self._doc = doc
 
-    def _get_globals(self) -> DocGlobals | None:
+    def _get_globals(self) -> Union[DocGlobals, None]:
         uid = self._doc.runtime_uid if self._doc else None
         qry = QryDocGlobals(uid=uid)
         qry_result = self._execute_qry(qry)

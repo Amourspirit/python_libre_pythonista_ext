@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Iterable, TYPE_CHECKING
+from typing import Iterable, TYPE_CHECKING, Union
 
 from ooodev.calc import CalcCell
 from ooodev.utils.helper.dot_dict import DotDict
@@ -33,7 +33,7 @@ break_mgr = BreakMgr()
 # break_mgr.add_breakpoint("libre_pythonista_lib.cq.qry.calc.sheet.cell.rule_value.qry_value.execute")
 
 
-class QryValue(QryBase, LogMixin, QryCellT[Result[Iterable[Iterable[object]], None] | Result[None, Exception]]):
+class QryValue(QryBase, LogMixin, QryCellT[Union[Result[Iterable[Iterable[object]], None], Result[None, Exception]]]):
     def __init__(self, cell: CalcCell, rule_kind: RuleNameKind, data: DotDict) -> None:
         QryBase.__init__(self)
         LogMixin.__init__(self)
@@ -42,15 +42,15 @@ class QryValue(QryBase, LogMixin, QryCellT[Result[Iterable[Iterable[object]], No
         self._data = data
         self.log.debug("init done for cell %s for rule_kind %s", cell.cell_obj, rule_kind)
 
-    def qry_empty(self) -> Result[Iterable[Iterable[object]], None] | Result[None, Exception]:
+    def qry_empty(self) -> Union[Result[Iterable[Iterable[object]], None], Result[None, Exception]]:
         qry = QryEmpty(data=self._data)
         return self._execute_qry(qry)
 
-    def qry_direct_data(self) -> Result[Iterable[Iterable[object]], None] | Result[None, Exception]:
+    def qry_direct_data(self) -> Union[Result[Iterable[Iterable[object]], None], Result[None, Exception]]:
         qry = QryDirectData(data=self._data)
         return self._execute_qry(qry)
 
-    def qry_pd_df(self) -> Result[Iterable[Iterable[object]], None] | Result[None, Exception]:
+    def qry_pd_df(self) -> Union[Result[Iterable[Iterable[object]], None], Result[None, Exception]]:
         if TYPE_CHECKING:
             from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.rule_value.qry_pd_df import QryPdDf
         else:
@@ -58,7 +58,7 @@ class QryValue(QryBase, LogMixin, QryCellT[Result[Iterable[Iterable[object]], No
         qry = QryPdDf(cell=self._cell, data=self._data)
         return self._execute_qry(qry)
 
-    def qry_pd_series(self) -> Result[Iterable[Iterable[object]], None] | Result[None, Exception]:
+    def qry_pd_series(self) -> Union[Result[Iterable[Iterable[object]], None], Result[None, Exception]]:
         if TYPE_CHECKING:
             from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.rule_value.qry_pd_series import QrySeries
         else:
@@ -66,12 +66,12 @@ class QryValue(QryBase, LogMixin, QryCellT[Result[Iterable[Iterable[object]], No
         qry = QrySeries(cell=self._cell, data=self._data)
         return self._execute_qry(qry)
 
-    def qry_tbl_data(self) -> Result[Iterable[Iterable[object]], None] | Result[None, Exception]:
+    def qry_tbl_data(self) -> Union[Result[Iterable[Iterable[object]], None], Result[None, Exception]]:
         qry = QryTblData(cell=self._cell, data=self._data)
         return self._execute_qry(qry)
 
     @override
-    def execute(self) -> Result[Iterable[Iterable[object]], None] | Result[None, Exception]:
+    def execute(self) -> Union[Result[Iterable[Iterable[object]], None], Result[None, Exception]]:
         """
         Executes the query to get the URI for a cell.
 

@@ -7,4 +7,4 @@ class PdRuleT(Protocol):
     A class to represent a Pandas Rule.
     """
 
-    def convert(self, value: Any) -> Any: ...
+    def convert(self, value: Any) -> Any: ...  # noqa: ANN401

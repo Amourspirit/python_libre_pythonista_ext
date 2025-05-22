@@ -23,6 +23,7 @@ if TYPE_CHECKING:
     from ooodev.calc import CalcDoc
     from typing_extensions import override
     from oxt.___lo_pip___.oxt_logger import OxtLogger
+    from oxt.___lo_pip___.debug.break_mgr import BreakMgr
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.cmd_calculate_all import CmdCalculateAll
@@ -31,6 +32,8 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.cmd_init_calculate import CmdInitCalculate
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_init_calculate import QryInitCalculate
     from oxt.pythonpath.libre_pythonista_lib.doc.doc_globals import DocGlobals
+
+    break_mgr = BreakMgr()
 else:
 
     def override(func):  # noqa: ANN001, ANN201
@@ -39,6 +42,7 @@ else:
     _CONDITIONS_MET = _conditions_met()
     if _CONDITIONS_MET:
         from ooodev.calc import CalcDoc
+        from ___lo_pip___.debug.break_mgr import BreakMgr
         from libre_pythonista_lib.cq.cmd.cmd_handler_factory import CmdHandlerFactory
         from libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
         from libre_pythonista_lib.cq.cmd.calc.doc.cmd_calculate_all import CmdCalculateAll
@@ -47,6 +51,9 @@ else:
         from libre_pythonista_lib.cq.cmd.calc.doc.cmd_init_calculate import CmdInitCalculate
         from libre_pythonista_lib.cq.qry.calc.doc.qry_init_calculate import QryInitCalculate
         from libre_pythonista_lib.doc.doc_globals import DocGlobals
+
+        break_mgr = BreakMgr()
+        break_mgr.add_breakpoint("ext_code.jobs.loading_job.execute")
 # endregion imports
 
 _KEY = "ext_code.jobs.loading_job.LoadingJob"
@@ -71,6 +78,7 @@ class LoadingJob(XJob, unohelper.Base):
         self.ctx = ctx
         self.document = None
         self._log = self._get_local_logger()
+        self._log.debug("init Done")
 
     # endregion Init
 
@@ -94,7 +102,7 @@ class LoadingJob(XJob, unohelper.Base):
             arg1 = Arguments[0]
 
             for struct in arg1.Value:
-                self._log.debug(f"Struct: {struct.Name}")
+                self._log.debug("Struct: %s", struct.Name)
                 if struct.Name == "Model":
                     self.document = struct.Value
                     self._log.debug("Document Found")
@@ -103,6 +111,7 @@ class LoadingJob(XJob, unohelper.Base):
                 return
 
             if _CONDITIONS_MET:
+                break_mgr.check_breakpoint("ext_code.jobs.loading_job.execute")
                 self._lo_load(self.document)
 
             if self.document.supportsService("com.sun.star.sheet.SpreadsheetDocument"):
@@ -112,6 +121,10 @@ class LoadingJob(XJob, unohelper.Base):
                 if _KEY in doc_globals.mem_cache:
                     self._log.debug("Already executed command. Returning...")
                     return
+                # Loading may be called more the once.
+                # When CalculateAll is called when first starting on windows this job is called again.
+                # To prevent loops we set cache to true here.
+                doc_globals.mem_cache[_KEY] = True
                 doc = CalcDoc.get_doc_from_component(self.document)
                 qry_handler = QryHandlerFactory.get_qry_handler()
                 cmd_handler = CmdHandlerFactory.get_cmd_handler()
@@ -130,6 +143,8 @@ class LoadingJob(XJob, unohelper.Base):
                     return
 
                 self._log.debug("Document has not been calculated.")
+                # self.document.calculateAll()
+                # return
 
                 cmd_calc_all = CmdCalculateAll(doc=doc)
                 cmd_handler.handle(cmd_calc_all)
@@ -138,10 +153,9 @@ class LoadingJob(XJob, unohelper.Base):
                     cmd_init_calc = CmdInitCalculate(uid=run_id)
                     cmd_handler.handle(cmd_init_calc)
                     if cmd_init_calc.success:
-                        self._log.debug("Successfully executed command.")
-                        doc_globals.mem_cache[_KEY] = True
+                        self._log.debug("Successfully executed command CmdInitCalculate.")
                     else:
-                        self._log.error("Error executing command.")
+                        self._log.error("Error executing command CmdInitCalculate.")
                 else:
                     self._log.error("Error calculating all formulas.")
                 return

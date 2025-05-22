@@ -1,6 +1,6 @@
 # region Imports
 from __future__ import annotations
-from typing import cast, TYPE_CHECKING, Tuple
+from typing import cast, TYPE_CHECKING, Tuple, Optional
 from ooo.dyn.awt.push_button_type import PushButtonType
 from ooo.dyn.awt.pos_size import PosSize
 
@@ -54,7 +54,7 @@ class DfCard2(LogMixin):
         self._row_index = -1
         self._cell = cell
         self._qry_handler = QryHandlerFactory.get_qry_handler()
-        self._module_state = cast(ModuleStateItem | None, None)
+        self._module_state = cast(Optional[ModuleStateItem], None)
         self._doc = self._cell.calc_doc
         self._init_dialog()
         self._set_table_data()

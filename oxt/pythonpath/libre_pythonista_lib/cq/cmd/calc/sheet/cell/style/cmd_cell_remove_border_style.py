@@ -1,7 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
-
-from ooodev.format.calc.direct.cell.borders import Side, Shadow
+from typing import TYPE_CHECKING, Union
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcCell
@@ -23,7 +21,7 @@ else:
 
 
 class CmdCellRemoveBorderStyle(CmdBase, LogMixin, CmdCellCtlT):
-    def __init__(self, cell: CalcCell, style: StyleT | None = None) -> None:
+    def __init__(self, cell: CalcCell, style: Union[StyleT, None] = None) -> None:
         CmdBase.__init__(self)
         LogMixin.__init__(self)
         self.kind = CalcCmdKind.CELL

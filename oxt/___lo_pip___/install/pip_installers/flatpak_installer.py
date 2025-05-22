@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import List
+from typing import List, Union
 import sys
 import subprocess
 from pathlib import Path
@@ -40,7 +40,7 @@ class FlatpakInstaller(BaseInstaller):
         from ..install_pip_from_wheel import InstallPipFromWheel
 
         installer = InstallPipFromWheel(ctx=self.ctx)
-        progress: Progress | None = None
+        progress: Union[Progress, None] = None
         if cfg.show_progress:
             self._logger.debug("Starting Progress Window")
             msg = self.resource_resolver.resolve_string("msg08")

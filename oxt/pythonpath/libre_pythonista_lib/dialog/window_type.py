@@ -41,9 +41,8 @@ class WindowType(
     XUnitConversion,
     XWeak,
 ):
+    @property
+    def Size(self) -> Size: ...  # noqa: N802
 
     @property
-    def Size(self) -> Size: ...
-
-    @property
-    def Windows(self) -> Tuple[WindowType, ...]: ...
+    def Windows(self) -> Tuple[WindowType, ...]: ...  # noqa: N802

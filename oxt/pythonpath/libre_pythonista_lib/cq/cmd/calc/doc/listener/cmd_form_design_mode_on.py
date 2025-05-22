@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import cast, TYPE_CHECKING
+from typing import cast, TYPE_CHECKING, Union
 
 from ooodev.exceptions import ex as mEx  # noqa: N812
 from ooodev.utils.gen_util import NULL_OBJ
@@ -24,16 +24,16 @@ class CmdFormDesignModeOn(CmdBase, LogMixin, CmdDocT):
         CmdBase.__init__(self)
         LogMixin.__init__(self)
         self._doc = doc
-        self._current_state = cast(bool | None, NULL_OBJ)
+        self._current_state = cast(Union[bool, None], NULL_OBJ)
         self.log.debug("init done for doc %s", doc.runtime_uid)
 
-    def _get_form_design_mode(self) -> bool | None:
+    def _get_form_design_mode(self) -> Union[bool, None]:
         view = self._get_view()
         if view is not None:
             return view.is_form_design_mode()
         return None
 
-    def _get_view(self) -> CalcSheetView | None:
+    def _get_view(self) -> Union[CalcSheetView, None]:
         try:
             view = self._doc.get_view()
             if view.view_controller_name == "Default":

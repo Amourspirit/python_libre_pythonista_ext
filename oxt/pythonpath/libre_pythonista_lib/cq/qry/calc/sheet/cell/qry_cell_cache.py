@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 
-from typing import Any, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING, Union
 
 
 if TYPE_CHECKING:
@@ -22,7 +22,7 @@ else:
     MemCache = Any
 
 
-class QryCellCache(QryBase, LogMixin, QryT[MemCache | None]):
+class QryCellCache(QryBase, LogMixin, QryT[Union[MemCache, None]]):
     """Gets the cell cache"""
 
     def __init__(self, cell: CalcCell) -> None:
@@ -32,12 +32,12 @@ class QryCellCache(QryBase, LogMixin, QryT[MemCache | None]):
         self._cell = cell
         self.log.debug("init done for cell %s", cell.cell_obj)
 
-    def execute(self) -> MemCache | None:
+    def execute(self) -> Union[MemCache, None]:
         """
         Executes the query and gets the cell cache.
 
         Returns:
-            MemCache | None: The cell cache if successful, otherwise None.
+            MemCache, None: The cell cache if successful, otherwise None.
         """
 
         try:

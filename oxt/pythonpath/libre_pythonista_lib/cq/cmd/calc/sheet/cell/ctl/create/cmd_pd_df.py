@@ -3,7 +3,6 @@ from typing import TYPE_CHECKING
 
 from ooo.dyn.awt.size import Size
 from ooo.dyn.awt.point import Point
-from ooodev.units import UnitMM100
 
 if TYPE_CHECKING:
     from com.sun.star.drawing import ControlShape  # service

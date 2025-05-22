@@ -13,7 +13,7 @@ else:
 class TblDataObj:
     """Class that gets table information on a cell range."""
 
-    def __init__(self, cell_rng: CalcCellRange):
+    def __init__(self, cell_rng: CalcCellRange) -> None:
         """
         Constructor
 

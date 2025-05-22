@@ -3,7 +3,7 @@ This module writes the batch file for windows cleanup.
 """
 
 from __future__ import annotations
-from typing import Dict, Iterable, Set, Tuple
+from typing import Dict, Iterable, Set, Tuple, Union
 from pathlib import Path
 from .batch_writer import BatchWriter
 from ..pkg_install_data import PkgInstallData
@@ -14,7 +14,7 @@ class BatchWriterPs1(BatchWriter):
     def __init__(self) -> None:
         super().__init__()
         self._line_sep = "\n"  # os.linesep
-        self._script_file: None | Path = None
+        self._script_file: Union[None, Path] = None
 
     def _write_remove_dirs_fn(self, sw: StrList) -> None:
         """

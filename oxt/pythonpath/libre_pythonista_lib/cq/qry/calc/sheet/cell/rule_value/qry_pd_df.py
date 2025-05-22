@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, cast, TYPE_CHECKING, Iterable
+from typing import Any, cast, TYPE_CHECKING, Iterable, Union
 import pandas as pd
 from ooodev.calc import CalcCell
 from ooodev.utils.helper.dot_dict import DotDict
@@ -25,7 +25,7 @@ else:
 # tested in: tests/test_cmd/test_cmd_py_src.py
 
 
-class QryPdDf(QryBase, LogMixin, QryCellT[Result[Iterable[Iterable[object]], None] | Result[None, Exception]]):
+class QryPdDf(QryBase, LogMixin, QryCellT[Union[Result[Iterable[Iterable[object]], None], Result[None, Exception]]]):
     """
     Query class for converting Pandas DataFrame data to a format suitable for LibreOffice Calc.
 
@@ -51,7 +51,7 @@ class QryPdDf(QryBase, LogMixin, QryCellT[Result[Iterable[Iterable[object]], Non
         self._data = data
         self.log.debug("init done for cell %s", cell.cell_obj)
 
-    def _qry_state(self) -> Result[StateKind, None] | Result[None, Exception]:
+    def _qry_state(self) -> Union[Result[StateKind, None], Result[None, Exception]]:
         """
         Query the state of the cell.
 
@@ -107,7 +107,7 @@ class QryPdDf(QryBase, LogMixin, QryCellT[Result[Iterable[Iterable[object]], Non
             return arr
         return PandasUtil.pandas_to_array(df)
 
-    def execute(self) -> Result[Iterable[Iterable[object]], None] | Result[None, Exception]:
+    def execute(self) -> Union[Result[Iterable[Iterable[object]], None], Result[None, Exception]]:
         """
         Execute the query to convert Pandas DataFrame to LibreOffice Calc format.
 

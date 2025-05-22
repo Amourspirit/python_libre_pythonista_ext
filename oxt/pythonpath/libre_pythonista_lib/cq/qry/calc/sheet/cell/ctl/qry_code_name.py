@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union, Optional
 from ooodev.calc import CalcCell
 
 if TYPE_CHECKING:
@@ -21,10 +21,10 @@ else:
     from libre_pythonista_lib.utils.result import Result
 
 
-class QryCodeName(QryBase, QryCellT[Result[str, None] | Result[None, Exception]]):
+class QryCodeName(QryBase, QryCellT[Union[Result[str, None], Result[None, Exception]]]):
     """Gets the code name of the control"""
 
-    def __init__(self, cell: CalcCell, ctl: Ctl | None = None) -> None:
+    def __init__(self, cell: CalcCell, ctl: Optional[Ctl] = None) -> None:
         """Constructor
 
         Args:
@@ -36,7 +36,7 @@ class QryCodeName(QryBase, QryCellT[Result[str, None] | Result[None, Exception]]
         self._cell = cell
         self._ctl = ctl
 
-    def execute(self) -> Result[str, None] | Result[None, Exception]:
+    def execute(self) -> Union[Result[str, None], Result[None, Exception]]:
         """
         Executes the query to get code name
 

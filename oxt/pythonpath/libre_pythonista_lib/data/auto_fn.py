@@ -1,11 +1,11 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 from ooodev.calc import CalcCellRange
-from ooodev.exceptions import ex as mEx
+from ooodev.exceptions import ex as mEx  # noqa: N812
 from .tbl_data_obj import TblDataObj
 
 if TYPE_CHECKING:
-    from ....___lo_pip___.oxt_logger import OxtLogger
+    from oxt.___lo_pip___.oxt_logger.oxt_logger import OxtLogger
 else:
     from ___lo_pip___.oxt_logger import OxtLogger
 
@@ -13,7 +13,7 @@ else:
 class AutoFn:
     """Class that generates the lp function"""
 
-    def __init__(self, cell_rng: CalcCellRange, orig_sheet_idx: int):
+    def __init__(self, cell_rng: CalcCellRange, orig_sheet_idx: int) -> None:
         """
         Constructor
 
@@ -22,9 +22,7 @@ class AutoFn:
         """
         self._log = OxtLogger(log_name=self.__class__.__name__)
         if self._log.is_debug:
-            self._log.debug(
-                f"init cell range: {cell_rng.range_obj}, Original Sheet Index: {orig_sheet_idx}"
-            )
+            self._log.debug(f"init cell range: {cell_rng.range_obj}, Original Sheet Index: {orig_sheet_idx}")
         self._cell_rng = cell_rng
         self._orig_sheet_idx = orig_sheet_idx
         self._data_info = TblDataObj(cell_rng)
@@ -66,9 +64,7 @@ class AutoFn:
             if ro_orig != ro.range_obj:
                 return True
         except mEx.CellRangeError:
-            self._log.debug(
-                "Error getting used range. Find used range did not get a value. Not critical."
-            )
+            self._log.debug("Error getting used range. Find used range did not get a value. Not critical.")
         except Exception as e:
             self._log.exception(f"Error: {e}")
         return False

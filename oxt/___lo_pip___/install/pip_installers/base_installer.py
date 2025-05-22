@@ -5,7 +5,7 @@ from abc import abstractmethod
 import platform
 import subprocess
 from pathlib import Path
-from typing import Any, List, Dict
+from typing import Any, List, Dict, Union
 
 
 from ...config import Config
@@ -88,7 +88,7 @@ class BaseInstaller:
         my_env["PYTHONPATH"] = py_path
         return my_env
 
-    def install_requirements(self, fnm: str | Path) -> None:
+    def install_requirements(self, fnm: Union[str, Path]) -> None:
         """Install the requirements."""
         self._logger.info("install_requirements - Installing requirements…")
         if not self.is_pip_installed():

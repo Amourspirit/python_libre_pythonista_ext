@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, Dict, List, TYPE_CHECKING
+from typing import Any, Dict, List, TYPE_CHECKING, Union
 
 
 if TYPE_CHECKING:
@@ -38,7 +38,7 @@ class CmdOrigRuleName(CmdBase, LogMixin, CmdCellCtlT):
             self._ctl.cell = cell
         self._config = BasicConfig()
         self._current = self._ctl.ctl_rule_kind
-        self._current_ctl: Dict[str, Any] | None = None
+        self._current_ctl: Union[Dict[str, Any], None] = None
         self.log.debug("init done for cell %s", cell.cell_obj)
 
     @override

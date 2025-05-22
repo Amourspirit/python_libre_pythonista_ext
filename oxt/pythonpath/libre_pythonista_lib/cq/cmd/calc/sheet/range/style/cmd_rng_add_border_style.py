@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 
 from ooodev.utils.gen_util import NULL_OBJ
 from ooodev.format.calc.direct.cell.borders import Side, Shadow
@@ -24,7 +24,7 @@ else:
 
 
 class CmdRngAddBorderStyle(CmdBase, LogMixin, CmdRangeT):
-    def __init__(self, rng: CalcCellRange, style: StyleT | None = None) -> None:
+    def __init__(self, rng: CalcCellRange, style: Union[StyleT, None] = None) -> None:
         CmdBase.__init__(self)
         LogMixin.__init__(self)
         self.kind = CalcCmdKind.SIMPLE

@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, cast, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING, Union
 
 from ooodev.utils.data_type.range_obj import RangeObj
 
@@ -25,7 +25,7 @@ else:
     SheetCell = Any
 
 
-class QryFormulaRange(QryBase, LogMixin, QryUnoCellT[Result[RangeObj, None] | Result[None, Exception]]):
+class QryFormulaRange(QryBase, LogMixin, QryUnoCellT[Union[Result[RangeObj, None], Result[None, Exception]]]):
     """
     Get the range of the cell's array formula.
     """
@@ -44,7 +44,7 @@ class QryFormulaRange(QryBase, LogMixin, QryUnoCellT[Result[RangeObj, None] | Re
             return qry_result.data
         raise qry_result.error
 
-    def execute(self) -> Result[RangeObj, None] | Result[None, Exception]:
+    def execute(self) -> Union[Result[RangeObj, None], Result[None, Exception]]:
         """
         Executes the query to get the range of the cell's array formula.
 

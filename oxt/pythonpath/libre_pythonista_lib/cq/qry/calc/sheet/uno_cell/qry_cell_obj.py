@@ -36,7 +36,7 @@ class QryCellObj(QryBase, QryUnoCellT[CellObj]):
         The url will start with ``vnd.sun.star.script:``
 
         Returns:
-            str | None: The script URL if successful, otherwise None.
+            str, None: The script URL if successful, otherwise None.
         """
 
         qry_cell_del = QryCellIsDeleted(cell=self.cell)

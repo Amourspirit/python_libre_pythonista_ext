@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcCell
@@ -20,7 +20,7 @@ else:
 # tested in: tests/test_cmd/test_cmd_py_src.py
 
 
-class QryCodeName(QryBase, QryCellT[Result[str, None] | Result[None, Exception]]):
+class QryCodeName(QryBase, QryCellT[Union[Result[str, None], Result[None, Exception]]]):
     """Gets the code name of the cell such as ``id_l6fiSBIiNVcncf`` or empty string if not exists."""
 
     def __init__(self, cell: CalcCell) -> None:
@@ -28,7 +28,7 @@ class QryCodeName(QryBase, QryCellT[Result[str, None] | Result[None, Exception]]
         self.kind = CalcQryKind.CELL
         self._cell = cell
 
-    def execute(self) -> Result[str, None] | Result[None, Exception]:
+    def execute(self) -> Union[Result[str, None], Result[None, Exception]]:
         """
         Executes the query and gets the code name of the cell.
 

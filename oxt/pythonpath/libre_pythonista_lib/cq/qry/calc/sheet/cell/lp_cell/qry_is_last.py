@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 from ooodev.calc import CalcCell
 from ooodev.utils.data_type.cell_obj import CellObj
 
@@ -18,7 +18,7 @@ else:
     from libre_pythonista_lib.utils.result import Result
 
 
-class QryIsLast(QryBase, LogMixin, QryCellT[Result[bool, None] | Result[None, Exception]]):
+class QryIsLast(QryBase, LogMixin, QryCellT[Union[Result[bool, None], Result[None, Exception]]]):
     """
     Query to determine if a given cell is the last LibrePythonista cell in a sheet.
 
@@ -56,7 +56,7 @@ class QryIsLast(QryBase, LogMixin, QryCellT[Result[bool, None] | Result[None, Ex
             return result.data
         raise result.error
 
-    def execute(self) -> Result[bool, None] | Result[None, Exception]:
+    def execute(self) -> Union[Result[bool, None], Result[None, Exception]]:
         """
         Execute the query to check if the cell is last.
 

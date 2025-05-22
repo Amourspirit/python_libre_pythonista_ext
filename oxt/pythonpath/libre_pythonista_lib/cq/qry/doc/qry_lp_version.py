@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 
 
 if TYPE_CHECKING:
@@ -17,20 +17,20 @@ else:
 # tested in tests/test_cmd_qry/test_doc/test_cmd_lp_version.py
 
 
-class QryLpVersion(QryBase, QryOfficeDocT[str | None]):
+class QryLpVersion(QryBase, QryOfficeDocT[Union[str, None]]):
     def __init__(self, doc: OfficeDocumentT) -> None:
         QryBase.__init__(self)
         self._doc = doc
 
-    def _get_version(self) -> str | None:
+    def _get_version(self) -> Union[str, None]:
         qry = QryDocCustomProp(doc=self._doc, name=LP_EXT_VERSION, default=None)
         return self._execute_qry(qry)
 
-    def execute(self) -> str | None:
+    def execute(self) -> Union[str, None]:
         """
         Executes the query and returns the lp version.
 
         Returns:
-            str | None: The lp version if successful, otherwise None.
+            str, None: The lp version if successful, otherwise None.
         """
         return self._get_version()
