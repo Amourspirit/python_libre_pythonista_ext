@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING, Union
 
 if TYPE_CHECKING:
     from com.sun.star.sheet import SheetCell  # service
@@ -19,7 +19,7 @@ else:
     SheetCell = Any
 
 
-class QryCellFormula(QryBase, LogMixin, QryUnoCellT[Result[str, None] | Result[None, Exception]]):
+class QryCellFormula(QryBase, LogMixin, QryUnoCellT[Union[Result[str, None], Result[None, Exception]]]):
     """Query to get a cell's formula without array formula markers and leading/trailing whitespace."""
 
     def __init__(self, cell: SheetCell) -> None:
@@ -34,7 +34,7 @@ class QryCellFormula(QryBase, LogMixin, QryUnoCellT[Result[str, None] | Result[N
         self._cell = cell
         self.log.debug("init done")
 
-    def execute(self) -> Result[str, None] | Result[None, Exception]:
+    def execute(self) -> Union[Result[str, None], Result[None, Exception]]:
         """
         Execute the query to get the cell's formula.
 

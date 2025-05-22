@@ -1,11 +1,6 @@
 from __future__ import annotations
 from typing import Dict, Tuple, TYPE_CHECKING
 
-try:
-    # python 3.12+
-    from typing import override  # type: ignore
-except ImportError:
-    from typing_extensions import override
 
 import uno
 import unohelper
@@ -20,17 +15,19 @@ from ..utils import str_util
 
 if TYPE_CHECKING:
     from com.sun.star.frame import XStatusListener
-    from ....___lo_pip___.oxt_logger.oxt_logger import OxtLogger
-    from ....___lo_pip___.lo_util.resource_resolver import ResourceResolver
+    from oxt.___lo_pip___.oxt_logger.oxt_logger import OxtLogger
+    from oxt.___lo_pip___.lo_util.resource_resolver import ResourceResolver
+    from oxt.pythonpath.libre_pythonista_lib.utils.custom_ext import override
 else:
     from ___lo_pip___.oxt_logger.oxt_logger import OxtLogger
     from ___lo_pip___.lo_util.resource_resolver import ResourceResolver
+    from libre_pythonista_lib.utils.custom_ext import override
 
 
 class DispatchRngSelectPopup(XDispatch, unohelper.Base):
     """If the View is not in PY_OBJ state the it is switched into PY_OBJ State."""
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:  # noqa: ANN003
         """
         Constructor:
 
@@ -60,7 +57,7 @@ class DispatchRngSelectPopup(XDispatch, unohelper.Base):
             raise
 
     @override
-    def addStatusListener(self, Control: XStatusListener, URL: URL) -> None:
+    def addStatusListener(self, Control: XStatusListener, URL: URL) -> None:  # noqa: N802, N803
         """
         registers a listener of a control for a specific URL at this object to receive status events.
 
@@ -80,7 +77,7 @@ class DispatchRngSelectPopup(XDispatch, unohelper.Base):
                 self._status_listeners[URL.Complete] = Control
 
     @override
-    def dispatch(self, URL: URL, Arguments: Tuple[PropertyValue, ...]) -> None:
+    def dispatch(self, URL: URL, Arguments: Tuple[PropertyValue, ...]) -> None:  # noqa: N803
         """
         Dispatches (executes) a URL
 
@@ -112,7 +109,7 @@ class DispatchRngSelectPopup(XDispatch, unohelper.Base):
                 return
 
     @override
-    def removeStatusListener(self, Control: XStatusListener, URL: URL) -> None:
+    def removeStatusListener(self, Control: XStatusListener, URL: URL) -> None:  # noqa: N802, N803
         """
         Un-registers a listener from a control.
         """

@@ -1,7 +1,7 @@
 # region Imports
 from __future__ import annotations
 import time
-from typing import Any, cast, TYPE_CHECKING, Tuple
+from typing import Any, cast, TYPE_CHECKING, Tuple, Optional
 
 try:
     # python 3.12+
@@ -29,6 +29,7 @@ from ooodev.dialog.dl_control import CtlButton, CtlTextEdit, CtlFixedText
 from ooodev.events.args.event_args import EventArgs
 from ooodev.loader.inst.doc_type import DocType
 from ooodev.utils.partial.the_dictionary_partial import TheDictionaryPartial
+from ooodev.calc import CalcDoc
 
 from ...const import DISPATCH_PY_CODE_VALIDATE, DISPATCH_SEL_RNG, CS_CMD_START
 from .window_listener import WindowListener
@@ -43,7 +44,6 @@ if TYPE_CHECKING:
     from com.sun.star.awt import MenuEvent
     from com.sun.star.lang import EventObject
     from ooodev.proto.office_document_t import OfficeDocumentT
-    from ooodev.calc import CalcDoc
     from ooodev.dialog.dl_control.ctl_base import DialogControlBase
     from ooodev.gui.menu.popup_menu import PopupMenu
     from ..window_type import WindowType
@@ -81,7 +81,8 @@ class DialogPython(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
         self._log.debug("Init")
         self._cfg = CodeCfg()
         self._rr = ResourceResolver(self.ctx)
-        self._doc = Lo.current_doc
+        self._doc = cast(CalcDoc, Lo.current_doc)
+        assert self._doc is not None
         self._doc.DOC_TYPE
         self._border_kind = BorderKind.BORDER_3D
         if self._cfg.has_size():
@@ -375,7 +376,7 @@ class DialogPython(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
     def _write_line(self, text: str) -> None:
         self._code.write_line(text)
 
-    def _write(self, data: str, sel: Tuple[int, int] | None = None) -> None:
+    def _write(self, data: str, sel: Optional[Tuple[int, int]] = None) -> None:
         """Append data to edit control text"""
         with self._log.indent(True):
             if not sel:
@@ -412,7 +413,7 @@ class DialogPython(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
 
     def _write_range_sel(self) -> None:
         with self._log.indent(True):
-            doc = cast("CalcDoc", self._doc)
+            doc = self._doc
             self._log.debug("_write_range_sel_popup() Write Range Selection Popup")
             try:
                 glbs = GblEvents()

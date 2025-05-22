@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Iterable
+from typing import TYPE_CHECKING, Iterable, Union
 from ooodev.utils.helper.dot_dict import DotDict
 
 if TYPE_CHECKING:
@@ -15,7 +15,7 @@ else:
 # tested in: tests/test_cmd/test_cmd_py_src.py
 
 
-class QryEmpty(QryBase, QryT[Result[Iterable[Iterable[object]], None] | Result[None, Exception]]):
+class QryEmpty(QryBase, QryT[Union[Result[Iterable[Iterable[object]], None], Result[None, Exception]]]):
     """Gets the empty result value"""
 
     def __init__(self, data: DotDict) -> None:
@@ -27,7 +27,7 @@ class QryEmpty(QryBase, QryT[Result[Iterable[Iterable[object]], None] | Result[N
         QryBase.__init__(self)
         self._data = data
 
-    def execute(self) -> Result[Iterable[Iterable[object]], None] | Result[None, Exception]:
+    def execute(self) -> Union[Result[Iterable[Iterable[object]], None], Result[None, Exception]]:
         """
         Executes the query to get the result.
 

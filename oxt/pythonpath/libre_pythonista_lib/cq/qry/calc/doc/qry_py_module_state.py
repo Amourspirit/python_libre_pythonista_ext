@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING, Union
 
 if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module_t import PyModuleT
@@ -22,7 +22,7 @@ else:
 class QryPyModuleState(QryBase, LogMixin, QryT[PyModuleState]):
     """Gets the singleton PyModuleState"""
 
-    def __init__(self, mod: PyModuleT | None = None) -> None:
+    def __init__(self, mod: Union[PyModuleT, None] = None) -> None:
         """Constructor
 
         Args:

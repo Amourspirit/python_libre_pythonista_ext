@@ -43,7 +43,7 @@ class CmdControlImgName(CmdBase, LogMixin, CmdCellCtlT):
         self._config = BasicConfig()
         self._code_name = None
         self._current_control_name = cast(Union[str, None], NULL_OBJ)
-        self._current_ctl: Dict[str, Any] | None = None
+        self._current_ctl: Union[Dict[str, Any], None] = None
         self.log.debug("init done for cell %s", cell.cell_obj)
 
     def _qry_control_name(self) -> str:

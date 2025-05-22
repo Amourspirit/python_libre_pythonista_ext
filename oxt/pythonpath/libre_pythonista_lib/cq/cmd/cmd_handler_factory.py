@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 
 if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.cmd_handler_t import CmdHandlerT
@@ -10,7 +10,7 @@ else:
 class CmdHandlerFactory:
     """Factory for creating command and query handlers"""
 
-    _cmd_handler: CmdHandlerT | None = None
+    _cmd_handler: Union[CmdHandlerT, None] = None
 
     @classmethod
     def get_cmd_handler(cls) -> CmdHandlerT:

@@ -80,7 +80,7 @@ class DummyLogger:
     def getChild(self, suffix):
         return None
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<{self.__class__.__name__}()>"
 
     # endregion Logger Methods

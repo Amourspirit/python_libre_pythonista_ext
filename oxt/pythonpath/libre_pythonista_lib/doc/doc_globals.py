@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING, Optional
 import os
 from enum import Enum
 import uno
@@ -177,13 +177,13 @@ class DocGlobals(EventsPartial, metaclass=_MetaGlobals):
         return cls._IS_PYTEST_RUNNING
 
     @staticmethod
-    def get_current(uid: str | None = None) -> DocGlobals:
+    def get_current(uid: Optional[str] = None) -> DocGlobals:
         """
         Get the current DocGlobals instance.
         The instance is derived from the current LibreOffice document.
 
         Args:
-            uid (str | None, optional): The runtime unique id of the LibreOffice document. Defaults to None.
+            uid (str, None, optional): The runtime unique id of the LibreOffice document. Defaults to None.
 
         Raises:
             ValueError: If there is no current document.

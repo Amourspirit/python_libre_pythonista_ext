@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 from ooodev.calc import CalcCell
 
 if TYPE_CHECKING:
@@ -22,7 +22,7 @@ else:
     from libre_pythonista_lib.utils.result import Result
 
 
-class QryCellSrcCode(QryBase, LogMixin, QryCellT[Result[str, None] | Result[None, Exception]]):
+class QryCellSrcCode(QryBase, LogMixin, QryCellT[Union[Result[str, None], Result[None, Exception]]]):
     """Gets the source code for a cell"""
 
     def __init__(self, cell: CalcCell, uri: str = "") -> None:
@@ -48,7 +48,7 @@ class QryCellSrcCode(QryBase, LogMixin, QryCellT[Result[str, None] | Result[None
             return result.data
         raise result.error
 
-    def execute(self) -> Result[str, None] | Result[None, Exception]:
+    def execute(self) -> Union[Result[str, None], Result[None, Exception]]:
         """
         Executes the query to get the cell source code.
 

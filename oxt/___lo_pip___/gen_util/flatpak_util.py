@@ -1,18 +1,18 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 import subprocess
 
 if TYPE_CHECKING:
     from ..oxt_logger import OxtLogger
 
 
-def is_flatpak_app_installed(app_name: str, log: OxtLogger | None = None) -> bool:
+def is_flatpak_app_installed(app_name: str, log: Union[OxtLogger, None] = None) -> bool:
     """
     Check if a Flatpak application is installed on the system.
 
     Args:
         app_name (str): The name of the Flatpak application to check.
-        log (OxtLogger | None, optional): An optional logger to use for logging errors. Defaults to None.
+        log (OxtLogger, None, optional): An optional logger to use for logging errors. Defaults to None.
 
     Returns:
         bool: True if the application is installed, False otherwise.
@@ -41,7 +41,7 @@ def is_flatpak_app_installed(app_name: str, log: OxtLogger | None = None) -> boo
 
         # Check if the app_name is in the list of installed apps
         installed_apps = result.stdout.splitlines()
-        for app in installed_apps:
+        for app in installed_apps:  # noqa: SIM110
             if app_name in app:
                 return True
         return False
@@ -51,7 +51,7 @@ def is_flatpak_app_installed(app_name: str, log: OxtLogger | None = None) -> boo
         return False
 
 
-def open_url_in_browser(url: str, log: OxtLogger | None = None):
+def open_url_in_browser(url: str, log: Union[OxtLogger, None] = None) -> None:
     """
     Open the specified URL in the default web browser.
 

@@ -19,11 +19,8 @@ class SingletonBase(object):
 
     _instances = {}
 
-    def __new__(cls, *args, **kwargs):
-        if "single_key" not in kwargs:
-            key = cls._get_single_key()
-        else:
-            key = kwargs.pop("single_key")
+    def __new__(cls, *args, **kwargs) -> Any:  # noqa: ANN002, ANN003, ANN401
+        key = cls._get_single_key() if "single_key" not in kwargs else kwargs.pop("single_key")
         if not key:
             raise ValueError("Unable to get single_key")
         if key not in cls._instances:
@@ -31,9 +28,7 @@ class SingletonBase(object):
             inst = cast(Any, super().__new__(cls))
             inst.singleton_doc = Lo.current_doc
             inst.singleton_key = key
-            inst.runtime_uid = (
-                inst.singleton_doc.runtime_uid
-            )  # key.split("_", maxsplit=1)[0]
+            inst.runtime_uid = inst.singleton_doc.runtime_uid  # type: ignore # key.split("_", maxsplit=1)[0]
             cls._instances[key] = inst
         return cls._instances[key]
 
@@ -45,30 +40,24 @@ class SingletonBase(object):
         if eargs.event_data.key:
             return eargs.event_data.key
         try:
-            return f"{Lo.current_doc.runtime_uid}_uid_{cls.__name__}"
+            return f"{Lo.current_doc.runtime_uid}_uid_{cls.__name__}"  # type: ignore
         except Exception as e:
-            raise SingletonKeyError(
-                f"Error getting single key for class name: {cls.__name__}"
-            ) from e
+            raise SingletonKeyError(f"Error getting single key for class name: {cls.__name__}") from e
 
     @classmethod
-    def remove_instance(cls, key: Any) -> None:
+    def remove_instance(cls, key: object) -> None:
         if key in cls._instances:
             del cls._instances[key]
 
     @classmethod
     def remove_instance_by_uid(cls, uid: str) -> None:
         start_key = f"{uid}_uid_"
-        rm_keys = [
-            k
-            for k in cls._instances.keys()
-            if isinstance(k, str) and k.startswith(start_key)
-        ]
+        rm_keys = [k for k in cls._instances if isinstance(k, str) and k.startswith(start_key)]
         for key in rm_keys:
             del cls._instances[key]
 
     @classmethod
-    def remove_this_instance(cls, inst: Any) -> None:
+    def remove_this_instance(cls, inst: object) -> None:
         key = getattr(inst, "singleton_key", None)
         if not key:
             return
@@ -83,7 +72,4 @@ class SingletonBase(object):
         This is specific to the current document instance.
         """
         key_inst = cls._get_single_key()
-        for key in cls._instances.keys():
-            if key == key_inst:
-                return True
-        return False
+        return any(key == key_inst for key in cls._instances)

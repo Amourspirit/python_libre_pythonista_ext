@@ -42,7 +42,7 @@ debug_skip_events = [] # ["lp_cell_moved"]
 [tool.oxt.config]
 auto_install_in_site_packages = true # https://tinyurl.com/ymeh4c9j#auto_install_in_site_packages
 build_dir = "build" # https://tinyurl.com/ymeh4c9j#build_dir
-dist_dir = "dist" # "dist" https://tinyurl.com/ymeh4c9j#dist_dir should be changed to something like dist, tmp_dist is not included in git
+dist_dir = "tmp_dist" # "dist" https://tinyurl.com/ymeh4c9j#dist_dir should be changed to something like dist, tmp_dist is not included in git
 install_wheel = true # https://tinyurl.com/ymeh4c9j#install_wheel
 oxt_name = "LibrePythonista" # https://tinyurl.com/ymeh4c9j#oxt_name
 py_pkg_dir = "py_pkgs" # https://tinyurl.com/ymeh4c9j#py_pkg_dir
@@ -93,7 +93,7 @@ url_pip = 'https://bootstrap.pypa.io/get-pip.py' # https://tinyurl.com/ymeh4c9j#
 # set log_file to "" to disable logging
 log_file = "libre_pythonista.log" # https://tinyurl.com/ymeh4c9j#log_file
 log_name = "LibrePythonista Installer" # https://tinyurl.com/ymeh4c9j#log_name
-log_level = "INFO" # NONE, DEBUG, INFO, WARNING, ERROR, CRITICAL https://tinyurl.com/ymeh4c9j#log_level
+log_level = "DEBUG" # NONE, DEBUG, INFO, WARNING, ERROR, CRITICAL https://tinyurl.com/ymeh4c9j#log_level
 log_format = "%(asctime)s - %(levelname)s - %(name)s: %(message)s" # https://tinyurl.com/ymeh4c9j#log_format
 # log_format = "%(asctime)s - %(levelname)s - %(indent_str)s%(name)s: %(message)s"
 log_add_console = true # should be false for production # https://tinyurl.com/ymeh4c9j#log_add_console
@@ -115,7 +115,12 @@ odfpy = ">=1.4"
 ooo-dev-tools = ">=0.53.3"
 seaborn = ">=0.13"
 sortedcontainers = ">=2.4.0"
-debugpy = ">=1.8"
+#debugpy = ">=1.8.14"
+
+# [[tool.oxt.py_packages]]
+# name="pydevd_pycharm"
+# version="251.23774.444"
+# restriction="=="
 
 [[tool.oxt.py_packages]]
 # https://tinyurl.com/ymeh4c9j#tooloxtpy_packages
@@ -166,7 +171,7 @@ python_versions=[">=3.10"]
 
 [[tool.oxt.lp_editor_py_packages]]
 name="librepythonista-python-editor"
-version="0.1.8"
+version="0.1.9"
 platforms=["all"]
 ignore_platforms=["flatpak", "snap"]
 
@@ -228,12 +233,13 @@ dev = [
     "pytest>=8.3.4",
     "oooscript>=2.1.1",
     "lxml>=5.3.0",
-    "debuggy>=3.0.1",
     "oooenv>=0.2.4",
     "matplotlib>=3.7.5",
     "pytest-mock>=3.14.0",
     "viztracer>=0.16.3",
     "pandas>=2",
+    "ruff>=0.11.8",
+    "debugpy>=1.8.14",
 ]
 
 [tool.hatch.build]

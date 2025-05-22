@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Optional, TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING, Union
 from pathlib import Path
 
 if TYPE_CHECKING:
@@ -52,7 +52,7 @@ class VizTracerMgr:
         self._is_started = True
         self._is_stopped = False
 
-    def stop(self, out_file: str | Path = "") -> None:
+    def stop(self, out_file: Union[str, Path] = "") -> None:
         """
         Stops the tracer if it is running and saves the trace data to the specified output file.
 

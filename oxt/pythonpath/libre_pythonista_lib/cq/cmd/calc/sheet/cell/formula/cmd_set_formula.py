@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, cast, TYPE_CHECKING
+from typing import Any, cast, TYPE_CHECKING, Union
 
 from com.sun.star.sheet import CellFlags
 
@@ -50,7 +50,7 @@ class CmdSetFormula(CmdBase, LogMixin, CmdCellT):
     If the cell is a formula and not an array formula then it will be converted into an array formula.
     """
 
-    def __init__(self, cell: CalcCell, formula: str | None = None) -> None:
+    def __init__(self, cell: CalcCell, formula: Union[str, None] = None) -> None:
         """
         Initialize the command with a target cell.
 
@@ -62,7 +62,7 @@ class CmdSetFormula(CmdBase, LogMixin, CmdCellT):
         LogMixin.__init__(self)
         self._cell = cell
         self._undo_available = False
-        self._current_formula: str | None = None
+        self._current_formula: Union[str, None] = None
         self._is_array_formula = cast(bool, None)
         self._is_formula = cast(bool, None)
         self._current_col_rows = (0, 0)

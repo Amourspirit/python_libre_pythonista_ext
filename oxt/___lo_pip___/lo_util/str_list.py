@@ -1,6 +1,6 @@
 from __future__ import annotations
 import contextlib
-from typing import Any, Generator, Iterable, overload
+from typing import Any, Generator, Iterable, overload, Union
 
 
 class StrList:
@@ -10,7 +10,7 @@ class StrList:
     .. versionadded:: 0.41.0
     """
 
-    def __init__(self, strings: Iterable[str] | None = None, sep: str = ";") -> None:
+    def __init__(self, strings: Union[Iterable[str], None] = None, sep: str = ";") -> None:
         """
         Constructor
 
@@ -246,7 +246,7 @@ class StrList:
     @overload
     def __getitem__(self, index: slice) -> StrList: ...
 
-    def __getitem__(self, index: int | slice) -> Any:
+    def __getitem__(self, index: Union[int, slice]) -> Any:
         """
         Get an item from the list.
 

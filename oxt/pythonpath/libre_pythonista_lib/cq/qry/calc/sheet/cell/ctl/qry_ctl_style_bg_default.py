@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcCell
@@ -23,7 +23,7 @@ else:
 class QryCtlStyleBgDefault(QryBase, QryCellT[Color]):
     """Gets the control name"""
 
-    def __init__(self, cell: CalcCell, ctl: Ctl | None = None) -> None:
+    def __init__(self, cell: CalcCell, ctl: Optional[Ctl] = None) -> None:
         """Constructor
 
         Args:

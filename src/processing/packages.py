@@ -2,7 +2,7 @@ from __future__ import annotations
 import os
 import sys
 import shutil
-from typing import Set, cast, List
+from typing import Set, cast, List, Union
 from pathlib import Path
 
 import toml
@@ -68,7 +68,7 @@ class Packages(metaclass=Singleton):
             return s_path
         raise FileNotFoundError("Unable to get Virtual Environment Path")
 
-    def copy_packages(self, dst: str | Path) -> None:
+    def copy_packages(self, dst: Union[str, Path]) -> None:
         """Copies the packages to the build directory."""
         if not self._pkg_names:
             return
@@ -79,7 +79,7 @@ class Packages(metaclass=Singleton):
         for pkg_name in self._pkg_names:
             shutil.copytree(src=self.site_packages_path / pkg_name, dst=dest / pkg_name)
 
-    def copy_files(self, dst: str | Path) -> None:
+    def copy_files(self, dst: Union[str, Path]) -> None:
         """Copies the files to the build directory."""
         if not self._pkg_files:
             return
@@ -90,7 +90,7 @@ class Packages(metaclass=Singleton):
         for pkg_file in self._pkg_files:
             shutil.copy(src=self.site_packages_path / pkg_file, dst=dest / pkg_file)
 
-    def clear_cache(self, dst: str | Path) -> None:
+    def clear_cache(self, dst: Union[str, Path]) -> None:
         """
         Recursively removes generic `__pycache__` .
 

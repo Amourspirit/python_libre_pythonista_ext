@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 from ooodev.calc import CalcCell
 
 if TYPE_CHECKING:
@@ -18,7 +18,7 @@ else:
 class QryLblDefault(QryBase, QryCellT[str]):
     """Gets the default label of the cell such as ``<>``"""
 
-    def __init__(self, cell: CalcCell, ctl: Ctl | None = None) -> None:
+    def __init__(self, cell: CalcCell, ctl: Optional[Ctl] = None) -> None:
         """Constructor
 
         Args:

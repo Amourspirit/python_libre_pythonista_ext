@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, Dict, Tuple
+from typing import Any, Dict, Tuple, Union
 import ssl
 import json
 from pathlib import Path
@@ -22,7 +22,7 @@ class Download(metaclass=Singleton):
         self,
         url: str,
         data: Any = None,
-        headers: Dict[str, str] | None = None,
+        headers: Union[Dict[str, str], None] = None,
         verify: bool = True,
         get_json: bool = False,
     ) -> Tuple[Any, Dict[str, str], str]:
@@ -74,7 +74,7 @@ class Download(metaclass=Singleton):
 
         return result, headers, err
 
-    def save_binary(self, pth: Path | str, data: Any) -> bool:
+    def save_binary(self, pth: Union[Path, str], data: Any) -> bool:
         """
         Save binary data to file
 

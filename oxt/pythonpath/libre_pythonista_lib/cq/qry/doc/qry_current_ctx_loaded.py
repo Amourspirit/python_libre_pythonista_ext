@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional, Union
 
 
 if TYPE_CHECKING:
@@ -23,17 +23,17 @@ else:
 class QryCurrentCtxLoaded(QryBase, QryT[bool]):
     """Query to check if the current document context is loaded."""
 
-    def __init__(self, uid: str | None = None) -> None:
+    def __init__(self, uid: Optional[str] = None) -> None:
         """
         Initialize the query.
 
         Args:
-            uid (str | None, optional): The runtime unique id of the document. Defaults to None.
+            uid (str, optional): The runtime unique id of the document. Defaults to None.
         """
         QryBase.__init__(self)
         self._uid = uid
 
-    def _qry_globals(self) -> Result[DocGlobals, None] | Result[None, Exception]:
+    def _qry_globals(self) -> Union[Result[DocGlobals, None], Result[None, Exception]]:
         """
         Get the document globals using QryDocGlobals.
 

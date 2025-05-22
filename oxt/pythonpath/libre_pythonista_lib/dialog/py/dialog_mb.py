@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, cast, TYPE_CHECKING, Tuple
+from typing import Any, cast, TYPE_CHECKING, Tuple, Optional
 import time
 from threading import Thread
 
@@ -88,13 +88,13 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
     MIN_HEIGHT = HEADER + FOOTER + 30
     MIN_WIDTH = 225
 
-    def __new__(cls, ctx: Any, inst_id: str, cell: CalcCell):
+    def __new__(cls, ctx: Any, inst_id: str, cell: CalcCell) -> DialogMb:  # noqa: ANN401
         if inst_id not in cls._instances:
             cls._instances[inst_id] = super(DialogMb, cls).__new__(cls)
             cls._instances[inst_id]._is_init = False
         return cls._instances[inst_id]
 
-    def __init__(self, ctx: Any, inst_id: str, cell: CalcCell) -> None:
+    def __init__(self, ctx: Any, inst_id: str, cell: CalcCell) -> None:  # noqa: ANN401
         if getattr(self, "_is_init", False):
             return
         TheDictionaryPartial.__init__(self)
@@ -213,11 +213,11 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
 
     # region Misc Methods
 
-    def _set_tab_index(self, ctl: Any) -> None:
+    def _set_tab_index(self, ctl: Any) -> None:  # noqa: ANN401
         ctl.tab_index = self._current_tab_index
         self._current_tab_index += 1
 
-    def get_parent(self):
+    def get_parent(self) -> Any:  # noqa: ANN401
         """Returns parent frame"""
         with self._log.indent(True):
             try:
@@ -785,7 +785,7 @@ class DialogMb(TheDictionaryPartial, XTopWindowListener, unohelper.Base):
     def _write_line(self, text: str) -> None:
         self._code.write_line(text)
 
-    def _write(self, data: str, sel: Tuple[int, int] | None = None) -> None:
+    def _write(self, data: str, sel: Optional[Tuple[int, int]] = None) -> None:
         """Append data to edit control text"""
         with self._log.indent(True):
             if not sel:

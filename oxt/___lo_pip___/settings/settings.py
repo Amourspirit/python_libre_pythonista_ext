@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, Dict, cast, TYPE_CHECKING
+from typing import Any, Dict, cast, TYPE_CHECKING, Union
 import uno
 
 from ..lo_util.configuration import Configuration
@@ -19,7 +19,7 @@ class Settings(metaclass=Singleton):
     """Singleton Class. Manages Settings for the extension."""
 
     def __init__(self) -> None:
-        self._logger: OxtLogger | None = None
+        self._logger: Union[OxtLogger, None] = None
         self._configuration = Configuration()
         cfg = BasicConfig()
         self._lo_identifier = cfg.lo_identifier
@@ -30,13 +30,13 @@ class Settings(metaclass=Singleton):
 
     def _set_events(self) -> None:
         def on_configuration_saved(src: Any, event_args: EventArgs) -> None:
-            if self._logger:
+            if self._logger is not None:
                 with self._logger.indent(True):
                     self._logger.debug("Settings. Configuration saved. Updating settings..")
             self._update_settings()
 
         def on_configuration_str_lst_saved(src: Any, event_args: EventArgs) -> None:
-            if self._logger:
+            if self._logger is not None:
                 with self._logger.indent(True):
                     self._logger.debug("Settings. Configuration str lst saved. Updating settings..")
             self._update_settings()

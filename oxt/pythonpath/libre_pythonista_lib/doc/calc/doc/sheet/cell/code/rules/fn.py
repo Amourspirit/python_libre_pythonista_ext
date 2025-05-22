@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import Optional
 import ast
 import types
 from ooodev.utils.helper.dot_dict import DotDict
@@ -13,7 +14,7 @@ class Fn:
     def __init__(self) -> None:
         self._result = None
 
-    def set_values(self, mod: types.ModuleType, code: str, ast_mod: ast.Module | None) -> None:
+    def set_values(self, mod: types.ModuleType, code: str, ast_mod: Optional[ast.Module]) -> None:
         """
         Set the values for the class.
 

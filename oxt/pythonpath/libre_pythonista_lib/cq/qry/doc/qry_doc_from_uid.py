@@ -1,7 +1,6 @@
 from __future__ import annotations
+from typing import Any, cast, TYPE_CHECKING, Union
 
-
-from typing import Any, cast, TYPE_CHECKING
 from ooodev.loader import Lo
 from ooodev.utils.factory.doc_factory import doc_factory
 
@@ -21,7 +20,7 @@ else:
 # tested in: tests/test_cmd_qry/test_doc/test_qry_doc_from_uid.py
 
 
-class QryDocFromUid(QryBase, LogMixin, QryT[OfficeDocumentT | None]):
+class QryDocFromUid(QryBase, LogMixin, QryT[Union[OfficeDocumentT, None]]):
     """
     Query to find a LibreOffice document by its RuntimeUID.
 
@@ -40,14 +39,14 @@ class QryDocFromUid(QryBase, LogMixin, QryT[OfficeDocumentT | None]):
         self._uid = uid
         self.log.debug("init done for uid %s", uid)
 
-    def execute(self) -> OfficeDocumentT | None:
+    def execute(self) -> Union[OfficeDocumentT, None]:
         """
         Executes the query to find a document with the specified RuntimeUID.
 
         First checks the current active document, then searches through all open documents.
 
         Returns:
-            OfficeDocumentT | None: The found document wrapped in a document factory instance,
+            OfficeDocumentT, None: The found document wrapped in a document factory instance,
                 or None if no matching document is found or an error occurs.
         """
         try:

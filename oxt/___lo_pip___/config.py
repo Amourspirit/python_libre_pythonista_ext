@@ -2,7 +2,7 @@
 # region Imports
 from __future__ import annotations
 from pathlib import Path
-from typing import Dict, List, Set, TYPE_CHECKING
+from typing import Dict, List, Set, TYPE_CHECKING, Union
 import uno
 import os
 import sys
@@ -44,7 +44,7 @@ class Config(metaclass=Singleton):
 
     # region Init
 
-    def __init__(self):
+    def __init__(self) -> None:
         if not TYPE_CHECKING:
             from .lo_util import Session
             from .info import ExtensionInfo
@@ -141,7 +141,7 @@ class Config(metaclass=Singleton):
             return pp
         return Path(sys.executable)
 
-    def find_program_directory(self, start_path: str) -> Path | None:
+    def find_program_directory(self, start_path: str) -> Union[Path, None]:
         path = Path(start_path)
         for parent in path.parents:
             if parent.name == "program":
@@ -911,6 +911,24 @@ class Config(metaclass=Singleton):
         The value for this property can be set in pyproject.toml (tool.libre_pythonista.config.lp_py_cell_edit_sock_timeout)
         """
         return self._basic_config.lp_py_cell_edit_sock_timeout
+
+    @property
+    def libreoffice_debug_port(self) -> int:
+        """
+        Gets the LibreOffice debug port.
+
+        The value for this property can be set in pyproject.toml (tool.oxt.token.libreoffice_debug_port)
+        """
+        return self._basic_config.libreoffice_debug_port
+
+    @property
+    def lp_debug_port(self) -> int:
+        """
+        Gets the LibrePythonista debug port.
+
+        The value for this property can be set in pyproject.toml (tool.oxt.token.lp_debug_port)
+        """
+        return self._basic_config.lp_debug_port
 
     # endregion tool.libre_pythonista.config
     @property

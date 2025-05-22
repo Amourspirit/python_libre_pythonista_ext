@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import cast, TYPE_CHECKING
+from typing import cast, TYPE_CHECKING, Union
 
 
 if TYPE_CHECKING:
@@ -47,16 +47,16 @@ class CmdDeleteControl(CmdBase, LogMixin, CmdCellT):
 
     Args:
         cell (CalcCell): The cell to delete the control for
-        mod (PyModuleT | None): Optional Python module. If None, will be queried
+        mod (PyModuleT, None): Optional Python module. If None, will be queried
     """
 
-    def __init__(self, cell: CalcCell, mod: PyModuleT | None = None) -> None:
+    def __init__(self, cell: CalcCell, mod: Union[PyModuleT, None] = None) -> None:
         """
         Initialize the command with a cell and optional module.
 
         Args:
             cell (CalcCell): The cell to delete the control for
-            mod (PyModuleT | None, optional): Optional Python module. If None, will be queried
+            mod (PyModuleT, None, optional): Optional Python module. If None, will be queried
         """
         CmdBase.__init__(self)
         LogMixin.__init__(self)

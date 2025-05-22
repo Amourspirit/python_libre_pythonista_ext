@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 # from ooodev.loader import Lo
 # from ooodev.events.lo_events import LoEvents
@@ -30,7 +30,7 @@ _KEY = "libre_pythonista_lib.event.shared_event.SharedEvent"
 
 
 class SharedEvent(DocEventPartial, LogMixin):
-    def __new__(cls, doc: OfficeDocumentT | None = None) -> SharedEvent:
+    def __new__(cls, doc: Optional[OfficeDocumentT] = None) -> SharedEvent:
         gbl_cache = DocGlobals.get_current() if doc is None else DocGlobals.get_current(doc.runtime_uid)
         if _KEY in gbl_cache.mem_cache:
             return gbl_cache.mem_cache[_KEY]
@@ -41,7 +41,7 @@ class SharedEvent(DocEventPartial, LogMixin):
         gbl_cache.mem_cache[_KEY] = inst
         return inst
 
-    def __init__(self, doc: OfficeDocumentT | None = None) -> None:
+    def __init__(self, doc: Optional[OfficeDocumentT] = None) -> None:
         if getattr(self, "_is_init", True):
             return
         DocEventPartial.__init__(self, doc=doc)

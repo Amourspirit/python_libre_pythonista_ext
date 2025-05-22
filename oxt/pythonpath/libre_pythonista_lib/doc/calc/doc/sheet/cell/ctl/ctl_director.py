@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, TYPE_CHECKING, Type, overload
+from typing import Any, TYPE_CHECKING, Type, overload, Union
 from ooodev.calc import CalcCell
 
 try:
@@ -50,7 +50,7 @@ else:
     QryHandlerT = Any
 
 
-def _get_control_class(ctl_kind: CtlKind) -> Type[CtlBase] | None:
+def _get_control_class(ctl_kind: CtlKind) -> Union[Type[CtlBase], None]:
     """
     Gets the control class for the given control kind.
 
@@ -58,7 +58,7 @@ def _get_control_class(ctl_kind: CtlKind) -> Type[CtlBase] | None:
         ctl_kind (CtlKind): The kind of control to get the class for
 
     Returns:
-        Type[CtlBase] | None: The control class or None if not found
+        Type[CtlBase], None: The control class or None if not found
     """
     # Import controls here to avoid circular imports
     if not TYPE_CHECKING:
@@ -127,10 +127,10 @@ def create_control(calc_cell: CalcCell, ctl_kind: Literal[CtlKind.NONE]) -> CtlN
 @overload
 def create_control(calc_cell: CalcCell, ctl_kind: Literal[CtlKind.MAT_PLT_FIGURE]) -> CtlMatPlotFig: ...
 @overload
-def create_control(calc_cell: CalcCell, ctl_kind: CtlKind) -> CtlBase | None: ...
+def create_control(calc_cell: CalcCell, ctl_kind: CtlKind) -> Union[CtlBase, None]: ...
 
 
-def create_control(calc_cell: CalcCell, ctl_kind: CtlKind) -> CtlBase | None:
+def create_control(calc_cell: CalcCell, ctl_kind: CtlKind) -> Union[CtlBase, None]:
     """Creates a control for the given cell and control kind."""
     control_class = _get_control_class(ctl_kind)
     if control_class is None:
@@ -169,7 +169,7 @@ def remove_control(calc_cell: CalcCell) -> bool:
     return batch.success
 
 
-def get_control(calc_cell: CalcCell) -> CtlBase | None:
+def get_control(calc_cell: CalcCell) -> Union[CtlBase, None]:
     """Gets a control for the given cell and control kind."""
 
     qry = QryCtlKind(calc_cell)

@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union, Optional
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcCell
@@ -20,16 +20,16 @@ else:
     from libre_pythonista_lib.utils.result import Result
 
 
-class QryState(QryBase, QryCellT[Result[StateKind, None] | Result[None, Exception]]):
+class QryState(QryBase, QryCellT[Union[Result[StateKind, None], Result[None, Exception]]]):
     """Gets the state of the cell"""
 
-    def __init__(self, cell: CalcCell, ctl: Ctl | None = None) -> None:
+    def __init__(self, cell: CalcCell, ctl: Optional[Ctl] = None) -> None:
         QryBase.__init__(self)
         self.kind = CalcQryKind.CELL
         self._cell = cell
         self._ctl = ctl
 
-    def _qry_state_prop(self) -> Result[StateKind, None] | Result[None, Exception]:
+    def _qry_state_prop(self) -> Union[Result[StateKind, None], Result[None, Exception]]:
         """
         Queries the cell's state using QryPropState.
 
@@ -39,7 +39,7 @@ class QryState(QryBase, QryCellT[Result[StateKind, None] | Result[None, Exceptio
         qry = QryPropState(cell=self._cell)
         return self._execute_qry(qry)
 
-    def execute(self) -> Result[StateKind, None] | Result[None, Exception]:
+    def execute(self) -> Union[Result[StateKind, None], Result[None, Exception]]:
         """
         Executes the query and gets the state of the cell.
 

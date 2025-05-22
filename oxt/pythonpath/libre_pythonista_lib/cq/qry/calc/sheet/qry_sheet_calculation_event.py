@@ -1,7 +1,5 @@
 from __future__ import annotations
-
-
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 
 
 if TYPE_CHECKING:
@@ -21,7 +19,7 @@ else:
     from libre_pythonista_lib.kind.calc_qry_kind import CalcQryKind
 
 
-class QrySheetCalculationEvent(QryBase, LogMixin, QrySheetCacheT[str | None]):
+class QrySheetCalculationEvent(QryBase, LogMixin, QrySheetCacheT[Union[str, None]]):
     def __init__(self, sheet: CalcSheet) -> None:
         QryBase.__init__(self)
         LogMixin.__init__(self)
@@ -29,13 +27,13 @@ class QrySheetCalculationEvent(QryBase, LogMixin, QrySheetCacheT[str | None]):
         self._sheet = sheet
         self.log.debug("init done for sheet %s", sheet.name)
 
-    def execute(self) -> str | None:
+    def execute(self) -> Union[str, None]:
         """
         Executes the query to get the script URL.
         The url will start with ``vnd.sun.star.script:``
 
         Returns:
-            str | None: The script URL if successful, otherwise None.
+            str, None: The script URL if successful, otherwise None.
         """
 
         try:

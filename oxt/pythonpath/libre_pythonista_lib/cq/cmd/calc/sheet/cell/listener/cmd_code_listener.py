@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import cast, TYPE_CHECKING
+from typing import cast, TYPE_CHECKING, Union
 
 
 if TYPE_CHECKING:
@@ -62,7 +62,7 @@ class CmdCodeListener(CmdBase, LogMixin, CmdCellT):
         qry = QryCodeCellListeners(self._cell.calc_doc)
         return self._execute_qry(qry)
 
-    def _qry_code_name(self) -> Result[str, None] | Result[None, Exception]:
+    def _qry_code_name(self) -> Union[Result[str, None], Result[None, Exception]]:
         """
         Query the code name for a cell.
 

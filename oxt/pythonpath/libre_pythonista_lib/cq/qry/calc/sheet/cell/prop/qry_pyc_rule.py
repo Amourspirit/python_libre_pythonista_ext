@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcCell
@@ -20,7 +20,7 @@ else:
     from libre_pythonista_lib.utils.result import Result
 
 
-class QryPycRule(QryBase, QryCellT[Result[RuleNameKind, None] | Result[None, Exception]]):
+class QryPycRule(QryBase, QryCellT[Union[Result[RuleNameKind, None], Result[None, Exception]]]):
     """Gets the pyc rule of the cell such as ``CELL_DATA_TYPE_STR``"""
 
     def __init__(self, cell: CalcCell) -> None:
@@ -28,7 +28,7 @@ class QryPycRule(QryBase, QryCellT[Result[RuleNameKind, None] | Result[None, Exc
         self.kind = CalcQryKind.CELL
         self._cell = cell
 
-    def execute(self) -> Result[RuleNameKind, None] | Result[None, Exception]:
+    def execute(self) -> Union[Result[RuleNameKind, None], Result[None, Exception]]:
         """
         Executes the query and gets the pyc rule of the cell.
 

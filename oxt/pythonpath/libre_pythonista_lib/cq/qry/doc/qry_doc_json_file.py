@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 
 from ooodev.io.json.doc_json_file import DocJsonFile
 
@@ -22,7 +22,7 @@ else:
 # tested in tests/test_cmd/test_cmd_lp_doc_json_file.py
 
 
-class QryDocJsonFile(QryBase, LogMixin, QryCacheT[Result[DocJsonFile, None] | Result[None, Exception]]):
+class QryDocJsonFile(QryBase, LogMixin, QryCacheT[Union[Result[DocJsonFile, None], Result[None, Exception]]]):
     def __init__(self, doc: OfficeDocumentT, file_name: str, root_dir: str = "json", ext: str = "json") -> None:
         QryBase.__init__(self)
         LogMixin.__init__(self)
@@ -34,7 +34,7 @@ class QryDocJsonFile(QryBase, LogMixin, QryCacheT[Result[DocJsonFile, None] | Re
         self.file_name = file_name
         self.log.debug("init done for doc %s", doc.runtime_uid)
 
-    def execute(self) -> Result[DocJsonFile, None] | Result[None, Exception]:
+    def execute(self) -> Union[Result[DocJsonFile, None], Result[None, Exception]]:
         """
         Executes the query to get the shared event.
 

@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING, Union, Optional
 
 from ooodev.calc import CalcCell, CalcCellRange
 from ooodev.utils.data_type.range_obj import RangeObj
@@ -86,7 +86,7 @@ class CmdToggleFormula(CmdBase, LogMixin, CmdCellT):
     Inherits from CmdBase for command functionality, LogMixin for logging, and CmdCellT for cell-specific operations.
     """
 
-    def __init__(self, cell: CalcCell, mod: PyModuleT | None = None, style: StyleT | None = None) -> None:
+    def __init__(self, cell: CalcCell, mod: Optional[PyModuleT] = None, style: Optional[StyleT] = None) -> None:
         """
         Initialize the command with a target cell.
 
@@ -97,7 +97,7 @@ class CmdToggleFormula(CmdBase, LogMixin, CmdCellT):
         LogMixin.__init__(self)
         self._cell = cell
         self._mod = mod
-        self._cmd: CmdCellT | None = None
+        self._cmd: Union[CmdCellT, None] = None
         self._success_cmds: list[CmdT] = []
         self._formula_state = StateKind.UNKNOWN  # 0: unknown, 1: normal formula, 2: array formula
         if style is None:

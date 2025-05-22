@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcCell
@@ -18,7 +18,7 @@ else:
     from libre_pythonista_lib.utils.result import Result
 
 
-class QryModifyTriggerEvent(QryBase, QryCellT[Result[str, None] | Result[None, Exception]]):
+class QryModifyTriggerEvent(QryBase, QryCellT[Union[Result[str, None], Result[None, Exception]]]):
     """Gets the modify trigger event of the cell such as ``cell_data_type_str``"""
 
     def __init__(self, cell: CalcCell) -> None:
@@ -26,7 +26,7 @@ class QryModifyTriggerEvent(QryBase, QryCellT[Result[str, None] | Result[None, E
         self.kind = CalcQryKind.CELL
         self._cell = cell
 
-    def execute(self) -> Result[str, None] | Result[None, Exception]:
+    def execute(self) -> Union[Result[str, None], Result[None, Exception]]:
         """
         Executes the query and gets the modify trigger event of the cell.
 

@@ -35,7 +35,6 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.doc.cmd_current_ctx_load import CmdCurrentCtxLoad
     from oxt.pythonpath.libre_pythonista_lib.cq.cmd.calc.doc.cmd_init_calculate import CmdInitCalculate
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_is_doc_pythonista import QryIsDocPythonista
-    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.doc.qry_init_calculate import QryInitCalculate
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.doc.qry_is_macro_enabled import QryIsMacroEnabled
     from oxt.pythonpath.libre_pythonista_lib.doc.doc_globals import GET_CURRENT_EVENT
@@ -62,7 +61,6 @@ else:
         from libre_pythonista_lib.cq.cmd.doc.cmd_current_ctx_load import CmdCurrentCtxLoad
         from libre_pythonista_lib.cq.cmd.calc.doc.cmd_init_calculate import CmdInitCalculate
         from libre_pythonista_lib.cq.qry.calc.doc.qry_is_doc_pythonista import QryIsDocPythonista
-        from libre_pythonista_lib.cq.qry.calc.doc.qry_init_calculate import QryInitCalculate
         from libre_pythonista_lib.cq.qry.qry_handler_factory import QryHandlerFactory
         from libre_pythonista_lib.cq.qry.doc.qry_is_macro_enabled import QryIsMacroEnabled
         from libre_pythonista_lib.doc.doc_globals import GET_CURRENT_EVENT

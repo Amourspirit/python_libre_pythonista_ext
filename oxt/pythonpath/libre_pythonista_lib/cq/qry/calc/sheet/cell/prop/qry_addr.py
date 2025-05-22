@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcCell
@@ -20,7 +20,7 @@ else:
     from libre_pythonista_lib.utils.result import Result
 
 
-class QryAddr(QryBase, QryCellT[Result[Addr, None] | Result[None, Exception]]):
+class QryAddr(QryBase, QryCellT[Union[Result[Addr, None], Result[None, Exception]]]):
     """Gets the address of the cell such as ``sheet_index=0&cell_addr=A1"``"""
 
     def __init__(self, cell: CalcCell) -> None:
@@ -28,7 +28,7 @@ class QryAddr(QryBase, QryCellT[Result[Addr, None] | Result[None, Exception]]):
         self.kind = CalcQryKind.CELL
         self._cell = cell
 
-    def execute(self) -> Result[Addr, None] | Result[None, Exception]:
+    def execute(self) -> Union[Result[Addr, None], Result[None, Exception]]:
         """
         Executes the query and gets the address of the cell.
 

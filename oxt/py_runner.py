@@ -1,7 +1,7 @@
 # region imports
 from __future__ import unicode_literals, annotations
 import contextlib
-from typing import TYPE_CHECKING, Any, cast, Tuple
+from typing import TYPE_CHECKING, Any, cast, Tuple, Union
 from pathlib import Path
 import sys
 import os
@@ -84,14 +84,14 @@ class ___lo_implementation_name___(unohelper.Base, XJob):  # noqa: N801
         self._added_packaging = False
         self._start_timed_out = True
         self._start_time = 0.0
-        self._window_timer: threading.Timer | None = None
+        self._window_timer: Union[threading.Timer, None] = None
         self._thread_lock = threading.Lock()
         self._events = LoEvents()
         self._startup_monitor = StartupMonitor()  # start the singleton startup monitor
         # logger.debug("___lo_implementation_name___ Init")
         self.ctx = ctx
         self._user_path = ""
-        self._resource_resolver: ResourceResolver | None = None
+        self._resource_resolver: Union[ResourceResolver, None] = None
         self._is_init = False
         with contextlib.suppress(Exception):
             user_path = self._get_user_profile_path(True, self.ctx)
@@ -146,7 +146,7 @@ class ___lo_implementation_name___(unohelper.Base, XJob):  # noqa: N801
     # endregion Init
 
     # region execute
-    def execute(self, *args: Tuple[NamedValue, ...]) -> None:
+    def execute(self, *args: Tuple[NamedValue, ...]) -> None:  # type: ignore
         # make sure our pythonpath is in sys.path
         self._start_time = time.time()
         self._logger.info(
@@ -387,7 +387,7 @@ class ___lo_implementation_name___(unohelper.Base, XJob):  # noqa: N801
         result = self._session.register_path(self._config.site_packages, True)
         self._log_sys_path_register_result(self._config.site_packages, result)
 
-    def _log_sys_path_register_result(self, pth: Path | str, result: RegisterPathKind) -> None:
+    def _log_sys_path_register_result(self, pth: Union[Path, str], result: RegisterPathKind) -> None:
         if not isinstance(pth, str):
             pth = str(pth)
         if result == RegisterPathKind.NOT_REGISTERED:
@@ -400,7 +400,7 @@ class ___lo_implementation_name___(unohelper.Base, XJob):  # noqa: N801
         else:
             self._logger.debug(f"Path registered: {pth}")
 
-    def _log_sys_path_unregister_result(self, pth: Path | str, result: UnRegisterPathKind) -> None:
+    def _log_sys_path_unregister_result(self, pth: Union[Path, str], result: UnRegisterPathKind) -> None:
         if not isinstance(pth, str):
             pth = str(pth)
         if result == UnRegisterPathKind.NOT_UN_REGISTERED:
@@ -628,7 +628,7 @@ class ___lo_implementation_name___(unohelper.Base, XJob):  # noqa: N801
             self._logger.exception("Error installing _bz")
         self._logger.debug("_handel_bz2() done.")
 
-    def _add_bz2_to_sys_path(self, pth: Path | None) -> None:
+    def _add_bz2_to_sys_path(self, pth: Union[Path, None]) -> None:
         # sourcery skip: class-extract-method
         try:
             if pth is None:
@@ -652,7 +652,7 @@ class ___lo_implementation_name___(unohelper.Base, XJob):  # noqa: N801
     # region Post Install
     def _post_install(self) -> None:
         self._logger.debug("Post Install starting")
-        progress: Progress | None = None
+        progress: Union[Progress, None] = None
         if not self._config.sym_link_cpython:
             self._logger.debug(
                 "Not creating CPython link because configuration has it turned off. Skipping post install."

@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import cast, Dict, Tuple, TYPE_CHECKING
+from typing import cast, Dict, Tuple, TYPE_CHECKING, Union
 from urllib.parse import parse_qs
 import contextlib
 
@@ -24,7 +24,6 @@ if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.event.shared_event import SharedEvent
     from oxt.pythonpath.libre_pythonista_lib.const.event_const import (
-        GBL_DOC_CLOSING,
         LP_DISPATCHED_CMD,
         LP_DISPATCHING_CMD,
     )
@@ -37,14 +36,13 @@ if TYPE_CHECKING:
         PATH_DF_STATE,
         PATH_DS_STATE,
         PATH_DATA_TBL_STATE,
-        PATH_PY_OBJ_STATE,
     )
 else:
     from ___lo_pip___.config import Config
     from libre_pythonista_lib.doc.doc_globals import DocGlobals
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.event.shared_event import SharedEvent
-    from libre_pythonista_lib.const.event_const import GBL_DOC_CLOSING, LP_DISPATCHED_CMD, LP_DISPATCHING_CMD
+    from libre_pythonista_lib.const.event_const import LP_DISPATCHED_CMD, LP_DISPATCHING_CMD
     from libre_pythonista_lib.const import (
         CS_PROTOCOL,
         PATH_CODE_EDIT_MB,
@@ -54,7 +52,6 @@ else:
         PATH_DF_STATE,
         PATH_DS_STATE,
         PATH_DATA_TBL_STATE,
-        PATH_PY_OBJ_STATE,
     )
 
     def override(func):  # noqa: ANN001, ANN201
@@ -140,7 +137,7 @@ class CalcSheetCellDispatchProvider(XDispatchProviderInterceptor, LogMixin, unoh
         URL: URL,  # noqa: N803
         TargetFrameName: str,  # noqa: N803
         SearchFlags: int,  # noqa: N803
-    ) -> XDispatch | None:  # type: ignore
+    ) -> Union[XDispatch, None]:  # type: ignore
         try:
             if TYPE_CHECKING:
                 from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.menus import menu_util as mu
@@ -317,9 +314,9 @@ class CalcSheetCellDispatchProvider(XDispatchProviderInterceptor, LogMixin, unoh
 
         if cs_url.Path == PATH_DS_STATE:
             try:
-                from .dispatch_toggle_series_state import DispatchToggleSeriesState
+                from .dispatch_toggle_series_state2 import DispatchToggleSeriesState2
             except ImportError:
-                self.log.exception("DispatchToggleSeriesState import error")
+                self.log.exception("DispatchToggleSeriesState2 import error")
                 raise
             try:
                 args = self._convert_query_to_dict(cs_url.Arguments)
@@ -330,8 +327,8 @@ class CalcSheetCellDispatchProvider(XDispatchProviderInterceptor, LogMixin, unoh
                     return None
 
                 with self.log.indent(True):
-                    self.log.debug("queryDispatch: returning DispatchToggleSeriesState")
-                result = DispatchToggleSeriesState(sheet=args["sheet"], cell=args["cell"])
+                    self.log.debug("queryDispatch: returning DispatchToggleSeriesState2")
+                result = DispatchToggleSeriesState2(sheet=args["sheet"], cell=args["cell"], uid=self._doc.runtime_uid)
 
                 eargs = EventArgs.from_args(cargs)
                 eargs.event_data.dispatch = result
@@ -368,40 +365,13 @@ class CalcSheetCellDispatchProvider(XDispatchProviderInterceptor, LogMixin, unoh
                 self.log.exception("Dispatch Error: %s", cs_url.Main)
                 return None
 
-        elif cs_url.Path == PATH_PY_OBJ_STATE:
-            try:
-                from .dispatch_py_obj_state import DispatchPyObjState
-            except ImportError:
-                self.log.exception("DispatchPyObjState import error")
-                raise
-            try:
-                args = self._convert_query_to_dict(cs_url.Arguments)
-
-                cargs = CancelEventArgs(self)
-                cargs.event_data = DotDict(url=cs_url, cmd=cs_url.Complete, doc=self._doc, **args)
-                se.trigger_event(LP_DISPATCHING_CMD, cargs)
-                if cargs.cancel is True and cargs.handled is False:
-                    return None
-
-                with self.log.indent(True):
-                    self.log.debug("queryDispatch: returning DispatchPyObjState")
-                result = DispatchPyObjState(sheet=args["sheet"], cell=args["cell"])
-
-                eargs = EventArgs.from_args(cargs)
-                eargs.event_data.dispatch = result
-                se.trigger_event(LP_DISPATCHED_CMD, eargs)
-                return result
-            except Exception:
-                self.log.exception("Dispatch Error: %s", cs_url.Main)
-                return None
-
     @override
     def queryDispatch(  # type: ignore  # noqa: N802
         self,
         URL: URL,  # noqa: N803
         TargetFrameName: str,  # noqa: N803
         SearchFlags: int,  # noqa: N803
-    ) -> XDispatch | None:  # type: ignore
+    ) -> Union[XDispatch, None]:  # type: ignore
         """
         Searches for an XDispatch for the specified URL within the specified target frame.
         """

@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any
+from typing import Any, Union
 import tempfile
 from pathlib import Path
 
@@ -18,14 +18,14 @@ class InstallPipFromWheel:
         self._config = Config()
         self._logger = OxtLogger(log_name=__name__)
 
-    def install(self, dst: str | Path = "") -> None:
+    def install(self, dst: Union[str, Path] = "") -> None:
         """
         Install pip from wheel file.
 
         Downloads the pip wheel file from the url provided in the config file and unzips it to the destination directory.
 
         Args:
-            dst (str | Path, Optional): The destination directory where the pip wheel file will be installed. If not provided, the ``pythonpath`` location will be used.
+            dst (str, Path, Optional): The destination directory where the pip wheel file will be installed. If not provided, the ``pythonpath`` location will be used.
 
         Returns:
             None:
@@ -72,7 +72,7 @@ class InstallPipFromWheel:
             # now that pip has been installed from wheel force a reinstall to ensure it is the latest version
             self._force_install_pip()
 
-    def _unzip_wheel(self, filename: Path, dst: str | Path) -> None:
+    def _unzip_wheel(self, filename: Path, dst: Union[str, Path]) -> None:
         """Unzip the downloaded wheel file"""
         # sourcery skip: raise-specific-error
         if isinstance(dst, str):

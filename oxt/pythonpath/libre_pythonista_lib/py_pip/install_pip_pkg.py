@@ -1,14 +1,10 @@
 from __future__ import annotations
-import contextlib
-from typing import Any, cast, Dict, List, Tuple, TYPE_CHECKING
-import os
-import shutil
+from typing import Any, cast, Dict, Tuple, TYPE_CHECKING, Optional
 import threading
 import re
 import urllib.request
 import urllib.error
 from pathlib import Path
-import json
 
 from ooodev.loader import Lo
 from ooodev.dialog.msgbox import (
@@ -79,7 +75,7 @@ class InstallPipPkg:
         self._fn_on_progress_rules_event = self._on_progress_rules_event
         self._events.on(GenNamedEvent.PROGRESS_RULES_EVENT, self._fn_on_progress_rules_event)
 
-    def _on_progress_rules_event(self, args: Any, event_arg: EventArgs) -> None:
+    def _on_progress_rules_event(self, args: Any, event_arg: EventArgs) -> None:  # noqa: ANN401
         # add the ProgressDialogTrue rule to the rules list to get the progress dialog to display
         d_args = cast(Dict[str, Any], event_arg.event_data)
         rules = cast(list, d_args["rules"])
@@ -264,7 +260,7 @@ class InstallPipPkg:
         if self._config.is_win:
             self._log.debug("Windows, skipping post install.")
             return
-        progress: Progress | None = None
+        progress: Optional[Progress] = None
         try:
             if TYPE_CHECKING:
                 from ....___lo_pip___.install.post.cpython_link import CPythonLink

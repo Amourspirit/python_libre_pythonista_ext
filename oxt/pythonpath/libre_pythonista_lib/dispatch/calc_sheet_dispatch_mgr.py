@@ -20,7 +20,6 @@ from ..const import (
     PATH_DF_CARD,
     PATH_DF_STATE,
     PATH_DS_STATE,
-    PATH_PY_OBJ_STATE,
     PATH_SEL_RNG,
 )
 
@@ -336,9 +335,9 @@ class CalcSheetDispatchMgr:
 
         elif URL.Path == PATH_DS_STATE:
             try:
-                from .dispatch_toggle_series_state import DispatchToggleSeriesState
+                from .dispatch_toggle_series_state2 import DispatchToggleSeriesState2
             except ImportError:
-                log.exception("DispatchToggleSeriesState import error")
+                log.exception("DispatchToggleSeriesState2 import error")
                 raise
             try:
                 args = self._convert_query_to_dict(URL.Arguments)
@@ -349,8 +348,8 @@ class CalcSheetDispatchMgr:
                     return None
 
                 with log.indent(True):
-                    log.debug("CalcSheetDispatchMgr.dispatch: dispatching DispatchToggleSeriesState")
-                result = DispatchToggleSeriesState(sheet=args["sheet"], cell=args["cell"])
+                    log.debug("CalcSheetDispatchMgr.dispatch: dispatching DispatchToggleSeriesState2")
+                result = DispatchToggleSeriesState2(sheet=args["sheet"], cell=args["cell"], uid=self.runtime_uid)
                 result.dispatch(URL, Arguments)
 
                 eargs = EventArgs.from_args(cargs)
@@ -379,34 +378,6 @@ class CalcSheetDispatchMgr:
                 with log.indent(True):
                     log.debug("CalcSheetDispatchMgr.dispatch: dispatching DispatchToggleDataTblState2")
                 result = DispatchToggleDataTblState2(sheet=args["sheet"], cell=args["cell"], uid=self.runtime_uid)
-                result.dispatch(URL, Arguments)
-
-                eargs = EventArgs.from_args(cargs)
-                eargs.event_data.dispatch = result
-                se.trigger_event(LP_DISPATCHED_CMD, eargs)
-                return None
-            except Exception:
-                log.exception("Dispatch Error: %s", URL.Main)
-                return None
-
-        elif URL.Path == PATH_PY_OBJ_STATE:
-            try:
-                from .dispatch_py_obj_state import DispatchPyObjState
-            except ImportError:
-                log.exception("DispatchPyObjState import error")
-                raise
-            try:
-                args = self._convert_query_to_dict(URL.Arguments)
-
-                cargs = CancelEventArgs(self)
-                cargs.event_data = DotDict(url=URL, cmd=URL.Complete, doc=doc, **args)
-                se.trigger_event(LP_DISPATCHING_CMD, cargs)
-                if cargs.cancel is True and cargs.handled is False:
-                    return None
-
-                with log.indent(True):
-                    log.debug("CalcSheetDispatchMgr.dispatch: dispatching DispatchPyObjState")
-                result = DispatchPyObjState(sheet=args["sheet"], cell=args["cell"])
                 result.dispatch(URL, Arguments)
 
                 eargs = EventArgs.from_args(cargs)

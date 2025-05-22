@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import tempfile
 from pathlib import Path
+from typing import Union
 
 from ...config import Config
 from ...oxt_logger import OxtLogger
@@ -23,7 +24,7 @@ class DefaultInstaller(BaseInstaller):
             return
         pip_installed = False
         cfg = Config()
-        progress: Progress | None = None
+        progress: Union[Progress, None] = None
         if cfg.show_progress:
             self._logger.debug("Starting Progress Window")
             msg = self.resource_resolver.resolve_string("msg08")

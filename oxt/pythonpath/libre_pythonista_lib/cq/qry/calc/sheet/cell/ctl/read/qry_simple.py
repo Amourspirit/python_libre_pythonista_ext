@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Union, Optional
+
 from com.sun.star.container import NoSuchElementException
 from ooodev.calc import CalcCell
 from ooodev.calc import CalcSheet, SpreadsheetDrawPage
@@ -35,10 +36,10 @@ else:
     FormCtlBase = Any
 
 
-class QrySimple(QryBase, LogMixin, QryCellT[Result[FormCtlBase, None] | Result[None, Exception]]):
+class QrySimple(QryBase, LogMixin, QryCellT[Union[Result[FormCtlBase, None], Result[None, Exception]]]):
     """Gets the control"""
 
-    def __init__(self, cell: CalcCell, ctl: Ctl | None = None) -> None:
+    def __init__(self, cell: CalcCell, ctl: Optional[Ctl] = None) -> None:
         """Constructor
 
         Args:
@@ -52,11 +53,11 @@ class QrySimple(QryBase, LogMixin, QryCellT[Result[FormCtlBase, None] | Result[N
         self.kind = CalcQryKind.CELL
         self.log.debug("init done for cell %s", cell.cell_obj)
 
-    def _get_shape_name(self) -> Result[str, None] | Result[None, Exception]:
+    def _get_shape_name(self) -> Union[Result[str, None], Result[None, Exception]]:
         qry_shape = QryShapeName(cell=self.cell)
         return self._execute_qry(qry_shape)
 
-    def _get_shape(self) -> Result[DrawShape[SpreadsheetDrawPage[CalcSheet]], None] | Result[None, Exception]:
+    def _get_shape(self) -> Union[Result[DrawShape[SpreadsheetDrawPage[CalcSheet]], None], Result[None, Exception]]:
         """Gets the control shape or None."""
         qry_shape = QryLpShape(cell=self.cell)
         return self._execute_qry(qry_shape)
@@ -86,7 +87,7 @@ class QrySimple(QryBase, LogMixin, QryCellT[Result[FormCtlBase, None] | Result[N
             return
         self._ctl.supported_features = set()
 
-    def execute(self) -> Result[FormCtlBase, None] | Result[None, Exception]:
+    def execute(self) -> Union[Result[FormCtlBase, None], Result[None, Exception]]:
         """ "
         Executes the query and get the control if it exists.
 

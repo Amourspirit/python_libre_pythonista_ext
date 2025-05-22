@@ -14,3 +14,5 @@ DOC_INIT_CALCULATED = "DocInitCalculated"
 DOC_STATE_RULES_DEFAULT = "DocStateRulesDefault"
 
 DOC_CTX_LOADED = "DocCtxLoaded"
+
+DOC_MOD_STATES_INIT = "DocModStatesInit"

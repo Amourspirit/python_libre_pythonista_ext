@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import cast, TYPE_CHECKING
+from typing import cast, TYPE_CHECKING, Union
 
 from ooodev.utils.gen_util import NULL_OBJ
 from ooodev.draw.shapes import DrawShape
@@ -42,9 +42,9 @@ class CmdDelShapeByName(CmdBase, LogMixin, CmdSheetT):
         self.kind = CalcCmdKind.SHEET
         self._sheet = sheet
         self._shape_name = shape_name
-        self._current = cast(DrawShape[SpreadsheetDrawPage[CalcSheet]] | None, NULL_OBJ)
+        self._current = cast(Union[DrawShape[SpreadsheetDrawPage[CalcSheet]], None], NULL_OBJ)
 
-    def _qry_shape(self) -> DrawShape[SpreadsheetDrawPage[CalcSheet]] | None:
+    def _qry_shape(self) -> Union[DrawShape[SpreadsheetDrawPage[CalcSheet]], None]:
         """Query the shape to be deleted by its name."""
         qry = QryShapeByName(sheet=self._sheet, shape_name=self._shape_name)
         result = self._execute_qry(qry)

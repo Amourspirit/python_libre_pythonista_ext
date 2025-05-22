@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 
 
 if TYPE_CHECKING:
@@ -20,7 +20,7 @@ else:
 class QryColorBgError(QryBase, QryT[Color]):
     """Gets the error control background color"""
 
-    def __init__(self, style: StyleT | None = None) -> None:
+    def __init__(self, style: Union[StyleT, None] = None) -> None:
         """Constructor
 
         Args:

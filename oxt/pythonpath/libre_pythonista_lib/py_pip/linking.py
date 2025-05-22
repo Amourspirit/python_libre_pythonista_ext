@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, cast, Dict, TYPE_CHECKING
+from typing import Any, cast, Dict, TYPE_CHECKING, Optional
 import threading
 import time
 
@@ -57,11 +57,9 @@ class Linking:
         # By hooking the event we can add the rule to the list of rules that will be checked.
         # This will allow a dialog progress window to be displayed.
         self._fn_on_progress_rules_event = self._on_progress_rules_event
-        self._events.on(
-            GenNamedEvent.PROGRESS_RULES_EVENT, self._fn_on_progress_rules_event
-        )
+        self._events.on(GenNamedEvent.PROGRESS_RULES_EVENT, self._fn_on_progress_rules_event)
 
-    def _on_progress_rules_event(self, args: Any, event_arg: EventArgs) -> None:
+    def _on_progress_rules_event(self, args: Any, event_arg: EventArgs) -> None:  # noqa: ANN401
         # add the ProgressDialogTrue rule to the rules list to get the progress dialog to display
         d_args = cast(Dict[str, Any], event_arg.event_data)
         rules = cast(list, d_args["rules"])
@@ -79,9 +77,7 @@ class Linking:
         """
         if not self.is_linking_needed():
             MsgBox.msgbox(
-                self._rr.resolve_string(
-                    "mbmsg012"
-                ),  # No Linking need on this installation of LibreOffice
+                self._rr.resolve_string("mbmsg012"),  # No Linking need on this installation of LibreOffice
                 title=self._rr.resolve_string("mbtitle012"),  # No Links
                 boxtype=MessageBoxType.INFOBOX,
             )
@@ -105,9 +101,7 @@ class Linking:
         """
         if not self.is_linking_needed():
             MsgBox.msgbox(
-                self._rr.resolve_string(
-                    "mbmsg012"
-                ),  # No Linking need on this installation of LibreOffice
+                self._rr.resolve_string("mbmsg012"),  # No Linking need on this installation of LibreOffice
                 title=self._rr.resolve_string("mbtitle012"),  # No Links
                 boxtype=MessageBoxType.INFOBOX,
             )
@@ -130,7 +124,7 @@ class Linking:
         Removes all symlinks that match the current suffix.
         """
         start_time = time.time()
-        progress: Progress | None = None
+        progress: Optional[Progress] = None
         try:
             if self._config.show_progress:
                 msg = self._rr.resolve_string("msg20")
@@ -154,7 +148,7 @@ class Linking:
         Removes all symlinks that match the current suffix.
         """
         start_time = time.time()
-        progress: Progress | None = None
+        progress: Optional[Progress] = None
         try:
             if self._config.show_progress:
                 msg = self._rr.resolve_string("msg21")

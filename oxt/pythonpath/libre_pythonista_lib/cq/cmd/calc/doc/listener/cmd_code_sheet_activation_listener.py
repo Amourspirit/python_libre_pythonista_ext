@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 
 from ooodev.exceptions import ex as mEx  # noqa: N812
 
@@ -32,7 +32,7 @@ class CmdCodeSheetActivation(CmdBase, LogMixin, CmdDocT):
         self.kind = CalcCmdKind.SIMPLE
         self.log.debug("init done for doc %s", doc.runtime_uid)
 
-    def _get_view(self) -> CalcSheetView | None:
+    def _get_view(self) -> Union[CalcSheetView, None]:
         try:
             view = self._doc.get_view()
             if view.view_controller_name == "Default":

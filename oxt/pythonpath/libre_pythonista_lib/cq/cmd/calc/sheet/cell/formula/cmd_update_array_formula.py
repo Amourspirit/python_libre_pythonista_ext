@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Union
 
 from com.sun.star.sheet import CellFlags
 from ooodev.calc import CalcCell, CalcCellRange
@@ -56,7 +56,7 @@ else:
 
 
 class CmdUpdateArrayFormula(CmdBase, LogMixin, CmdCellT):
-    def __init__(self, cell: CalcCell, style: StyleT | None = None) -> None:
+    def __init__(self, cell: CalcCell, style: Union[StyleT, None] = None) -> None:
         CmdBase.__init__(self)
         LogMixin.__init__(self)
         self.kind = CalcCmdKind.CELL

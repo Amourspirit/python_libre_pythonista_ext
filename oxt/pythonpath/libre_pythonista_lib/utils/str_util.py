@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import Union
 import tokenize
 from io import BytesIO
 
@@ -64,7 +65,7 @@ def remove_comments(s: str) -> str:
     for token in tokens:
         if token.type != tokenize.COMMENT:
             result.append(token)
-    return tokenize.untokenize(result).decode("utf-8")
+    return tokenize.untokenize(result).decode("utf-8")  # type: ignore
 
 
 def get_last_line(s: str) -> str:
@@ -83,7 +84,7 @@ def get_last_line(s: str) -> str:
     return lines[-1]
 
 
-def starts_with_whitespace(s: str):
+def starts_with_whitespace(s: str) -> bool:
     """
     Checks if a string starts with whitespace.
 
@@ -186,7 +187,7 @@ def flatten_str(s: str) -> str:
     return "".join(result)
 
 
-def convert_to_bool(value: str | bool) -> bool:
+def convert_to_bool(value: Union[str, bool]) -> bool:
     """
     Converts a string to a boolean.
 
@@ -195,7 +196,7 @@ def convert_to_bool(value: str | bool) -> bool:
     - "False", "false", "f", "F", "0", "No" -> False
 
     Args:
-        value (str | bool): The input value.
+        value (str, bool): The input value.
 
     Raises:
         ValueError: If the string cannot be converted to boolean.

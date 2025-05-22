@@ -6,7 +6,7 @@ import subprocess
 import glob
 import json
 from pathlib import Path
-from typing import Any, cast, Dict, List, Tuple, Set
+from typing import Any, cast, Dict, List, Tuple, Set, Union
 
 
 # import pkg_resources
@@ -177,7 +177,7 @@ class InstallPkg:
             before_files = self._get_file_names(site_packages_dir)
             before_shared = self._get_pip_shared_files(pkg)
 
-        progress: Progress | None = None
+        progress: Union[Progress, None] = None
         if self._config.show_progress and self.show_progress:
             # display a terminal window to show progress
             self._logger.debug("Starting Progress Window")
@@ -428,12 +428,12 @@ class InstallPkg:
         except Exception as e:
             self.log.exception("Error writing cleanup script: %s", e)
 
-    def install(self, req: Dict[str, str] | None = None, force: bool = False) -> bool:
+    def install(self, req: Union[Dict[str, str], None] = None, force: bool = False) -> bool:
         """
         Install all the packages in the configuration if they are not already installed and meet requirements.
 
         Args:
-            req (Dict[str, str] | None, optional): The requirements to install.
+            req (Dict[str, str], None, optional): The requirements to install.
                 If omitted then requirements from config are used. Defaults to None.
             force (bool, optional): Force install even if package is already installed. Defaults to False.
 
@@ -504,12 +504,12 @@ class InstallPkg:
             self.on_extension_install()
         return result
 
-    def install_file(self, pth: str | Path, force: bool = False) -> bool:
+    def install_file(self, pth: Union[str, Path], force: bool = False) -> bool:
         """
         Install all the packages in the configuration if they are not already installed and meet requirements.
 
         Args:
-            req (Dict[str, str] | None, optional): The requirements to install.
+            req (Dict[str, str], None, optional): The requirements to install.
                 If omitted then requirements from config are used. Defaults to None.
             force (bool, optional): Force install even if package is already installed. Defaults to False.
 
@@ -625,7 +625,7 @@ class InstallPkg:
         """Get the site-packages directory."""
         return self._target_path.get_package_target(pkg)
 
-    def _get_file_names(self, path: str | Path) -> List[str]:
+    def _get_file_names(self, path: Union[str, Path]) -> List[str]:
         # only get the file names in the specified path
 
         pth = Path(path) if isinstance(path, str) else path

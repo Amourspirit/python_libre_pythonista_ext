@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 
 from ooodev.io.sfa import Sfa
 
@@ -26,7 +26,7 @@ else:
 # The document properties are read also using sfa and had the same issue.
 
 
-class QryIsDocPythonista(QryBase, LogMixin, QryDocT[Result[bool, None] | Result[None, Exception]]):
+class QryIsDocPythonista(QryBase, LogMixin, QryDocT[Union[Result[bool, None], Result[None, Exception]]]):
     def __init__(self, doc: CalcDoc) -> None:
         QryBase.__init__(self)
         LogMixin.__init__(self)
@@ -60,7 +60,7 @@ class QryIsDocPythonista(QryBase, LogMixin, QryDocT[Result[bool, None] | Result[
 
         return False
 
-    def execute(self) -> Result[bool, None] | Result[None, Exception]:
+    def execute(self) -> Union[Result[bool, None], Result[None, Exception]]:
         """
         Executes the query to check if the document is a LibrePythonista document.
 

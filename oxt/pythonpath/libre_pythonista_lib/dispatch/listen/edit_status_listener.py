@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 
 
 class EditStatusListener(XStatusListener, unohelper.Base):
-    def __init__(self, sheet: str, cell: str):
+    def __init__(self, sheet: str, cell: str) -> None:
         XStatusListener.__init__(self)
         unohelper.Base.__init__(self)
         self._sheet = sheet
@@ -26,10 +26,10 @@ class EditStatusListener(XStatusListener, unohelper.Base):
         self._log = LogInst()
 
     @override
-    def statusChanged(self, State: FeatureStateEvent):
-        self._log.debug(f"EditStatusListener statusChanged: {State}")
+    def statusChanged(self, State: FeatureStateEvent) -> None:
+        self._log.debug("EditStatusListener statusChanged: %s", State)
         # event.IsEnabled = False
 
     @override
-    def disposing(self, Source: EventObject):
+    def disposing(self, Source: EventObject) -> None:
         self._log.debug("EditStatusListener disposing()")

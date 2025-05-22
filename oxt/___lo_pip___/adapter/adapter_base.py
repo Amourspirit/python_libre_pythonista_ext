@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 
 import uno
 from ..events.args.event_args import EventArgs
@@ -16,7 +16,7 @@ class AdapterBase(unohelper.Base):  # type: ignore
     Base Class for Listeners in the ``adapter`` name space.
     """
 
-    def __init__(self, trigger_args: GenericArgs | None) -> None:
+    def __init__(self, trigger_args: Union[GenericArgs, None] = None) -> None:
         """
         Constructor
 

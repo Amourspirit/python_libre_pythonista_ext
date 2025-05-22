@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING, Union
 
 if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module_t import PyModuleT
@@ -30,12 +30,12 @@ class QryPyModuleDefault(QryBase, QryT[PyModuleT]):
         """Constructor."""
         QryBase.__init__(self)
 
-    def _get_globals(self) -> DocGlobals | None:
+    def _get_globals(self) -> Union[DocGlobals, None]:
         """
         Gets the document globals using QryDocGlobals.
 
         Returns:
-            DocGlobals | None: Document globals if successful, None otherwise
+            DocGlobals, None: Document globals if successful, None otherwise
         """
         qry = QryDocGlobals()
         qry_result = self._execute_qry(qry)

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Union, Optional
 from ooodev.calc import CalcCell
 
 if TYPE_CHECKING:
@@ -25,14 +25,14 @@ else:
     from libre_pythonista_lib.utils.result import Result
 
 
-class QryCtlModifyTriggerEvent(QryBase, LogMixin, QryCellT[Result[str, None] | Result[None, Exception]]):
+class QryCtlModifyTriggerEvent(QryBase, LogMixin, QryCellT[Union[Result[str, None], Result[None, Exception]]]):
     """
     Gets the modify trigger event of the cell such as ``cell_data_type_str``.
 
     Assigns the modify trigger event to the control as property ``modify_trigger_event``.
     """
 
-    def __init__(self, cell: CalcCell, ctl: Ctl | None = None) -> None:
+    def __init__(self, cell: CalcCell, ctl: Optional[Ctl] = None) -> None:
         """Constructor
 
         Args:
@@ -46,7 +46,7 @@ class QryCtlModifyTriggerEvent(QryBase, LogMixin, QryCellT[Result[str, None] | R
         self.kind = CalcQryKind.CELL
         self.log.debug("init done for cell %s", cell.cell_obj)
 
-    def execute(self) -> Result[str, None] | Result[None, Exception]:
+    def execute(self) -> Union[Result[str, None], Result[None, Exception]]:
         """
         Executes the query to get the modify trigger event of the cell.
 

@@ -23,7 +23,7 @@
             "titleBar.activeForeground": "#e49df4"
         }
     },
-    "workbench.colorTheme": "Monokai",
+    "workbench.colorTheme": "Default Light+",
     "python.testing.pytestArgs": [
         "tests"
     ],

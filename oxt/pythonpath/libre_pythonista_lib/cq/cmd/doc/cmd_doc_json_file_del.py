@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, cast, Tuple, TYPE_CHECKING
+from typing import Any, cast, Tuple, TYPE_CHECKING, Union
 
 from ooodev.io.json.doc_json_file import DocJsonFile
 from ooodev.utils.gen_util import NULL_OBJ
@@ -35,11 +35,11 @@ class CmdDocJsonFileDel(CmdBase, LogMixin, CmdCacheT):
         if ext and not file_name.endswith(ext):
             file_name = f"{file_name}.{ext}"
         self.name = file_name
-        self._current_state = cast(DocJsonFile | None, NULL_OBJ)
+        self._current_state = cast(Union[DocJsonFile, None], NULL_OBJ)
         self._current_value = cast(Any, NULL_OBJ)
         self.log.debug("init done for doc %s", doc.runtime_uid)
 
-    def _get_current_state(self) -> DocJsonFile | None:
+    def _get_current_state(self) -> Union[DocJsonFile, None]:
         qry = QryDocJsonFile(doc=self.doc, file_name=self.file_name, ext=self.ext)
         result = self._execute_qry(qry)
         if Result.is_success(result):
@@ -78,7 +78,7 @@ class CmdDocJsonFileDel(CmdBase, LogMixin, CmdCacheT):
                 return
             djf = DocJsonFile(doc=self.doc, root_dir=self.root_dir)
             djf.write_json(file_name=self.name, data=self._current_value)
-            self._current_state = cast(DocJsonFile | None, NULL_OBJ)
+            self._current_state = cast(Union[DocJsonFile, None], NULL_OBJ)
         except Exception as e:
             self.log.exception("Error undoing command. Error: %s", e)
             return

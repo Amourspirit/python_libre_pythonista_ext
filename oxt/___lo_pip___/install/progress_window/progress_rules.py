@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import List, Type, Any
+from typing import List, Type, Any, Union
 from .progress_t import ProgressT
 from .gnome_terminal import GnomeTerminal
 from .win_terminal import WindowsTerminal
@@ -61,7 +61,7 @@ class ProgressRules:
             return
         self._reg_rule(rule=rule, idx=idx)
 
-    def unregister_rule(self, rule: Type[ProgressT]):
+    def unregister_rule(self, rule: Type[ProgressT]) -> None:
         """
         Unregister Rule
 
@@ -87,7 +87,7 @@ class ProgressRules:
                 idx = len(self._rules)
             self._rules.insert(idx, rule)
 
-    def _register_known_rules(self):
+    def _register_known_rules(self) -> None:
         cfg = Config()
         # ProgressDialog is registered first so it is the default and it is cross platform.
         # Depending on configuration, the other rules may apply.
@@ -99,12 +99,12 @@ class ProgressRules:
         elif cfg.is_mac:
             self._reg_rule(rule=MacTerminal)
 
-    def get_progress(self) -> ProgressT | None:
+    def get_progress(self) -> Union[ProgressT, None]:
         """
         Get progress window if it is a match.
 
         Returns:
-            ProgressT | None: Progress window if it is a match; Otherwise, None
+            ProgressT, None: Progress window if it is a match; Otherwise, None
         """
 
         for rule in self._rules:

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Iterable
+from typing import TYPE_CHECKING, Iterable, Union
 from ooodev.utils.helper.dot_dict import DotDict
 
 if TYPE_CHECKING:
@@ -17,7 +17,7 @@ else:
 # tested in: tests/test_cmd/test_cmd_py_src.py
 
 
-class QryDirectData(QryBase, LogMixin, QryT[Result[Iterable[Iterable[object]], None] | Result[None, Exception]]):
+class QryDirectData(QryBase, LogMixin, QryT[Union[Result[Iterable[Iterable[object]], None], Result[None, Exception]]]):
     """Gets the ``data.data`` result value"""
 
     def __init__(self, data: DotDict) -> None:
@@ -31,7 +31,7 @@ class QryDirectData(QryBase, LogMixin, QryT[Result[Iterable[Iterable[object]], N
         self._data = data
         self.log.debug("init done")
 
-    def execute(self) -> Result[Iterable[Iterable[object]], None] | Result[None, Exception]:
+    def execute(self) -> Union[Result[Iterable[Iterable[object]], None], Result[None, Exception]]:
         """
         Executes the query to get the result.
 

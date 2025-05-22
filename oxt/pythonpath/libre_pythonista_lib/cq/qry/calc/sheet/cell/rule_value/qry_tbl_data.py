@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Iterable, TYPE_CHECKING
+from typing import Iterable, TYPE_CHECKING, Union
 
 from ooodev.calc import CalcCell
 from ooodev.utils.helper.dot_dict import DotDict
@@ -22,7 +22,9 @@ else:
 # tested in: tests/test_cmd/test_cmd_py_src.py
 
 
-class QryTblData(QryBase, LogMixin, QryCellT[Result[Iterable[Iterable[object]], None] | Result[None, Exception]]):
+class QryTblData(
+    QryBase, LogMixin, QryCellT[Union[Result[Iterable[Iterable[object]], None], Result[None, Exception]]]
+):
     """
     Query class for handling table data in LibreOffice Calc cells.
 
@@ -44,7 +46,7 @@ class QryTblData(QryBase, LogMixin, QryCellT[Result[Iterable[Iterable[object]], 
         self._data = data
         self.log.debug("init done for cell %s", cell.cell_obj)
 
-    def _qry_state(self) -> Result[StateKind, None] | Result[None, Exception]:
+    def _qry_state(self) -> Union[Result[StateKind, None], Result[None, Exception]]:
         """
         Query the state of the cell.
 
@@ -54,7 +56,7 @@ class QryTblData(QryBase, LogMixin, QryCellT[Result[Iterable[Iterable[object]], 
         qry = QryState(cell=self._cell)
         return self._execute_qry(qry)
 
-    def execute(self) -> Result[Iterable[Iterable[object]], None] | Result[None, Exception]:
+    def execute(self) -> Union[Result[Iterable[Iterable[object]], None], Result[None, Exception]]:
         """
         Execute the query to convert table data for LibreOffice Calc.
 

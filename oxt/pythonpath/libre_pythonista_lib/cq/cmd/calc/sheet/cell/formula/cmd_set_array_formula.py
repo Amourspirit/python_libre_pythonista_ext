@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import cast, TYPE_CHECKING
+from typing import cast, TYPE_CHECKING, Union
 
 from ooodev.utils.data_type.range_obj import RangeObj
 from ooodev.utils.data_type.range_values import RangeValues
@@ -50,7 +50,12 @@ class CmdSetArrayFormula(CmdBase, LogMixin, CmdCellT):
     """
 
     def __init__(
-        self, cell: CalcCell, rows: int = -1, cols: int = -1, formula: str | None = None, mod: PyModuleT | None = None
+        self,
+        cell: CalcCell,
+        rows: int = -1,
+        cols: int = -1,
+        formula: Union[str, None] = None,
+        mod: Union[PyModuleT, None] = None,
     ) -> None:
         """
         Initialize the command with a target cell.
@@ -67,8 +72,8 @@ class CmdSetArrayFormula(CmdBase, LogMixin, CmdCellT):
         self._mod = mod
         self._rows = rows
         self._cols = cols
-        self._current_range_obj: RangeObj | None = None
-        self._current_formula: str | None = None
+        self._current_range_obj: Union[RangeObj, None] = None
+        self._current_formula: Union[str, None] = None
         self._is_array_formula = cast(bool, None)
         self._is_formula = cast(bool, None)
         self._undo_available = False

@@ -1,6 +1,6 @@
 from __future__ import annotations
 import subprocess
-from pathlib import Path
+from typing import Union
 
 # import pkg_resources
 from ...oxt_logger import OxtLogger
@@ -67,7 +67,7 @@ class InstallPkgFlatpak(InstallPkg):
             before_files = self._get_file_names(site_packages_dir)
             before_shared = self._get_pip_shared_files(pkg)
 
-        progress: Progress | None = None
+        progress: Union[Progress, None] = None
         if self._config.show_progress and self.show_progress:
             # display a terminal window to show progress
             msg = self.resource_resolver.resolve_string("msg08")

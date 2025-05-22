@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, cast, List, TYPE_CHECKING
+from typing import List, TYPE_CHECKING, Union
 
 from ooodev.utils.data_type.range_obj import RangeObj
 
@@ -21,7 +21,7 @@ else:
     from libre_pythonista_lib.utils.result import Result
 
 
-class QryRowsColsFormula(QryBase, LogMixin, QryCellT[Result[List[int], None] | Result[None, Exception]]):
+class QryRowsColsFormula(QryBase, LogMixin, QryCellT[Union[Result[List[int], None], Result[None, Exception]]]):
     """
     Query that returns the number of rows and columns represented by the cell Formula array
 
@@ -35,7 +35,7 @@ class QryRowsColsFormula(QryBase, LogMixin, QryCellT[Result[List[int], None] | R
 
         Args:
             cell (CalcCell): The cell to query
-            mod (PyModuleT | None, optional): Optional Python module. If None, will be queried using QryPyModuleDefault. Defaults to None.
+            mod (PyModuleT, None, optional): Optional Python module. If None, will be queried using QryPyModuleDefault. Defaults to None.
         """
         QryBase.__init__(self)
         LogMixin.__init__(self)
@@ -49,7 +49,7 @@ class QryRowsColsFormula(QryBase, LogMixin, QryCellT[Result[List[int], None] | R
             return qry_result.data
         raise qry_result.error
 
-    def execute(self) -> Result[List[int], None] | Result[None, Exception]:
+    def execute(self) -> Union[Result[List[int], None], Result[None, Exception]]:
         """
         Executes the query to get Formula Array dimensions.
 

@@ -1,6 +1,7 @@
 from __future__ import annotations
+
 from contextlib import contextmanager
-from typing import Generator, Set, TYPE_CHECKING
+from typing import Generator, Set, TYPE_CHECKING, Optional
 
 from ooodev.loader import Lo
 from ooodev.events.partial.events_partial import EventsPartial
@@ -18,7 +19,7 @@ if TYPE_CHECKING:
 
 
 class DocEventPartial(EventsPartial):
-    def __init__(self, doc: OfficeDocumentT | None = None) -> None:
+    def __init__(self, doc: Optional[OfficeDocumentT] = None) -> None:
         if doc is None:
             doc = Lo.current_doc
         if doc is None:
@@ -136,9 +137,8 @@ class DocEventPartial(EventsPartial):
             None:
         """
         try:
-            if self.__check_runtime_uid():
-                if event_name not in self.__omit_events:
-                    EventsPartial.trigger_event(self, event_name, event_args)
+            if self.__check_runtime_uid() and event_name not in self.__omit_events:
+                EventsPartial.trigger_event(self, event_name, event_args)
         except Exception as e:
             raise RuntimeUidError(f"Error checking runtime_uid: {e}") from e
 

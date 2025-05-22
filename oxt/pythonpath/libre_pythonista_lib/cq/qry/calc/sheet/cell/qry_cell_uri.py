@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 from ooodev.calc import CalcCell
 
 if TYPE_CHECKING:
@@ -21,7 +21,7 @@ else:
 # tested in: tests/test_cmd/test_cmd_py_src.py
 
 
-class QryCellUri(QryBase, LogMixin, QryCellT[Result[str, None] | Result[None, Exception]]):
+class QryCellUri(QryBase, LogMixin, QryCellT[Union[Result[str, None], Result[None, Exception]]]):
     """
     Gets the URI for a cell.
 
@@ -50,7 +50,7 @@ class QryCellUri(QryBase, LogMixin, QryCellT[Result[str, None] | Result[None, Ex
         qry = QryLpRootUri(doc=self._cell.calc_sheet.calc_doc)
         return self._execute_qry(qry)
 
-    def execute(self) -> Result[str, None] | Result[None, Exception]:
+    def execute(self) -> Union[Result[str, None], Result[None, Exception]]:
         """
         Executes the query to get the URI for a cell.
 

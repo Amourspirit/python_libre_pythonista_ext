@@ -14,7 +14,7 @@ class CallbackHolder:
         self._callbacks = {}
         self._log = OxtLogger(log_name=self.__class__.__name__)
 
-    def add(self, callback: Any, *args: Any, **kwargs: Any) -> None:
+    def add(self, callback: Any, *args: Any, **kwargs: Any) -> None:  # noqa: ANN401
         # Store the callback along with its arguments
         # The callback function itself is the key, and its arguments are the value
         if self._log.is_debug:

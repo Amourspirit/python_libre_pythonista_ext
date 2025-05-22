@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, List, TYPE_CHECKING, Type
+from typing import Any, List, TYPE_CHECKING, Type, Union
 from ooodev.calc import CalcCell
 from ooodev.utils.helper.dot_dict import DotDict
 
@@ -161,7 +161,7 @@ class StateRules(LogMixin):
         self._reg_rule(rule=RuleError)
         self._reg_rule(rule=RuleNone)
 
-    def get_matched_rule(self, cell: CalcCell, data: DotDict[Any]) -> StateRuleT | None:
+    def get_matched_rule(self, cell: CalcCell, data: DotDict[Any]) -> Union[StateRuleT, None]:
         """
         Get matched rules.
 
@@ -199,12 +199,12 @@ class StateRules(LogMixin):
     # region Properties
 
     @property
-    def default_rule(self) -> Type[StateRuleT] | None:
+    def default_rule(self) -> Union[Type[StateRuleT], None]:
         """Gets/Sets the default rule type if no rules is matched."""
         return self._default_rule
 
     @default_rule.setter
-    def default_rule(self, value: Type[StateRuleT] | None) -> None:
+    def default_rule(self, value: Union[Type[StateRuleT], None]) -> None:
         self._default_rule = value
 
     # endregion Properties

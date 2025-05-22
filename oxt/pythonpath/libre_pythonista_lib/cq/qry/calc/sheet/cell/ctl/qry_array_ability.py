@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union, Optional
 from ooodev.calc import CalcCell
 
 if TYPE_CHECKING:
@@ -23,10 +23,10 @@ else:
     from libre_pythonista_lib.utils.result import Result
 
 
-class QryArrayAbility(QryBase, QryCellT[Result[bool, None] | Result[None, Exception]]):
+class QryArrayAbility(QryBase, QryCellT[Union[Result[bool, None], Result[None, Exception]]]):
     """Gets the array ability."""
 
-    def __init__(self, cell: CalcCell, ctl: Ctl | None = None) -> None:
+    def __init__(self, cell: CalcCell, ctl: Optional[Ctl] = None) -> None:
         """Constructor
 
         Args:
@@ -38,7 +38,7 @@ class QryArrayAbility(QryBase, QryCellT[Result[bool, None] | Result[None, Except
         self._ctl = ctl
         self.kind = CalcQryKind.CELL
 
-    def execute(self) -> Result[bool, None] | Result[None, Exception]:
+    def execute(self) -> Union[Result[bool, None], Result[None, Exception]]:
         """
         Executes the query to get array ability.
 

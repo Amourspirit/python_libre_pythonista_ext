@@ -27,6 +27,7 @@ LP_DOC_EVENTS_ENSURED = "lp_doc_events_ensured"
 LP_DOC_EVENTS_ENSURED event is triggered when the document events are ensured.
 This takes place in the CalcDocMgr._ensure_events() method.
 """
+PY_SRC_MGR_MOD_STATES_INIT_UPDATED = "py_src_mgr_mod_states_init_updated"
 
 # region cell.ctl shared events
 CONTROL_ADDED = "control_added"

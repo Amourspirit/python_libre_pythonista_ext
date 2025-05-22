@@ -1,7 +1,5 @@
 from __future__ import annotations
-
-
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 
 from ooodev.calc import CalcForm
 
@@ -22,7 +20,7 @@ else:
 # tested in: tests/test_cmd/test_cmd_sheet_ensure_forms.py
 
 
-class QryLpForm(QryBase, LogMixin, QrySheetT[CalcForm | None]):
+class QryLpForm(QryBase, LogMixin, QrySheetT[Union[CalcForm, None]]):
     def __init__(self, sheet: CalcSheet) -> None:
         QryBase.__init__(self)
         LogMixin.__init__(self)
@@ -34,12 +32,12 @@ class QryLpForm(QryBase, LogMixin, QrySheetT[CalcForm | None]):
         qry = QryFormName()
         return self._execute_qry(qry)
 
-    def execute(self) -> CalcForm | None:
+    def execute(self) -> Union[CalcForm, None]:
         """
         Executes the query to get the form.
 
         Returns:
-            CalcForm | None: The form if successful, otherwise None.
+            CalcForm, None: The form if successful, otherwise None.
         """
 
         try:

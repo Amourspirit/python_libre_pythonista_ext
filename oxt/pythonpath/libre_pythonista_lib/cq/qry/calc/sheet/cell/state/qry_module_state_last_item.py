@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 
 if TYPE_CHECKING:
     from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_base import QryBase
@@ -19,7 +19,7 @@ else:
 # tested in: tests/test_cmd_qry/test_cell/state/test_qry_module_state_last_item.py
 
 
-class QryModuleStateLastItem(QryBase, QryT[Result[ModuleStateItem, None] | Result[None, Exception]]):
+class QryModuleStateLastItem(QryBase, QryT[Union[Result[ModuleStateItem, None], Result[None, Exception]]]):
     """
     Query to get the last state item of a Python module.
 
@@ -36,7 +36,7 @@ class QryModuleStateLastItem(QryBase, QryT[Result[ModuleStateItem, None] | Resul
         QryBase.__init__(self)
         self._mod = mod
 
-    def execute(self) -> Result[ModuleStateItem, None] | Result[None, Exception]:
+    def execute(self) -> Union[Result[ModuleStateItem, None], Result[None, Exception]]:
         """
         Execute the query to get the last state item.
 

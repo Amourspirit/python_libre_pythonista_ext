@@ -2,14 +2,14 @@ from __future__ import annotations
 import os
 import shutil
 from pathlib import Path
-from typing import Any, Iterable, List
+from typing import Any, Iterable, List, Union
 from shutil import which
 from contextlib import contextmanager
 import uno
 
 
 @contextmanager
-def change_dir(directory):
+def change_dir(directory):  # noqa: ANN001, ANN201
     """
     A context manager that changes the current working directory to the specified directory
     temporarily and then changes it back when the context is exited.
@@ -42,7 +42,7 @@ def find_file_in_parent_dirs(filename: str, path: str = "") -> str:
     return find_file_in_parent_dirs(filename, parent_dir)
 
 
-def mkdirp(self, dest_dir):
+def mkdirp(self, dest_dir) -> None:
     # Python ≥ 3.5
     if isinstance(dest_dir, Path):
         dest_dir.mkdir(parents=True, exist_ok=True)
@@ -50,13 +50,13 @@ def mkdirp(self, dest_dir):
         Path(dest_dir).mkdir(parents=True, exist_ok=True)
 
 
-def find_files_matching_patterns(root_dir: str | Path, ext: Iterable[str]) -> List[str]:
+def find_files_matching_patterns(root_dir: Union[str, Path], ext: Iterable[str]) -> List[str]:
     """
     Finds all files in the given directory and its subdirectories that match the patterns *.txt and *.xml.
     Returns a list of absolute file paths.
 
     Args:
-        root_dir (str | Path): The root directory to search.
+        root_dir (str, Path): The root directory to search.
         ext (List[str]): The file extensions to search for.
     Returns:
         List[str]: A list of absolute file paths.
@@ -87,12 +87,12 @@ def write_string_to_file(file_path: str, content: str, encoding="UTF-8") -> None
         f.write(content)
 
 
-def zip_folder(folder: str | Path, base_name: str = "", dest_dir: str | Path = "") -> None:
+def zip_folder(folder: Union[str, Path], base_name: str = "", dest_dir: Union[str, Path] = "") -> None:
     """
     Zips all files in the given folder to the specified zip file.
 
     Args:
-        folder (str | Path): is a directory that will be the root directory of the archive;
+        folder (str, Path): is a directory that will be the root directory of the archive;
         base_name (str): is the name of the file to create, minus any format-specific
             extension; 'format' is the archive format: one of "zip", "tar", "gztar",
             "bztar", or "xztar".  Or any other registered format.
@@ -124,13 +124,13 @@ def zip_folder(folder: str | Path, base_name: str = "", dest_dir: str | Path = "
         shutil.make_archive(base_name, "zip", folder_path)
 
 
-def unzip_file(zip_file: str | Path, dest_dir: str | Path = "") -> None:
+def unzip_file(zip_file: Union[str, Path], dest_dir: Union[str, Path] = "") -> None:
     """
     Unzip the given zip file to the specified destination directory.
 
     Args:
-        zip_file (str | Path): The zip file to unzip.
-        dest_dir (str | Path, optional): The destination directory to unzip to.
+        zip_file (str, Path): The zip file to unzip.
+        dest_dir (str, Path, optional): The destination directory to unzip to.
 
     Returns:
         None:
@@ -167,7 +167,7 @@ def unzip_file(zip_file: str | Path, dest_dir: str | Path = "") -> None:
     #     shutil.unpack_archive(zip_file_path, dest_dir)
 
 
-def get_which(name: str | Path) -> str:
+def get_which(name: Union[str, Path]) -> str:
     """
     Returns the path to the executable which would be executed in the current
     environment, or empty string if no executable is found.
@@ -178,7 +178,7 @@ def get_which(name: str | Path) -> str:
     return "" if result is None else str(result)
 
 
-def is_on_path(name: str | Path) -> bool:
+def is_on_path(name: Union[str, Path]) -> bool:
     """
     Returns True if the given name is on the PATH, False otherwise.
 
@@ -198,9 +198,7 @@ def get_user_profile_path(as_sys_path: bool = True, ctx: Any = None) -> str:
     """
     if ctx is None:
         ctx = uno.getComponentContext()
-    result = ctx.ServiceManager.createInstance(
-        "com.sun.star.util.PathSubstitution"
-    ).substituteVariables(  # type: ignore
+    result = ctx.ServiceManager.createInstance("com.sun.star.util.PathSubstitution").substituteVariables(  # type: ignore
         "$(user)", True
     )
     return uno.fileUrlToSystemPath(result) if as_sys_path else result

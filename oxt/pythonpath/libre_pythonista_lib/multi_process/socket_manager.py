@@ -32,7 +32,7 @@ class SocketManager:
         close_socket(process_id: str) -> None:
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """
         Initializes the editor with a logger, a socket pool, and a lock.
 
@@ -83,7 +83,7 @@ class SocketManager:
             if socket_path.exists():
                 socket_path.unlink()
             self._socket_file = str(socket_path)
-            server_socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+            server_socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)  # type: ignore
             server_socket.bind(self._socket_file)
             os.chmod(socket_path, 0o600)  # Restrict access to the socket
 
@@ -96,9 +96,7 @@ class SocketManager:
 
         return server_socket, host, port, self._socket_file
 
-    def accept_client(
-        self, server_socket: socket.socket, process_id: str
-    ) -> socket.socket:
+    def accept_client(self, server_socket: socket.socket, process_id: str) -> socket.socket:
         """
         Accepts a client connection on the given server socket and associates it with a process ID.
 
@@ -210,6 +208,6 @@ class SocketManager:
                 del self._socket_pool[process_id]
 
     @property
-    def socket_file(self):
+    def socket_file(self) -> str:
         """Gets the path to the Unix domain socket file."""
         return self._socket_file

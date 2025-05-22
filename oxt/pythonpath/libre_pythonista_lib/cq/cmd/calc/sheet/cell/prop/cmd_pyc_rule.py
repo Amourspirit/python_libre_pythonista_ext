@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import cast, TYPE_CHECKING
+from typing import cast, TYPE_CHECKING, Union
 
 from ooodev.utils.gen_util import NULL_OBJ
 
@@ -34,7 +34,7 @@ else:
 class CmdPycRule(CmdBase, LogMixin, CmdCellT):
     """Sets the pyc rule of the cell such as ``cell_data_type_str``"""
 
-    def __init__(self, cell: CalcCell, name: str | RuleNameKind) -> None:
+    def __init__(self, cell: CalcCell, name: Union[str, RuleNameKind]) -> None:
         """Constructor
 
         Args:
@@ -47,7 +47,7 @@ class CmdPycRule(CmdBase, LogMixin, CmdCellT):
         self._cell = cell
         self.kind = CalcCmdKind.CELL
         self._keys = cast("KeyMaker", NULL_OBJ)
-        self._current_state = cast(str | None, NULL_OBJ)
+        self._current_state = cast(Union[str, None], NULL_OBJ)
         self._state_changed = False
         self._errors = True
         rule_name = str(name)

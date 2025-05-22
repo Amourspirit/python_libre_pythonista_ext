@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Dict, List
+from typing import TYPE_CHECKING, Dict, List, Union
 
 from ooodev.utils.data_type.cell_obj import CellObj
 from ooodev.calc import CalcSheet
@@ -22,7 +22,7 @@ else:
     from libre_pythonista_lib.utils.result import Result
 
 
-class QryLpCellLast(QryBase, LogMixin, QrySheetT[Result[CellObj, None] | Result[None, Exception]]):
+class QryLpCellLast(QryBase, LogMixin, QrySheetT[Union[Result[CellObj, None], Result[None, Exception]]]):
     """
     Query to get the last LibrePythonista cell in a sheet.
 
@@ -67,7 +67,7 @@ class QryLpCellLast(QryBase, LogMixin, QrySheetT[Result[CellObj, None] | Result[
         qry = QryLpCellObjList(sheet=self._sheet)
         return self._execute_qry(qry)
 
-    def _execute_from_py_src_mgr(self) -> Result[CellObj, None] | Result[None, Exception]:
+    def _execute_from_py_src_mgr(self) -> Union[Result[CellObj, None], Result[None, Exception]]:
         """
         Execute query using Python source manager.
 
@@ -86,7 +86,7 @@ class QryLpCellLast(QryBase, LogMixin, QrySheetT[Result[CellObj, None] | Result[
             self.log.exception("Error executing query")
             return Result.failure(e)
 
-    def _execute_from_sheet(self) -> Result[CellObj, None] | Result[None, Exception]:
+    def _execute_from_sheet(self) -> Union[Result[CellObj, None], Result[None, Exception]]:
         """
         Execute query directly from sheet.
 
@@ -105,7 +105,7 @@ class QryLpCellLast(QryBase, LogMixin, QrySheetT[Result[CellObj, None] | Result[
             self.log.exception("Error executing query")
             return Result.failure(e)
 
-    def execute(self) -> Result[CellObj, None] | Result[None, Exception]:
+    def execute(self) -> Union[Result[CellObj, None], Result[None, Exception]]:
         """
         Execute the query to get the last cell.
 

@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import cast, TYPE_CHECKING
+from typing import cast, TYPE_CHECKING, Union
 
 from ooodev.utils.gen_util import NULL_OBJ
 
@@ -31,13 +31,13 @@ else:
 class CmdAddr(CmdBase, LogMixin, CmdCellT):
     """Sets the address of the cell such as ``sheet_index=0&cell_addr=A1``"""
 
-    def __init__(self, cell: CalcCell, addr: str | Addr | None = None) -> None:
+    def __init__(self, cell: CalcCell, addr: Union[str, Addr, None] = None) -> None:
         """
         Initialize the command to set a cell's address.
 
         Args:
             cell (CalcCell): The cell to set the address for
-            addr (str | Addr | None, optional): The address to set. If None, gets current address. Defaults to None.
+            addr (str , Addr, None, optional): The address to set. If None, gets current address. Defaults to None.
         """
         CmdBase.__init__(self)
         LogMixin.__init__(self)

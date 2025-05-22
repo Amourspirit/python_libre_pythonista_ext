@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, Dict, TYPE_CHECKING, Tuple, cast, Set
+from typing import Any, Dict, TYPE_CHECKING, Tuple, cast, Set, Union
 import sys
 import os
 from pathlib import Path
@@ -97,7 +97,7 @@ class ButtonUninstallListener(XActionListener, unohelper.Base):
             thread.start()
 
     def _uninstall_items(self, title: str, msg: str) -> bool:
-        progress: Progress | None = None
+        progress: Union[Progress, None] = None
         try:
             from ...install.install_pkg import InstallPkg
 
@@ -656,5 +656,5 @@ class OptionsDialogUninstallHandler(DialogBase, XContainerWindowEventHandler, un
         return self._config
 
     @property
-    def window(self) -> UnoControlDialog | None:
+    def window(self) -> Union[UnoControlDialog, None]:
         return self._window

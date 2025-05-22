@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, Dict, Protocol
+from typing import Any, Dict, Protocol, Optional
 
 from ooodev.utils.helper.dot_dict import DotDict
 
@@ -9,7 +9,7 @@ class PyModuleT(Protocol):
         """Returns a copy of the module dictionary."""
         ...
 
-    def execute_code(self, code_snippet: str, globals_dict: dict | None = None) -> Any:  # noqa: ANN401
+    def execute_code(self, code_snippet: str, globals_dict: Optional[dict] = None) -> Any:  # noqa: ANN401
         """
         Compiles and executes the given code snippet.
         - If the last statement is an expression, returns its value.

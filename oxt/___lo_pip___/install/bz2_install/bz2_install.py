@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any
+from typing import Any, Union
 import tempfile
 import hashlib
 import shutil
@@ -43,7 +43,7 @@ class BZ2Install(BaseInstaller):
         except Exception as err:
             self._logger.error(f"Unable to get bz2 config: {err}")
             return
-        progress: Progress | None = None
+        progress: Union[Progress, None] = None
         if self.config.show_progress:
             self._logger.debug("Starting Progress Window")
             msg = self.resource_resolver.resolve_string("msg08")
@@ -112,7 +112,7 @@ class BZ2Install(BaseInstaller):
         result = hashlib.md5(open(filename, "rb").read()).hexdigest()
         return result == md5_str
 
-    def _unzip(self, filename: Path, dst: str | Path) -> None:
+    def _unzip(self, filename: Path, dst: Union[str, Path]) -> None:
         """Unzip the downloaded wheel file"""
         # sourcery skip: raise-specific-error
         if isinstance(dst, str):

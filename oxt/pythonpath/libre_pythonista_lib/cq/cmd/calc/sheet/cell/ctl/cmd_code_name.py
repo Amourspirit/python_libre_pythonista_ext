@@ -48,7 +48,7 @@ class CmdCodeName(CmdBase, LogMixin, CmdCellCtlT):
         self._valid = self._validate()
         self._code_name = None
         self._current_dict_code_name = self.cell.extra_data.get("code_name", "")
-        self._current_ctl: Dict[str, Any] | None = None
+        self._current_ctl: Union[Dict[str, Any], None] = None
         if self._valid:
             self._current_code_name = cast(Union[str, None], self._ctl.ctl_code_name)
         else:

@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 
 if TYPE_CHECKING:
@@ -26,7 +26,7 @@ class QryCtlScriptName(QryBase, LogMixin, QryCellT[str]):
     Assigns the script name to the ``ctl`` as property ``ctl_script_name``.
     """
 
-    def __init__(self, cell: CalcCell, ctl: Ctl | None = None) -> None:
+    def __init__(self, cell: CalcCell, ctl: Optional[Ctl] = None) -> None:
         QryBase.__init__(self)
         LogMixin.__init__(self)
         self.kind = CalcQryKind.CELL

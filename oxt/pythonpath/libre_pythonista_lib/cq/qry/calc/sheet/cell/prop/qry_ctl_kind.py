@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 
 if TYPE_CHECKING:
     from ooodev.calc import CalcCell
@@ -18,7 +18,7 @@ else:
     from libre_pythonista_lib.utils.result import Result
 
 
-class QryCtlKind(QryBase, QryCellT[Result[CtlKind, None] | Result[None, Exception]]):
+class QryCtlKind(QryBase, QryCellT[Union[Result[CtlKind, None], Result[None, Exception]]]):
     """Gets the kind of the control for the cell"""
 
     def __init__(self, cell: CalcCell) -> None:
@@ -26,7 +26,7 @@ class QryCtlKind(QryBase, QryCellT[Result[CtlKind, None] | Result[None, Exceptio
         self.kind = CalcQryKind.CELL
         self._cell = cell
 
-    def execute(self) -> Result[CtlKind, None] | Result[None, Exception]:
+    def execute(self) -> Union[Result[CtlKind, None], Result[None, Exception]]:
         """
         Executes the query and gets the pyc rule of the cell.
 

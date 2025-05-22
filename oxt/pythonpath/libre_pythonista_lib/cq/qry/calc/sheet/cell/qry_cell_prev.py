@@ -1,33 +1,29 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Union, Optional
 
 from ooodev.calc import CalcCell
 from ooodev.utils.data_type.cell_obj import CellObj
 
 if TYPE_CHECKING:
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_t import QryCellT
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.state.qry_py_src_mgr import QryPySrcMgrCode
+    from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_base import QryBase
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_module_t import PyModuleT
     from oxt.pythonpath.libre_pythonista_lib.doc.calc.doc.sheet.cell.code.py_source_manager import PySourceManager
-    from oxt.pythonpath.libre_pythonista_lib.cq.qry.qry_base import QryBase
-    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_t import QryCellT
-    from oxt.pythonpath.libre_pythonista_lib.cq.qry.doc.qry_lp_root_uri import QryLpRootUri
-    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_code_name import QryCodeName
     from oxt.pythonpath.libre_pythonista_lib.log.log_mixin import LogMixin
     from oxt.pythonpath.libre_pythonista_lib.utils.result import Result
-    from oxt.pythonpath.libre_pythonista_lib.cq.qry.calc.sheet.cell.state.qry_py_src_mgr import QryPySrcMgrCode
 else:
-    from libre_pythonista_lib.cq.qry.qry_base import QryBase
     from libre_pythonista_lib.cq.qry.calc.sheet.cell.qry_cell_t import QryCellT
-    from libre_pythonista_lib.cq.qry.doc.qry_lp_root_uri import QryLpRootUri
-    from libre_pythonista_lib.cq.qry.calc.sheet.cell.prop.qry_code_name import QryCodeName
+    from libre_pythonista_lib.cq.qry.calc.sheet.cell.state.qry_py_src_mgr import QryPySrcMgrCode
+    from libre_pythonista_lib.cq.qry.qry_base import QryBase
     from libre_pythonista_lib.log.log_mixin import LogMixin
     from libre_pythonista_lib.utils.result import Result
-    from libre_pythonista_lib.cq.qry.calc.sheet.cell.state.qry_py_src_mgr import QryPySrcMgrCode
 
     PySourceManager = Any
 
 
-class QryCellPrev(QryBase, LogMixin, QryCellT[Result[CellObj, None] | Result[None, Exception]]):
-    def __init__(self, cell: CalcCell, require_exist: bool = False, mod: PyModuleT | None = None) -> None:
+class QryCellPrev(QryBase, LogMixin, QryCellT[Union[Result[CellObj, None], Result[None, Exception]]]):
+    def __init__(self, cell: CalcCell, require_exist: bool = False, mod: Optional[PyModuleT] = None) -> None:
         """Constructor
 
         Args:
@@ -52,7 +48,7 @@ class QryCellPrev(QryBase, LogMixin, QryCellT[Result[CellObj, None] | Result[Non
         qry = QryPySrcMgrCode(doc=self.cell.calc_doc, mod=self._mod)
         return self._execute_qry(qry)
 
-    def execute(self) -> Result[CellObj, None] | Result[None, Exception]:
+    def execute(self) -> Union[Result[CellObj, None], Result[None, Exception]]:
         try:
             py_src_mgr = self._qry_py_src_mgr()
             next_cell = py_src_mgr.get_prev_item_py_src_data(

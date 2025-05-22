@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 import ast
 import types
 import re
@@ -17,7 +17,7 @@ class RegexLastLine:
     A class to to get the attribute value from module if last line of code matches a regex.
     """
 
-    def __init__(self, regex: re.Pattern[str] | None = None, use_match_value: bool = False) -> None:
+    def __init__(self, regex: Optional[re.Pattern[str]] = None, use_match_value: bool = False) -> None:
         """
         Constructor
 
@@ -31,9 +31,9 @@ class RegexLastLine:
         else:
             self.regex = regex
         self.use_match_value = use_match_value
-        self.match: re.Match[str] | None = None
+        self.match: Optional[re.Match[str]] = None
 
-    def set_values(self, mod: types.ModuleType, code: str, ast_mod: ast.Module | None) -> None:
+    def set_values(self, mod: types.ModuleType, code: str, ast_mod: Optional[ast.Module]) -> None:
         """
         Set the values for the class.
 
