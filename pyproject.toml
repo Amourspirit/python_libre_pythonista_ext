@@ -1,13 +1,13 @@
 [project]
 name = "LibrePythonista"
-version = "0.10.2"
+version = "0.10.3"
 description = "Python For LibreOffice Calc"
 readme = "README.md"
 requires-python = ">=3.8"
 license = {text="OSI Approved :: Apache Software License"}
 keywords = ["pip", "libreoffice","uno", "pyuno"]
 dependencies = [
-    "ooo-dev-tools>=0.53.3",
+    "ooo-dev-tools>=0.53.4",
     "oooenv>=0.2.4",
     "sortedcontainers>=2.4.0",
     "toml>=0.10.2",
@@ -42,7 +42,7 @@ debug_skip_events = [] # ["lp_cell_moved"]
 [tool.oxt.config]
 auto_install_in_site_packages = true # https://tinyurl.com/ymeh4c9j#auto_install_in_site_packages
 build_dir = "build" # https://tinyurl.com/ymeh4c9j#build_dir
-dist_dir = "tmp_dist" # "dist" https://tinyurl.com/ymeh4c9j#dist_dir should be changed to something like dist, tmp_dist is not included in git
+dist_dir = "dist" # "dist" https://tinyurl.com/ymeh4c9j#dist_dir should be changed to something like dist, tmp_dist is not included in git
 install_wheel = true # https://tinyurl.com/ymeh4c9j#install_wheel
 oxt_name = "LibrePythonista" # https://tinyurl.com/ymeh4c9j#oxt_name
 py_pkg_dir = "py_pkgs" # https://tinyurl.com/ymeh4c9j#py_pkg_dir
@@ -93,7 +93,7 @@ url_pip = 'https://bootstrap.pypa.io/get-pip.py' # https://tinyurl.com/ymeh4c9j#
 # set log_file to "" to disable logging
 log_file = "libre_pythonista.log" # https://tinyurl.com/ymeh4c9j#log_file
 log_name = "LibrePythonista Installer" # https://tinyurl.com/ymeh4c9j#log_name
-log_level = "DEBUG" # NONE, DEBUG, INFO, WARNING, ERROR, CRITICAL https://tinyurl.com/ymeh4c9j#log_level
+log_level = "INFO" # NONE, DEBUG, INFO, WARNING, ERROR, CRITICAL https://tinyurl.com/ymeh4c9j#log_level
 log_format = "%(asctime)s - %(levelname)s - %(name)s: %(message)s" # https://tinyurl.com/ymeh4c9j#log_format
 # log_format = "%(asctime)s - %(levelname)s - %(indent_str)s%(name)s: %(message)s"
 log_add_console = true # should be false for production # https://tinyurl.com/ymeh4c9j#log_add_console
@@ -111,10 +111,10 @@ lp_experimental_editor=false
 [tool.oxt.requirements]
 # https://tinyurl.com/ymeh4c9j#tooloxtrequirements
 # https://python-poetry.org/docs/dependency-specification/
-odfpy = ">=1.4"
-ooo-dev-tools = ">=0.53.3"
-seaborn = ">=0.13"
+ooo-dev-tools = ">=0.53.4"
 sortedcontainers = ">=2.4.0"
+seaborn = ">=0.13"
+# odfpy = ">=1.4" # removed in 0.10.3
 #debugpy = ">=1.8.14"
 
 # [[tool.oxt.py_packages]]
