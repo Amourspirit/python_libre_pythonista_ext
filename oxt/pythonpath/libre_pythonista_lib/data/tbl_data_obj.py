@@ -42,30 +42,48 @@ class TblDataObj:
         # Check of the first row is all string values.
         # If there are merged cell in the header then the number of ranges will be more than 1
         # which will return False.
-        with self._log.indent(True):
-            self._log.debug("_rng_has_header() Entered")
-            ro = self._cell_rng.range_obj
-            if ro.is_single_row():
-                self._log.debug("_rng_has_header() Single row detected, returning Headers: []")
-                return []
-            start_ro = ro.get_start_row()
-            calc_rng = self._cell_rng.calc_sheet.get_range(range_obj=start_ro)
-            cursor = calc_rng.create_cursor()
-            ranges = cursor.component.queryContentCells(CellFlags.STRING)
-            if len(ranges.RangeAddresses) != 1:  # type: ignore
-                self._log.debug("_rng_has_header() Multiple ranges detected, returning Headers: []")
-                return []
-            cra = cast(CellRangeAddress, ranges.RangeAddresses[0])  # type: ignore
-            found_rng = RangeObj.from_range(cra)
-            if self._log.is_debug:
-                self._log.debug(f"_rng_has_header() Found Range: {found_rng}")
-            if found_rng != start_ro:
-                self._log.debug("_rng_has_header() Found Range does not match start row, returning Headers: []")
-                return []
-            arr = self._sheet.get_array(range_obj=found_rng)
-            if self._log.is_debug:
-                self._log.debug(f"_rng_has_header() returning Headers: {list(arr[0])}")
-            return list(arr[0])
+
+        # updated in Version 0.10.4
+        # see Issue 80: https://github.com/Amourspirit/python_libre_pythonista_ext/issues/80
+
+        self._log.debug("_rng_has_header() Entered")
+        ro = self._cell_rng.range_obj
+        if ro.is_single_row():
+            self._log.debug("_rng_has_header() Single row detected, returning Headers: []")
+            return []
+        start_ro = ro.get_start_row()
+        calc_rng = self._cell_rng.calc_sheet.get_range(range_obj=start_ro)
+        cursor = calc_rng.create_cursor()
+        ranges = cursor.component.queryContentCells(CellFlags.STRING | CellFlags.FORMULA)
+        if len(ranges.RangeAddresses) != 1:  # type: ignore
+            self._log.debug("_rng_has_header() Multiple ranges detected, returning Headers: []")
+            return []
+        cra = cast(CellRangeAddress, ranges.RangeAddresses[0])  # type: ignore
+        found_rng = RangeObj.from_range(cra)
+        if self._log.is_debug:
+            self._log.debug(f"_rng_has_header() Found Range: {found_rng}")
+        if found_rng != start_ro:
+            self._log.debug("_rng_has_header() Found Range does not match start row, returning Headers: []")
+            return []
+        arr = self._sheet.get_array(range_obj=found_rng)
+        # if self._log.is_debug:
+        #     self._log.debug(f"_rng_has_header() Array: {arr}")
+        try:
+            header_row = arr[0]
+            for el in header_row:
+                if not isinstance(el, str):
+                    self._log.debug("_rng_has_header() Found non string value %s, returning Headers: []", el)
+                    return []
+                if el == "":
+                    self._log.debug("_rng_has_header() Found empty string value, returning Headers: []")
+                    return []
+        except Exception as e:
+            self._log.warning("Error: %s", e)
+            return []
+
+        if self._log.is_debug:
+            self._log.debug(f"_rng_has_header() returning Headers: {list(arr[0])}")
+        return list(arr[0])
 
     def _get_date_columns(self) -> List[int]:
         """
@@ -76,56 +94,54 @@ class TblDataObj:
         Returns:
             List[int]: A list of zero-based column indexes that contain date values.
         """
-        with self._log.indent(True):
-            try:
-                self._log.debug("_get_date_columns() Entered")
-                ro = self._cell_rng.range_obj
-                if self.has_headers:
-                    # skip the header row
-                    # https://tinyurl.com/2zswb49z#subtracting-rows-using-integer
-                    ro = 1 - ro
+        try:
+            self._log.debug("_get_date_columns() Entered")
+            ro = self._cell_rng.range_obj
+            if self.has_headers:
+                # skip the header row
+                # https://tinyurl.com/2zswb49z#subtracting-rows-using-integer
+                ro = 1 - ro
 
-                calc_rng = self._sheet.get_range(range_obj=ro)
-                rv = ro.get_range_values()
-                cursor = calc_rng.create_cursor()
-                ranges = cursor.component.queryContentCells(CellFlags.DATETIME)
-                cra_vals = cast(Tuple[CellRangeAddress, ...], ranges.RangeAddresses)  # type: ignore
-                if self._log.is_debug:
-                    self._log.debug(f"_get_date_columns() Range Value Count: {len(cra_vals)}")
-                if len(cra_vals) == 0:  # type: ignore
-                    return []
-                date_columns = []
-                for cra in cra_vals:  # type: ignore
-                    if cra.StartColumn != cra.EndColumn:
-                        # must be a single column
-                        continue
-                    # check to see if the column spans the entire range
-                    if cra.StartRow == rv.row_start and cra.EndRow == rv.row_end:
-                        date_columns.append(cra.StartColumn)
-                if self._log.is_debug:
-                    self._log.debug(f"_get_date_columns() returning Date Columns: {date_columns}")
-                return date_columns
-            except Exception as e:
-                self._log.exception(f"_get_date_columns() Error: {e}")
-            return []
+            calc_rng = self._sheet.get_range(range_obj=ro)
+            rv = ro.get_range_values()
+            cursor = calc_rng.create_cursor()
+            ranges = cursor.component.queryContentCells(CellFlags.DATETIME)
+            cra_vals = cast(Tuple[CellRangeAddress, ...], ranges.RangeAddresses)  # type: ignore
+            if self._log.is_debug:
+                self._log.debug(f"_get_date_columns() Range Value Count: {len(cra_vals)}")
+            if len(cra_vals) == 0:  # type: ignore
+                return []
+            date_columns = []
+            for cra in cra_vals:  # type: ignore
+                if cra.StartColumn != cra.EndColumn:
+                    # must be a single column
+                    continue
+                # check to see if the column spans the entire range
+                if cra.StartRow == rv.row_start and cra.EndRow == rv.row_end:
+                    date_columns.append(cra.StartColumn)
+            if self._log.is_debug:
+                self._log.debug(f"_get_date_columns() returning Date Columns: {date_columns}")
+            return date_columns
+        except Exception as e:
+            self._log.exception(f"_get_date_columns() Error: {e}")
+        return []
 
     def get_date_column_names(self) -> List[str]:
         """Gets the names of the columns that contain date values."""
-        with self._log.indent(True):
-            try:
-                rv = self._cell_rng.range_obj.get_range_values()
+        try:
+            rv = self._cell_rng.range_obj.get_range_values()
 
-                if self._log.is_debug:
-                    self._log.debug("get_date_column_names() Entered")
-                    self._log.debug(f"get_date_column_names() Date Columns: {self.date_columns}")
-                    self._log.debug(f"get_date_column_names() Headers: {self.headers}")
-                col_names = [self.headers[i - rv.col_start] for i in self.date_columns]
-                if self._log.is_debug:
-                    self._log.debug(f"get_date_column_names() returning Date Column Names: {col_names}")
-                return col_names
-            except Exception as e:
-                self._log.exception(f"get_date_column_names() Error: {e}")
-            return []
+            if self._log.is_debug:
+                self._log.debug("get_date_column_names() Entered")
+                self._log.debug(f"get_date_column_names() Date Columns: {self.date_columns}")
+                self._log.debug(f"get_date_column_names() Headers: {self.headers}")
+            col_names = [self.headers[i - rv.col_start] for i in self.date_columns]
+            if self._log.is_debug:
+                self._log.debug(f"get_date_column_names() returning Date Column Names: {col_names}")
+            return col_names
+        except Exception as e:
+            self._log.exception(f"get_date_column_names() Error: {e}")
+        return []
 
     # region Properties
     @property
