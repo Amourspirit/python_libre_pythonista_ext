@@ -1,6 +1,6 @@
 [project]
 name = "LibrePythonista"
-version = "0.10.2"
+version = "0.10.3"
 description = "Python For LibreOffice Calc"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -114,7 +114,7 @@ lp_experimental_editor=false
 ooo-dev-tools = ">=0.53.4"
 sortedcontainers = ">=2.4.0"
 seaborn = ">=0.13"
-# odfpy = ">=1.4"
+# odfpy = ">=1.4" # removed in 0.10.3
 #debugpy = ">=1.8.14"
 
 # [[tool.oxt.py_packages]]
