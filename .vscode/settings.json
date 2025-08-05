@@ -23,7 +23,7 @@
             "titleBar.activeForeground": "#e49df4"
         }
     },
-    "workbench.colorTheme": "Default Light+",
+    "workbench.colorTheme": "Default Dark Modern",
     "python.testing.pytestArgs": [
         "tests"
     ],

@@ -1,6 +1,6 @@
 [project]
 name = "LibrePythonista"
-version = "0.10.4"
+version = "0.10.5"
 description = "Python For LibreOffice Calc"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -240,6 +240,7 @@ dev = [
     "pandas>=2",
     "ruff>=0.11.8",
     "debugpy>=1.8.14",
+    "pygments>=2.19.2",
 ]
 
 [tool.hatch.build]

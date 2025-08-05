@@ -109,7 +109,8 @@ def _handle_sheet_cell(addr: str, log: OxtLogger, **kwargs) -> Any:  # noqa: ANN
     log.debug("_handle_sheet_cell() Entered")
     log.debug("lp - Cell Name: %s", addr)
     doc = cast(CalcDoc, Lo.current_doc)
-    sheet_name, addr_str = addr.split(".")
+    # Sheet names can contain dots.
+    sheet_name, addr_str = addr.rsplit(".", maxsplit=1)
     calc_sheet = doc.sheets.get_by_name(sheet_name)
 
     cell_obj = CellObj.from_cell(addr_str)
@@ -172,7 +173,8 @@ def _handle_sheet_range_only(addr: str, log: OxtLogger, **kwargs) -> Any:  # noq
     column_types = kwargs.get("column_types")
 
     doc = cast(CalcDoc, Lo.current_doc)
-    sheet_name, addr_str = addr.split(".")
+    # Sheet names can contain dots.
+    sheet_name, addr_str = addr.rsplit(".", maxsplit=1)
     sheet = doc.sheets.get_by_name(sheet_name)
 
     if doc.range_converter.is_cell_range_name(addr_str):
@@ -237,7 +239,8 @@ def _handle_sheet_named_range_only(addr: str, log: OxtLogger, **kwargs) -> Any: 
     log.debug("_handle_sheet_named_range_only() Entered")
     log.debug("lp - Cell Name: %s", addr)
     doc = cast(CalcDoc, Lo.current_doc)
-    sheet_name, data_name = addr.split(".")
+    # Sheet names ranges can contain dots in sheet name part.
+    sheet_name, data_name = addr.rsplit(".", maxsplit=1)
     sheet = doc.sheets.get_by_name(sheet_name)
 
     if log.is_debug:
