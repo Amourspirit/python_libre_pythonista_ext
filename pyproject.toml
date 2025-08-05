@@ -240,6 +240,7 @@ dev = [
     "pandas>=2",
     "ruff>=0.11.8",
     "debugpy>=1.8.14",
+    "pygments>=2.19.2",
 ]
 
 [tool.hatch.build]
